@@ -1,0 +1,141 @@
+plugins {
+    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+    // Add repositories to retrieve artifacts from in here.
+    // You should only use this when depending on other mods because
+    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+    // for more information about repositories.
+    maven {
+        name 'GrossFabricHacks Repo'
+        url 'https://raw.githubusercontent.com/Devan-Kerman/Devan-Repo/master/'
+    }
+
+    maven {
+        name 'DevOS One'
+        url "https://mvn.devos.one/snapshots/"
+    }
+
+    maven {
+        name 'JitPack'
+        url 'https://jitpack.io/'
+    }
+
+    maven {
+        name 'Cafeteria Dev'
+        url 'https://maven.cafeteria.dev/releases/'
+        content {
+            includeGroup 'dev.cafeteria'
+        }
+    }
+
+    maven {
+        name 'JamiesWhiteShirt Dev'
+        url "https://maven.jamieswhiteshirt.com/libs-release"
+        content {
+            includeGroup "com.jamieswhiteshirt"
+        }
+    }
+
+    maven {
+        name "Fuzs Mod Resources"
+        url "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+
+    maven {
+        name 'MinecraftForge Maven'
+        url 'https://maven.minecraftforge.net/'
+    }
+}
+
+dependencies {
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation "net.fabricmc:fabric-language-kotlin:1.8.4+kotlin.1.7.20"
+
+    // For early loading stuff
+    modImplementation 'net.devtech:grossfabrichacks:6.1'
+    modImplementation(include("io.github.fabricators_of_create.Porting-Lib:porting-lib:2.1.675+1.19.2"))
+
+    // Forge Reimplementations
+    implementation(include("com.github.LlamaLad7:MixinExtras:0.1.1"))
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
+    modImplementation(include('com.github.Chocohead:Fabric-ASM:v2.3'))
+    modImplementation(include("io.github.tropheusj:serialization-hooks:0.3.26"))
+    modImplementation(include("dev.cafeteria:fake-player-api:0.5.0"))
+    modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:2.3.0"))
+    modImplementation(include("net.minecraftforge:forgeconfigapiport-fabric:4.0.0"))
+
+    // Forge stuff
+    implementation(include('net.minecraftforge:eventbus:6.0.4'))
+    implementation(include('net.minecraftforge:forgespi:6.0.2'))
+}
+
+processResources {
+    inputs.property "version", project.version
+    filteringCharset "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+def targetJavaVersion = 17
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release = targetJavaVersion
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    archivesBaseName = project.archives_base_name
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
+    }
+}

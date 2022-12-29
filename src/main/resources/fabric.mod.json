@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "kilt",
+  "version": "${version}",
+  "name": "Kilt",
+  "description": "Allows the loading of Forge mods in the Fabric ecosystem. Very experimental.",
+  "authors": [
+    "BluSpring"
+  ],
+  "contact": {
+    "repo": "https://github.com/BluSpring/Kilt"
+  },
+  "license": "LGPL-3.0",
+  "icon": "assets/kilt/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "xyz.bluspring.kilt.client.KiltClient"
+    ],
+    "main": [
+      "xyz.bluspring.kilt.Kilt"
+    ],
+    "gfh:prePreLaunch": [
+      "xyz.bluspring.kilt.loader.KiltSuperEarlyInitializer"
+    ],
+    "gfh:prePrePreLaunch": [
+      "xyz.bluspring.kilt.loader.KiltSuperDuperEarlyInitializer"
+    ]
+  },
+  "mixins": [
+    "Kilt.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.12",
+    "fabric": "*",
+    "minecraft": "1.19.2",
+    "com_electronwill_night-config_core": "*",
+    "com_electronwill_night-config_toml": "*"
+  }
+}
