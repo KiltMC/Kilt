@@ -19,12 +19,6 @@
     ],
     "main": [
       "xyz.bluspring.kilt.Kilt"
-    ],
-    "gfh:prePreLaunch": [
-      "xyz.bluspring.kilt.loader.KiltSuperEarlyInitializer"
-    ],
-    "gfh:prePrePreLaunch": [
-      "xyz.bluspring.kilt.loader.KiltSuperDuperEarlyInitializer"
     ]
   },
   "mixins": [

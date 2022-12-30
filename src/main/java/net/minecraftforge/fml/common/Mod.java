@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.function.Supplier;
 
-public @interface Mod {
+/*public @interface Mod {
     String value();
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -37,3 +37,4 @@ public @interface Mod {
         }
     }
 }
+*/
