@@ -10,29 +10,32 @@ import org.slf4j.Logger
 import java.net.URL
 import java.util.*
 
-
+/*
 class ModFileInfo(
     private val modFile: ModFile,
     private val config: IConfigurable,
     private val languageSpecs: List<LanguageSpec>
 ) : IModFileInfo, IConfigurable {
     private val LOGGER: Logger = LogUtils.getLogger()
-    private val config: IConfigurable
-    private val modFile: ModFile
-    private val issueURL: URL
-    private val languageSpecs: List<LanguageSpec>
-    private val showAsResourcePack
-    private val mods: List<IModInfo>
-    private val properties: Map<String, Any>
-    private val license: String
-    private val usesServices: List<String>
+    private val issueURL: URL = URL(config.getConfigElement<String>("issueTrackerURL").orElse(""))
+    private val showAsResourcePack: Boolean = config.getConfigElement<Boolean>("showAsResourcePack").orElse(false)
+    private val mods: MutableList<IModInfo> = mutableListOf<IModInfo>().apply {
+        val modsMetadataList = config.getConfigList("mods")
 
-    init {
+        modsMetadataList.forEach { metadata ->
+            val modId = metadata.getConfigElement<String>("modId").orElseThrow {
+                Exception("Forge mod file ${modFile.fileName} does not contain a mod ID!")
+            }
 
+
+        }
     }
+    private val properties: Map<String, Any> = mapOf()
+    private val license: String = config.getConfigElement<String>("license").get()
+    private val usesServices: List<String> = listOf()
 
     override fun getMods(): MutableList<IModInfo> {
-        TODO("Not yet implemented")
+        return mods
     }
 
     override fun requiredLanguageLoaders(): MutableList<LanguageSpec> {
@@ -80,3 +83,4 @@ class ModFileInfo(
     }
 
 }
+*/

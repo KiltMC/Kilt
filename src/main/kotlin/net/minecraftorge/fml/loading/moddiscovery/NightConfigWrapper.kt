@@ -6,12 +6,12 @@ import net.minecraftforge.forgespi.language.IModFileInfo
 import java.util.*
 
 class NightConfigWrapper(private val config: UnmodifiableConfig) : IConfigurable {
-    private lateinit var file: IModFileInfo
+    /*private lateinit var file: IModFileInfo
 
     fun setFile(file: IModFileInfo): NightConfigWrapper {
         this.file = file
         return this
-    }
+    }*/
 
     override fun <T : Any?> getConfigElement(vararg key: String): Optional<T> {
         return config.getOptional<T>(key.joinToString(".")).map {
@@ -32,7 +32,7 @@ class NightConfigWrapper(private val config: UnmodifiableConfig) : IConfigurable
         val nestedConfigs = config.getOrElse<Collection<UnmodifiableConfig>>(path, ::ArrayList)
         return nestedConfigs.stream()
             .map(::NightConfigWrapper)
-            .map { it.setFile(file) }
+            //.map { it.setFile(file) }
             .toList()
     }
 }

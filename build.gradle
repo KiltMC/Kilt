@@ -8,16 +8,6 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-    maven {
-        name 'GrossFabricHacks Repo'
-        url 'https://maven.concern.i.ng/releases'
-    }
-
     maven {
         name 'DevOS One'
         url "https://mvn.devos.one/snapshots/"
@@ -67,9 +57,6 @@ dependencies {
     // Just because I like Kotlin more than Java
     modImplementation "net.fabricmc:fabric-language-kotlin:1.8.4+kotlin.1.7.20"
 
-    // For early loading stuff
-    //modImplementation 'net.devtech:grossfabrichacks:8.1'
-
     // For mod discovery
     implementation(include('org.reflections:reflections:0.10.2'))
 
@@ -88,8 +75,15 @@ dependencies {
     implementation(include('com.electronwill.night-config:toml:3.6.5'))
 
     // Forge stuff
-    implementation(include('net.minecraftforge:eventbus:6.0.4'))
-    implementation(include('net.minecraftforge:forgespi:6.0.2'))
+    implementation(include('net.minecraftforge:eventbus:6.0.4')) {
+        exclude group: 'cpw.mods', module: 'modlauncher'
+    }
+    implementation(include('net.minecraftforge:forgespi:6.0.2')) {
+        exclude group: 'cpw.mods', module: 'modlauncher'
+    }
+    implementation(include('cpw.mods:securejarhandler:2.1.4')) {
+        exclude group: 'cpw.mods', module: 'modlauncher'
+    }
 }
 
 processResources {

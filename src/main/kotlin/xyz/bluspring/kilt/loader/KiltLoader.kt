@@ -80,7 +80,7 @@ class KiltLoader {
                             authors = metadata.getConfigElement<String>("authors").orElse(""),
                             description = metadata.getConfigElement<String>("logoFile").orElse("MISSING DESCRIPTION"),
                             displayTest = ForgeModInfo.ModMetadata.DisplayTest.valueOf(metadata.getConfigElement<String>("displayTest").orElse("MATCH_VERSION")),
-                            dependencies = metadata.getConfigList("dependencies", modId)
+                            dependencies = mainConfig.getConfigList("dependencies", modId)
                                 .map {
                                     ForgeModInfo.ModDependency(
                                         modId = it.getConfigElement<String>("modId").orElseThrow {
@@ -199,16 +199,19 @@ class KiltLoader {
             preloadedMods[mod] = dependencies
         }
 
-        if (!preloadedMods.all { it.value.all { state -> state is ValidDependencyLoadingState } }) {
+        if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
             Kilt.logger.error("Unloaded dependencies found! Throwing error.")
 
             FabricGuiEntry.displayError("Incompatible Forge mod set!", null, {
                 val tab = it.addTab("Kilt Error")
 
-                preloadedMods.filter { mod -> mod.value.all { state -> state !is ValidDependencyLoadingState } }.forEach { (mod, dependencyStates) ->
+                preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }.forEach { (mod, dependencyStates) ->
                     val message = tab.node.addMessage("${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) failed to load!", FabricStatusTree.FabricTreeWarningLevel.ERROR)
 
-                    dependencyStates.forEach { state ->
+                    dependencyStates.forEach states@{ state ->
+                        if (state is ValidDependencyLoadingState)
+                            return@states
+
                         message.addMessage("Dependency ${state.dependency.modId} failed to load: $state", FabricStatusTree.FabricTreeWarningLevel.NONE)
                     }
                 }
