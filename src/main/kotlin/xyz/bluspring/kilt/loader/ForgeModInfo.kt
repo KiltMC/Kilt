@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.loader
 
-import net.fabricmc.loader.api.Version
-import xyz.bluspring.kilt.loader.util.VersionRange
+import org.apache.maven.artifact.versioning.ArtifactVersion
+import org.apache.maven.artifact.versioning.VersionRange
 
 data class ForgeModInfo(
     val license: String = "All Rights Reserved",
@@ -11,7 +11,7 @@ data class ForgeModInfo(
 ) {
     data class ModMetadata(
         val modId: String,
-        val version: Version,
+        val version: ArtifactVersion,
         val displayName: String,
         val updateJSONURL: String = "",
         val logoFile: String = "",

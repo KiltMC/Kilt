@@ -43,6 +43,7 @@ repositories {
         name 'MinecraftForge Maven'
         url 'https://maven.minecraftforge.net/'
     }
+    mavenCentral()
 }
 
 dependencies {
@@ -81,6 +82,7 @@ dependencies {
     implementation(include('net.minecraftforge:forgespi:6.0.2')) {
         exclude group: 'cpw.mods', module: 'modlauncher'
     }
+    implementation(include('org.apache.maven:maven-artifact:3.8.5'))
     implementation(include('cpw.mods:securejarhandler:2.1.4')) {
         exclude group: 'cpw.mods', module: 'modlauncher'
     }
