@@ -10,6 +10,8 @@ import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.forgespi.language.IConfigurable
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.util.Optional
+import java.util.function.Supplier
 import java.util.jar.JarFile
 
 class ForgeMod(
@@ -24,7 +26,12 @@ class ForgeMod(
     }.build()
 
     val jar = JarFile(modFile)
-    val secureJar: SecureJar = SecureJar.from(modFile.toPath())
+
+    fun getSecureJar(): Supplier<SecureJar> {
+        return Supplier {
+            SecureJar.from(modFile.toPath())
+        }
+    }
 
     private fun onEventFailed(
         iEventBus: IEventBus,

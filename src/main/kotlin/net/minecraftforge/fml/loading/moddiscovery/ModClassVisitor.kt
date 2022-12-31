@@ -21,7 +21,7 @@ class ModClassVisitor : ClassVisitor(Opcodes.ASM9) {
         version: Int,
         access: Int,
         name: String,
-        signature: String,
+        signature: String?,
         superName: String?,
         interfaces: Array<out String>
     ) {
@@ -34,8 +34,8 @@ class ModClassVisitor : ClassVisitor(Opcodes.ASM9) {
         access: Int,
         name: String,
         descriptor: String,
-        signature: String,
-        value: Any
+        signature: String?,
+        value: Any?
     ): FieldVisitor {
         return ModFieldVisitor(name, annotations)
     }
@@ -44,8 +44,8 @@ class ModClassVisitor : ClassVisitor(Opcodes.ASM9) {
         access: Int,
         name: String,
         descriptor: String,
-        signature: String,
-        exceptions: Array<out String>
+        signature: String?,
+        exceptions: Array<out String>?
     ): MethodVisitor {
         return ModMethodVisitor(name, descriptor, annotations)
     }

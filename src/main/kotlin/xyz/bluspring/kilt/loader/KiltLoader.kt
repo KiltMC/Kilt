@@ -15,6 +15,7 @@ import net.minecraft.SharedConstants
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
+import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.forgespi.language.MavenVersionAdapter

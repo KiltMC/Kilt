@@ -21,7 +21,7 @@ class ModFile(private val kiltMod: ForgeMod) : IModFile {
         if (pathName.isEmpty())
             throw IllegalArgumentException("Missing path")
 
-        return kiltMod.secureJar.getPath(pathName.joinToString("/"))
+        return kiltMod.getSecureJar().get().getPath(pathName.joinToString("/"))
     }
 
     override fun getSubstitutionMap(): Supplier<MutableMap<String, Any>> {
@@ -39,7 +39,7 @@ class ModFile(private val kiltMod: ForgeMod) : IModFile {
     }
 
     override fun getSecureJar(): SecureJar {
-        return kiltMod.secureJar
+        return kiltMod.getSecureJar().get()
     }
 
     override fun setSecurityStatus(status: SecureJar.Status?) {
