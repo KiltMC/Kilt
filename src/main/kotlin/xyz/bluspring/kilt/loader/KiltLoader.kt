@@ -292,6 +292,17 @@ class KiltLoader {
             // add the mod to the class path
             launcher.addToClassPath(mod.modFile.toPath())
 
+            // i have lost my sanity looking at this
+            try {
+                mod.jar.entries().asIterator().forEach {
+                    if (it.name.endsWith(".class")) {
+
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             mods.add(mod)
         }
     }

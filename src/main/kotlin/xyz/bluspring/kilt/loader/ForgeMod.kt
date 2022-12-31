@@ -24,7 +24,8 @@ class ForgeMod(
         markerType(IModBusEvent::class.java)
     }.build()
 
-    val secureJar = SecureJar.from(modFile.toPath())
+    val jar = JarFile(modFile)
+    val secureJar: SecureJar = SecureJar.from(modFile.toPath())
 
     private fun onEventFailed(
         iEventBus: IEventBus,
