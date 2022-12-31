@@ -11,6 +11,11 @@ import net.fabricmc.loader.impl.discovery.ModCandidate
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper
+import net.fabricmc.mapping.reader.v2.TinyMetadata
+import net.fabricmc.mapping.tree.*
+import net.fabricmc.tinyremapper.OutputConsumerPath
+import net.fabricmc.tinyremapper.TinyRemapper
 import net.minecraft.SharedConstants
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.ModLoadingStage
@@ -21,12 +26,16 @@ import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.forgespi.language.ModFileScanData
+import net.minecraftforge.srgutils.IMappingFile
+import org.apache.commons.codec.digest.DigestUtils
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.remap.SrgClassDef
 import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
@@ -164,9 +173,9 @@ class KiltLoader {
 
             exitProcess(1)
         } else {
-            Kilt.logger.info("Found ${preloadedMods.size} Forge mods. Starting mod loading.")
+            Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
 
-            loadMods()
+            remapMods()
         }
     }
 
@@ -290,6 +299,93 @@ class KiltLoader {
         return thrownExceptions
     }
 
+    // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
+    fun remapMods() {
+        Kilt.logger.info("Remapping Forge mods...")
+
+        val launcher = FabricLauncherBase.getLauncher()
+        val exceptions = mutableListOf<Exception>()
+
+        val remappedModsDir = File(kiltCacheDir, "remappedMods").apply {
+            if (!this.exists())
+                this.mkdirs()
+        }
+
+        val srgMappings = IMappingFile.load(this::class.java.getResourceAsStream("/joined.tsrg"))
+
+        val tree = object : TinyTree {
+            override fun getMetadata(): TinyMetadata {
+                return TinyMappingFactory.EMPTY_METADATA
+            }
+
+            override fun getDefaultNamespaceClassMap(): MutableMap<String, ClassDef> {
+                return srgMappings.classes.associate { it.original to SrgClassDef(it) }.toMutableMap()
+            }
+
+            override fun getClasses(): MutableCollection<ClassDef> {
+                return srgMappings.classes.map { SrgClassDef(it) }.toMutableList()
+            }
+        }
+
+        val remapper = TinyRemapper.newRemapper().apply {
+            renameInvalidLocals(true)
+            ignoreFieldDesc(true)
+            propagatePrivate(true)
+            ignoreConflicts(true)
+
+            if (FabricLoader.getInstance().isDevelopmentEnvironment)
+                fixPackageAccess(true)
+
+            // Remap SRG to Official
+            withMappings(TinyRemapperMappingsHelper.create(tree, "srg", "official"))
+            // then Official to Yarn/MojMap/Intermediary
+            withMappings(TinyRemapperMappingsHelper.create(launcher.mappingConfiguration.mappings, "official", launcher.targetNamespace))
+        }.build()
+
+        remapper.readClassPath(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+
+        modLoadingQueue.forEach { mod ->
+            val hash = DigestUtils.md5Hex(mod.modFile.inputStream())
+            val remappedModFile = File(remappedModsDir, "$hash.jar")
+
+            if (remappedModFile.exists()) {
+                mod.remappedModFile = remappedModFile
+
+                return@forEach
+            }
+
+            try {
+                val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
+                    assumeArchive(true)
+                }.build()
+
+                outputConsumer.addNonClassFiles(mod.modFile.toPath())
+                remapper.readInputs(mod.modFile.toPath())
+                remapper.apply(outputConsumer)
+                remapper.finish()
+
+                outputConsumer.close()
+            } catch (e: Exception) {
+                exceptions.add(e)
+                e.printStackTrace()
+            }
+        }
+
+        if (exceptions.isNotEmpty()) {
+            FabricGuiEntry.displayError("Errors occurred while remapping Forge mods!", null, {
+                val tab = it.addTab("Kilt Error")
+
+                exceptions.forEach { e ->
+                    tab.node.addCleanedException(e)
+                }
+
+                it.tabs.removeIf { t -> t != tab }
+            }, true)
+        }
+
+        loadMods()
+    }
+
     fun loadMods() {
         Kilt.logger.info("Starting initialization of Forge mods...")
 
@@ -301,7 +397,7 @@ class KiltLoader {
                 val mod = modLoadingQueue.remove()
 
                 // add the mod to the class path
-                launcher.addToClassPath(mod.modFile.toPath())
+                launcher.addToClassPath(mod.remappedModFile.toPath())
 
                 val scanData = ModFileScanData()
                 scanData.addModFileInfo(ModFileInfo(mod))
@@ -333,6 +429,7 @@ class KiltLoader {
                                 val clazz = classLoader.loadClass(it.clazz.className)
                                 clazz.declaredConstructors[0].newInstance()
                             } catch (e: Exception) {
+                                e.printStackTrace()
                                 exceptions.add(e)
                             }
                         }
@@ -344,6 +441,7 @@ class KiltLoader {
 
                 mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
             } catch (e: Exception) {
+                e.printStackTrace()
                 exceptions.add(e)
             }
         }
@@ -368,7 +466,11 @@ class KiltLoader {
 
         private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 
-        private val extractedModsDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt/extractedMods").apply {
+        private val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
+            if (!this.exists())
+                this.mkdirs()
+        }
+        private val extractedModsDir = File(kiltCacheDir, "extractedMods").apply {
             if (!this.exists())
                 this.mkdirs()
         }

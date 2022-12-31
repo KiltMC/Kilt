@@ -25,7 +25,11 @@ class ForgeMod(
         markerType(IModBusEvent::class.java)
     }.build()
 
-    val jar = JarFile(modFile)
+    val jar: JarFile
+        get() {
+            return JarFile(remappedModFile)
+        }
+    lateinit var remappedModFile: File
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {
