@@ -86,6 +86,9 @@ dependencies {
     implementation(include('cpw.mods:securejarhandler:2.1.4')) {
         exclude group: 'cpw.mods', module: 'modlauncher'
     }
+
+    // Remapping SRG to Intermediary
+    implementation(include('net.minecraftforge:srgutils:0.4.13'))
 }
 
 processResources {

@@ -35,6 +35,8 @@
     "fabric": "*",
     "minecraft": "1.19.2",
     "com_electronwill_night-config_core": "*",
-    "com_electronwill_night-config_toml": "*"
+    "com_electronwill_night-config_toml": "*",
+    "mod-remapping-api": "*",
+    "fabric-language-kotlin": "*"
   }
 }

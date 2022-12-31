@@ -294,49 +294,70 @@ class KiltLoader {
         Kilt.logger.info("Starting initialization of Forge mods...")
 
         val launcher = FabricLauncherBase.getLauncher()
+        val exceptions = mutableListOf<Exception>()
 
         while (modLoadingQueue.isNotEmpty()) {
-            val mod = modLoadingQueue.remove()
-
-            // add the mod to the class path
-            launcher.addToClassPath(mod.modFile.toPath())
-
-            val scanData = ModFileScanData()
-            scanData.addModFileInfo(ModFileInfo(mod))
-
-            // basically emulate how Forge loads stuff
             try {
-                mod.jar.entries().asIterator().forEach {
-                    if (it.name.endsWith(".class")) {
-                        val inputStream = mod.jar.getInputStream(it)
-                        val visitor = ModClassVisitor()
-                        val classReader = ClassReader(inputStream)
+                val mod = modLoadingQueue.remove()
 
-                        classReader.accept(visitor, 0)
-                        visitor.buildData(scanData.classes, scanData.annotations)
+                // add the mod to the class path
+                launcher.addToClassPath(mod.modFile.toPath())
+
+                val scanData = ModFileScanData()
+                scanData.addModFileInfo(ModFileInfo(mod))
+
+                // basically emulate how Forge loads stuff
+                try {
+                    mod.jar.entries().asIterator().forEach {
+                        if (it.name.endsWith(".class")) {
+                            val inputStream = mod.jar.getInputStream(it)
+                            val visitor = ModClassVisitor()
+                            val classReader = ClassReader(inputStream)
+
+                            classReader.accept(visitor, 0)
+                            visitor.buildData(scanData.classes, scanData.annotations)
+                        }
                     }
+
+                    // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
+                    // I hope.
+
+                    scanData.annotations
+                        .filter { it.annotationType == MOD_ANNOTATION }
+                        .forEach {
+                            // it.clazz.className - Class
+                            // it.annotationData["value"] as String - Mod ID
+
+                            try {
+                                val classLoader = launcher.targetClassLoader
+                                val clazz = classLoader.loadClass(it.clazz.className)
+                                clazz.declaredConstructors[0].newInstance()
+                            } catch (e: Exception) {
+                                exceptions.add(e)
+                            }
+                        }
+                } catch (e: Exception) {
+                    throw e
                 }
 
-                // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
-                // I hope.
+                mods.add(mod)
 
-                scanData.annotations
-                    .filter { it.annotationType == MOD_ANNOTATION }
-                    .forEach {
-                        // it.clazz.className - Class
-                        // it.annotationData["value"] as String - Mod ID
-
-                        val classLoader = launcher.targetClassLoader
-                        val clazz = classLoader.loadClass(it.clazz.className)
-                        clazz.declaredConstructors[0].newInstance()
-                    }
+                mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
             } catch (e: Exception) {
-                e.printStackTrace()
+                exceptions.add(e)
             }
+        }
 
-            mods.add(mod)
+        if (exceptions.isNotEmpty()) {
+            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", null, {
+                val tab = it.addTab("Kilt Error")
 
-            mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+                exceptions.forEach { e ->
+                    tab.node.addCleanedException(e)
+                }
+
+                it.tabs.removeIf { t -> t != tab }
+            }, true)
         }
     }
 
