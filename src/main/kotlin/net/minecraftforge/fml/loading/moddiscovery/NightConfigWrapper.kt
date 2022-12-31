@@ -1,4 +1,4 @@
-package net.minecraftorge.fml.loading.moddiscovery
+package net.minecraftforge.fml.loading.moddiscovery
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig
 import net.minecraftforge.forgespi.language.IConfigurable

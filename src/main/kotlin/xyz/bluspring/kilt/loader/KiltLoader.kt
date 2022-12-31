@@ -2,13 +2,18 @@ package xyz.bluspring.kilt.loader
 
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.ModContainerImpl
+import net.fabricmc.loader.impl.discovery.ModCandidate
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
+import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
-import net.minecraftorge.fml.loading.moddiscovery.NightConfigWrapper
+import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import xyz.bluspring.kilt.Kilt
@@ -24,7 +29,7 @@ class KiltLoader {
     private val tomlParser = TomlParser()
 
     fun preloadMods() {
-        Kilt.logger.debug("Scanning the mods directory for Forge mods...")
+        Kilt.logger.info("Scanning the mods directory for Forge mods...")
 
         val modsDir = File(FabricLoader.getInstance().gameDir.toFile(), "mods")
 
@@ -151,6 +156,8 @@ class KiltLoader {
             exitProcess(1)
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods. Starting mod loading.")
+
+            loadMods()
         }
     }
 
@@ -259,8 +266,8 @@ class KiltLoader {
                 modLoadingQueue.add(
                     ForgeMod(
                         modInfo,
-                        mutableListOf(),
-                        modFile
+                        modFile,
+                        mainConfig
                     )
                 )
 
@@ -272,6 +279,21 @@ class KiltLoader {
         }
 
         return thrownExceptions
+    }
+
+    fun loadMods() {
+        Kilt.logger.info("Starting initialization of Forge mods...")
+
+        val launcher = FabricLauncherBase.getLauncher()
+
+        while (modLoadingQueue.isNotEmpty()) {
+            val mod = modLoadingQueue.remove()
+
+            // add the mod to the class path
+            launcher.addToClassPath(mod.modFile.toPath())
+
+            mods.add(mod)
+        }
     }
 
     companion object {

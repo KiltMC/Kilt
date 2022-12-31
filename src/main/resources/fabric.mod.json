@@ -19,6 +19,9 @@
     ],
     "main": [
       "xyz.bluspring.kilt.Kilt"
+    ],
+    "preLaunch": [
+      "xyz.bluspring.kilt.loader.KiltEarlyInitializer"
     ]
   },
   "mixins": [
