@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.jar.JarFile
 
-
 class ForgeMod(
     val modInfo: ForgeModInfo,
     val modFile: File,

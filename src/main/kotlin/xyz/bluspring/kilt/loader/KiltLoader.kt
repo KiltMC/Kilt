@@ -12,10 +12,18 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
+import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
+import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
+import net.minecraftforge.forgespi.language.ModFileScanData
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -24,7 +32,7 @@ import java.util.zip.ZipFile
 import kotlin.system.exitProcess
 
 class KiltLoader {
-    private val mods = mutableListOf<ForgeMod>()
+    val mods = mutableListOf<ForgeMod>()
     private val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
     private val tomlParser = TomlParser()
 
@@ -292,18 +300,42 @@ class KiltLoader {
             // add the mod to the class path
             launcher.addToClassPath(mod.modFile.toPath())
 
-            // i have lost my sanity looking at this
+            val scanData = ModFileScanData()
+            scanData.addModFileInfo(ModFileInfo(mod))
+
+            // basically emulate how Forge loads stuff
             try {
                 mod.jar.entries().asIterator().forEach {
                     if (it.name.endsWith(".class")) {
+                        val inputStream = mod.jar.getInputStream(it)
+                        val visitor = ModClassVisitor()
+                        val classReader = ClassReader(inputStream)
 
+                        classReader.accept(visitor, 0)
+                        visitor.buildData(scanData.classes, scanData.annotations)
                     }
                 }
+
+                // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
+                // I hope.
+
+                scanData.annotations
+                    .filter { it.annotationType == MOD_ANNOTATION }
+                    .forEach {
+                        // it.clazz.className - Class
+                        // it.annotationData["value"] as String - Mod ID
+
+                        val classLoader = launcher.targetClassLoader
+                        val clazz = classLoader.loadClass(it.clazz.className)
+                        clazz.declaredConstructors[0].newInstance()
+                    }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
 
             mods.add(mod)
+
+            mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
         }
     }
 
@@ -311,6 +343,8 @@ class KiltLoader {
         // These constants are to be updated each time we change versions
         private val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
         private val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
+
+        private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 
         private val extractedModsDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt/extractedMods").apply {
             if (!this.exists())

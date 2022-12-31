@@ -22,6 +22,9 @@
     ],
     "preLaunch": [
       "xyz.bluspring.kilt.loader.KiltEarlyInitializer"
+    ],
+    "server": [
+      "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
     ]
   },
   "mixins": [
