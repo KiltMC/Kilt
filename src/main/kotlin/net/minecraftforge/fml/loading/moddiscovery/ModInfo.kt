@@ -6,12 +6,14 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
+import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.ForgeModInfo
 import java.net.URL
 import java.util.*
 
-class ModInfo(private val kiltModInfo: ForgeModInfo) : IModInfo {
-    private val owningFile = ModFileInfo(kiltModInfo)
+class ModInfo(private val kiltMod: ForgeMod) : IModInfo {
+    private val kiltModInfo = kiltMod.modInfo
+    private val owningFile = ModFileInfo(kiltMod)
 
     override fun getOwningFile(): IModFileInfo {
         return owningFile

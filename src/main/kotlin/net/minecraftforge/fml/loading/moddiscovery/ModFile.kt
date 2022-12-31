@@ -47,7 +47,7 @@ class ModFile(private val kiltMod: ForgeMod) : IModFile {
     }
 
     override fun getModInfos(): MutableList<IModInfo> {
-        return mutableListOf(ModInfo(kiltMod.modInfo))
+        return mutableListOf(ModInfo(kiltMod))
     }
 
     override fun getScanResult(): ModFileScanData {

@@ -10,7 +10,7 @@ class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
     private val kiltModInfo = kiltMod.modInfo
 
     override fun getMods(): MutableList<IModInfo> {
-        return mutableListOf(ModInfo(kiltModInfo))
+        return mutableListOf(ModInfo(kiltMod))
     }
 
     override fun requiredLanguageLoaders(): MutableList<IModFileInfo.LanguageSpec> {
