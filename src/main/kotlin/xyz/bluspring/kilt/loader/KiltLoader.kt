@@ -5,39 +5,38 @@ import com.google.gson.JsonParser
 import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.loader.impl.ModContainerImpl
-import net.fabricmc.loader.impl.discovery.ModCandidate
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.SystemProperties
 import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper
-import net.fabricmc.mapping.reader.v2.TinyMetadata
-import net.fabricmc.mapping.tree.*
+import net.fabricmc.mapping.tree.TinyMappingFactory
+import net.fabricmc.tinyremapper.NonClassCopyMode
 import net.fabricmc.tinyremapper.OutputConsumerPath
 import net.fabricmc.tinyremapper.TinyRemapper
 import net.minecraft.SharedConstants
-import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
-import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
-import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
+import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
-import net.minecraftforge.srgutils.IMappingFile
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.remap.SrgClassDef
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.Manifest
+import java.util.stream.Collectors
 import java.util.zip.ZipFile
 import kotlin.system.exitProcess
 
@@ -311,51 +310,142 @@ class KiltLoader {
                 this.mkdirs()
         }
 
+        // This is created automatically using https://github.com/BluSpring/srg2intermediary
         val tree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
 
-        modLoadingQueue.forEach { mod ->
-            val hash = DigestUtils.md5Hex(mod.modFile.inputStream())
-            val remappedModFile = File(remappedModsDir, "$hash.jar")
+        runBlocking {
+            // First iteration, for normal mod loading.
+            modLoadingQueue.forEach { mod ->
+                try {
+                    val hash = DigestUtils.md5Hex(mod.modFile.inputStream())
+                    val remappedModFile = File(remappedModsDir, "$hash.jar")
 
-            if (remappedModFile.exists()) {
-                mod.remappedModFile = remappedModFile
+                    mod.remappedModFile = remappedModFile
 
-                return@forEach
-            }
+                    if (remappedModFile.exists())
+                        return@forEach
 
-            try {
-                runBlocking {
+                    // You would think it'd be *far* more efficient to have everything use one main remapper,
+                    // and you would be right, but for whatever reason, it literally doesn't work whenever
+                    // I try to implement it like that.
+                    // whoever stumbles across this code, please improve this
+                    // i'll even throw like 7 fixmes into it.
+                    // FIXME: PLEASE
+                    // FIXME: FOR
+                    // FIXME: THE LOVE
+                    // FIXME: OF GOD
+                    // FIXME: IMPROVE
+                    // FIXME: THIS FUCKING
+                    // FIXME: CODE
+                    // not enough? here.
+                    // TODO: IMPROVE THIS FUCKING CODE
                     val remapper = TinyRemapper.newRemapper().apply {
                         renameInvalidLocals(true)
                         ignoreFieldDesc(false)
                         propagatePrivate(true)
                         ignoreConflicts(true)
 
-                        if (FabricLoader.getInstance().isDevelopmentEnvironment)
-                            fixPackageAccess(true)
-
                         // Remap SRG to Intermediary
                         withMappings(TinyRemapperMappingsHelper.create(tree, "srg", "intermediary"))
+
+                        if (FabricLoader.getInstance().isDevelopmentEnvironment)
+                            fixPackageAccess(true)
                     }.build()
 
-                    remapper.readClassPath(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+                    if (!FabricLoader.getInstance().isDevelopmentEnvironment)
+                        remapper.readClassPath(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+                    else
+                        remapper.readClassPath(*mutableListOf<Path>().apply {
+                            val remapClasspathFile = System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE)
+                                ?: throw RuntimeException("No remapClasspathFile provided")
 
+                            val content = String(Files.readAllBytes(Paths.get(remapClasspathFile)), StandardCharsets.UTF_8)
+
+                            this.addAll(Arrays.stream(content.split(File.pathSeparator.toRegex()).dropLastWhile { it.isEmpty() }
+                                .toTypedArray())
+                                .map { first ->
+                                    Paths.get(first)
+                                }
+                                .collect(Collectors.toList()))
+                        }.toTypedArray())
+
+                    remapper.readInputs(mod.modFile.toPath())
                     val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
                         assumeArchive(true)
                     }.build()
 
-                    outputConsumer.addNonClassFiles(mod.modFile.toPath())
-                    remapper.readInputs(mod.modFile.toPath())
+                    outputConsumer.addNonClassFiles(mod.modFile.toPath(), NonClassCopyMode.FIX_META_INF, remapper)
                     remapper.apply(outputConsumer)
+
                     remapper.finish()
-
                     outputConsumer.close()
-
-                    mod.remappedModFile = remappedModFile
+                } catch (e: Exception) {
+                    exceptions.add(e)
+                    e.printStackTrace()
                 }
-            } catch (e: Exception) {
-                exceptions.add(e)
-                e.printStackTrace()
+            }
+
+            // Second iteration, only for the development environment specifically, because
+            // that's where the mod would be using whatever is configured in the dev environment.
+            if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+                modLoadingQueue.forEach { mod ->
+                    try {
+                        val modFile = mod.remappedModFile
+                        val hash = DigestUtils.md5Hex(modFile.inputStream())
+                        val remappedModFile = File(remappedModsDir, "$hash.jar")
+
+                        mod.remappedModFile = remappedModFile
+
+                        if (remappedModFile.exists())
+                            return@forEach
+
+                        // TODO: fix this too pls
+                        val remapper = TinyRemapper.newRemapper().apply {
+                            renameInvalidLocals(true)
+                            ignoreFieldDesc(false)
+                            propagatePrivate(true)
+                            ignoreConflicts(true)
+
+                            fixPackageAccess(true)
+
+                            withMappings(
+                                TinyRemapperMappingsHelper.create(
+                                    launcher.mappingConfiguration.mappings,
+                                    "intermediary",
+                                    launcher.mappingConfiguration.targetNamespace
+                                )
+                            )
+                        }.build()
+
+                        remapper.readClassPath(*mutableListOf<Path>().apply {
+                            val remapClasspathFile = System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE)
+                                ?: throw RuntimeException("No remapClasspathFile provided")
+
+                            val content = String(Files.readAllBytes(Paths.get(remapClasspathFile)), StandardCharsets.UTF_8)
+
+                            this.addAll(Arrays.stream(content.split(File.pathSeparator.toRegex()).dropLastWhile { it.isEmpty() }
+                                .toTypedArray())
+                                .map { first ->
+                                    Paths.get(first)
+                                }
+                                .collect(Collectors.toList()))
+                        }.toTypedArray())
+
+                        remapper.readInputs(modFile.toPath())
+                        val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
+                            assumeArchive(true)
+                        }.build()
+
+                        outputConsumer.addNonClassFiles(modFile.toPath(), NonClassCopyMode.FIX_META_INF, remapper)
+                        remapper.apply(outputConsumer)
+
+                        remapper.finish()
+                        outputConsumer.close()
+                    } catch (e: Exception) {
+                        exceptions.add(e)
+                        e.printStackTrace()
+                    }
+                }
             }
         }
 
