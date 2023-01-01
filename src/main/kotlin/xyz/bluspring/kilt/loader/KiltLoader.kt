@@ -311,47 +311,7 @@ class KiltLoader {
                 this.mkdirs()
         }
 
-        // TODO: Don't store the mappings! Need to figure out how to store these more efficiently.
-        // TODO: Maybe we can make an external remapper tool for making SRG + MojMap -> Intermediary tiny files
-        val srgMappings = IMappingFile.load(this::class.java.getResourceAsStream("/joined.tsrg")).reverse()
-
-        val mojMappings = IMappingFile.load(this::class.java.getResourceAsStream("/client.txt")).reverse()
-        val mojMappingsFile = File(kiltCacheDir, "mojmaps.tiny")
-        val mojTree = if (mojMappingsFile.exists()) {
-            mojMappings
-        }
-
-
-        val tree = object : TinyTree {
-            override fun getMetadata(): TinyMetadata {
-                return TinyMappingFactory.EMPTY_METADATA
-            }
-
-            override fun getDefaultNamespaceClassMap(): MutableMap<String, ClassDef> {
-                return srgMappings.classes.associate { mojMappings.remapClass(it.mapped) to SrgClassDef(it, mojMappings, srgMappings) }.toMutableMap()
-            }
-
-            override fun getClasses(): MutableCollection<ClassDef> {
-                return srgMappings.classes.map { SrgClassDef(it, mojMappings, srgMappings) }.toMutableList()
-            }
-        }
-
-        val remapper = TinyRemapper.newRemapper().apply {
-            renameInvalidLocals(true)
-            ignoreFieldDesc(true)
-            propagatePrivate(true)
-            ignoreConflicts(true)
-
-            if (FabricLoader.getInstance().isDevelopmentEnvironment)
-                fixPackageAccess(true)
-
-            // Remap SRG to Official
-            withMappings(TinyRemapperMappingsHelper.create(tree, "srg", "official"))
-            // then Official to Yarn/MojMap/Intermediary
-            withMappings(TinyRemapperMappingsHelper.create(launcher.mappingConfiguration.mappings, "official", launcher.targetNamespace))
-        }.build()
-
-        remapper.readClassPath(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+        val tree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
 
         modLoadingQueue.forEach { mod ->
             val hash = DigestUtils.md5Hex(mod.modFile.inputStream())
@@ -365,6 +325,21 @@ class KiltLoader {
 
             try {
                 runBlocking {
+                    val remapper = TinyRemapper.newRemapper().apply {
+                        renameInvalidLocals(true)
+                        ignoreFieldDesc(false)
+                        propagatePrivate(true)
+                        ignoreConflicts(true)
+
+                        if (FabricLoader.getInstance().isDevelopmentEnvironment)
+                            fixPackageAccess(true)
+
+                        // Remap SRG to Intermediary
+                        withMappings(TinyRemapperMappingsHelper.create(tree, "srg", "intermediary"))
+                    }.build()
+
+                    remapper.readClassPath(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+
                     val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
                         assumeArchive(true)
                     }.build()
@@ -375,6 +350,8 @@ class KiltLoader {
                     remapper.finish()
 
                     outputConsumer.close()
+
+                    mod.remappedModFile = remappedModFile
                 }
             } catch (e: Exception) {
                 exceptions.add(e)
