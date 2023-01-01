@@ -311,7 +311,16 @@ class KiltLoader {
                 this.mkdirs()
         }
 
-        val srgMappings = IMappingFile.load(this::class.java.getResourceAsStream("/joined.tsrg"))
+        // TODO: Don't store the mappings! Need to figure out how to store these more efficiently.
+        // TODO: Maybe we can make an external remapper tool for making SRG + MojMap -> Intermediary tiny files
+        val srgMappings = IMappingFile.load(this::class.java.getResourceAsStream("/joined.tsrg")).reverse()
+
+        val mojMappings = IMappingFile.load(this::class.java.getResourceAsStream("/client.txt")).reverse()
+        val mojMappingsFile = File(kiltCacheDir, "mojmaps.tiny")
+        val mojTree = if (mojMappingsFile.exists()) {
+            mojMappings
+        }
+
 
         val tree = object : TinyTree {
             override fun getMetadata(): TinyMetadata {
@@ -319,11 +328,11 @@ class KiltLoader {
             }
 
             override fun getDefaultNamespaceClassMap(): MutableMap<String, ClassDef> {
-                return srgMappings.classes.associate { it.original to SrgClassDef(it) }.toMutableMap()
+                return srgMappings.classes.associate { mojMappings.remapClass(it.mapped) to SrgClassDef(it, mojMappings, srgMappings) }.toMutableMap()
             }
 
             override fun getClasses(): MutableCollection<ClassDef> {
-                return srgMappings.classes.map { SrgClassDef(it) }.toMutableList()
+                return srgMappings.classes.map { SrgClassDef(it, mojMappings, srgMappings) }.toMutableList()
             }
         }
 
@@ -355,16 +364,18 @@ class KiltLoader {
             }
 
             try {
-                val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
-                    assumeArchive(true)
-                }.build()
+                runBlocking {
+                    val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
+                        assumeArchive(true)
+                    }.build()
 
-                outputConsumer.addNonClassFiles(mod.modFile.toPath())
-                remapper.readInputs(mod.modFile.toPath())
-                remapper.apply(outputConsumer)
-                remapper.finish()
+                    outputConsumer.addNonClassFiles(mod.modFile.toPath())
+                    remapper.readInputs(mod.modFile.toPath())
+                    remapper.apply(outputConsumer)
+                    remapper.finish()
 
-                outputConsumer.close()
+                    outputConsumer.close()
+                }
             } catch (e: Exception) {
                 exceptions.add(e)
                 e.printStackTrace()

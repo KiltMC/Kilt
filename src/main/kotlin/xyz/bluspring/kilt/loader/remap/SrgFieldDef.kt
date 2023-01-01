@@ -26,6 +26,10 @@ class SrgFieldDef(private val mappedField: IMappingFile.IField, private val srgC
         if (mappedField.mappedDescriptor != null)
             return mappedField.mappedDescriptor!!
 
-        return ""
+        val name = srgClass.mappedClass.mapped
+        val mappedClass = srgClass.mojMappings.getClass(name)
+        val mappedField = mappedClass.getField(mappedField.mapped)
+
+        return mappedField!!.descriptor!!
     }
 }

@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.loader.remap
 import net.fabricmc.mapping.tree.*
 import net.minecraftforge.srgutils.IMappingFile
 
-class SrgClassDef(private val mappedClass: IMappingFile.IClass) : ClassDef {
+class SrgClassDef(val mappedClass: IMappingFile.IClass, val mojMappings: IMappingFile, val srgMappings: IMappingFile) : ClassDef {
     override fun getName(namespace: String?): String {
         return mappedClass.mapped
     }
@@ -13,11 +13,13 @@ class SrgClassDef(private val mappedClass: IMappingFile.IClass) : ClassDef {
     }
 
     override fun getComment(): String? {
-        return null
+        return mappedClass.mapped
     }
 
     override fun getMethods(): MutableCollection<MethodDef> {
-        return mappedClass.methods.map(::SrgMethodDef).toMutableList()
+        return mappedClass.methods.map {
+            SrgMethodDef(it, this)
+        }.toMutableList()
     }
 
     override fun getFields(): MutableCollection<FieldDef> {

@@ -5,7 +5,7 @@ import net.fabricmc.mapping.tree.MethodDef
 import net.fabricmc.mapping.tree.ParameterDef
 import net.minecraftforge.srgutils.IMappingFile
 
-class SrgMethodDef(private val mappedMethod: IMappingFile.IMethod) : MethodDef {
+class SrgMethodDef(private val mappedMethod: IMappingFile.IMethod, val srgClassDef: SrgClassDef) : MethodDef {
     override fun getName(namespace: String?): String {
         return mappedMethod.mapped
     }
@@ -23,7 +23,9 @@ class SrgMethodDef(private val mappedMethod: IMappingFile.IMethod) : MethodDef {
     }
 
     override fun getParameters(): MutableCollection<ParameterDef> {
-        return mappedMethod.parameters.map(::SrgParameterDef).toMutableList()
+        return mappedMethod.parameters.map {
+            SrgParameterDef(it, this)
+        }.toMutableList()
     }
 
     override fun getLocalVariables(): MutableCollection<LocalVariableDef> {
