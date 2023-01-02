@@ -45,9 +45,9 @@ class KiltRemapper(private val remapTree: TinyTree, private val from: String, pr
             val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
-            val classRemapper = ClassRemapper(classNode, remapper)
             val remappedClassNode = ClassNode(Opcodes.ASM9)
-            remappedClassNode.accept(classRemapper)
+            val classRemapper = ClassRemapper(remappedClassNode, remapper)
+            classNode.accept(classRemapper)
 
             val classWriter = ClassWriter(0)
             remappedClassNode.accept(classWriter)

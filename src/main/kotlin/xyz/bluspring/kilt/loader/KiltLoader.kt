@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader
 
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
@@ -298,11 +299,13 @@ class KiltLoader {
 
         val remapper = KiltRemapper(tree, "srg", "intermediary")
         modLoadingQueue.forEach { mod ->
-            try {
-                mod.remappedModFile = remapper.remapJar(mod.modFile)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                exceptions.add(e)
+            runBlocking {
+                try {
+                    mod.remappedModFile = remapper.remapJar(mod.modFile)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    exceptions.add(e)
+                }
             }
         }
 
@@ -311,11 +314,13 @@ class KiltLoader {
             val devRemapper = KiltRemapper(launcher.mappingConfiguration.mappings, "intermediary", launcher.mappingConfiguration.targetNamespace)
 
             modLoadingQueue.forEach { mod ->
-                try {
-                    mod.remappedModFile = devRemapper.remapJar(mod.remappedModFile)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    exceptions.add(e)
+                runBlocking {
+                    try {
+                        mod.remappedModFile = devRemapper.remapJar(mod.remappedModFile)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        exceptions.add(e)
+                    }
                 }
             }
         }
