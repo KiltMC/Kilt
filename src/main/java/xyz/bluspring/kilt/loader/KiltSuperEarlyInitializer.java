@@ -46,6 +46,6 @@ public class KiltSuperEarlyInitializer implements IMixinConfigPlugin {
 
     static {
         // what the fuck
-        Kilt.superEarlyInit();
+        Kilt.Companion.getLoader().preloadMods();
     }
 }
