@@ -46,7 +46,6 @@ public class KiltSuperEarlyInitializer implements IMixinConfigPlugin {
 
     static {
         // what the fuck
-        //Kilt.Companion.getLoader().remapMinecraft();
         Kilt.Companion.getLoader().preloadMods();
     }
 }

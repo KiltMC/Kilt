@@ -32,16 +32,6 @@ class KiltLoader {
     private val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
     private val tomlParser = TomlParser()
 
-    fun remapMinecraft() {
-        // This process is required, unless I'm stupid, which is a high chance.
-        // For some reason, Tiny isn't remapping fields & methods, but it is remapping classes.
-        // This method is to add SRG-named fields and methods that return the exact equivalent
-        // to the Intermediary fields and methods.
-        Kilt.logger.info("Remapping Minecraft fields & methods for allowing Forge mods to function...")
-
-        KiltRemapper.remapMinecraft()
-    }
-
     fun preloadMods() {
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
 
@@ -399,7 +389,7 @@ class KiltLoader {
 
         private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 
-        private val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
+        val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
             if (!this.exists())
                 this.mkdirs()
         }
