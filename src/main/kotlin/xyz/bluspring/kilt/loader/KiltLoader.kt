@@ -305,8 +305,6 @@ class KiltLoader {
                 it.tabs.removeIf { t -> t != tab }
             }, true)
         }
-
-        loadMods()
     }
 
     fun loadMods() {

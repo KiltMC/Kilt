@@ -56,7 +56,7 @@ object KiltRemapper {
         }
 
         // We need to sort it in a way where dependencies are remapped before everyone else,
-        // so the mods work correctly
+        // so the mods can remap correctly.
         modRemapQueue.sortWith { a, b ->
             if (a.modInfo.mod.dependencies.any { it.modId == b.modInfo.mod.modId })
                 1
