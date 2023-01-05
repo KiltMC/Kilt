@@ -27,6 +27,8 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.stream.Collectors
+import kotlin.Comparator
+import kotlin.collections.ArrayList
 import kotlin.io.path.name
 
 object KiltRemapper {
@@ -43,13 +45,35 @@ object KiltRemapper {
         val exceptions = mutableListOf<Exception>()
 
         logger.info("Remapping Forge mods to Intermediary...")
+
+        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "srg", "intermediary")
         // SRG to Intermediary
         val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "srg", "intermediary"))
+            .extraRemapper(extraRemapper)
+
+        val modRemapQueue = ArrayList<ForgeMod>(modLoadingQueue.size).apply {
+            addAll(modLoadingQueue)
+        }
+
+        // We need to sort it in a way where dependencies are remapped before everyone else,
+        // so the mods work correctly
+        modRemapQueue.sortWith { a, b ->
+            if (a.modInfo.mod.dependencies.any { it.modId == b.modInfo.mod.modId })
+                1
+            else if (b.modInfo.mod.dependencies.any { it.modId == a.modInfo.mod.modId })
+                -1
+            else 0
+        }
 
         // First iteration, for normal mod loading.
-        modLoadingQueue.forEach { mod ->
+        modRemapQueue.forEach { mod ->
             try {
-                remapMod(mod.modFile, remapperBuilder, mod, remappedModsDir, arrayOf(srgMappedMinecraft, *gameClassPath))
+                remapMod(mod.modFile, remapperBuilder, mod, remappedModsDir, arrayOf(
+                    srgMappedMinecraft,
+                    *gameClassPath,
+                    *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
+                        .map { it.remappedModFile.toPath() }.toTypedArray()
+                ), extraRemapper)
                 logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) from SRG to Intermediary")
             } catch (e: Exception) {
                 exceptions.add(e)
@@ -62,18 +86,29 @@ object KiltRemapper {
         // Second iteration, for developer environments.
         // This is so the mods actually use the proper class names.
         if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val extraDevRemapper = ExtraRemapper(
+                launcher.mappingConfiguration.mappings,
+                "intermediary",
+                launcher.mappingConfiguration.targetNamespace
+            )
+
             // Intermediary to Named
             val devRemapperBuilder = createRemapper(createMappings(
                 launcher.mappingConfiguration.mappings,
                 "intermediary",
                 launcher.mappingConfiguration.targetNamespace
             ))
+                .extraRemapper(extraDevRemapper)
 
             logger.info("Remapping Forge mods from Intermediary to the \"${launcher.mappingConfiguration.targetNamespace}\" namespace...")
 
-            modLoadingQueue.forEach { mod ->
+            modRemapQueue.forEach { mod ->
                 try {
-                    remapMod(mod.remappedModFile, devRemapperBuilder, mod, remappedModsDir, gameClassPath)
+                    remapMod(mod.remappedModFile, devRemapperBuilder, mod, remappedModsDir, arrayOf(
+                        *gameClassPath,
+                        *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
+                            .map { it.remappedModFile.toPath() }.toTypedArray()
+                    ), extraDevRemapper)
                     logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) from Intermediary to \"${launcher.mappingConfiguration.targetNamespace}\" namespace")
                 } catch (e: Exception) {
                     exceptions.add(e)
@@ -87,7 +122,7 @@ object KiltRemapper {
         return exceptions
     }
 
-    private fun remapMod(file: File, remapperBuilder: TinyRemapper.Builder, mod: ForgeMod, remappedModsDir: File, gameClassPath: Array<out Path>) {
+    private fun remapMod(file: File, remapperBuilder: TinyRemapper.Builder, mod: ForgeMod, remappedModsDir: File, gameClassPath: Array<out Path>, extraRemapper: ExtraRemapper) {
         val hash = DigestUtils.md5Hex(file.inputStream())
         val remappedModFile = File(remappedModsDir, "$hash.jar")
 
@@ -99,8 +134,10 @@ object KiltRemapper {
         // I should not have to rebuild this every single fucking time.
         val remapper = remapperBuilder.build()
 
-        remapper.readClassPath(*gameClassPath)
+        // Need to get the environment somehow
+        extraRemapper.remapper = remapper
 
+        remapper.readClassPath(*gameClassPath)
         remapper.readInputs(file.toPath())
         val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
             assumeArchive(true)
@@ -153,6 +190,10 @@ object KiltRemapper {
             skipLocalVariableMapping(true)
             renameInvalidLocals(true)
             rebuildSourceFilenames(true)
+            fixPackageAccess(true)
+            resolveMissing(true)
+            ignoreConflicts(true)
+            ignoreFieldDesc(true)
 
             withMappings(provider)
         }
@@ -170,35 +211,6 @@ object KiltRemapper {
 
         val minecraftPath = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path
         val intermediaryPath = if (FabricLoader.getInstance().isDevelopmentEnvironment) { // named
-            /*val file = File(KiltLoader.kiltCacheDir, "minecraft_${launcher.mappingConfiguration.gameVersion}-intermediary.jar")
-
-            // This is probably not required, because an Intermediary-mapped Minecraft
-            // does exist. But I'm not sure how to get it, so this is easier.
-            if (!file.exists()) {
-                val intermediaryDevTree = launcher.mappingConfiguration.mappings
-                val devRemapper = createRemapper(
-                    createMappings(
-                        intermediaryDevTree,
-                        launcher.mappingConfiguration.targetNamespace,
-                        "intermediary"
-                    )
-                ).build()
-
-                devRemapper.readInputs(minecraftPath)
-                val outputConsumer = OutputConsumerPath.Builder(file.toPath()).apply {
-                    assumeArchive(true)
-                }.build()
-
-                devRemapper.apply(outputConsumer)
-
-                devRemapper.finish()
-                outputConsumer.close()
-
-                logger.info("Remapped Minecraft from ${launcher.mappingConfiguration.targetNamespace} to Intermediary")
-            }
-
-            file.toPath()*/
-
             // I think this is the best bet I have to finding an Intermediary jar in dev
             getGameClassPath().first { it.name.contains("intermediary") }
         } else minecraftPath // intermediary, or well should be.
