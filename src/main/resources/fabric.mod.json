@@ -28,7 +28,8 @@
     ]
   },
   "mixins": [
-    "Kilt.mixins.json"
+    "Kilt.mixins.json",
+    "kilt_forge_injects.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.12",
@@ -37,5 +38,13 @@
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
     "fabric-language-kotlin": "*"
+  },
+  "provides": [
+    "forgeconfigapiport"
+  ],
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_2535": ["xyz/bluspring/kilt/injections/ConnectionInjection"]
+    }
   }
 }

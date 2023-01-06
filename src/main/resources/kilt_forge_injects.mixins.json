@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.bluspring.kilt.forgeinjects",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "network.ConnectionInject"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
