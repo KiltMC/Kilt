@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.IEventListener
 import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.forgespi.language.IConfigurable
+import net.minecraftforge.forgespi.language.ModFileScanData
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.Optional
@@ -30,6 +31,7 @@ class ForgeMod(
             return JarFile(remappedModFile)
         }
     lateinit var remappedModFile: File
+    lateinit var scanData: ModFileScanData
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {

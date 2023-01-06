@@ -323,6 +323,8 @@ class KiltLoader {
                 val scanData = ModFileScanData()
                 scanData.addModFileInfo(ModFileInfo(mod))
 
+                mod.scanData = scanData
+
                 // basically emulate how Forge loads stuff
                 try {
                     mod.jar.entries().asIterator().forEach {
