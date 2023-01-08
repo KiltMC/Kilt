@@ -8,6 +8,7 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
+import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -379,6 +380,12 @@ class KiltLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
+        }
+    }
+
+    fun postEvent(ev: Event) {
+        mods.forEach {
+            it.eventBus.post(ev)
         }
     }
 

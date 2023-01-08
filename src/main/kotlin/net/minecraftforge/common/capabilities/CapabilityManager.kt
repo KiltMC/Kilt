@@ -1,6 +1,10 @@
 package net.minecraftforge.common.capabilities
 
+import net.minecraftforge.energy.IEnergyStorage
+import net.minecraftforge.fluids.capability.IFluidHandler
+import net.minecraftforge.fluids.capability.IFluidHandlerItem
 import net.minecraftforge.forgespi.language.ModFileScanData
+import net.minecraftforge.items.IItemHandler
 import org.apache.logging.log4j.LogManager
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
@@ -18,6 +22,9 @@ enum class CapabilityManager {
             .map { it.clazz }
             .distinct()
             .sortedBy { it.toString() }
+
+        if (!kiltHasRegistered)
+            kiltRegisterCapabilities()
 
         autos.forEach {
             get<Any>(it.internalName, true)
@@ -54,6 +61,18 @@ enum class CapabilityManager {
     companion object {
         private val AUTO_REGISTER = Type.getType(AutoRegisterCapability::class.java)
         private val logger = LogManager.getLogger()
+        private var kiltHasRegistered = false
+
+        private fun kiltRegisterCapabilities() {
+            // Kilt doesn't scan itself for auto-registered capabilities, so just register them here
+            // manually.
+            INSTANCE.get<IEnergyStorage>(Type.getInternalName(IEnergyStorage::class.java), true)
+            INSTANCE.get<IFluidHandler>(Type.getInternalName(IFluidHandler::class.java), true)
+            INSTANCE.get<IFluidHandlerItem>(Type.getInternalName(IFluidHandlerItem::class.java), true)
+            INSTANCE.get<IItemHandler>(Type.getInternalName(IItemHandler::class.java), true)
+
+            kiltHasRegistered = true
+        }
 
         @JvmStatic
         fun <T> get(type: CapabilityToken<T>): Capability<T> {

@@ -1,7 +1,9 @@
 package net.minecraftforge.common.capabilities
 
+import net.minecraftforge.energy.IEnergyStorage
 import net.minecraftforge.fluids.capability.IFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandlerItem
+import net.minecraftforge.items.IItemHandler
 
 object ForgeCapabilities {
     @JvmStatic
@@ -14,5 +16,5 @@ object ForgeCapabilities {
     val FLUID_HANDLER_ITEM: Capability<IFluidHandlerItem> = CapabilityManager.get(object : CapabilityToken<IFluidHandlerItem>() {})
 
     @JvmStatic
-    val ENERGY: Capability<IItemHandler> = CapabilityManager.get(object : CapabilityToken<IItemHandler>() {})
+    val ITEM_HANDLER: Capability<IItemHandler> = CapabilityManager.get(object : CapabilityToken<IItemHandler>() {})
 }
