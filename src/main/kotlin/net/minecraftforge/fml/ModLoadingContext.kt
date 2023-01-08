@@ -8,9 +8,11 @@ class ModLoadingContext {
     private var languageExtension: FMLJavaModLoadingContext? = null
     private var mod: ForgeMod? = null
 
-    fun setActiveContainer(container: ModContainer) {
-
-    }
+    var activeContainer: ModContainer? = null
+    val activeNamespace: String
+        get() {
+            return mod?.modInfo?.mod?.modId ?: "minecraft"
+        }
 
     fun kiltSetActiveMod(mod: ForgeMod) {
         this.mod = mod
@@ -19,14 +21,6 @@ class ModLoadingContext {
 
     fun extension(): FMLJavaModLoadingContext? {
         return languageExtension
-    }
-
-    fun getActiveContainer(): ModContainer? {
-        return null
-    }
-
-    fun getActiveNamespace(): String {
-        return mod?.modInfo?.mod?.modId ?: "minecraft"
     }
 
     companion object {

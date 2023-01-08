@@ -15,6 +15,8 @@ class Kilt : ModInitializer {
     }
 
     companion object {
+        val MOD_ID = "kilt"
+
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
         val loader: KiltLoader = KiltLoader()
     }
