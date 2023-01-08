@@ -8,7 +8,7 @@ interface IFluidHandler {
     fun fill(resource: FluidStack, action: FluidAction): Int
     fun getFluidInTank(tank: Int): FluidStack
     fun getTankCapacity(tank: Int): Int
-    fun getTanks(): Int
+    val tanks: Int
     fun isFluidValid(tank: Int, stack: FluidStack): Boolean
 
     enum class FluidAction {

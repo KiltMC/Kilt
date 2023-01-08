@@ -11,6 +11,6 @@ object MinecraftForge {
 
     @JvmStatic
     fun initialize() {
-
+        throw Exception("..why are you reinitializing Forge exactly? Either way, Kilt doesn't do reinitialization.")
     }
 }
