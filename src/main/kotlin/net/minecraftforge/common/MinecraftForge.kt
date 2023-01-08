@@ -4,7 +4,7 @@ import net.minecraftforge.eventbus.api.BusBuilder
 import net.minecraftforge.eventbus.api.IEventBus
 
 object MinecraftForge {
-    @JvmStatic
+    @JvmField
     val EVENT_BUS: IEventBus = BusBuilder.builder().apply {
         startShutdown()
     }.build()

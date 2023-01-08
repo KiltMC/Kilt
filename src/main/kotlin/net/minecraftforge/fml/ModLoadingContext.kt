@@ -16,11 +16,11 @@ class ModLoadingContext {
 
     fun kiltSetActiveMod(mod: ForgeMod) {
         this.mod = mod
-        this.languageExtension = FMLJavaModLoadingContext(mod)
+        this.languageExtension = FMLJavaModLoadingContext()
     }
 
-    fun extension(): FMLJavaModLoadingContext? {
-        return languageExtension
+    fun extension(): FMLJavaModLoadingContext {
+        return languageExtension!!
     }
 
     companion object {

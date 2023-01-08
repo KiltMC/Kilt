@@ -6,7 +6,15 @@ import net.minecraft.network.protocol.PacketFlow
 import java.util.function.Consumer
 
 interface ConnectionInjection {
-    fun channel(): Channel
-    fun getDirection(): PacketFlow
-    fun setActivationHandler(handler: Consumer<Connection>)
+    fun channel(): Channel {
+        throw RuntimeException("mixin, why didn't you add this")
+    }
+
+    fun getDirection(): PacketFlow {
+        throw RuntimeException("mixin, why didn't you add this")
+    }
+
+    fun setActivationHandler(handler: Consumer<Connection>) {
+        throw RuntimeException("mixin, why didn't you add this")
+    }
 }

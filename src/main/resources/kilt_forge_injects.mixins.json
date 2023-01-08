@@ -6,6 +6,8 @@
   "mixins": [
     "core.HolderInject",
     "core.HolderReferenceInject",
+    "core.HolderSetInject",
+    "core.HolderSetNamedInject",
     "network.ConnectionInject"
   ],
   "client": [

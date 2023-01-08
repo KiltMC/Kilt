@@ -1,21 +1,30 @@
 package xyz.bluspring.kilt.loader
 
+import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
+import net.minecraftforge.eventbus.EventBusErrorMessage
+import net.minecraftforge.eventbus.api.BusBuilder
+import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 import net.minecraftforge.eventbus.api.Event
+import net.minecraftforge.eventbus.api.IEventBus
+import net.minecraftforge.eventbus.api.IEventListener
 import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
+import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
@@ -24,6 +33,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
 import kotlin.system.exitProcess
@@ -166,7 +176,38 @@ class KiltLoader {
         }
     }
 
+    // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
+    // Let's do a trick to load the Forge built-in mod.
+    private fun loadForgeBuiltinMod() {
+        // Would be used to load the Forge built-in mod into the mods list.
+        // But it's not required right now, I don't think.
+        /*val kiltFile = FabricLoaderImpl.INSTANCE.getModCandidate("kilt").copyToDir(kiltCacheDir.toPath(), true).toFile()
+        val kiltJar = JarFile(kiltFile)
+
+        val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("forge_mods.toml")))
+
+        val forgeMod = parseModsToml(toml, kiltFile, kiltJar).first()
+        // No point, but in case I accidentally called it somewhere.
+        forgeMod.remappedModFile = kiltFile
+
+        val scanData = ModFileScanData()
+        scanData.addModFileInfo(ModFileInfo(forgeMod))
+
+        forgeMod.scanData = scanData*/
+
+        ForgeBuiltinMod()
+
+        //mods.add(forgeMod)
+    }
+
     private fun preloadJarMod(modFile: File, jarFile: ZipFile): Map<String, Exception> {
+        // Do NOT load Fabric mods.
+        // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
+        // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
+        // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
+        if (jarFile.getEntry("fabric.mod.json") != null)
+            return mapOf()
+
         val thrownExceptions = mutableMapOf<String, Exception>()
 
         Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
@@ -200,83 +241,13 @@ class KiltLoader {
                 }
             }
 
-            // Load the JAR's manifest file, or at least try to.
-            val manifest = try {
-                Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
-            } catch (_: Exception) { null }
-
             val toml = tomlParser.parse(jarFile.getInputStream(modsToml))
 
-            if (toml.get("modLoader") as String != "javafml")
-                throw Exception("Forge mod file ${modFile.name} is not a javafml mod!")
+            val forgeMods = parseModsToml(toml, modFile, jarFile)
 
-            val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion") as String)
-            if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION))
-                throw Exception("Forge mod file ${modFile.name} does not support Forge loader version $SUPPORTED_FORGE_SPEC_VERSION (mod supports versions between [$loaderVersionRange]))")
-
-            val mainConfig = NightConfigWrapper(toml)
-
-            val modsMetadataList = mainConfig.getConfigList("mods")
-
-            modsMetadataList.forEach { metadata ->
-                val modId = metadata.getConfigElement<String>("modId").orElseThrow {
-                    Exception("Forge mod file ${modFile.name} does not contain a mod ID!")
-                }
-
-                if (modLoadingQueue.any { it.modInfo.mod.modId == modId })
-                    throw IllegalStateException("Duplicate Forge mod ID detected: $modId")
-
-                // create mod info
-                val modInfo = ForgeModInfo(
-                    license = toml.get("license"),
-                    issueTrackerURL = toml.getOrElse("issueTrackerURL", ""),
-                    showAsResourcePack = toml.getOrElse("showAsResourcePack", false),
-                    mod = ForgeModInfo.ModMetadata(
-                        modId,
-                        version = DefaultArtifactVersion(
-                            metadata.getConfigElement<String>("version").orElse("1")
-                                .run {
-                                    if (this == "\${file.jarVersion}")
-                                        manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
-                                    else this
-                                }
-                        ),
-                        displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
-                        updateJSONURL = metadata.getConfigElement<String>("updateJSONURL").orElse(""),
-                        logoFile = metadata.getConfigElement<String>("logoFile").orElse(""),
-                        credits = metadata.getConfigElement<String>("credits").orElse(""),
-                        authors = metadata.getConfigElement<String>("authors").orElse(""),
-                        description = metadata.getConfigElement<String>("logoFile").orElse("MISSING DESCRIPTION"),
-                        displayTest = ForgeModInfo.ModMetadata.DisplayTest.valueOf(metadata.getConfigElement<String>("displayTest").orElse("MATCH_VERSION")),
-                        dependencies = mainConfig.getConfigList("dependencies", modId)
-                            .map {
-                                ForgeModInfo.ModDependency(
-                                    modId = it.getConfigElement<String>("modId").orElseThrow {
-                                        Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a mod ID!")
-                                    },
-                                    mandatory = it.getConfigElement<Boolean>("mandatory").orElse(false),
-                                    versionRange = MavenVersionAdapter.createFromVersionSpec(
-                                        it.getConfigElement<String>("versionRange")
-                                            .orElseThrow {
-                                                Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a version range!")
-                                            }
-                                    ),
-                                    ordering = ForgeModInfo.ModDependency.ModOrdering.valueOf(it.getConfigElement<String>("ordering").orElse("NONE")),
-                                    side = ForgeModInfo.ModDependency.ModSide.valueOf(it.getConfigElement<String>("side").orElse("BOTH"))
-                                )
-                            }
-                    )
-                )
-
-                modLoadingQueue.add(
-                    ForgeMod(
-                        modInfo,
-                        modFile,
-                        mainConfig
-                    )
-                )
-
-                Kilt.logger.info("Discovered Forge mod ${modInfo.mod.displayName} (${modInfo.mod.modId}) version ${modInfo.mod.version} (${modFile.name})")
+            forgeMods.forEach {
+                modLoadingQueue.add(it)
+                Kilt.logger.info("Discovered Forge mod ${it.modInfo.mod.displayName} (${it.modInfo.mod.modId}) version ${it.modInfo.mod.version} (${modFile.name})")
             }
         } catch (e: Exception) {
             thrownExceptions[modFile.name] = e
@@ -284,6 +255,104 @@ class KiltLoader {
         }
 
         return thrownExceptions
+    }
+
+    // Split this off from the main preloadMods method, in case it needs to be used again later.
+    private fun parseModsToml(toml: CommentedConfig, modFile: File, jarFile: ZipFile): List<ForgeMod> {
+        if (toml.get("modLoader") as String != "javafml")
+            throw Exception("Forge mod file ${modFile.name} is not a javafml mod!")
+
+        // Load the JAR's manifest file, or at least try to.
+        val manifest = try {
+            Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
+        } catch (_: Exception) { null }
+
+        val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion") as String)
+        if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION))
+            throw Exception("Forge mod file ${modFile.name} does not support Forge loader version $SUPPORTED_FORGE_SPEC_VERSION (mod supports versions between [$loaderVersionRange]))")
+
+        val mainConfig = NightConfigWrapper(toml)
+
+        val modsMetadataList = mainConfig.getConfigList("mods")
+        val forgeMods = mutableListOf<ForgeMod>()
+
+        modsMetadataList.forEach { metadata ->
+            val modId = metadata.getConfigElement<String>("modId").orElseThrow {
+                Exception("Forge mod file ${modFile.name} does not contain a mod ID!")
+            }
+
+            val modVersion = DefaultArtifactVersion(
+                metadata.getConfigElement<String>("version").orElse("1")
+                    .run {
+                        if (this == "\${file.jarVersion}")
+                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
+                        else if (this == "\${global.forgeVersion}")
+                            SUPPORTED_FORGE_API_VERSION.toString()
+                        else this
+                    }
+            )
+
+            // In most cases, Fabric versions of mods share the same mod ID as the Forge variant.
+            // We don't want two of the same things, so we shouldn't allow this to occur.
+            if (FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null)
+                throw IllegalStateException("Duplicate Forge and Fabric mod IDs detected: $modId")
+
+            // Forge and Fabric handle duplicate mods by taking the latest version
+            // of the mod, I believe. We should share this behaviour, as some mods may
+            // JiJ some other mods.
+            if (modLoadingQueue.any { it.modInfo.mod.modId == modId }) {
+                val duplicateMod = modLoadingQueue.first { it.modInfo.mod.modId == modId }
+
+                if (modVersion > duplicateMod.modInfo.mod.version) {
+                    modLoadingQueue.remove(duplicateMod)
+                } else return@forEach // Let's just let it slide.
+            }
+
+            // create mod info
+            val modInfo = ForgeModInfo(
+                license = toml.get("license"),
+                issueTrackerURL = toml.getOrElse("issueTrackerURL", ""),
+                showAsResourcePack = toml.getOrElse("showAsResourcePack", false),
+                mod = ForgeModInfo.ModMetadata(
+                    modId,
+                    version = modVersion,
+                    displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
+                    updateJSONURL = metadata.getConfigElement<String>("updateJSONURL").orElse(""),
+                    logoFile = metadata.getConfigElement<String>("logoFile").orElse(""),
+                    credits = metadata.getConfigElement<String>("credits").orElse(""),
+                    authors = metadata.getConfigElement<String>("authors").orElse(""),
+                    description = metadata.getConfigElement<String>("logoFile").orElse("MISSING DESCRIPTION"),
+                    displayTest = ForgeModInfo.ModMetadata.DisplayTest.valueOf(metadata.getConfigElement<String>("displayTest").orElse("MATCH_VERSION")),
+                    dependencies = mainConfig.getConfigList("dependencies", modId)
+                        .map {
+                            ForgeModInfo.ModDependency(
+                                modId = it.getConfigElement<String>("modId").orElseThrow {
+                                    Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a mod ID!")
+                                },
+                                mandatory = it.getConfigElement<Boolean>("mandatory").orElse(false),
+                                versionRange = MavenVersionAdapter.createFromVersionSpec(
+                                    it.getConfigElement<String>("versionRange")
+                                        .orElseThrow {
+                                            Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a version range!")
+                                        }
+                                ),
+                                ordering = ForgeModInfo.ModDependency.ModOrdering.valueOf(it.getConfigElement<String>("ordering").orElse("NONE")),
+                                side = ForgeModInfo.ModDependency.ModSide.valueOf(it.getConfigElement<String>("side").orElse("BOTH"))
+                            )
+                        }
+                )
+            )
+
+            forgeMods.add(
+                ForgeMod(
+                    modInfo,
+                    modFile,
+                    mainConfig
+                )
+            )
+        }
+
+        return forgeMods
     }
 
     // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
@@ -313,6 +382,8 @@ class KiltLoader {
 
         val launcher = FabricLauncherBase.getLauncher()
         val exceptions = mutableListOf<Exception>()
+
+        loadForgeBuiltinMod()
 
         while (modLoadingQueue.isNotEmpty()) {
             try {
@@ -384,15 +455,36 @@ class KiltLoader {
     }
 
     fun postEvent(ev: Event) {
-        mods.forEach {
-            it.eventBus.post(ev)
-        }
+        modEventBus.post(ev)
     }
 
     companion object {
         // These constants are to be updated each time we change versions
         private val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
         private val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
+
+        // Forge seems to have a dedicated event bus for every specific mod, and it's
+        // retrieved by ModLoadingContext, but it appears to only be retrievable at very
+        // specific points in time.
+        // I can't seem to understand why though. Let's keep it a centralized event bus
+        // until that choice ends up biting me in the butt.
+        val modEventBus: IEventBus = BusBuilder.builder().apply {
+            setExceptionHandler(KiltLoader::onEventFailed)
+            setTrackPhases(false)
+            markerType(IModBusEvent::class.java)
+        }.build()
+
+        private val logger = LogManager.getLogger()
+
+        private fun onEventFailed(
+            iEventBus: IEventBus,
+            event: Event,
+            iEventListeners: Array<IEventListener>,
+            i: Int,
+            throwable: Throwable
+        ) {
+            logger.error(EventBusErrorMessage(event, i, iEventListeners, throwable))
+        }
 
         private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 

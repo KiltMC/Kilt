@@ -122,6 +122,10 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+compileKotlin {
+    kotlinOptions.jvmTarget = targetJavaVersion
+}
+
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {

@@ -77,6 +77,16 @@ class DeferredRegister<T> private constructor(
         }
     }
 
+    fun makeRegistry(sup: Supplier<RegistryBuilder<T>>): Supplier<IForgeRegistry<T>> {
+        return Supplier {
+            ForgeRegistry(sup.get().registryName, sup.get())
+        }
+    }
+
+    fun <I : T> register(name: String, sup: Supplier<out I>): RegistryObject<I> {
+        return RegistryObject(fabricRegister.register(name, sup))
+    }
+
     companion object {
         @JvmStatic
         fun <B> create(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
