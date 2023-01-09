@@ -1,2 +1,4 @@
 accessWidener v1 named
 accessible class net/minecraft/core/Holder$Reference$Type
+accessible method net/minecraft/world/level/block/FireBlock getBurnOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
+accessible method net/minecraft/world/level/block/FireBlock getIgniteOdds (Lnet/minecraft/world/level/block/state/BlockState;)I

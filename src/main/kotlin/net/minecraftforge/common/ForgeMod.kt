@@ -12,7 +12,7 @@ import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.material.FluidState
 import net.minecraft.world.level.pathfinder.BlockPathTypes
-import net.minecraftforge.client.common.IClientFluidTypeExtensions
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions
 import net.minecraftforge.fluids.FluidType
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.registries.DeferredRegister
@@ -75,6 +75,11 @@ class ForgeMod {
         @JvmField
         val WATER_TYPE = VANILLA_FLUID_TYPES.register("water") {
             WaterFluidType()
+        }
+
+        @JvmField
+        val LAVA_TYPE = VANILLA_FLUID_TYPES.register("lava") {
+            LavaFluidType()
         }
 
         class EmptyFluidType : FluidType(
@@ -152,6 +157,50 @@ class ForgeMod {
                         return BiomeColors.getAverageWaterColor(getter, pos) or 0xFF000000.toInt()
                     }
                 })
+            }
+        }
+
+        class LavaFluidType : FluidType(
+            Properties.create()
+                .apply {
+                    descriptionId("block.minecraft.lava")
+                    canSwim(false)
+                    canDrown(false)
+                    pathType(BlockPathTypes.LAVA)
+                    adjacentPathType(null)
+                    sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL_LAVA)
+                    sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY_LAVA)
+                    lightLevel(15)
+                    density(3000)
+                    viscosity(6000)
+                    temperature(1300)
+                }
+        ) {
+            override fun motionScale(entity: Entity): Double {
+                return if (entity.level.dimensionType().ultraWarm)
+                    0.007
+                else
+                    0.0023333333333333335
+            }
+
+            override fun setItemMovement(entity: Entity) {
+                val vec3 = entity.deltaMovement
+                entity.setDeltaMovement(vec3.x * 0.95, vec3.y + (if (vec3.y < 0.06) 5.0e-4 else 0.0), vec3.z * 0.95)
+            }
+
+            override fun initializeClient(consumer: Consumer<IClientFluidTypeExtensions>) {
+                consumer.accept(
+                    object : IClientFluidTypeExtensions {
+                        val LAVA_STILL = ResourceLocation("block/lava_still")
+                        val LAVA_FLOW = ResourceLocation("block/lava_flow")
+
+                        override val stillTexture: ResourceLocation?
+                            get() = LAVA_STILL
+
+                        override val flowingTexture: ResourceLocation?
+                            get() = LAVA_FLOW
+                    }
+                )
             }
         }
 

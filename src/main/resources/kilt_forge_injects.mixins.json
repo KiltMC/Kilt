@@ -9,6 +9,7 @@
     "core.HolderSetInject",
     "core.HolderSetNamedInject",
     "network.ConnectionInject",
+    "world.level.block.BlockInject",
     "world.level.material.FluidInject",
     "world.level.material.FluidStateInject"
   ],

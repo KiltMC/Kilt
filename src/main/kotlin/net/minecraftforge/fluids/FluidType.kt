@@ -27,9 +27,10 @@ import net.minecraft.world.level.material.Material
 import net.minecraft.world.level.pathfinder.BlockPathTypes
 import net.minecraft.world.phys.Vec3
 import net.minecraftforge.api.distmarker.Dist
-import net.minecraftforge.client.common.IClientFluidTypeExtensions
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions
 import net.minecraftforge.common.ForgeMod
 import net.minecraftforge.common.SoundAction
+import net.minecraftforge.common.SoundActions
 import net.minecraftforge.registries.ForgeRegistries
 import java.util.function.Consumer
 

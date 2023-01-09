@@ -1,4 +1,4 @@
-package net.minecraftforge.client.common
+package net.minecraftforge.client.extensions.common
 
 import com.mojang.blaze3d.shaders.FogShape
 import com.mojang.blaze3d.vertex.PoseStack
@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.material.Fluid
 import net.minecraft.world.level.material.FluidState
+import net.minecraftforge.common.extensions.IForgeFluid
+import net.minecraftforge.common.extensions.IForgeFluidState
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidType
 import java.util.*
@@ -90,12 +92,12 @@ interface IClientFluidTypeExtensions {
 
         @JvmStatic
         fun of(state: FluidState): IClientFluidTypeExtensions {
-            return of(state.fluidType)
+            return of((state as IForgeFluidState).fluidType)
         }
 
         @JvmStatic
         fun of(fluid: Fluid): IClientFluidTypeExtensions {
-            return of(fluid.fluidType)
+            return of((fluid as IForgeFluid).fluidType)
         }
 
         @JvmStatic
