@@ -8,7 +8,9 @@
     "core.HolderReferenceInject",
     "core.HolderSetInject",
     "core.HolderSetNamedInject",
-    "network.ConnectionInject"
+    "network.ConnectionInject",
+    "world.level.material.FluidInject",
+    "world.level.material.FluidStateInject"
   ],
   "client": [
   ],

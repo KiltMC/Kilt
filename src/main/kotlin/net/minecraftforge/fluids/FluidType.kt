@@ -27,6 +27,7 @@ import net.minecraft.world.level.material.Material
 import net.minecraft.world.level.pathfinder.BlockPathTypes
 import net.minecraft.world.phys.Vec3
 import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.client.common.IClientFluidTypeExtensions
 import net.minecraftforge.common.ForgeMod
 import net.minecraftforge.common.SoundAction
 import net.minecraftforge.registries.ForgeRegistries
@@ -107,6 +108,10 @@ open class FluidType(private val properties: Properties) {
             return properties.rarity
         }
     val sounds: Map<SoundAction, SoundEvent> = properties.sounds
+
+    init {
+        initClient()
+    }
 
     open fun getSound(action: SoundAction): SoundEvent? {
         return this.sounds[action]
@@ -325,17 +330,19 @@ open class FluidType(private val properties: Properties) {
 
     // why is this an any type?
     private var renderProperties: Any? = null
+    val renderPropertiesInternal: Any?
+        get() = renderProperties
 
     private fun initClient() {
         if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
-            initializeClient(Consumer<IClientFluidTypeExtensions> { properties ->
+            initializeClient { properties ->
                 renderProperties = properties
-            })
+            }
         }
     }
 
     open fun initializeClient(consumer: Consumer<IClientFluidTypeExtensions>) {
-        // what the fuck does this even do. does this like. get used by mods?
+        // update: this gets used by mods
     }
 
     companion object {
