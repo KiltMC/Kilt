@@ -1,7 +1,14 @@
 package xyz.bluspring.kilt.loader
 
+import net.minecraftforge.forgespi.language.IConfigurable
+import net.minecraftforge.forgespi.language.IModFileInfo
+import net.minecraftforge.forgespi.language.IModInfo
+import net.minecraftforge.forgespi.locating.ForgeFeature
+import net.minecraftforge.forgespi.locating.IModFile
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
+import java.net.URL
+import java.util.*
 
 data class ForgeModInfo(
     val license: String = "All Rights Reserved",

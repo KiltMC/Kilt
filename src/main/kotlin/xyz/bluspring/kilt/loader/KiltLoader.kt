@@ -455,36 +455,19 @@ class KiltLoader {
     }
 
     fun postEvent(ev: Event) {
-        modEventBus.post(ev)
+        mods.forEach {
+            it.eventBus.post(ev)
+        }
+    }
+
+    fun getMod(id: String): ForgeMod? {
+        return mods.firstOrNull { it.modInfo.mod.modId == id }
     }
 
     companion object {
         // These constants are to be updated each time we change versions
         private val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
         private val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
-
-        // Forge seems to have a dedicated event bus for every specific mod, and it's
-        // retrieved by ModLoadingContext, but it appears to only be retrievable at very
-        // specific points in time.
-        // I can't seem to understand why though. Let's keep it a centralized event bus
-        // until that choice ends up biting me in the butt.
-        val modEventBus: IEventBus = BusBuilder.builder().apply {
-            setExceptionHandler(KiltLoader::onEventFailed)
-            setTrackPhases(false)
-            markerType(IModBusEvent::class.java)
-        }.build()
-
-        private val logger = LogManager.getLogger()
-
-        private fun onEventFailed(
-            iEventBus: IEventBus,
-            event: Event,
-            iEventListeners: Array<IEventListener>,
-            i: Int,
-            throwable: Throwable
-        ) {
-            logger.error(EventBusErrorMessage(event, i, iEventListeners, throwable))
-        }
 
         private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 
