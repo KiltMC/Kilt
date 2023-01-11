@@ -5,7 +5,7 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.eventbus.api.Cancelable
 
-open class LivingEvent(livingEntity: LivingEntity) : EntityEvent(livingEntity) {
+open class LivingEvent(livingEntity: LivingEntity?) : EntityEvent(livingEntity) {
     override val entity = livingEntity
 
     @Cancelable

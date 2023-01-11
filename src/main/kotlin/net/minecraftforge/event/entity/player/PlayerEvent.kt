@@ -16,7 +16,7 @@ import net.minecraftforge.eventbus.api.Cancelable
 import java.io.File
 import java.util.Optional
 
-open class PlayerEvent(player: Player) : LivingEvent(player) {
+open class PlayerEvent(player: Player?) : LivingEvent(player) {
     override val entity = player
 
     open class HarvestCheck(player: Player, state: BlockState, success: Boolean) {

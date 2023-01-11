@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Pose
 import net.minecraftforge.eventbus.api.Event
 import xyz.bluspring.kilt.mixin.EntityAccessor
 
-open class EntityEvent(open val entity: Entity) : Event() {
+open class EntityEvent(open val entity: Entity?) : Event() {
     open class EntityConstructing(entity: Entity) : EntityEvent(entity)
 
     open class EnteringSection(entity: Entity, val packedOldPos: Long, val packedNewPos: Long) : EntityEvent(entity) {
