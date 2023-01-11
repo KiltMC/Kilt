@@ -5,6 +5,7 @@ import net.minecraft.server.ReloadableServerResources
 import net.minecraft.server.packs.resources.PreparableReloadListener
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.util.profiling.ProfilerFiller
+import net.minecraftforge.common.crafting.conditions.ICondition
 import net.minecraftforge.eventbus.api.Event
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
