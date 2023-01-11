@@ -3,7 +3,7 @@ package net.minecraftforge.common.util
 import io.github.fabricators_of_create.porting_lib.util.NonNullConsumer
 import java.util.*
 
-class LazyOptional<T>(private val fabricLazyOptional: io.github.fabricators_of_create.porting_lib.util.LazyOptional<T>) {
+class LazyOptional<T>(val fabricLazyOptional: io.github.fabricators_of_create.porting_lib.util.LazyOptional<T>) {
     fun addListener(listener: NonNullConsumer<LazyOptional<T>>) {
         fabricLazyOptional.addListener {
             listener.accept(LazyOptional(it))
@@ -25,6 +25,9 @@ class LazyOptional<T>(private val fabricLazyOptional: io.github.fabricators_of_c
             consumer.accept(it)
         }
     }
+
+    val isPresent: Boolean
+        get() = fabricLazyOptional.isPresent
 
     fun invalidate() {
         fabricLazyOptional.invalidate()

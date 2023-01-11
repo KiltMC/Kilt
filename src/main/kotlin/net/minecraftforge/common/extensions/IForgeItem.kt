@@ -1,7 +1,7 @@
 package net.minecraftforge.common.extensions
 
 import com.google.common.collect.Multimap
-import io.github.fabricators_of_create.porting_lib.util.ToolAction
+import io.github.fabricators_of_create.porting_lib.extensions.ItemExtensions
 import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
@@ -29,13 +29,14 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
 import net.minecraftforge.common.ForgeHooks
+import net.minecraftforge.common.ToolAction
 import net.minecraftforge.common.ToolActions
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.items.wrapper.ShulkerItemStackInvWrapper
 import java.util.function.Consumer
 
 
-interface IForgeItem {
+interface IForgeItem : ItemExtensions, io.github.fabricators_of_create.porting_lib.extensions.tool.ItemExtensions {
     private fun self(): Item {
         return this as Item
     }
@@ -77,16 +78,7 @@ interface IForgeItem {
     fun readShareTag(stack: ItemStack, nbt: CompoundTag?) {
         stack.tag = nbt
     }
-
-    fun onBlockStartBreak(itemstack: ItemStack, pos: BlockPos, player: Player): Boolean {
-        return false
-    }
-
     fun onUsingTick(stack: ItemStack, player: LivingEntity, count: Int) {}
-
-    fun onLeftClickEntity(stack: ItemStack, player: Player, entity: Entity): Boolean {
-        return false
-    }
 
     fun getCraftingRemainingItem(itemStack: ItemStack): ItemStack? {
         return if (!hasCraftingRemainingItem(itemStack)) {
@@ -100,14 +92,6 @@ interface IForgeItem {
 
     fun getEntityLifespan(itemStack: ItemStack, level: Level): Int {
         return 6000
-    }
-
-    fun hasCustomEntity(stack: ItemStack): Boolean {
-        return false
-    }
-
-    fun createEntity(level: Level, location: Entity, stack: ItemStack): Entity? {
-        return null
     }
 
     fun onEntityItemUpdate(stack: ItemStack, entity: ItemEntity): Boolean {
@@ -236,10 +220,6 @@ interface IForgeItem {
         return ItemStack.isSameIgnoreDurability(oldStack, newStack)
     }
 
-    fun getCreatorModId(itemStack: ItemStack?): String? {
-        return ForgeHooks.getDefaultCreatorModId(itemStack)
-    }
-
     fun initCapabilities(stack: ItemStack, nbt: CompoundTag?): ICapabilityProvider? {
         return ShulkerItemStackInvWrapper.createDefaultProvider(stack)
     }
@@ -289,10 +269,6 @@ interface IForgeItem {
 
     fun getSweepHitBox(stack: ItemStack, player: Player, target: Entity): AABB {
         return target.boundingBox.inflate(1.0, 0.25, 1.0)
-    }
-
-    fun getDefaultTooltipHideFlags(stack: ItemStack): Int {
-        return 0
     }
 
     fun getFoodProperties(stack: ItemStack, entity: LivingEntity?): FoodProperties? {

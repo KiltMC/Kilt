@@ -50,7 +50,9 @@
       "net/minecraft/class_6885": ["net/minecraftforge/common/extensions/IForgeHolderSet"],
       "net/minecraft/class_3611": ["net/minecraftforge/common/extensions/IForgeFluid"],
       "net/minecraft/class_3610": ["net/minecraftforge/common/extensions/IForgeFluidState"],
-      "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock"]
+      "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock"],
+      "net/minecraft/class_1792": ["net/minecraftforge/common/extensions/IForgeItem"],
+      "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack"]
     }
   },
   "accessWidener": "kilt.accesswidener"

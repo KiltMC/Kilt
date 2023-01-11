@@ -5,6 +5,7 @@
   "plugin": "xyz.bluspring.kilt.loader.KiltSuperEarlyInitializer",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityAccessor"
   ],
   "client": [
   ],
