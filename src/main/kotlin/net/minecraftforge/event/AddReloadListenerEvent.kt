@@ -7,6 +7,7 @@ import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.util.profiling.ProfilerFiller
 import net.minecraftforge.common.crafting.conditions.ICondition
 import net.minecraftforge.eventbus.api.Event
+import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
@@ -18,7 +19,7 @@ class AddReloadListenerEvent(val serverResources: ReloadableServerResources) : E
     }
 
     val conditionContext: ICondition.IContext
-        get() = serverResources.conditionContext
+        get() = (serverResources as ReloadableServerResourcesInjection).conditionContext
 
     private class WrappedStateAwareListener(private val wrapped: PreparableReloadListener) : PreparableReloadListener {
         override fun reload(

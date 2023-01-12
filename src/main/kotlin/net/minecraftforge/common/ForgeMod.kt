@@ -29,7 +29,7 @@ class ForgeMod {
     init {
         INSTANCE = this
 
-        val modEventBus = FMLJavaModLoadingContext.get().getModEventBus()
+        val modEventBus = FMLJavaModLoadingContext.get().modEventBus
 
         
     }

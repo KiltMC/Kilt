@@ -11,16 +11,16 @@ import net.minecraftforge.eventbus.api.Cancelable
 @Cancelable
 open class EntityTeleportEvent(entity: Entity, var targetX: Double, var targetY: Double, var targetZ: Double) : EntityEvent(entity) {
     val prevX: Double
-        get() = entity.x
+        get() = entity!!.x
 
     val prevY: Double
-        get() = entity.y
+        get() = entity!!.y
 
     val prevZ: Double
-        get() = entity.z
+        get() = entity!!.z
 
     val prev: Vec3
-        get() = entity.position()
+        get() = entity!!.position()
 
     val target: Vec3
         get() = Vec3(targetX, targetY, targetZ)

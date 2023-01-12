@@ -1,8 +1,5 @@
 package net.minecraftforge.common.extensions
 
-import io.github.fabricators_of_create.porting_lib.model.data.ModelData
-import io.github.fabricators_of_create.porting_lib.util.ToolAction
-import io.github.fabricators_of_create.porting_lib.util.ToolActions
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.core.BlockPos
@@ -31,6 +28,8 @@ import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.IPlantable
+import net.minecraftforge.common.ToolAction
+import net.minecraftforge.common.ToolActions
 import java.util.*
 import java.util.function.BiConsumer
 
@@ -250,7 +249,8 @@ interface IForgeBlock {
         simulate: Boolean
     ): BlockState? {
         val itemStack = context.itemInHand
-        if (!itemStack.canPerformAction(toolAction)) return null
+        if (!itemStack.canPerformAction(toolAction.fabricToolAction)) return null
+
         if (ToolActions.AXE_STRIP === toolAction) {
             return AxeItem.getAxeStrippingState(state)
         } else if (ToolActions.AXE_SCRAPE === toolAction) {

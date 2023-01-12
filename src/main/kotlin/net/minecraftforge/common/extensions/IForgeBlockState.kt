@@ -1,7 +1,5 @@
 package net.minecraftforge.common.extensions
 
-import io.github.fabricators_of_create.porting_lib.util.ToolAction
-import io.github.fabricators_of_create.porting_lib.util.ToolActions
 import net.minecraft.client.Camera
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -23,6 +21,8 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import net.minecraftforge.common.IPlantable
+import net.minecraftforge.common.ToolAction
+import net.minecraftforge.event.ForgeEventFactory
 import java.util.*
 import java.util.function.BiConsumer
 
@@ -245,8 +245,8 @@ interface IForgeBlockState {
     }
 
     fun getToolModifiedState(context: UseOnContext, toolAction: ToolAction, simulate: Boolean): BlockState? {
-        val eventState: BlockState = ForgeEventFactory.onToolUse(self(), context, toolAction, simulate)
-        return if (eventState !== self()) eventState else block().getToolModifiedState(
+        val eventState = ForgeEventFactory.onToolUse(self(), context, toolAction, simulate)
+        return if (eventState != self()) eventState else block().getToolModifiedState(
             self(),
             context,
             toolAction,

@@ -12,6 +12,14 @@ object DistUtil {
         }
     }
 
+    fun envTypeToDist(envType: EnvType): Dist {
+        return when (envType) {
+            EnvType.CLIENT -> Dist.CLIENT
+            EnvType.SERVER -> Dist.DEDICATED_SERVER
+            else -> throw IllegalStateException()
+        }
+    }
+
     fun isDistEqual(dist: Dist, envType: EnvType): Boolean {
         return distToEnvType(dist) == envType
     }
