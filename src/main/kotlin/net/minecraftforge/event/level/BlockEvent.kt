@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.portal.PortalShape
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.ToolAction
+import net.minecraftforge.common.extensions.IForgeBlockState
 import net.minecraftforge.common.util.BlockSnapshot
 import net.minecraftforge.eventbus.api.Cancelable
 import net.minecraftforge.eventbus.api.Event
@@ -26,7 +27,7 @@ open class BlockEvent(val level: LevelAccessor, val pos: BlockPos, val state: Bl
         private var exp = if (state == null || !ForgeHooks.isCorrectToolForDrops(state, player))
             0
         else {
-            state.getExpDrop(
+            (state as IForgeBlockState).getExpDrop(
                 level,
                 level.random,
                 pos,

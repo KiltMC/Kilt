@@ -27,11 +27,15 @@ open class TickEvent(
         }
     }
 
-    class ClientTickEvent(side: LogicalSide, phase: Phase, @JvmField val level: Level, private val haveTime: BooleanSupplier) : TickEvent(Type.LEVEL, side, phase) {
+    class ClientTickEvent(phase: Phase) : TickEvent(Type.CLIENT, LogicalSide.CLIENT, phase)
+
+    class LevelTickEvent(side: LogicalSide, phase: Phase, @JvmField val level: Level, private val haveTime: BooleanSupplier) : TickEvent(Type.LEVEL, side, phase) {
         fun haveTime(): Boolean {
             return haveTime.asBoolean
         }
     }
 
     class PlayerTickEvent(phase: Phase, @JvmField val player: Player) : TickEvent(Type.PLAYER, if (player is ServerPlayer) LogicalSide.SERVER else LogicalSide.CLIENT, phase)
+
+    class RenderTickEvent(phase: Phase, @JvmField val renderTickTime: Float) : TickEvent(Type.RENDER, LogicalSide.CLIENT, phase)
 }

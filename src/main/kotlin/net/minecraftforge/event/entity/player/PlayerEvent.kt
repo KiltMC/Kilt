@@ -19,7 +19,7 @@ import java.util.Optional
 open class PlayerEvent(player: Player?) : LivingEvent(player) {
     override val entity = player
 
-    open class HarvestCheck(player: Player, state: BlockState, success: Boolean) {
+    open class HarvestCheck(player: Player, state: BlockState, success: Boolean) : PlayerEvent(player) {
         val targetBlock = state
         var canHarvest = success
     }
@@ -62,7 +62,7 @@ open class PlayerEvent(player: Player?) : LivingEvent(player) {
         }
     }
 
-    open class SaveFromFile(player: Player, originDirectory: File, val playerUUID: String) : PlayerEvent(player) {
+    open class SaveToFile(player: Player, originDirectory: File, val playerUUID: String) : PlayerEvent(player) {
         val playerDirectory = originDirectory
 
         fun getPlayerFile(suffix: String): File {
@@ -93,7 +93,7 @@ open class PlayerEvent(player: Player?) : LivingEvent(player) {
         val isEndConquered = endConquered
     }
 
-    open class PlayerChangeDimensionEvent(player: Player, fromDim: ResourceKey<Level>, toDim: ResourceKey<Level>) : PlayerEvent(player) {
+    open class PlayerChangedDimensionEvent(player: Player, fromDim: ResourceKey<Level>, toDim: ResourceKey<Level>) : PlayerEvent(player) {
         val from = fromDim
         val to = toDim
     }

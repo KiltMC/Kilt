@@ -52,7 +52,8 @@
       "net/minecraft/class_3610": ["net/minecraftforge/common/extensions/IForgeFluidState"],
       "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock"],
       "net/minecraft/class_1792": ["net/minecraftforge/common/extensions/IForgeItem"],
-      "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack"]
+      "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack"],
+      "net/minecraft/class_29": ["xyz/bluspring/kilt/injections/PlayerDataStorageInjection"]
     }
   },
   "accessWidener": "kilt.accesswidener"

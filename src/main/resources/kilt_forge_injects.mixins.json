@@ -12,7 +12,8 @@
     "world.level.block.BlockInject",
     "world.level.item.ItemInject",
     "world.level.material.FluidInject",
-    "world.level.material.FluidStateInject"
+    "world.level.material.FluidStateInject",
+    "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
   ],
