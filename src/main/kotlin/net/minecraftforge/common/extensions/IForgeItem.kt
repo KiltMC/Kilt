@@ -177,7 +177,7 @@ interface IForgeItem : ItemExtensions, io.github.fabricators_of_create.porting_l
     }
 
     fun getEnchantmentLevel(stack: ItemStack, enchantment: Enchantment): Int {
-        return EnchantmentHelper.getTagEnchantmentLevel(enchantment, stack)
+        return EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack)
     }
 
     fun getAllEnchantments(stack: ItemStack): Map<Enchantment, Int> {
