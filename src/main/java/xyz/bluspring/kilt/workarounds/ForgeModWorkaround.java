@@ -1,10 +1,7 @@
 package xyz.bluspring.kilt.workarounds;
 
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.registries.holderset.*;
-import net.minecraftforge.registries.holderset.HolderSetType;
+import net.minecraftforge.registries.holdersets.*;
+import net.minecraftforge.registries.holdersets.HolderSetType;
 
 // This class is used to do something that for some reason Kotlin can't do.
 // Unless I'm doing something wrong.

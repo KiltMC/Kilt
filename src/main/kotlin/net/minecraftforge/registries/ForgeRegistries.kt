@@ -1,12 +1,10 @@
 package net.minecraftforge.registries
 
-import com.mojang.serialization.Codec
 import net.minecraft.core.Registry
 import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.fluids.FluidType
-import net.minecraftforge.registries.holderset.HolderSetType
 
 object ForgeRegistries {
     // Game objects

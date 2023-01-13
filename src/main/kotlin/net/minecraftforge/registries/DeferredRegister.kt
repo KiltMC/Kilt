@@ -79,7 +79,7 @@ class DeferredRegister<T> private constructor(
 
     fun makeRegistry(sup: Supplier<RegistryBuilder<T>>): Supplier<IForgeRegistry<T>> {
         return Supplier {
-            ForgeRegistry(sup.get().registryName, sup.get())
+            ForgeRegistry(this.registryKey.location(), sup.get())
         }
     }
 
