@@ -15,8 +15,8 @@ import java.util.stream.Stream
 
 @JvmRecord
 data class AnyHolderSet<T>(val registry: Registry<T>) : ICustomHolderSet<T> {
-    override fun type(): HolderSetType<T> {
-        return ForgeMod.ANY_HOLDER_SET.get() as HolderSetType<T>
+    override fun type(): HolderSetType {
+        return ForgeMod.ANY_HOLDER_SET.get() as HolderSetType
     }
 
     override fun iterator(): MutableIterator<Holder<T>> {

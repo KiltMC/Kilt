@@ -7,13 +7,10 @@ package net.minecraftforge.versions.forge;
 
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.VersionChecker;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.JarVersionLookupHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-
-import static net.minecraftforge.fml.Logging.CORE;
+import xyz.bluspring.kilt.loader.KiltLoader;
 
 public class ForgeVersion
 {
@@ -21,27 +18,9 @@ public class ForgeVersion
     // This is Forge's Mod Id, used for the ForgeMod and resource locations
     public static final String MOD_ID = "forge";
 
-    private static final String forgeVersion;
-    private static final String forgeSpec;
-    private static final String forgeGroup;
-
-    static {
-        LOGGER.debug(CORE, "Forge Version package {} from {}", ForgeVersion.class.getPackage(), ForgeVersion.class.getClassLoader());
-        String vers = JarVersionLookupHandler.getImplementationVersion(ForgeVersion.class).orElse(FMLLoader.versionInfo().forgeVersion());
-        if (vers == null) throw new RuntimeException("Missing forge version, cannot continue");
-        String spec = JarVersionLookupHandler.getSpecificationVersion(ForgeVersion.class).orElse(System.getenv("FORGE_SPEC"));
-        if (spec == null) throw new RuntimeException("Missing forge spec, cannot continue");
-        String group = JarVersionLookupHandler.getImplementationTitle(ForgeVersion.class).orElse(FMLLoader.versionInfo().forgeGroup());
-        if (group == null) {
-            group = "net.minecraftforge"; // If all else fails, Our normal group
-        }
-        forgeVersion = vers;
-        forgeSpec = spec;
-        forgeGroup = group;
-        LOGGER.debug(CORE, "Found Forge version {}", forgeVersion);
-        LOGGER.debug(CORE, "Found Forge spec {}", forgeSpec);
-        LOGGER.debug(CORE, "Found Forge group {}", forgeGroup);
-    }
+    private static final String forgeVersion = KiltLoader.Companion.getSUPPORTED_FORGE_API_VERSION().toString();
+    private static final String forgeSpec = KiltLoader.Companion.getSUPPORTED_FORGE_SPEC_VERSION().toString();
+    private static final String forgeGroup = "xyz.bluspring.kilt";
 
     public static String getVersion()
     {

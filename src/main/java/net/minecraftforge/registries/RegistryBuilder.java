@@ -23,6 +23,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraftforge.registries.IForgeRegistry.*;
+
 public class RegistryBuilder<T>
 {
     private static final int MAX_ID = Integer.MAX_VALUE - 1;
@@ -46,6 +48,12 @@ public class RegistryBuilder<T>
     private DummyFactory<T> dummyFactory;
     private MissingFactory<T> missingFactory;
     private Set<ResourceLocation> legacyNames = new HashSet<>();
+
+    // Kilt: We need to get the name for the new registry event.
+    public ResourceLocation getName()
+    {
+        return this.registryName;
+    }
 
     public RegistryBuilder<T> setName(ResourceLocation name)
     {

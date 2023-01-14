@@ -5,7 +5,7 @@
 
 package net.minecraftforge.common.extensions;
 
-public interface IForgeHolderSet<T>
+public interface IForgeHolderSet
 {
     /**
      * <p>Adds a callback to run when this holderset's contents invalidate (i.e. because tags were rebound).</p>

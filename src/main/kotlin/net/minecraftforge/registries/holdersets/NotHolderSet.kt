@@ -24,8 +24,8 @@ class NotHolderSet<T>(
         (value as HolderSetInjection).addInvalidationListener(this::invalidate)
     }
 
-    override fun type(): HolderSetType<T> {
-        return ForgeMod.NOT_HOLDER_SET.get() as HolderSetType<T>
+    override fun type(): HolderSetType {
+        return ForgeMod.NOT_HOLDER_SET.get() as HolderSetType
     }
 
     private val owners = mutableListOf<Runnable>()

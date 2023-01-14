@@ -422,7 +422,7 @@ class KiltLoader {
                             try {
                                 val classLoader = launcher.targetClassLoader
                                 val clazz = classLoader.loadClass(it.clazz.className)
-                                clazz.declaredConstructors[0].newInstance()
+                                mod.modObject = clazz.declaredConstructors[0].newInstance()
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 exceptions.add(e)
@@ -466,8 +466,8 @@ class KiltLoader {
 
     companion object {
         // These constants are to be updated each time we change versions
-        private val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
-        private val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
+        val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
+        val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
 
         private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
 

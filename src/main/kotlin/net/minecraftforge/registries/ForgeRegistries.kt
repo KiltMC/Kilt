@@ -5,6 +5,7 @@ import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.fluids.FluidType
+import net.minecraftforge.registries.holdersets.HolderSetType
 
 object ForgeRegistries {
     // Game objects
@@ -50,10 +51,12 @@ object ForgeRegistries {
     //@JvmField val ENTITY_DATA_SERIALIZERS = DEFERRED_ENTITY_DATA_SERIALIZERS.makeRegistry(GameData::getGLMSerializersRegistryBuilder)
 
     internal val DEFERRED_FLUID_TYPES = DeferredRegister.create(Keys.FLUID_TYPES, Keys.FLUID_TYPES.location().namespace)
-    @JvmField val FLUID_TYPES = DEFERRED_FLUID_TYPES.makeRegistry { RegistryBuilder<FluidType>().registryName(Keys.FLUIDS.location()) }
+    @JvmField val FLUID_TYPES = DEFERRED_FLUID_TYPES.makeRegistry {
+        RegistryBuilder<FluidType>().setName(Keys.FLUIDS.location())
+    }
 
     internal val DEFERRED_HOLDER_SET_TYPES = DeferredRegister.create(Keys.HOLDER_SET_TYPES, Keys.HOLDER_SET_TYPES.location().namespace)
-    @JvmField val HOLDER_SET_TYPES = DEFERRED_HOLDER_SET_TYPES.makeRegistry { RegistryBuilder<HolderSetType<*>>().registryName(Keys.HOLDER_SET_TYPES.location()) }
+    @JvmField val HOLDER_SET_TYPES = DEFERRED_HOLDER_SET_TYPES.makeRegistry { RegistryBuilder<HolderSetType>().setName(Keys.HOLDER_SET_TYPES.location()) }
     // TODO: Implement the rest of these registries
 
     private fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T> {
@@ -104,7 +107,7 @@ object ForgeRegistries {
         //@JvmField val BIOME_MODIFIER_SERIALIZERS = key<Codec<out BiomeModifier>>("forge:biome_modifier_serializers")
         //@JvmField val STRUCTURE_MODIFIER_SERIALIZERS = key<Codec<out StructureModifier>>("forge:structure_modifier_serializers")
         @JvmField val FLUID_TYPES = key<FluidType>("forge:fluid_type")
-        @JvmField val HOLDER_SET_TYPES = key<HolderSetType<*>>("forge:holder_set_type")
+        @JvmField val HOLDER_SET_TYPES = key<HolderSetType>("forge:holder_set_type")
 
         // Forge Dynamic
         //@JvmField val BIOME_MODIFIERS = key<BiomeModifier>("forge:biome_modifier")

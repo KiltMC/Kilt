@@ -28,7 +28,21 @@ class RegistryManager(val name: String) {
         return registries.entries.firstOrNull { it.value == reg }?.key
     }
 
+    @JvmName("createRegistry")
+    internal fun <V> createRegistry(name: ResourceLocation, builder: RegistryBuilder<V>): ForgeRegistry<V> {
+        return getRegistry(name) // literally do not care
+    }
+
     companion object {
+        @JvmField
+        val ACTIVE = RegistryManager("ACTIVE")
+
+        @JvmField
+        val VANILLA = RegistryManager("VANILLA")
+
+        @JvmField
+        val FROZEN = RegistryManager("FROZEN")
+
         @JvmStatic
         fun postNewRegistryEvent() {
             val event = NewRegistryEvent()

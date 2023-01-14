@@ -15,8 +15,8 @@ open class OrHolderSet<T>(values: MutableList<HolderSet<T>>) : CompositeHolderSe
         }.toList().toMutableSet()
     }
 
-    override fun type(): HolderSetType<T> {
-        return ForgeMod.OR_HOLDER_SET.get() as HolderSetType<T>
+    override fun type(): HolderSetType {
+        return ForgeMod.OR_HOLDER_SET.get() as HolderSetType
     }
 
     companion object {

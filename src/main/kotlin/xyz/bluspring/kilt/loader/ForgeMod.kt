@@ -45,6 +45,9 @@ class ForgeMod(
         logger.error(EventBusErrorMessage(event, i, iEventListeners, throwable))
     }
 
+    lateinit var modObject: Any
+    val container = KiltModContainer(this)
+
     val jar: JarFile
         get() {
             return JarFile(remappedModFile)
