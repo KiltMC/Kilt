@@ -45,7 +45,7 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_2535": ["xyz/bluspring/kilt/injections/ConnectionInjection"],
-      "net/minecraft/class_6880$class_6883": ["xyz/bluspring/kilt/injections/HolderReferenceInjection"],
+      "net/minecraft/class_6880/class_6883": ["xyz/bluspring/kilt/injections/HolderReferenceInjection"],
       "net/minecraft/class_6880": ["net/minecraftforge/registries/tags/IReverseTag", "java/util/function/Supplier"],
       "net/minecraft/class_6885": ["net/minecraftforge/common/extensions/IForgeHolderSet"],
       "net/minecraft/class_3611": ["net/minecraftforge/common/extensions/IForgeFluid"],
