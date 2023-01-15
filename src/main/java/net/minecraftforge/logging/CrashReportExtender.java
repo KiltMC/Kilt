@@ -5,7 +5,6 @@
 
 package net.minecraftforge.logging;
 
-import cpw.mods.modlauncher.log.TransformingThrowablePatternConverter;
 import joptsimple.internal.Strings;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -16,6 +15,7 @@ import net.minecraftforge.fml.LoadingFailedException;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
 import org.apache.logging.log4j.Logger;
+import xyz.bluspring.kilt.injections.CrashReportCategoryInjection;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -46,7 +46,7 @@ public class CrashReportExtender
     }
 
     public static String generateEnhancedStackTrace(final Throwable throwable, boolean header) {
-        final String s = TransformingThrowablePatternConverter.generateEnhancedStackTrace(throwable);
+        final String s = throwable.toString();
         return header ? s : s.substring(s.indexOf(Strings.LINE_SEPARATOR));
     }
 
@@ -63,7 +63,7 @@ public class CrashReportExtender
                 cause = cause.getCause();
             }
             if (cause != null)
-                category.applyStackTrace(cause);
+                ((CrashReportCategoryInjection) category).applyStackTrace(cause);
             category.setDetail("Mod File", () -> modInfo.map(IModInfo::getOwningFile).map(t-> t.getFile().getFilePath().toUri().getPath()).orElse("NO FILE INFO"));
             category.setDetail("Failure message", () -> mle.getCleanMessage().replace("\n", "\n\t\t"));
             category.setDetail("Mod Version", () -> modInfo.map(IModInfo::getVersion).map(Object::toString).orElse("NO MOD INFO AVAILABLE"));

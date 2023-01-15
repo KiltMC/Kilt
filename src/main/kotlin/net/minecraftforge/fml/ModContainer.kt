@@ -1,6 +1,8 @@
 package net.minecraftforge.fml
 
+import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.forgespi.language.IModInfo
+import java.util.Optional
 import java.util.function.Supplier
 
 abstract class ModContainer(info: IModInfo) {
@@ -14,4 +16,12 @@ abstract class ModContainer(info: IModInfo) {
 
     val currentStage: ModLoadingStage
         get() = modLoadingStage
+
+    fun <T : Record> getCustomExtension(point: Class<out IExtensionPoint<T>>): Optional<T> {
+        return Optional.ofNullable(extensionPoints.getOrDefault(point, Supplier { null }).get() as T)
+    }
+
+    fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {
+        extensionPoints[point] = extension
+    }
 }

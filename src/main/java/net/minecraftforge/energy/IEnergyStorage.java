@@ -5,8 +5,6 @@
 
 package net.minecraftforge.energy;
 
-import net.minecraftforge.common.capabilities.AutoRegisterCapability;
-
 /**
  * An energy storage is the unit of interaction with Energy inventories.
  * <p>
@@ -16,7 +14,6 @@ import net.minecraftforge.common.capabilities.AutoRegisterCapability;
  * Created with consent and permission of King Lemming and Team CoFH. Released with permission under LGPL 2.1 when bundled with Forge.
  *
  */
-@AutoRegisterCapability
 public interface IEnergyStorage
 {
     /**

@@ -46,7 +46,24 @@ class ModLoadingContext(private val mod: ForgeMod) {
         @JvmStatic
         fun get(): ModLoadingContext {
             // Apparently this is possible, and this seems a lot better to do.
-            val source = StackWalker.getInstance().callerClass
+            val stackWalker = StackWalker.getInstance()
+            val source = stackWalker.callerClass
+
+            if (source == null) {
+                if (!contexts.contains("forge")) {
+                    val mod = Kilt.loader.getMod("forge") ?: throw Exception("Kilt has not finished loading mods yet!")
+                    contexts["forge"] = ModLoadingContext(mod)
+                }
+
+                return contexts["forge"]!!
+            }
+
+            return get(source)
+        }
+
+        // Put this here so ModLoadingContext can be called from a Forge method
+        @JvmStatic
+        fun get(source: Class<*>): ModLoadingContext {
             val tomlStream = source.getResourceAsStream("/META-INF/mods.toml")
 
             val hash = DigestUtils.md5Hex(tomlStream)

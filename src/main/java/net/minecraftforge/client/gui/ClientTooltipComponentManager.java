@@ -41,7 +41,9 @@ public final class ClientTooltipComponentManager
     {
         var factories = new HashMap<Class<? extends TooltipComponent>, Function<TooltipComponent, ClientTooltipComponent>>();
         var event = new RegisterClientTooltipComponentFactoriesEvent(factories);
-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
+        // whatever the fuck Forge is doing with setting the active container,
+        // i don't want any of that shit.
+        ModLoader.get().postEvent(event);
         FACTORIES = ImmutableMap.copyOf(factories);
     }
 

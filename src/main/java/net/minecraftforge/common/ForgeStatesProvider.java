@@ -6,7 +6,7 @@
 package net.minecraftforge.common;
 
 import java.util.List;
-import net.minecraftforge.common.capabilities.CapabilityManager;
+
 import net.minecraftforge.fml.IModLoadingState;
 import net.minecraftforge.fml.IModStateProvider;
 import net.minecraftforge.fml.ModLoadingPhase;

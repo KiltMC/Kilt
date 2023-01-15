@@ -14,6 +14,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.ModLoader;
+import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class AddReloadListenerEvent extends Event
      */
     public ICondition.IContext getConditionContext()
     {
-        return serverResources.getConditionContext();
+        return ((ReloadableServerResourcesInjection) serverResources).getConditionContext();
     }
 
     private static class WrappedStateAwareListener implements PreparableReloadListener {

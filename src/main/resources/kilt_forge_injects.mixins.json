@@ -4,6 +4,7 @@
   "package": "xyz.bluspring.kilt.forgeinjects",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "CrashReportCategoryInject",
     "core.HolderInject",
     "core.HolderReferenceInject",
     "core.HolderSetInject",
@@ -17,6 +18,7 @@
     "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
+    "client.renderer.RenderTypeInject"
   ],
   "injectors": {
     "defaultRequire": 1

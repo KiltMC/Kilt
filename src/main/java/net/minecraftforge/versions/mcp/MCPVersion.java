@@ -5,11 +5,9 @@
 
 package net.minecraftforge.versions.mcp;
 
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.JarVersionLookupHandler;
 
 import static net.minecraftforge.fml.Logging.CORE;
 
@@ -19,10 +17,10 @@ public class MCPVersion {
     private static final String mcpVersion;
     static {
         LOGGER.debug(CORE, "MCP Version package {} from {}", MCPVersion.class.getPackage(), MCPVersion.class.getClassLoader());
-        mcVersion = JarVersionLookupHandler.getSpecificationVersion(MCPVersion.class).orElse(FMLLoader.versionInfo().mcVersion());
+        mcVersion = FabricLoaderImpl.INSTANCE.getGameProvider().getNormalizedGameVersion();
         if (mcVersion == null) throw new RuntimeException("Missing MC version, cannot continue");
 
-        mcpVersion = JarVersionLookupHandler.getImplementationVersion(MCPVersion.class).orElse(FMLLoader.versionInfo().mcpVersion());
+        mcpVersion = FabricLoaderImpl.INSTANCE.getGameProvider().getNormalizedGameVersion();
         if (mcpVersion == null) throw new RuntimeException("Missing MCP version, cannot continue");
 
         LOGGER.debug(CORE, "Found MC version information {}", mcVersion);
