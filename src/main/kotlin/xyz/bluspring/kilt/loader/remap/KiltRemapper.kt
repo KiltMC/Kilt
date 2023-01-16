@@ -35,6 +35,11 @@ object KiltRemapper {
     private val logger = Kilt.logger
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     private val srgIntermediaryTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
+    private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
+
+    private val extraKiltWorkaroundRemapper = ExtraRemapper(kiltWorkaroundTree, "srg", "intermediary")
+    private val kiltWorkaroundRemapper = createRemapper(createMappings(kiltWorkaroundTree, "srg", "intermediary"))
+        .extraRemapper(extraKiltWorkaroundRemapper)
 
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         val launcher = FabricLauncherBase.getLauncher()
@@ -65,10 +70,31 @@ object KiltRemapper {
             else 0
         }
 
-        // First iteration, for normal mod loading.
+        // First iteration, for patching mods using the static methods and custom constructors that Forge injects into Minecraft directly
+        // as Mixin and Fabric don't allow adding new static methods or new constructors.
+        logger.info("Remapping Forge mods to use Kilt-remapped APIs...")
+
         modRemapQueue.forEach { mod ->
             try {
-                remapMod(mod.modFile, remapperBuilder, mod, remappedModsDir, arrayOf(
+                remapMod(mod.modFile, kiltWorkaroundRemapper, mod, remappedModsDir, arrayOf(
+                    srgMappedMinecraft,
+                    *gameClassPath,
+                    *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
+                        .map { it.remappedModFile.toPath() }.toTypedArray()
+                ), extraKiltWorkaroundRemapper)
+                logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) to use Kilt-remapped APIs")
+            } catch (e: Exception) {
+                exceptions.add(e)
+                e.printStackTrace()
+            }
+        }
+
+        logger.info("Finished remapping mods to use Kilt-remapped APIs!")
+
+        // Second iteration, for normal mod loading.
+        modRemapQueue.forEach { mod ->
+            try {
+                remapMod(mod.remappedModFile, remapperBuilder, mod, remappedModsDir, arrayOf(
                     srgMappedMinecraft,
                     *gameClassPath,
                     *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
@@ -83,7 +109,7 @@ object KiltRemapper {
 
         logger.info("Finished remapping mods to Intermediary!")
 
-        // Second iteration, for developer environments.
+        // Third iteration, for developer environments.
         // This is so the mods actually use the proper class names.
         if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             val extraDevRemapper = ExtraRemapper(
@@ -135,7 +161,7 @@ object KiltRemapper {
         val remapper = remapperBuilder.build()
 
         // Need to get the environment somehow
-        extraRemapper.remapper = remapper
+        extraRemapper?.remapper = remapper
 
         remapper.readClassPath(*gameClassPath)
         remapper.readInputs(file.toPath())
