@@ -1,0 +1,84 @@
+tiny	2	0	srg	intermediary
+c	com/mojang/blaze3d/platform/GlStateManager	xyz/bluspring/kilt/remaps/blaze3d/GlStateManagerRemap
+	f	F	lastBrightnessX	lastBrightnessX
+	f	F	lastBrightnessY	lastBrightnessY
+c	net/minecraft/advancements/Advancement$Builder	xyz/bluspring/kilt/remaps/advancements/AdvancementBuilderRemap
+	m	(Lcom/google/gson/JsonObject;Lnet/minecraft/advancements/critereon/DeserializationContext;Lnet/minecraftforge/common/crafting/conditions/ICondition$IContext;)Lnet/minecraft/advancements/Advancement$Builder;	fromJson	fromJson
+c	net/minecraft/advancements/critereon/ItemPredicate	xyz/bluspring/kilt/remaps/advancements/critereon/ItemPredicateRemap
+	m	()Ljava/util/Map;	getPredicates	getPredicates
+	m	(Lnet/minecraft/resources/ResourceLocation;Ljava/util/function/Function;)V	register	register
+c	net/minecraft/client/gui/components/AbstractWidget	xyz/bluspring/kilt/remaps/client/gui/components/AbstractWidgetRemap
+	f	I	UNSET_FG_COLOR	UNSET_FG_COLOR
+c	net/minecraft/client/gui/screens/MenuScreens	xyz/bluspring/kilt/remaps/client/gui/screens/MenuScreensRemap
+	m	(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)Ljava/util/Optional;	getScreenFactory	getScreenFactory
+c	net/minecraft/client/gui/screens/advancements/AdvancementTabType	xyz/bluspring/kilt/remaps/client/gui/screens/advancements/AdvancementTabTypeRemap
+	f	I	MAX_TABS	MAX_TABS
+c	net/minecraft/client/renderer/ItemBlockRenderTypes	xyz/bluspring/kilt/remaps/client/renderer/ItemBlockRenderTypesRemap
+	m	(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraftforge/client/ChunkRenderTypeSet;	getRenderLayers	getRenderLayers
+	m	(Lnet/minecraft/world/level/block/Block;Ljava/util/function/Predicate;)V	setRenderLayer	setRenderLayer
+	m	(Lnet/minecraft/world/level/material/Fluid;Lnet/minecraft/client/renderer/RenderType;)V	setRenderLayer	setRenderLayer
+	m	(Lnet/minecraft/world/level/block/Block;Lnet/minecraftforge/client/ChunkRenderTypeSet;)V	setRenderLayer	setRenderLayer
+	m	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/client/renderer/RenderType;)V	setRenderLayer	setRenderLayer
+c	net/minecraft/client/renderer/ScreenEffectRenderer	xyz/bluspring/kilt/remaps/client/renderer/ScreenEffectRendererRemap
+	m	(Lnet/minecraft/client/Minecraft;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/resources/ResourceLocation;)V	renderFluid	renderFluid
+c	net/minecraft/client/renderer/Sheets	xyz/bluspring/kilt/remaps/client/renderer/SheetsRemap
+	m	(Lnet/minecraft/world/level/block/state/properties/WoodType;)V	addWoodType	addWoodType
+c	net/minecraft/core/MappedRegistry	xyz/bluspring/kilt/remaps/core/MappedRegistryRemap
+	m	()Ljava/util/Set;	getKnownRegistries	getKnownRegistries
+c	net/minecraft/gametest/framework/GameTestRegistry	xyz/bluspring/kilt/remaps/gametest/framework/GameTestRegistryRemap
+	m	(Ljava/lang/Method;Ljava/util/Set;)V	register	register
+c	net/minecraft/stats/RecipeBookSettings	xyz/bluspring/kilt/remaps/stats/RecipeBookSettingsRemap
+	m	(Lnet/minecraft/world/inventory/RecipeBookType;Ljava/lang/String;Ljava/lang/String;)V	addTagsForType	addTagsForType
+c	net/minecraft/tags/BlockTags	xyz/bluspring/kilt/remaps/tags/BlockTagsRemap
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;	create	create
+c	net/minecraft/tags/FluidTags	xyz/bluspring/kilt/remaps/tags/FluidTagsRemap
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;	create	create
+c	net/minecraft/tags/ItemTags	xyz/bluspring/kilt/remaps/tags/ItemTagsRemap
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;	create	create
+c	net/minecraft/world/entity/MobCategory	xyz/bluspring/kilt/remaps/world/entity/MobCategoryRemap
+	m	(Ljava/lang/String;)Lnet/minecraft/world/entity/MobCategory;	byName	byName
+c	net/minecraft/world/entity/SpawnPlacements	xyz/bluspring/kilt/remaps/world/entity/SpawnPlacementsRemap
+	m	()V	fireSpawnPlacementEvent	fireSpawnPlacementEvent
+c	net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder	xyz/bluspring/kilt/remaps/world/entity/ai/attributes/AttributeSupplierBuilderRemap
+	m	(Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier;)V	<init>	initialize
+c	net/minecraft/world/entity/player/Player	xyz/bluspring/kilt/remaps/world/entity/player/PlayerRemap
+	f	Ljava/lang/String;	PERSISTED_NBT_TAG	PERSISTED_NBT_TAG
+c	net/minecraft/world/entity/projectile/ProjectileUtil	xyz/bluspring/kilt/remaps/world/entity/projectile/ProjectileUtilRemap
+	m	(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/InteractionHand;	getWeaponHoldingHand	getWeaponHoldingHand
+c	net/minecraft/world/entity/vehicle/AbstractMinecart	xyz/bluspring/kilt/remaps/world/entity/vehicle/AbstractMinecartRemap
+	m	(Lnet/minecraftforge/common/IMinecartCollisionHandler;)V	registerCollisionHandler	registerCollisionHandler
+c	net/minecraft/world/item/AxeItem	xyz/bluspring/kilt/remaps/world/item/AxeItemRemap
+	m	(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;	getAxeStrippingState	getAxeStrippingState
+c	net/minecraft/world/item/BoneMealItem	xyz/bluspring/kilt/remaps/world/item/BoneMealItemRemap
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z	applyBonemeal	applyBonemeal
+c	net/minecraft/world/item/BucketItem	xyz/bluspring/kilt/remaps/world/item/BucketItemRemap
+	m	(Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V	<init>	initialize
+c	net/minecraft/world/item/CreativeModeTab	xyz/bluspring/kilt/remaps/world/item/CreativeModeTabRemap
+	m	()I	getGroupCountSafe	getGroupCountSafe
+c	net/minecraft/world/item/DyeColor	xyz/bluspring/kilt/remaps/world/item/DyeColorRemap
+	m	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/DyeColor;	getColor	getColor
+c	net/minecraft/world/item/ShovelItem	xyz/bluspring/kilt/remaps/world/item/ShovelItemRemap
+	m	(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;	getShovelPathingState	getShovelPathingState
+c	net/minecraft/world/item/crafting/Ingredient	xyz/bluspring/kilt/remaps/world/item/crafting/IngredientRemap
+	m	()V	invalidateAll	invalidateAll
+	m	(Ljava/util/Collection;)Lnet/minecraft/world/item/crafting/Ingredient;	merge	merge
+c	net/minecraft/world/item/crafting/RecipeManager	xyz/bluspring/kilt/remaps/world/item/crafting/RecipeManagerRemap
+	m	(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;Lnet/minecraftforge/common/crafting/conditions/ICondition$IContext;)Lnet/minecraft/world/item/crafting/Recipe;	fromJson	fromJson
+c	net/minecraft/world/item/crafting/RecipeType	xyz/bluspring/kilt/remaps/world/item/crafting/RecipeTypeRemap
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/item/crafting/RecipeType;	simple	simple
+c	net/minecraft/world/item/crafting/ShapedRecipe	xyz/bluspring/kilt/remaps/world/item/crafting/ShapedRecipeRemap
+	m	(II)V	setCraftingSize	setCraftingSize
+c	net/minecraft/world/item/enchantment/EnchantmentHelper	xyz/bluspring/kilt/remaps/world/item/enchantment/EnchantmentHelperRemap
+	m	(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I	getTagEnchantmentLevel	getTagEnchantmentLevel
+c	net/minecraft/world/level/NaturalSpawner	xyz/bluspring/kilt/remaps/world/level/NaturalSpawnerRemap
+	m	(Lnet/minecraft/world/entity/SpawnPlacements$Type;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/EntityType;)Z	canSpawnAtBody	canSpawnAtBody
+c	net/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier	xyz/bluspring/kilt/remaps/world/level/biome/BiomeSpecialEffectsRemap
+	m	(Ljava/lang/String;)Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;	byName	byName
+c	net/minecraft/world/level/block/state/properties/WoodType	xyz/bluspring/kilt/remaps/world/level/block/state/properties/WoodTypeRemap
+	m	(Ljava/lang/String;)Lnet/minecraft/world/level/block/state/properties/WoodType;	create	create
+c	net/minecraft/world/level/levelgen/DebugLevelSource	xyz/bluspring/kilt/remaps/world/level/levelgen/DebugLevelSourceRemap
+	m	()V	initValidStates	initValidStates
+c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate	xyz/bluspring/kilt/remaps/world/level/levelgen/structure/templatesystem/StructureTemplateRemap
+	m	(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;)Ljava/util/List;	processBlockInfos	processBlockInfos
+	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;)Ljava/util/List;	processEntityInfos	processEntityInfos
+	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;	transformedVec3d	transformedVec3d
