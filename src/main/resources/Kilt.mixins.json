@@ -5,10 +5,13 @@
   "plugin": "xyz.bluspring.kilt.loader.KiltSuperEarlyInitializer",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AttributeSupplierAccessor",
+    "AttributeSupplierBuilderAccessor",
     "EntityAccessor",
     "ItemBlockRenderTypesAccessor",
     "RecipeBookSettingsAccessor",
-    "ScreenEffectRendererAccessor"
+    "ScreenEffectRendererAccessor",
+    "SpawnPlacementsAccessor"
   ],
   "client": [
   ],
