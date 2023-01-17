@@ -18,7 +18,8 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 
 import java.util.function.BiConsumer;
-import cpw.mods.modlauncher.api.LamdbaExceptionUtils;
+
+import io.github.fabricators_of_create.porting_lib.util.LamdbaExceptionUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.CachedOutput;
@@ -31,6 +32,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.minecraftforge.common.data.ExistingFileHelper.ResourceType;
+import net.minecraftforge.data.event.GatherDataEvent;
 import org.slf4j.Logger;
 
 /**

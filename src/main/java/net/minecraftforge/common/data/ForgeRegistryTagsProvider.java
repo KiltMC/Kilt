@@ -10,9 +10,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraftforge.registries.GameData;
+import net.minecraftforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
 
-public abstract class ForgeRegistryTagsProvider<T> extends TagsProvider<T>
+public abstract class ForgeRegistryTagsProvider<T> extends TagsProviderRemap<T>
 {
     private static <T> Registry<T> wrapRegistry(IForgeRegistry<T> forgeRegistry)
     {

@@ -14,7 +14,9 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegisterEvent;
 import org.jetbrains.annotations.ApiStatus;
+import xyz.bluspring.kilt.mixin.ParticleEngineAccessor;
 
 /**
  * Fired for registering particle providers at the appropriate time.
@@ -39,11 +41,11 @@ public class RegisterParticleProvidersEvent extends Event implements IModBusEven
 
     public <T extends ParticleOptions> void register(ParticleType<T> type, ParticleProvider<T> provider)
     {
-        particleEngine.register(type, provider);
+        ((ParticleEngineAccessor<T>) particleEngine).callRegister(type, provider);
     }
 
     public <T extends ParticleOptions> void register(ParticleType<T> type, ParticleEngine.SpriteParticleRegistration<T> registration)
     {
-        particleEngine.register(type, registration);
+        ((ParticleEngineAccessor<T>) particleEngine).callRegister(type, registration);
     }
 }

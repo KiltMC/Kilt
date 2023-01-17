@@ -53,11 +53,6 @@ class ForgeRegistry<V> internal constructor (
         return vanillaRegistry.get(key)
     }
 
-    // what the fuck is this even used for
-    override fun getDefaultKey(): ResourceLocation? {
-        return keys.firstOrNull()
-    }
-
     override fun getResourceKey(value: V): Optional<ResourceKey<V>> {
         return vanillaRegistry.getResourceKey(value)
     }
@@ -127,4 +122,20 @@ class ForgeRegistry<V> internal constructor (
     override fun iterator(): Iterator<V> {
         return vanillaRegistry.iterator()
     }
+
+    fun getID(name: ResourceLocation): Int {
+        return fabricRegistry.entries.indexOfFirst { it.id == name }
+    }
+
+    fun getID(value: V?): Int {
+        return fabricRegistry.entries.indexOfFirst { it.get() == value }
+    }
+
+    fun getValue(id: Int): V? {
+        return fabricRegistry.entries.elementAt(id).get()
+    }
+
+    // i still do not know what the fuck this is for
+    override val defaultKey: ResourceLocation?
+        get() = keys.firstOrNull()
 }

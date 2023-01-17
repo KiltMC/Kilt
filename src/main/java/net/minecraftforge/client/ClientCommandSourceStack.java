@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
+import net.minecraftforge.common.extensions.IForgeCommandSourceStack;
 
 import java.util.Collection;
 import java.util.Set;
@@ -31,7 +32,7 @@ import java.util.stream.Stream;
 /**
  * overrides for {@link CommandSourceStack} so that the methods will run successfully client side
  */
-public class ClientCommandSourceStack extends CommandSourceStack
+public class ClientCommandSourceStack extends CommandSourceStack implements IForgeCommandSourceStack
 {
 
     public ClientCommandSourceStack(CommandSource source, Vec3 position, Vec2 rotation, int permission, String plainTextName, Component displayName,

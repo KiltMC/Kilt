@@ -7,10 +7,13 @@
   "mixins": [
     "AttributeSupplierAccessor",
     "AttributeSupplierBuilderAccessor",
+    "ClientPacketListenerAccessor",
     "DebugLevelSourceAccessor",
     "DyeColorAccessor",
     "EntityAccessor",
     "ItemBlockRenderTypesAccessor",
+    "LocalPlayerAccessor",
+    "ParticleEngineAccessor",
     "RecipeBookSettingsAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",

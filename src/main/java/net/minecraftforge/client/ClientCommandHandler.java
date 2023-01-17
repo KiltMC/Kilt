@@ -29,6 +29,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.server.command.CommandHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import xyz.bluspring.kilt.mixin.ClientPacketListenerAccessor;
+import xyz.bluspring.kilt.mixin.LocalPlayerAccessor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class ClientCommandHandler
         if (event.getConnection().getPacketListener() instanceof ClientPacketListener listener)
         {
             // Must set this, so that suggestions for client-only commands work, if server never sends commands packet
-            listener.commands = suggestionDispatcher;
+            ((ClientPacketListenerAccessor) listener).setCommands(suggestionDispatcher);
         }
     }
 
@@ -112,7 +114,7 @@ public class ClientCommandHandler
     public static ClientCommandSourceStack getSource()
     {
         LocalPlayer player = Minecraft.getInstance().player;
-        return new ClientCommandSourceStack(player, player.position(), player.getRotationVector(), player.getPermissionLevel(),
+        return new ClientCommandSourceStack(player, player.position(), player.getRotationVector(), ((LocalPlayerAccessor) player).callGetPermissionLevel(),
                 player.getName().getString(), player.getDisplayName(), player);
     }
 

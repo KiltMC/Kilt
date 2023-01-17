@@ -6,6 +6,7 @@
 package net.minecraftforge.client.event;
 
 import com.google.common.collect.ImmutableMap;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.SkullModel;
@@ -115,7 +116,7 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
          */
         public <T extends Entity> void registerEntityRenderer(EntityType<? extends T> entityType, EntityRendererProvider<T> entityRendererProvider)
         {
-            EntityRenderers.register(entityType, entityRendererProvider);
+            EntityRendererRegistry.register(entityType, entityRendererProvider);
         }
 
         /**

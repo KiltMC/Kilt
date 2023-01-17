@@ -42,8 +42,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.items.wrapper.ShulkerItemStackInvWrapper;
+import net.minecraftforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.world.item.enchantment.EnchantmentHelperRemap;
 
 // TODO systemic review of all extension functions. lots of unused -C
 public interface IForgeItem
@@ -127,7 +129,10 @@ public interface IForgeItem
      *
      * @return True if reparable
      */
-    boolean isRepairable(ItemStack stack);
+    default boolean isRepairable(ItemStack stack) {
+        // i need to provide this, otherwise it will physically refuse to compile.
+        throw new IllegalStateException("fuck you intellij");
+    }
 
     /**
     * Determines the amount of durability the mending enchantment
@@ -534,7 +539,7 @@ public interface IForgeItem
      */
     default int getEnchantmentLevel(ItemStack stack, Enchantment enchantment)
     {
-        return EnchantmentHelper.getTagEnchantmentLevel(enchantment, stack);
+        return EnchantmentHelperRemap.getTagEnchantmentLevel(enchantment, stack);
     }
 
     /**

@@ -21,7 +21,7 @@ interface IForgeRegistry<V> : Iterable<V> {
 
     fun getValue(key: ResourceLocation): V?
     fun getKey(value: V): ResourceLocation?
-    fun getDefaultKey(): ResourceLocation?
+    val defaultKey: ResourceLocation?
     fun getResourceKey(value: V): Optional<ResourceKey<V>>
 
     val keys: Set<ResourceLocation>

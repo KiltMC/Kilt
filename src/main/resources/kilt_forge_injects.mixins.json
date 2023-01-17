@@ -16,13 +16,14 @@
     "world.level.block.BlockInject",
     "world.level.item.BoneMealItemInject",
     "world.level.item.BucketItemInject",
-    "world.level.item.ItemPropertiesInject",
     "world.level.item.ItemInject",
+    "world.level.item.ItemPropertiesInject",
     "world.level.material.FluidInject",
     "world.level.material.FluidStateInject",
     "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
+    "client.gui.components.AbstractSelectionListInject",
     "client.renderer.RenderTypeInject",
     "client.renderer.ScreenEffectRendererInject"
   ],

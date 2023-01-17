@@ -5,7 +5,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion
 
 class VersionChecker {
     enum class Status {
-        PENDING, FAILED, UP_TO_DATE, AHEAD, BETA, BETA_OUTDATED;
+        PENDING, FAILED, UP_TO_DATE, OUTDATED, AHEAD, BETA, BETA_OUTDATED;
 
         val sheetOffset = 0
         fun shouldDraw(): Boolean {
