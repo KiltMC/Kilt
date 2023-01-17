@@ -7,12 +7,14 @@
   "mixins": [
     "AttributeSupplierAccessor",
     "AttributeSupplierBuilderAccessor",
+    "DebugLevelSourceAccessor",
     "DyeColorAccessor",
     "EntityAccessor",
     "ItemBlockRenderTypesAccessor",
     "RecipeBookSettingsAccessor",
     "ScreenEffectRendererAccessor",
-    "SpawnPlacementsAccessor"
+    "SpawnPlacementsAccessor",
+    "WoodTypeAccessor"
   ],
   "client": [
   ],
