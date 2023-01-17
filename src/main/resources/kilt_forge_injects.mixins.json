@@ -24,6 +24,7 @@
     "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
+    "client.MinecraftInject",
     "client.gui.components.AbstractSelectionListInject",
     "client.renderer.RenderTypeInject",
     "client.renderer.ScreenEffectRendererInject"

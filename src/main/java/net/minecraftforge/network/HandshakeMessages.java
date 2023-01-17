@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.RegistryManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Maps;

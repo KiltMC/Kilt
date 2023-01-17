@@ -184,6 +184,7 @@ import java.util.stream.Stream;
 import static net.minecraftforge.fml.VersionChecker.Status.BETA;
 import static net.minecraftforge.fml.VersionChecker.Status.BETA_OUTDATED;
 
+@SuppressWarnings("removal")
 @ApiStatus.Internal
 public class ForgeHooksClient
 {

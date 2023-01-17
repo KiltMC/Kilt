@@ -5,7 +5,7 @@
 
 package net.minecraftforge.data.event;
 
-import cpw.mods.modlauncher.api.LamdbaExceptionUtils;
+import io.github.fabricators_of_create.porting_lib.util.LamdbaExceptionUtils;
 import net.minecraft.DetectedVersion;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
