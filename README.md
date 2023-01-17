@@ -7,19 +7,15 @@ I like Fabric. And I hate Forge. More reasons [here](WHY.md).
 
 ### No, but like, doesn't Patchwork exist?
 Patchwork has been in development for over 2 years, and I essentially got tired of waiting.
-The source code that's currently being worked on isn't even available to the public!
+The source code that's currently being worked on isn't even available to the public yet!
 
 ### Okay... so how does this work?
-So, instead of just bringing FML into Fabric, this essentially
-reimplements most of Forge's APIs by either doing it in its own way, or using
-an API that already exists, and translating it into a Forge API call.
+Basically this recreates FML in its own way, with some of its own changes
+to hopefully improve on its performance, and sometimes also using
+native Fabric-provided APIs for compatibility.
 
 ### How have you not lost your sanity doing this?
 Already have. Next question.
-
-## for developers, TODO: move into another file
-The forgeinjects package is designated specifically for the things
-Forge patches, for having a way more compatible
 
 ## Credits & Acknowledgements
 I want to give a huge amount of thanks to the [Fabricators of Create](https://github.com/Fabricators-of-Create)
