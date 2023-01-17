@@ -3,7 +3,11 @@ accessWidener v1 named
 accessible class net/minecraft/core/Holder$Reference$Type
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 accessible class net/minecraft/util/datafix/fixes/StructuresBecomeConfiguredFix$Conversion
+
 accessible class net/minecraft/world/entity/SpawnPlacements$Data
+accessible field net/minecraft/world/entity/SpawnPlacements$Data heightMap Lnet/minecraft/world/level/levelgen/Heightmap$Types;
+accessible field net/minecraft/world/entity/SpawnPlacements$Data placement Lnet/minecraft/world/entity/SpawnPlacements$Type;
+accessible field net/minecraft/world/entity/SpawnPlacements$Data predicate Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;
 
 accessible method net/minecraft/world/level/biome/Biome$ClimateSettings <init> (Lnet/minecraft/world/level/biome/Biome$Precipitation;FLnet/minecraft/world/level/biome/Biome$TemperatureModifier;F)V
 accessible method net/minecraft/world/level/block/FireBlock getBurnOdds (Lnet/minecraft/world/level/block/state/BlockState;)I

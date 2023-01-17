@@ -51,7 +51,6 @@ c	net/minecraft/world/item/AxeItem	xyz/bluspring/kilt/remaps/world/item/AxeItemR
 c	net/minecraft/world/item/BoneMealItem	xyz/bluspring/kilt/remaps/world/item/BoneMealItemRemap
 	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z	applyBonemeal	applyBonemeal
 c	net/minecraft/world/item/BucketItem	xyz/bluspring/kilt/remaps/world/item/BucketItemRemap
-	m	(Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V	<init>	initialize
 c	net/minecraft/world/item/CreativeModeTab	xyz/bluspring/kilt/remaps/world/item/CreativeModeTabRemap
 	m	()I	getGroupCountSafe	getGroupCountSafe
 c	net/minecraft/world/item/DyeColor	xyz/bluspring/kilt/remaps/world/item/DyeColorRemap

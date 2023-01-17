@@ -55,7 +55,9 @@
       "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack"],
       "net/minecraft/class_29": ["xyz/bluspring/kilt/injections/PlayerDataStorageInjection"],
       "net/minecraft/class_129": ["xyz/bluspring/kilt/injections/CrashReportCategoryInjection"],
-      "net/minecraft/class_1921": ["xyz/bluspring/kilt/injections/client/RenderTypeInjection"]
+      "net/minecraft/class_1921": ["xyz/bluspring/kilt/injections/client/RenderTypeInjection"],
+      "net/minecraft/class_1755": ["xyz/bluspring/kilt/injections/item/BucketItemInjection"],
+      "net/minecraft/class_1792$class_1792": ["xyz/bluspring/kilt/injections/item/ItemPropertiesInjection"]
     }
   },
   "accessWidener": "kilt.accesswidener"
