@@ -10,6 +10,7 @@
     "core.HolderSetInject",
     "core.HolderSetNamedInject",
     "core.MappedRegistryInject",
+    "data.loot.LootTableProviderInject",
     "network.ConnectionInject",
     "server.ReloadableServerResourcesInject",
     "stats.RecipeBookSettingsInject",

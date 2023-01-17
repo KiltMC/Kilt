@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -148,12 +149,12 @@ public class FluidStack
 
     public final Fluid getFluid()
     {
-        return isEmpty ? Fluids.EMPTY : fluidDelegate.get();
+        return isEmpty ? Fluids.EMPTY : (Fluid) fluidDelegate.get();
     }
 
     public final Fluid getRawFluid()
     {
-        return fluidDelegate.get();
+        return (Fluid) fluidDelegate.get();
     }
 
     public boolean isEmpty() {

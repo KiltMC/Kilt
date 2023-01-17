@@ -14,7 +14,7 @@ abstract class ModContainer(info: IModInfo) {
     protected val activityMap = mutableMapOf<ModLoadingStage, Runnable>()
     protected val extensionPoints = mutableMapOf<Class<*>, Supplier<*>>()
 
-    val currentStage: ModLoadingStage
+    val currentState: ModLoadingStage
         get() = modLoadingStage
 
     fun <T : Record> getCustomExtension(point: Class<out IExtensionPoint<T>>): Optional<T> {

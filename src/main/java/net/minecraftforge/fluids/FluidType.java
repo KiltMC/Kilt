@@ -39,6 +39,7 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.SoundAction;
 import net.minecraftforge.common.SoundActions;
 import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -871,7 +872,7 @@ public class FluidType
     private void initClient()
     {
         // Minecraft instance isn't available in datagen, so don't call initializeClient if in datagen
-        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT && !net.minecraftforge.fml.loading.FMLLoader.getLaunchHandler().isData())
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT)
         {
             initializeClient(properties ->
             {

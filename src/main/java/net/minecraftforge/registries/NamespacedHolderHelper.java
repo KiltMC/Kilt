@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.mojang.serialization.DataResult;
-import cpw.mods.modlauncher.api.LamdbaExceptionUtils;
 import net.minecraft.util.RandomSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
