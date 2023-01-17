@@ -7,8 +7,14 @@ import xyz.bluspring.kilt.Kilt
 
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
+        hasInitialized = true
         Kilt.loader.mods.forEach { mod ->
             mod.eventBus.post(FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
         }
+    }
+
+    companion object {
+        var hasInitialized = false
+            private set
     }
 }

@@ -9,8 +9,10 @@
     "core.HolderReferenceInject",
     "core.HolderSetInject",
     "core.HolderSetNamedInject",
+    "core.MappedRegistryInject",
     "network.ConnectionInject",
     "server.ReloadableServerResourcesInject",
+    "stats.RecipeBookSettingsInject",
     "world.level.block.BlockInject",
     "world.level.item.ItemInject",
     "world.level.material.FluidInject",
@@ -18,7 +20,8 @@
     "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
-    "client.renderer.RenderTypeInject"
+    "client.renderer.RenderTypeInject",
+    "client.renderer.ScreenEffectRendererInject"
   ],
   "injectors": {
     "defaultRequire": 1
