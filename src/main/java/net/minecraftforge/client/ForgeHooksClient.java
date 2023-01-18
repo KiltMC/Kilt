@@ -133,6 +133,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.ToastAddEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
@@ -564,8 +565,9 @@ public class ForgeHooksClient
 
     public static boolean calculateFaceWithoutAO(BlockAndTintGetter getter, BlockState state, BlockPos pos, BakedQuad quad, boolean isFaceCubic, float[] brightness, int[] lightmap)
     {
-        if (quad.hasAmbientOcclusion())
-            return false;
+        // TODO: Add this
+        /*if (quad.hasAmbientOcclusion())
+            return false;*/
 
         BlockPos lightmapPos = isFaceCubic ? pos.relative(quad.getDirection()) : pos;
 
@@ -674,7 +676,7 @@ public class ForgeHooksClient
 
     public static boolean onScreenMouseScrollPre(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
     {
-        Window mainWindow = guiScreen.getMinecraft().getWindow();
+        Window mainWindow = Minecraft.getInstance().getWindow();
         double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
         double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();
         Event event = new ScreenEvent.MouseScrolled.Pre(guiScreen, mouseX, mouseY, scrollDelta);
@@ -772,7 +774,7 @@ public class ForgeHooksClient
 
     public static void renderPistonMovedBlocks(BlockPos pos, BlockState state, PoseStack stack, MultiBufferSource bufferSource, Level level, boolean checkSides, int packedOverlay, BlockRenderDispatcher blockRenderer) {
         var model = blockRenderer.getBlockModel(state);
-        for (var renderType : model.getRenderTypes(state, RandomSource.create(state.getSeed(pos)), ModelData.EMPTY))
+        for (var renderType : ((IForgeBakedModel) model).getRenderTypes(state, RandomSource.create(state.getSeed(pos)), ModelData.EMPTY))
         {
             VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypeHelper.getMovingBlockRenderType(renderType));
             blockRenderer.getModelRenderer().tesselateBlock(level, model, state, pos, stack, vertexConsumer, checkSides, RandomSource.create(), state.getSeed(pos), packedOverlay, ModelData.EMPTY, renderType);

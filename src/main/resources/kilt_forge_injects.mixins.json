@@ -12,6 +12,7 @@
     "core.MappedRegistryInject",
     "data.loot.LootTableProviderInject",
     "network.ConnectionInject",
+    "network.protocol.status.ServerStatusInject",
     "server.ReloadableServerResourcesInject",
     "stats.RecipeBookSettingsInject",
     "world.level.block.BlockInject",
