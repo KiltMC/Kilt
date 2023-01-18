@@ -23,6 +23,7 @@ import net.minecraftforge.event.entity.player.PlayerNegotiationEvent;
 import net.minecraftforge.network.ConnectionData.ModMismatchData;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataPackRegistriesHooks;
+import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.GameData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;

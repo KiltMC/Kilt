@@ -26,6 +26,7 @@ import net.minecraftforge.client.IArmPoseTransformer;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
 
 import java.util.function.Consumer;
 
@@ -45,7 +46,7 @@ public interface IClientItemExtensions
 
     static IClientItemExtensions of(Item item)
     {
-        return item.getRenderPropertiesInternal() instanceof IClientItemExtensions e ? e : DEFAULT;
+        return ((RenderPropertiesInjection) item).getRenderPropertiesInternal() instanceof IClientItemExtensions e ? e : DEFAULT;
     }
 
     /**
@@ -63,7 +64,7 @@ public interface IClientItemExtensions
     }
 
     /**
-      * This method returns an ArmPose that can be defined using the {@link net.minecraft.client.model.HumanoidModel.ArmPose#create(String, boolean, IArmPoseTransformer)} method.
+      * This method returns an ArmPose that can be defined using the ArmPose.create method.
       * This allows for creating custom item use animations.
       *
       * @param entityLiving The entity holding the item

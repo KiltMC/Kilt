@@ -1,14 +1,24 @@
 package net.minecraftforge.registries
 
+import com.google.common.collect.Maps
+import com.google.common.collect.Sets
 import com.mojang.serialization.Codec
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar
+import io.netty.buffer.Unpooled
 import net.minecraft.core.Holder
 import net.minecraft.core.Registry
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.ListTag
+import net.minecraft.nbt.StringTag
+import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.registries.tags.ITagManager
+import org.apache.logging.log4j.Marker
+import org.apache.logging.log4j.MarkerManager
 import xyz.bluspring.kilt.Kilt
 import java.util.*
+import kotlin.Comparator
 
 class ForgeRegistry<V> internal constructor (
     override val registryName: ResourceLocation,
@@ -138,4 +148,160 @@ class ForgeRegistry<V> internal constructor (
     // i still do not know what the fuck this is for
     override val defaultKey: ResourceLocation?
         get() = keys.firstOrNull()
+
+    companion object {
+        // why is this needed
+        @JvmField
+        val REGISTRIES: Marker = MarkerManager.getMarker("REGISTRIES")
+    }
+
+    class Snapshot {
+        private val sorter = Comparator<ResourceLocation> { a, b ->
+            a.compareNamespaced(b)
+        }
+        @JvmField val ids: MutableMap<ResourceLocation, Int> = Maps.newTreeMap(sorter)
+        @JvmField val aliases: MutableMap<ResourceLocation, ResourceLocation> = Maps.newTreeMap(sorter)
+        @JvmField val blocked: MutableSet<Int> = Sets.newTreeSet()
+        @JvmField val dummied: MutableSet<ResourceLocation> = Sets.newTreeSet(sorter)
+        @JvmField val overrides: MutableMap<ResourceLocation, String> = Maps.newTreeMap(sorter)
+        private var binary: FriendlyByteBuf? = null
+
+        fun write(): CompoundTag {
+            val data = CompoundTag()
+
+            val ids = ListTag()
+            this.ids.entries.forEach { (key, value) ->
+                val tag = CompoundTag()
+                tag.putString("K", key.toString())
+                tag.putInt("V", value)
+                ids.add(tag)
+            }
+            data.put("ids", ids)
+
+            val aliases = ListTag()
+            this.aliases.entries.forEach { (key, value) ->
+                val tag = CompoundTag()
+                tag.putString("K", key.toString())
+                tag.putString("V", value.toString())
+                aliases.add(tag)
+            }
+            data.put("aliases", aliases)
+
+            val overrides = ListTag()
+            this.overrides.entries.forEach { (key, value) ->
+                val tag = CompoundTag()
+                tag.putString("K", key.toString())
+                tag.putString("V", value)
+                overrides.add(tag)
+            }
+            data.put("overrides", overrides)
+
+            data.putIntArray("blocked", this.blocked.sorted())
+
+            val dummied = ListTag()
+            this.dummied.sorted().forEach {
+                dummied.add(StringTag.valueOf(it.toString()))
+            }
+            data.put("dummied", dummied)
+
+            return data
+        }
+
+        @Synchronized
+        fun getPacketData(): FriendlyByteBuf {
+            if (binary == null) {
+                val packet = FriendlyByteBuf(Unpooled.buffer())
+
+                packet.writeVarInt(ids.size)
+                ids.forEach { (k, v) ->
+                    packet.writeResourceLocation(k)
+                    packet.writeInt(v)
+                }
+
+                packet.writeVarInt(aliases.size)
+                aliases.forEach { (k, v) ->
+                    packet.writeResourceLocation(k)
+                    packet.writeResourceLocation(v)
+                }
+
+                packet.writeVarInt(overrides.size)
+                overrides.forEach { (k, v) ->
+                    packet.writeResourceLocation(k)
+                    packet.writeUtf(v, 0x100)
+                }
+
+                packet.writeVarInt(blocked.size)
+                blocked.forEach(packet::writeVarInt)
+
+                packet.writeVarInt(dummied.size)
+                dummied.forEach(packet::writeResourceLocation)
+
+                binary = packet
+            }
+
+            return FriendlyByteBuf(binary!!.slice())
+        }
+
+        companion object {
+            @JvmStatic
+            fun read(nbt: CompoundTag?): Snapshot {
+                val snapshot = Snapshot()
+                if (nbt == null)
+                    return snapshot
+
+                nbt.getList("ids", 10).forEach {
+                    val compound = it as CompoundTag
+                    snapshot.ids[ResourceLocation(compound.getString("K"))] = compound.getInt("V")
+                }
+
+                nbt.getList("aliases", 10).forEach {
+                    val compound = it as CompoundTag
+                    snapshot.aliases[ResourceLocation(compound.getString("K"))] = ResourceLocation(compound.getString("V"))
+                }
+
+                nbt.getList("overrides", 10).forEach {
+                    val compound = it as CompoundTag
+                    snapshot.overrides[ResourceLocation(compound.getString("K"))] = compound.getString("V")
+                }
+
+                snapshot.blocked.addAll(nbt.getIntArray("blocked").toList())
+
+                nbt.getList("dummied", 8).forEach {
+                    snapshot.dummied.add(ResourceLocation((it as StringTag).asString))
+                }
+
+                return snapshot
+            }
+
+            @JvmStatic
+            fun read(buff: FriendlyByteBuf?): Snapshot {
+                if (buff == null)
+                    return Snapshot()
+
+                val snapshot = Snapshot()
+
+                var length = buff.readVarInt()
+                for (i in 0..length)
+                    snapshot.ids[buff.readResourceLocation()] = buff.readVarInt()
+
+                length = buff.readVarInt()
+                for (i in 0..length)
+                    snapshot.aliases[buff.readResourceLocation()] = buff.readResourceLocation()
+
+                length = buff.readVarInt()
+                for (i in 0..length)
+                    snapshot.overrides[buff.readResourceLocation()] = buff.readUtf(0x100)
+
+                length = buff.readVarInt()
+                for (i in 0..length)
+                    snapshot.blocked.add(buff.readVarInt())
+
+                length = buff.readVarInt()
+                for (i in 0..length)
+                    snapshot.dummied.add(buff.readResourceLocation())
+
+                return snapshot
+            }
+        }
+    }
 }

@@ -34,7 +34,7 @@ import kotlin.io.path.name
 object KiltRemapper {
     private val logger = Kilt.logger
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
-    private val srgIntermediaryTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
+    val srgIntermediaryTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
 
     private val extraKiltWorkaroundRemapper = ExtraRemapper(kiltWorkaroundTree, "srg", "intermediary")

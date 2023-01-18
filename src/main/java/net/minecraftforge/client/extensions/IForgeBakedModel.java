@@ -23,6 +23,7 @@ import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.client.renderer.ItemBlockRenderTypesRemap;
 
 import java.util.List;
 
@@ -83,7 +84,7 @@ public interface IForgeBakedModel
      */
     default ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data)
     {
-        return ItemBlockRenderTypes.getRenderLayers(state);
+        return ItemBlockRenderTypesRemap.getRenderLayers(state);
     }
 
     /**
