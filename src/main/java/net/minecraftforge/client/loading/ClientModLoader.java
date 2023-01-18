@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraft.server.packs.resources.PreparableReloadListener;

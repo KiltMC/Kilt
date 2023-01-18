@@ -7,6 +7,7 @@ package net.minecraftforge.common;
 
 import java.util.List;
 
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.IModLoadingState;
 import net.minecraftforge.fml.IModStateProvider;
 import net.minecraftforge.fml.ModLoadingPhase;
@@ -14,6 +15,7 @@ import net.minecraftforge.fml.ModLoadingState;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.ObjectHolderRegistry;
+import net.minecraftforge.registries.RegistryManager;
 
 public class ForgeStatesProvider implements IModStateProvider
 {
