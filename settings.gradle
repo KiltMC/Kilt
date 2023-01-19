@@ -7,3 +7,13 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+include 'kilt-loader'
+include 'kilt-registries'
+include 'kilt-capabilities'
+include 'kilt-events'
+include 'kilt-common'
+include 'kilt-sided'
+include 'kilt-transfer'
+include 'kilt-networking'
+include 'kilt-extensions'
+
