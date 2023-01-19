@@ -10,7 +10,7 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
-import common.ForgeMod as ForgeBuiltinMod
+import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent

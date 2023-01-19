@@ -3,8 +3,8 @@ package xyz.bluspring.kilt.remaps.advancements
 import com.google.gson.JsonObject
 import net.minecraft.advancements.Advancement
 import net.minecraft.advancements.critereon.DeserializationContext
-import common.crafting.ConditionalAdvancement
-import common.crafting.conditions.ICondition
+import net.minecraftforge.common.crafting.ConditionalAdvancement
+import net.minecraftforge.common.crafting.conditions.ICondition
 
 object AdvancementBuilderRemap {
     @JvmStatic

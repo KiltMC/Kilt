@@ -4,8 +4,8 @@ import net.minecraft.core.Direction
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.Tag
 import net.minecraft.resources.ResourceLocation
-import common.util.INBTSerializable
-import common.util.LazyOptional
+import net.minecraftforge.common.util.INBTSerializable
+import net.minecraftforge.common.util.LazyOptional
 
 class CapabilityDispatcher(
     list: Map<ResourceLocation, common.capabilities.ICapabilityProvider>,

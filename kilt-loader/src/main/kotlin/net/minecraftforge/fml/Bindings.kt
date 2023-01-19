@@ -1,6 +1,6 @@
 package net.minecraftforge.fml
 
-import common.MinecraftForge
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.event.config.ModConfigEvent
@@ -10,7 +10,7 @@ object Bindings {
     @JvmStatic
     fun getForgeBus(): Supplier<IEventBus> {
         return Supplier {
-            common.MinecraftForge.EVENT_BUS
+            MinecraftForge.EVENT_BUS
         }
     }
 

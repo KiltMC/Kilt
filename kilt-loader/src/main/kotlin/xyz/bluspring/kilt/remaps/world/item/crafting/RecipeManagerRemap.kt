@@ -7,8 +7,8 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.GsonHelper
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
-import common.crafting.conditions.ICondition
-import common.extensions.IForgeRecipeSerializer
+import net.minecraftforge.common.crafting.conditions.ICondition
+import net.minecraftforge.common.extensions.IForgeRecipeSerializer
 
 object RecipeManagerRemap {
     @JvmStatic

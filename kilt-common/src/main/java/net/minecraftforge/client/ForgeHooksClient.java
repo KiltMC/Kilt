@@ -182,9 +182,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static net.minecraftforge.fml.VersionChecker.Status.BETA;
-import static net.minecraftforge.fml.VersionChecker.Status.BETA_OUTDATED;
-
 @SuppressWarnings("removal")
 @ApiStatus.Internal
 public class ForgeHooksClient

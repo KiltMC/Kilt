@@ -5,8 +5,6 @@
 
 package net.minecraftforge.server;
 
-import static net.minecraftforge.fml.Logging.CORE;
-
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;

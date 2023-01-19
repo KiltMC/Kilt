@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.remaps.world.entity.vehicle
 
-import common.IMinecartCollisionHandler
+import net.minecraftforge.common.IMinecartCollisionHandler
 
 object AbstractMinecartRemap {
     @JvmStatic

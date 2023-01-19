@@ -7,7 +7,7 @@ import net.minecraft.world.entity.SpawnPlacements
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.NaturalSpawner
 import net.minecraft.world.level.block.state.BlockState
-import common.extensions.IForgeBlockState
+import net.minecraftforge.common.extensions.IForgeBlockState
 
 object NaturalSpawnerRemap {
     @JvmStatic

@@ -15,8 +15,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.List;
 
-import static net.minecraftforge.fml.Logging.LOADING;
-
 public class ServerModLoader
 {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -6,9 +6,9 @@ import net.minecraft.data.tags.TagsProvider
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.PackType
 import net.minecraft.tags.TagManager
-import common.ForgeHooks
-import common.data.ExistingFileHelper
-import common.data.ExistingFileHelper.ResourceType
+import net.minecraftforge.common.ForgeHooks
+import net.minecraftforge.common.data.ExistingFileHelper
+import net.minecraftforge.common.data.ExistingFileHelper.ResourceType
 import java.nio.file.Path
 
 abstract class TagsProviderRemap<T>(dataGenerator: DataGenerator, registry: Registry<T>, protected val modId: String, protected val existingFileHelper: common.data.ExistingFileHelper) : TagsProvider<T>(dataGenerator, registry) {

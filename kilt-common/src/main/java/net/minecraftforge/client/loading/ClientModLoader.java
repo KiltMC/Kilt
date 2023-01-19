@@ -5,9 +5,6 @@
 
 package net.minecraftforge.client.loading;
 
-import static net.minecraftforge.fml.Logging.CORE;
-import static net.minecraftforge.fml.Logging.LOADING;
-
 import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;

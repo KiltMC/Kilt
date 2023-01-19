@@ -1,6 +1,6 @@
 package net.minecraftforge.common.capabilities
 
-import common.util.LazyOptional
+import net.minecraftforge.common.util.LazyOptional
 import java.util.function.Consumer
 
 open class Capability<T> internal constructor(val name: String) {

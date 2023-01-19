@@ -8,7 +8,7 @@ package net.minecraftforge.common;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.loot.CanToolPerformAction;
 import net.minecraftforge.common.loot.LootTableIdCondition;
-import common.world.*;
+import net.minecraftforge.common.world.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
