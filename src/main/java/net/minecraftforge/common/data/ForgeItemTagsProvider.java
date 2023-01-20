@@ -5,25 +5,38 @@
 
 package net.minecraftforge.common.data;
 
+import io.github.fabricators_of_create.porting_lib.extensions.TagAppenderExtensions;
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagBuilder;
+import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.registries.ForgeRegistries;
+import xyz.bluspring.kilt.mixin.TagsProviderAccessor;
+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public final class ForgeItemTagsProvider extends ItemTagsProvider
+public final class ForgeItemTagsProvider extends TagsProviderRemap<Item>
 {
+    private final Function<TagKey<Block>, TagBuilder> blockTags;
+
     public ForgeItemTagsProvider(DataGenerator gen, BlockTagsProvider blockTagProvider, ExistingFileHelper existingFileHelper)
     {
-        super(gen, blockTagProvider, "forge", existingFileHelper);
+        super(gen, Registry.ITEM, "forge", existingFileHelper);
+        blockTags = ((TagsProviderAccessor<Block>) blockTagProvider)::callGetOrCreateRawBuilder;
     }
 
     @SuppressWarnings("unchecked")
@@ -53,7 +66,7 @@ public final class ForgeItemTagsProvider extends ItemTagsProvider
         tag(Tags.Items.DUSTS_GLOWSTONE).add(Items.GLOWSTONE_DUST);
         tag(Tags.Items.DUSTS_PRISMARINE).add(Items.PRISMARINE_SHARD);
         tag(Tags.Items.DUSTS_REDSTONE).add(Items.REDSTONE);
-        addColored(tag(Tags.Items.DYES)::addTags, Tags.Items.DYES, "{color}_dye");
+        addColored((values) -> tag(Tags.Items.DYES).addTags(values), Tags.Items.DYES, "{color}_dye");
         tag(Tags.Items.EGGS).add(Items.EGG);
         tag(Tags.Items.ENCHANTING_FUELS).addTag(Tags.Items.GEMS_LAPIS);
         copy(Tags.Blocks.END_STONES, Tags.Items.END_STONES);
@@ -226,9 +239,11 @@ public final class ForgeItemTagsProvider extends ItemTagsProvider
         }
     }
 
-    @Override
-    public String getName()
-    {
-        return "Forge Item Tags";
+    protected void copy(TagKey<Block> tagKey, TagKey<Item> tagKey2) {
+        TagBuilder tagBuilder = this.getOrCreateRawBuilder(tagKey2);
+        TagBuilder tagBuilder2 = this.blockTags.apply(tagKey);
+        List<TagEntry> var10000 = tagBuilder2.build();
+        Objects.requireNonNull(tagBuilder);
+        var10000.forEach(tagBuilder::add);
     }
 }

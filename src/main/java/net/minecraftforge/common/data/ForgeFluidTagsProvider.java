@@ -5,28 +5,25 @@
 
 package net.minecraftforge.common.data;
 
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.FluidTagsProvider;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.ForgeMod;
+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
 
 import static net.minecraftforge.common.Tags.Fluids.MILK;
 
-public final class ForgeFluidTagsProvider extends FluidTagsProvider
+public final class ForgeFluidTagsProvider extends TagsProviderRemap<Fluid>
 {
     public ForgeFluidTagsProvider(DataGenerator gen, ExistingFileHelper existingFileHelper)
     {
-        super(gen, "forge", existingFileHelper);
+        super(gen, Registry.FLUID, "forge", existingFileHelper);
     }
 
     @Override
     public void addTags()
     {
         tag(MILK).addOptional(ForgeMod.MILK.getId()).addOptional(ForgeMod.FLOWING_MILK.getId());
-    }
-
-    @Override
-    public String getName()
-    {
-        return "Forge Fluid Tags";
     }
 }

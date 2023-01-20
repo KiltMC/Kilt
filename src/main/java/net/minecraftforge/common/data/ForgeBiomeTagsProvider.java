@@ -5,6 +5,7 @@
 
 package net.minecraftforge.common.data;
 
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BiomeTagsProvider;
 import net.minecraft.resources.ResourceKey;
@@ -13,13 +14,14 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraftforge.common.Tags;
+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
 
-public final class ForgeBiomeTagsProvider extends BiomeTagsProvider
+public final class ForgeBiomeTagsProvider extends TagsProviderRemap<Biome>
 {
 
     public ForgeBiomeTagsProvider(DataGenerator arg, ExistingFileHelper existingFileHelper)
     {
-        super(arg, "forge", existingFileHelper);
+        super(arg, BuiltinRegistries.BIOME, "forge", existingFileHelper);
     }
 
     @Override
@@ -99,11 +101,5 @@ public final class ForgeBiomeTagsProvider extends BiomeTagsProvider
         {
             tag(key).add(biome);
         }
-    }
-
-    @Override
-    public String getName()
-    {
-        return "Forge Biome Tags";
     }
 }

@@ -63,7 +63,8 @@
       "net/minecraft/class_310": ["xyz/bluspring/kilt/injections/client/MinecraftInjection"],
       "net/minecraft/class_2540": ["net/minecraftforge/common/extensions/IForgeFriendlyByteBuf"],
       "net/minecraft/class_1087": ["net/minecraftforge/client/extensions/IForgeBakedModel"],
-      "net/minecraft/class_2926": ["xyz/bluspring/kilt/injections/network/ServerStatusInjection"]
+      "net/minecraft/class_2926": ["xyz/bluspring/kilt/injections/network/ServerStatusInjection"],
+      "net/minecraft/class_2438": ["xyz/bluspring/kilt/injections/LootTableProviderInjection"]
     }
   },
   "accessWidener": "kilt.accesswidener"

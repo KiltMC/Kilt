@@ -5,6 +5,7 @@
 
 package net.minecraftforge.common.data;
 
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -14,17 +15,19 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.registries.ForgeRegistries;
+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
 
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import static net.minecraftforge.common.Tags.Blocks.*;
 
-public final class ForgeBlockTagsProvider extends BlockTagsProvider
+public final class ForgeBlockTagsProvider extends TagsProviderRemap<Block>
 {
     public ForgeBlockTagsProvider(DataGenerator gen, ExistingFileHelper existingFileHelper)
     {
-        super(gen, "forge", existingFileHelper);
+        super(gen, Registry.BLOCK, "forge", existingFileHelper);
     }
 
     @SuppressWarnings("unchecked")
@@ -130,11 +133,5 @@ public final class ForgeBlockTagsProvider extends BlockTagsProvider
         {
             throw new IllegalStateException(Tags.Blocks.class.getName() + " is missing tag name: " + name);
         }
-    }
-
-    @Override
-    public String getName()
-    {
-        return "Forge Block Tags";
     }
 }

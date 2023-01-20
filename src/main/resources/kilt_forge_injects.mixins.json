@@ -11,6 +11,7 @@
     "core.HolderSetNamedInject",
     "core.MappedRegistryInject",
     "data.loot.LootTableProviderInject",
+    "data.recipes.RecipeProviderAccessor",
     "network.ConnectionInject",
     "network.protocol.status.ServerStatusInject",
     "server.ReloadableServerResourcesInject",
