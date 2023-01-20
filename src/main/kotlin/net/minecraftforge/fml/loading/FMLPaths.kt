@@ -16,7 +16,7 @@ class FMLPaths private constructor(private val path: Path) {
         private val gameDir = FabricLoader.getInstance().gameDir.toAbsolutePath()
 
         @JvmField
-        val GAMESDIR = FMLPaths(FabricLoader.getInstance().gameDir)
+        val GAMEDIR = FMLPaths(FabricLoader.getInstance().gameDir)
 
         @JvmField
         val MODSDIR = FMLPaths(Path.of(gameDir.toString(), "mods"))

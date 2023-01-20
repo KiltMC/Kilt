@@ -7,6 +7,7 @@ package net.minecraftforge.client.settings;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraftforge.client.extensions.IForgeKeyMapping;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class KeyMappingLookup
         {
             for (KeyMapping binding : bindings)
             {
-                if (binding.isActiveAndMatches(keyCode))
+                if (((IForgeKeyMapping) binding).isActiveAndMatches(keyCode))
                 {
                     return binding;
                 }
@@ -75,7 +76,7 @@ public class KeyMappingLookup
 
     public void put(InputConstants.Key keyCode, KeyMapping keyBinding)
     {
-        KeyModifier keyModifier = keyBinding.getKeyModifier();
+        KeyModifier keyModifier = ((IForgeKeyMapping) keyBinding).getKeyModifier();
         Map<InputConstants.Key, Collection<KeyMapping>> bindingsMap = map.get(keyModifier);
         Collection<KeyMapping> bindingsForKey = bindingsMap.get(keyCode);
         if (bindingsForKey == null)
@@ -88,8 +89,8 @@ public class KeyMappingLookup
 
     public void remove(KeyMapping keyBinding)
     {
-        KeyModifier keyModifier = keyBinding.getKeyModifier();
-        InputConstants.Key keyCode = keyBinding.getKey();
+        KeyModifier keyModifier = ((IForgeKeyMapping) keyBinding).getKeyModifier();
+        InputConstants.Key keyCode = ((IForgeKeyMapping) keyBinding).getKey();
         Map<InputConstants.Key, Collection<KeyMapping>> bindingsMap = map.get(keyModifier);
         Collection<KeyMapping> bindingsForKey = bindingsMap.get(keyCode);
         if (bindingsForKey != null)

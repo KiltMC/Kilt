@@ -36,7 +36,7 @@ public interface IForgeBlockGetter
                 return null;
             }
 
-            return level.getChunk(pos).getExistingBlockEntity(pos);
+            return ((IForgeBlockGetter) level.getChunk(pos)).getExistingBlockEntity(pos);
         }
         else if (this instanceof LevelChunk chunk)
         {
@@ -44,7 +44,7 @@ public interface IForgeBlockGetter
         }
         else if (this instanceof ImposterProtoChunk chunk)
         {
-            return chunk.getWrapped().getExistingBlockEntity(pos);
+            return ((IForgeBlockGetter) chunk.getWrapped()).getExistingBlockEntity(pos);
         }
         return self().getBlockEntity(pos);
     }

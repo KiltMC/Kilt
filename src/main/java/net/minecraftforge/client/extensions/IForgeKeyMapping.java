@@ -56,9 +56,9 @@ public interface IForgeKeyMapping
      */
     default boolean hasKeyModifierConflict(KeyMapping other)
     {
-        if (getKeyConflictContext().conflicts(other.getKeyConflictContext()) || other.getKeyConflictContext().conflicts(getKeyConflictContext()))
+        if (getKeyConflictContext().conflicts(((IForgeKeyMapping) other).getKeyConflictContext()) || ((IForgeKeyMapping) other).getKeyConflictContext().conflicts(getKeyConflictContext()))
         {
-            if (getKeyModifier().matches(other.getKey()) || other.getKeyModifier().matches(getKey()))
+            if (getKeyModifier().matches(((IForgeKeyMapping) other).getKey()) || ((IForgeKeyMapping) other).getKeyModifier().matches(getKey()))
             {
                 return true;
             }

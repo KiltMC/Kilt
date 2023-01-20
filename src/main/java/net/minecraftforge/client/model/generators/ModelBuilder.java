@@ -236,7 +236,7 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
         }
 
         if (this.guiLight != null) {
-            root.addProperty("gui_light", this.guiLight.getSerializedName());
+            root.addProperty("gui_light", this.guiLight.name);
         }
 
         if (this.renderType != null) {
@@ -250,7 +250,8 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
                 JsonObject transform = new JsonObject();
                 ItemTransform vec = e.getValue();
                 if (vec.equals(ItemTransform.NO_TRANSFORM)) continue;
-                var hasRightRotation = !vec.rightRotation.equals(ItemTransform.Deserializer.DEFAULT_ROTATION);
+                //var hasRightRotation = !vec.rightRotation.equals(ItemTransform.Deserializer.DEFAULT_ROTATION);
+                var hasRightRotation = false;
                 if (!vec.translation.equals(ItemTransform.Deserializer.DEFAULT_TRANSLATION)) {
                     transform.add("translation", serializeVector3f(e.getValue().translation));
                 }
@@ -261,9 +262,9 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
                     transform.add("scale", serializeVector3f(e.getValue().scale));
                 }
                 if (hasRightRotation) {
-                    transform.add("right_rotation", serializeVector3f(vec.rightRotation));
+                    //transform.add("right_rotation", serializeVector3f(vec.rightRotation));
                 }
-                display.add(e.getKey().getSerializeName(), transform);
+                display.add(e.getKey().name(), transform);
             }
             root.add("display", display);
         }
@@ -317,12 +318,12 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
                     if (face.tintIndex != -1) {
                         faceObj.addProperty("tintindex", face.tintIndex);
                     }
-                    if (face.emissivity > 0) {
+                    /*if (face.emissivity > 0) {
                         faceObj.addProperty("emissivity", face.emissivity);
                     }
                     if (!face.hasAmbientOcclusion) {
                         faceObj.addProperty("ambientocclusion", face.hasAmbientOcclusion);
-                    }
+                    }*/
                     faces.add(dir.getSerializedName(), faceObj);
                 }
                 if (!part.faces.isEmpty()) {
@@ -602,7 +603,7 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
                 if (this.texture == null) {
                     throw new IllegalStateException("A model face must have a texture");
                 }
-                return new BlockElementFace(cullface, tintindex, texture, new BlockFaceUV(uvs, rotation.rotation), emissivity, hasAmbientOcclusion);
+                return new BlockElementFace(cullface, tintindex, texture, new BlockFaceUV(uvs, rotation.rotation)/*, emissivity, hasAmbientOcclusion*/);
             }
 
             public ElementBuilder end() { return ElementBuilder.this; }
@@ -733,7 +734,7 @@ public class ModelBuilder<T extends ModelBuilder<T>> extends ModelFile {
             }
 
             ItemTransform build() {
-                return new ItemTransform(rotation, translation, scale, rightRotation);
+                return new ItemTransform(rotation, translation, scale/*, rightRotation*/);
             }
 
             public TransformsBuilder end() { return TransformsBuilder.this; }

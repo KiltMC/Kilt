@@ -54,6 +54,8 @@ import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.world.item.AxeItemRemap;
+import xyz.bluspring.kilt.remaps.world.item.ShovelItemRemap;
 
 @SuppressWarnings("deprecation")
 public interface IForgeBlock
@@ -524,7 +526,7 @@ public interface IForgeBlock
     @Nullable
     default BlockPathTypes getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob)
     {
-        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : state.isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
+        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : ((IForgeBlockState) state).isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
     }
 
     /**
@@ -577,7 +579,7 @@ public interface IForgeBlock
     {
         if (state.getBlock() == Blocks.HONEY_BLOCK && other.getBlock() == Blocks.SLIME_BLOCK) return false;
         if (state.getBlock() == Blocks.SLIME_BLOCK && other.getBlock() == Blocks.HONEY_BLOCK) return false;
-        return state.isStickyBlock() || other.isStickyBlock();
+        return ((IForgeBlockState) state).isStickyBlock() || ((IForgeBlockState) other).isStickyBlock();
     }
 
     /**
@@ -607,7 +609,7 @@ public interface IForgeBlock
      */
     default boolean isFlammable(BlockState state, BlockGetter level, BlockPos pos, Direction direction)
     {
-        return state.getFlammability(level, pos, direction) > 0;
+        return ((IForgeBlockState) state).getFlammability(level, pos, direction) > 0;
     }
 
     /**
@@ -742,7 +744,7 @@ public interface IForgeBlock
 
         if (ToolActions.AXE_STRIP == toolAction)
         {
-            return AxeItem.getAxeStrippingState(state);
+            return AxeItemRemap.getAxeStrippingState(state);
         } else if (ToolActions.AXE_SCRAPE == toolAction)
         {
             return WeatheringCopper.getPrevious(state).orElse(null);
@@ -751,7 +753,7 @@ public interface IForgeBlock
             return Optional.ofNullable(HoneycombItem.WAX_OFF_BY_BLOCK.get().get(state.getBlock())).map(block -> block.withPropertiesOf(state)).orElse(null);
         } else if (ToolActions.SHOVEL_FLATTEN == toolAction)
         {
-            return ShovelItem.getShovelPathingState(state);
+            return ShovelItemRemap.getShovelPathingState(state);
         } else if (ToolActions.HOE_TILL == toolAction)
         {
             // Logic copied from HoeItem#TILLABLES; needs to be kept in sync during updating

@@ -42,7 +42,7 @@ public final class ItemDecoratorHandler
     {
         var decorators = new HashMap<Item, List<IItemDecorator>>();
         var event = new RegisterItemDecorationsEvent(decorators);
-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
+        ModLoader.get().postEvent(event);
         var builder = new ImmutableMap.Builder<Item, ItemDecoratorHandler>();
         decorators.forEach((item, itemDecorators) -> builder.put(item, new ItemDecoratorHandler(itemDecorators)));
         DECORATOR_LOOKUP = builder.build();

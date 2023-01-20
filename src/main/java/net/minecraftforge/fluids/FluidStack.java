@@ -54,7 +54,7 @@ public class FluidStack
     private boolean isEmpty;
     private int amount;
     private CompoundTag tag;
-    private Holder.Reference<Fluid> fluidDelegate;
+    private final Holder.Reference<Fluid> fluidDelegate;
 
     public FluidStack(Fluid fluid, int amount)
     {

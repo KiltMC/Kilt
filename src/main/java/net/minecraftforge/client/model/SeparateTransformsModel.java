@@ -207,9 +207,9 @@ public class SeparateTransformsModel implements IUnbakedGeometry<SeparateTransfo
             Map<ItemTransforms.TransformType, BlockModel> perspectives = new HashMap<>();
             for (ItemTransforms.TransformType transform : ItemTransforms.TransformType.values())
             {
-                if (perspectiveData.has(transform.getSerializeName()))
+                if (perspectiveData.has(transform.name()))
                 {
-                    BlockModel perspectiveModel = deserializationContext.deserialize(GsonHelper.getAsJsonObject(perspectiveData, transform.getSerializeName()), BlockModel.class);
+                    BlockModel perspectiveModel = deserializationContext.deserialize(GsonHelper.getAsJsonObject(perspectiveData, transform.name()), BlockModel.class);
                     perspectives.put(transform, perspectiveModel);
                 }
             }

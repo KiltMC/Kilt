@@ -58,19 +58,19 @@ public class ExtendedBlockModelDeserializer extends BlockModel.Deserializer
         if (geometry != null)
         {
             elements.clear();
-            model.customData.setCustomGeometry(geometry);
+            //model.customData.setCustomGeometry(geometry);
         }
 
         if (jsonobject.has("transform"))
         {
             JsonObject transform = GsonHelper.getAsJsonObject(jsonobject, "transform");
-            model.customData.setRootTransform(deserializationContext.deserialize(transform, Transformation.class));
+            //model.customData.setRootTransform(deserializationContext.deserialize(transform, Transformation.class));
         }
 
         if (jsonobject.has("render_type"))
         {
             var renderTypeHintName = GsonHelper.getAsString(jsonobject, "render_type");
-            model.customData.setRenderTypeHint(new ResourceLocation(renderTypeHintName));
+            //model.customData.setRenderTypeHint(new ResourceLocation(renderTypeHintName));
         }
 
         if (jsonobject.has("visibility"))
@@ -78,7 +78,7 @@ public class ExtendedBlockModelDeserializer extends BlockModel.Deserializer
             JsonObject visibility = GsonHelper.getAsJsonObject(jsonobject, "visibility");
             for (Map.Entry<String, JsonElement> part : visibility.entrySet())
             {
-                model.customData.visibilityData.setVisibilityState(part.getKey(), part.getValue().getAsBoolean());
+                //model.customData.visibilityData.setVisibilityState(part.getKey(), part.getValue().getAsBoolean());
             }
         }
 

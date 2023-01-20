@@ -42,7 +42,7 @@ public class SeparateTransformsModelBuilder<T extends ModelBuilder<T>> extends C
     {
         Preconditions.checkNotNull(perspective, "layer must not be null");
         Preconditions.checkNotNull(modelBuilder, "modelBuilder must not be null");
-        childModels.put(perspective.getSerializeName(), modelBuilder);
+        childModels.put(perspective.name(), modelBuilder);
         return this;
     }
 

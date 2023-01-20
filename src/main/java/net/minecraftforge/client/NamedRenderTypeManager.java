@@ -39,7 +39,7 @@ public final class NamedRenderTypeManager
         var renderTypes = new HashMap<ResourceLocation, RenderTypeGroup>();
         preRegisterVanillaRenderTypes(renderTypes);
         var event = new RegisterNamedRenderTypesEvent(renderTypes);
-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
+        ModLoader.get().postEvent(event);
         RENDER_TYPES = ImmutableMap.copyOf(renderTypes);
     }
 

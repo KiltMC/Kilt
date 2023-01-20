@@ -109,6 +109,8 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraftforge.common.crafting.conditions.ICondition;
+import net.minecraftforge.common.extensions.IForgeBlockState;
+import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.loot.LootModifierManager;
 import net.minecraftforge.common.loot.LootTableIdCondition;
@@ -160,6 +162,9 @@ import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.resource.ResourcePackLoader;
 import net.minecraftforge.registries.GameData;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -186,6 +191,8 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.injections.LevelInjection;
+import xyz.bluspring.kilt.remaps.world.entity.ai.attributes.AttributeSupplierBuilderRemap;
 
 public class ForgeHooks
 {
@@ -233,7 +240,7 @@ public class ForgeHooks
             if (isCreative && Screen.hasControlDown() && state.hasBlockEntity())
                 te = level.getBlockEntity(pos);
 
-            result = state.getCloneItemStack(target, level, pos, player);
+            result = ((IForgeBlockState) state).getCloneItemStack(target, level, pos, player);
 
             if (result.isEmpty())
                 LOGGER.warn("Picking on: [{}] {} gave null item", target.getType(), ForgeRegistries.BLOCKS.getKey(state.getBlock()));
@@ -241,7 +248,7 @@ public class ForgeHooks
         else if (target.getType() == HitResult.Type.ENTITY)
         {
             Entity entity = ((EntityHitResult)target).getEntity();
-            result = entity.getPickedResult(target);
+            result = ((IForgeEntity) entity).getPickedResult(target);
 
             if (result.isEmpty())
                 LOGGER.warn("Picking on: [{}] {} gave null item", target.getType(), ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()));
@@ -391,7 +398,7 @@ public class ForgeHooks
         if (isSpectator) return Optional.empty();
         if (!ForgeConfig.SERVER.fullBoundingBoxLadders.get())
         {
-            return state.isLadder(level, pos, entity) ? Optional.of(pos) : Optional.empty();
+            return ((IForgeBlockState) state).isLadder(level, pos, entity) ? Optional.of(pos) : Optional.empty();
         }
         else
         {
@@ -407,7 +414,7 @@ public class ForgeHooks
                     {
                         BlockPos tmp = new BlockPos(x2, y2, z2);
                         state = level.getBlockState(tmp);
-                        if (state.isLadder(level, tmp, entity))
+                        if (((IForgeBlockState) state).isLadder(level, tmp, entity))
                         {
                             return Optional.of(tmp);
                         }
@@ -664,15 +671,15 @@ public class ForgeHooks
         if (itemstack.getTag() != null)
             nbt = itemstack.getTag().copy();
 
-        if (!(itemstack.getItem() instanceof BucketItem)) // if not bucket
-            level.captureBlockSnapshots = true;
+        //if (!(itemstack.getItem() instanceof BucketItem)) // if not bucket
+            //level.captureBlockSnapshots = true;
 
         ItemStack copy = itemstack.copy();
         InteractionResult ret = itemstack.getItem().useOn(context);
         if (itemstack.isEmpty())
             ForgeEventFactory.onPlayerDestroyItem(player, copy, context.getHand());
 
-        level.captureBlockSnapshots = false;
+        //level.captureBlockSnapshots = false;
 
         if (ret.consumesAction())
         {
@@ -683,9 +690,10 @@ public class ForgeHooks
             {
                 newNBT = itemstack.getTag().copy();
             }
-            @SuppressWarnings("unchecked")
-            List<BlockSnapshot> blockSnapshots = (List<BlockSnapshot>)level.capturedBlockSnapshots.clone();
-            level.capturedBlockSnapshots.clear();
+            //@SuppressWarnings("unchecked")
+            //List<BlockSnapshot> blockSnapshots = (List<BlockSnapshot>)level.capturedBlockSnapshots.clone();
+            //level.capturedBlockSnapshots.clear();
+            List<BlockSnapshot> blockSnapshots = new ArrayList<>();
 
             // make sure to set pre-placement item data for event
             itemstack.setCount(size);
@@ -709,9 +717,9 @@ public class ForgeHooks
                 // revert back all captured blocks
                 for (BlockSnapshot blocksnapshot : Lists.reverse(blockSnapshots))
                 {
-                    level.restoringBlockSnapshots = true;
+                    //level.restoringBlockSnapshots = true;
                     blocksnapshot.restore(true, false);
-                    level.restoringBlockSnapshots = false;
+                    //level.restoringBlockSnapshots = false;
                 }
             }
             else
@@ -733,7 +741,8 @@ public class ForgeHooks
                     player.awardStat(Stats.ITEM_USED.get(item));
             }
         }
-        level.capturedBlockSnapshots.clear();
+
+        //level.capturedBlockSnapshots.clear();
 
         return ret;
     }
@@ -745,7 +754,7 @@ public class ForgeHooks
         if (e.getOutput().isEmpty()) return true;
 
         outputSlot.setItem(0, e.getOutput());
-        container.setMaximumCost(e.getCost());
+        //container.setMaximumCost(e.getCost());
         container.repairItemCountCost = e.getMaterialCost();
         return false;
     }
@@ -935,8 +944,8 @@ public class ForgeHooks
         if (!custom)
             ret = ForgeEventFactory.loadLootTable(name, ret, lootTableManager);
 
-        if (ret != null)
-           ret.freeze();
+        //if (ret != null)
+          // ret.freeze();
 
         return ret;
     }
@@ -1165,7 +1174,7 @@ public class ForgeHooks
 
     public static boolean onFarmlandTrample(Level level, BlockPos pos, BlockState state, float fallDistance, Entity entity)
     {
-        if (entity.canTrample(state, pos, fallDistance))
+        if (((IForgeEntity) entity).canTrample(state, pos, fallDistance))
         {
             BlockEvent.FarmlandTrampleEvent event = new BlockEvent.FarmlandTrampleEvent(level, pos, state, fallDistance, entity);
             MinecraftForge.EVENT_BUS.post(event);
@@ -1248,7 +1257,7 @@ public class ForgeHooks
         if (!level.isLoaded(pos))
             return false;
         BlockState state = level.getBlockState(pos);
-        return ForgeEventFactory.getMobGriefingEvent(level, entity) && state.canEntityDestroy(level, pos, entity) && ForgeEventFactory.onEntityDestroyBlock(entity, pos, state);
+        return ForgeEventFactory.getMobGriefingEvent(level, entity) && ((IForgeBlockState) state).canEntityDestroy(level, pos, entity) && ForgeEventFactory.onEntityDestroyBlock(entity, pos, state);
     }
 
     private static final Map<Holder.Reference<Item>, Integer> VANILLA_BURNS = new HashMap<>();
@@ -1358,8 +1367,8 @@ public class ForgeHooks
         finalMap.forEach((k, v) ->
         {
             AttributeSupplier supplier = DefaultAttributes.getSupplier(k);
-            AttributeSupplier.Builder newBuilder = supplier != null ? new AttributeSupplier.Builder(supplier) : new AttributeSupplier.Builder();
-            newBuilder.combine(v);
+            AttributeSupplier.Builder newBuilder = supplier != null ? new AttributeSupplierBuilderRemap(supplier) : new AttributeSupplierBuilderRemap();
+            ((AttributeSupplierBuilderRemap) newBuilder).combine(v);
             FORGE_ATTRIBUTES.put(k, newBuilder.build());
         });
     }
@@ -1393,10 +1402,10 @@ public class ForgeHooks
         fmlData.put("Registries", registries);
         LOGGER.debug(WORLDPERSISTENCE, "Gathering id map for writing to world save {}", worldData.getLevelName());
 
-        for (Map.Entry<ResourceLocation, ForgeRegistry.Snapshot> e : RegistryManager.ACTIVE.takeSnapshot(true).entrySet())
+        /*for (Map.Entry<ResourceLocation, ForgeRegistry.Snapshot> e : RegistryManager.ACTIVE.takeSnapshot(true).entrySet())
         {
             registries.put(e.getKey().toString(), e.getValue().write());
-        }
+        }*/
         LOGGER.debug(WORLDPERSISTENCE, "ID Map collection complete {}", worldData.getLevelName());
         levelTag.put("fml", fmlData);
     }

@@ -18,6 +18,8 @@
     "stats.RecipeBookSettingsInject",
     "world.effect.MobEffectInject",
     "world.level.block.BlockInject",
+    "world.level.chunk.ChunkAccessInject",
+    "world.level.chunk.LevelChunkInject",
     "world.level.item.BoneMealItemInject",
     "world.level.item.BucketItemInject",
     "world.level.item.ItemInject",

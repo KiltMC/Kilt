@@ -52,7 +52,9 @@ object ForgeRegistries {
 
     // Custom Forge Registries
     internal val DEFERRED_ENTITY_DATA_SERIALIZERS = DeferredRegister.create(Keys.ENTITY_DATA_SERIALIZERS, Keys.ENTITY_DATA_SERIALIZERS.location().namespace)
-    //@JvmField val ENTITY_DATA_SERIALIZERS = DEFERRED_ENTITY_DATA_SERIALIZERS.makeRegistry(GameData::getGLMSerializersRegistryBuilder)
+    @JvmField val ENTITY_DATA_SERIALIZERS = DEFERRED_ENTITY_DATA_SERIALIZERS.makeRegistry {
+        GameData.getDataSerializersRegistryBuilder()
+    }
 
     internal val DEFERRED_FLUID_TYPES = DeferredRegister.create(Keys.FLUID_TYPES, Keys.FLUID_TYPES.location().namespace)
     @JvmField val FLUID_TYPES = DEFERRED_FLUID_TYPES.makeRegistry {
@@ -69,6 +71,11 @@ object ForgeRegistries {
 
     internal val DEFERRED_STRUCTURE_MODIFIERS = DeferredRegister.create(Keys.STRUCTURE_MODIFIERS, "forge")
     @JvmField val STRUCTURE_MODIFIERS_BUILTIN = DEFERRED_STRUCTURE_MODIFIERS.makeRegistry { RegistryBuilder<StructureModifier>().disableSaving().dataPackRegistry(StructureModifier.DIRECT_CODEC) }
+
+    internal val DEFERRED_GLOBAL_LOOT_MODIFIER_SERIALIZERS = DeferredRegister.create(Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, "forge")
+    @JvmField val GLOBAL_LOOT_MODIFIER_SERIALIZERS = DEFERRED_GLOBAL_LOOT_MODIFIER_SERIALIZERS.makeRegistry {
+        GameData.getGLMSerializersRegistryBuilder()
+    }
 
     private fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T> {
         return RegistryManager.ACTIVE.getRegistry(registry)

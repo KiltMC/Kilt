@@ -170,7 +170,7 @@ accessible method net/minecraft/client/renderer/GameRenderer loadEffect (Lnet/mi
 extendable method net/minecraft/client/renderer/GameRenderer loadEffect (Lnet/minecraft/resources/ResourceLocation;)V # m_109128_
 accessible method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z # m_109817_
 extendable method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z # m_109817_
-accessible field net/minecraft/client/renderer/RenderStateShard setupState Ljava/lang/Runnable; # f_110131_
+mutable field net/minecraft/client/renderer/RenderStateShard setupState Ljava/lang/Runnable; # f_110131_
 extendable class net/minecraft/client/renderer/RenderStateShard$BooleanStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$CullStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
@@ -183,8 +183,8 @@ extendable class net/minecraft/client/renderer/RenderStateShard$OutputStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$OverlayStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$ShaderStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$TextureStateShard
-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z # f_110329_
-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z # f_110330_
+mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z # f_110329_
+mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z # f_110330_
 extendable class net/minecraft/client/renderer/RenderStateShard$TexturingStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
 extendable class net/minecraft/client/renderer/RenderStateShard$WriteMaskStateShard

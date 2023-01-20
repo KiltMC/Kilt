@@ -11,6 +11,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
+import net.minecraftforge.common.extensions.IForgeBlockGetter;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -18,6 +20,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.injections.ChunkAccessInjection;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,7 +65,7 @@ public class ModelDataManager
                 BlockEntity toUpdate = level.getBlockEntity(pos);
                 if (toUpdate != null && !toUpdate.isRemoved())
                 {
-                    data.put(pos, toUpdate.getModelData());
+                    data.put(pos, ((IForgeBlockEntity) toUpdate).getModelData());
                 }
                 else
                 {
@@ -87,11 +90,11 @@ public class ModelDataManager
     @SubscribeEvent
     public static void onChunkUnload(ChunkEvent.Unload event)
     {
-        var level = event.getChunk().getWorldForge();
+        var level = ((ChunkAccessInjection) event.getChunk()).getWorldForge();
         if (level == null)
             return;
 
-        var modelDataManager = level.getModelDataManager();
+        var modelDataManager = ((IForgeBlockGetter) level).getModelDataManager();
         if (modelDataManager == null)
             return;
 

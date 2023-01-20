@@ -53,7 +53,7 @@ public final class GuiOverlayManager
         var orderedOverlays = new ArrayList<ResourceLocation>();
         preRegisterVanillaOverlays(overlays, orderedOverlays);
         var event = new RegisterGuiOverlaysEvent(overlays, orderedOverlays);
-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
+        ModLoader.get().postEvent(event);
         OVERLAYS = orderedOverlays.stream()
                 .map(id -> new NamedGuiOverlay(id, overlays.get(id)))
                 .collect(ImmutableList.toImmutableList());
