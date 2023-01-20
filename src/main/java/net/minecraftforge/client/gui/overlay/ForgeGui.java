@@ -246,7 +246,7 @@ public class ForgeGui extends Gui
     }
 
     @Override
-    protected void renderPortalOverlay(float partialTick)
+    public void renderPortalOverlay(float partialTick)
     {
         float f1 = Mth.lerp(partialTick, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime);
 

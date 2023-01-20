@@ -55,6 +55,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.mixin.MappedRegistryAccessor;
+import xyz.bluspring.kilt.remaps.core.MappedRegistryRemap;
+import xyz.bluspring.kilt.remaps.world.entity.SpawnPlacementsRemap;
+import xyz.bluspring.kilt.remaps.world.level.levelgen.DebugLevelSourceRemap;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -245,7 +249,7 @@ public class GameData
     public static void unfreezeData()
     {
         LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
-        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
+        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistryAccessor)r).setFrozen(false));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -319,7 +323,7 @@ public class GameData
         keySet.addAll(RegistryManager.getVanillaRegistryKeys());
         keySet.addAll(BuiltinRegistries.REGISTRY.keySet());
 
-        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistry.getKnownRegistries());
+        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryRemap.getKnownRegistries());
         ordered.retainAll(keySet);
         ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
 
@@ -338,7 +342,7 @@ public class GameData
                 if (forgeRegistry != null)
                     forgeRegistry.unfreeze();
 
-                ModLoader.get().postEventWithWrapInModOrder(registerEvent, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e)-> ModLoadingContext.get().setActiveContainer(null));
+                ModLoader.get().postEvent(registerEvent);
 
                 if (forgeRegistry != null)
                     forgeRegistry.freeze();
@@ -361,7 +365,7 @@ public class GameData
         } else
         {
             ForgeHooks.modifyAttributes();
-            SpawnPlacements.fireSpawnPlacementEvent();
+            SpawnPlacementsRemap.fireSpawnPlacementEvent();
         }
     }
 
@@ -469,7 +473,7 @@ public class GameData
 
                 block.getLootTable();
             }
-            DebugLevelSource.initValidStates();
+            DebugLevelSourceRemap.initValidStates();
         }
 
         private static class BlockDummyAir extends AirBlock //A named class so DummyBlockReplacementTest can detect if its a dummy
@@ -604,8 +608,8 @@ public class GameData
         {
             ForgeRegistry<T> toRegistry = to.getRegistry(registryName, from);
             toRegistry.sync(registryName, fromRegistry);
-            if (freeze)
-                toRegistry.isFrozen = true;
+            /*if (freeze)
+                toRegistry.isFrozen = true;*/
         }
     }
 
@@ -619,9 +623,9 @@ public class GameData
         RegistryManager.ACTIVE.registries.forEach((name, reg) -> reg.resetDelegates());
 
         // Update legacy names
-        snapshot = snapshot.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey()) // FIXME Registries need dependency ordering, this makes sure blocks are done before items (for ItemCallbacks) but it's lazy as hell
-                .collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
+        snapshot = snapshot.entrySet().stream() // FIXME Registries need dependency ordering, this makes sure blocks are done before items (for ItemCallbacks) but it's lazy as hell
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
+                //.collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
 
         if (isLocalWorld)
         {
@@ -665,8 +669,8 @@ public class GameData
                 // Currently missing locally, we just inject and carry on
                 if (m.containsKey(dummy))
                 {
-                    if (reg.markDummy(dummy, m.get(dummy)))
-                        m.remove(dummy);
+                    //if (reg.markDummy(dummy, m.get(dummy)))
+                        //m.remove(dummy);
                 }
                 else if (isLocalWorld)
                 {
@@ -678,7 +682,7 @@ public class GameData
                     // in mod setup - Mark this entry as a dummy
                     int id = reg.getID(dummy);
                     LOGGER.warn(REGISTRIES, "Registry {}: The ID {} @ {} is currently locally mapped - it will be replaced with a dummy for this session", dummy, key, id);
-                    reg.markDummy(dummy, id);
+                    //reg.markDummy(dummy, id);
                 }
             });
         });
@@ -754,7 +758,7 @@ public class GameData
                 if (m.isEmpty())
                     return;
                 ForgeRegistry<?> reg = STAGING.getRegistry(name);
-                m.forEach((rl, id) -> reg.markDummy(rl, id));
+                //m.forEach((rl, id) -> reg.markDummy(rl, id));
             });
 
 
@@ -806,11 +810,11 @@ public class GameData
         if (active == null)
             return; // We've already asked the user if they wish to continue. So if the reg isnt found just assume the user knows and accepted it.
         ForgeRegistry<T> _new = to.getRegistry(name, RegistryManager.ACTIVE);
-        snap.aliases.forEach(_new::addAlias);
+        /*snap.aliases.forEach(_new::addAlias);
         snap.blocked.forEach(_new::block);
         // Load current dummies BEFORE the snapshot is loaded so that add() will remove from the list.
         snap.dummied.forEach(_new::addDummy);
-        _new.loadIds(snap.ids, snap.overrides, missing, remaps, active, name);
+        _new.loadIds(snap.ids, snap.overrides, missing, remaps, active, name);*/
     }
 
     //Another bouncer for generic reasons
@@ -829,7 +833,7 @@ public class GameData
         ForgeRegistry<T> newRegistry = STAGING.getRegistry(name, RegistryManager.FROZEN);
         Map<ResourceLocation, Integer> _new = Maps.newLinkedHashMap();
         frozen.getKeys().stream().filter(key -> !newRegistry.containsKey(key)).forEach(key -> _new.put(key, frozen.getID(key)));
-        newRegistry.loadIds(_new, frozen.getOverrideOwners(), Maps.newLinkedHashMap(), remaps, frozen, name);
+        //newRegistry.loadIds(_new, frozen.getOverrideOwners(), Maps.newLinkedHashMap(), remaps, frozen, name);
     }
 
     /**

@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.WallSignBlock;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

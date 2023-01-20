@@ -33,6 +33,7 @@ import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.client.renderer.ScreenEffectRendererRemap;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -173,7 +174,7 @@ public interface IClientFluidTypeExtensions
     {
         ResourceLocation texture = this.getRenderOverlayTexture(mc);
         if (texture != null)
-            ScreenEffectRenderer.renderFluid(mc, poseStack, texture);
+            ScreenEffectRendererRemap.renderFluid(mc, poseStack, texture);
     }
 
     /**

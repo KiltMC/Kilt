@@ -27,13 +27,13 @@ import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
+import xyz.bluspring.kilt.mixin.ItemRendererAccessor;
 
 import java.util.function.Consumer;
 
 /**
  * {@linkplain LogicalSide#CLIENT Client-only} extensions to {@link Item}.
  *
- * @see Item#initializeClient(Consumer)
  */
 public interface IClientItemExtensions
 {
@@ -161,7 +161,7 @@ public interface IClientItemExtensions
      */
     default BlockEntityWithoutLevelRenderer getCustomRenderer()
     {
-        return Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer();
+        return ((ItemRendererAccessor) Minecraft.getInstance().getItemRenderer()).getBlockEntityRenderer();
     }
 
     enum FontContext

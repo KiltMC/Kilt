@@ -685,7 +685,7 @@ public class ForgeHooksClient
 
     public static void onScreenMouseScrollPost(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
     {
-        Window mainWindow = guiScreen.getMinecraft().getWindow();
+        Window mainWindow = Minecraft.getInstance().getWindow();
         double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
         double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();
         Event event = new ScreenEvent.MouseScrolled.Post(guiScreen, mouseX, mouseY, scrollDelta);
@@ -777,7 +777,7 @@ public class ForgeHooksClient
         for (var renderType : ((IForgeBakedModel) model).getRenderTypes(state, RandomSource.create(state.getSeed(pos)), ModelData.EMPTY))
         {
             VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypeHelper.getMovingBlockRenderType(renderType));
-            blockRenderer.getModelRenderer().tesselateBlock(level, model, state, pos, stack, vertexConsumer, checkSides, RandomSource.create(), state.getSeed(pos), packedOverlay, ModelData.EMPTY, renderType);
+            blockRenderer.getModelRenderer().tesselateBlock(level, model, state, pos, stack, vertexConsumer, checkSides, RandomSource.create(), state.getSeed(pos), packedOverlay);
         }
     }
 
@@ -814,7 +814,7 @@ public class ForgeHooksClient
 
     public static void processForgeListPingData(ServerStatus packet, ServerData target)
     {
-        if (packet.getForgeData() != null) {
+        /*if (packet.getForgeData() != null) {
             final Map<String, String> mods = packet.getForgeData().getRemoteModData();
             final Map<ResourceLocation, Pair<String, Boolean>> remoteChannels = packet.getForgeData().getRemoteChannels();
             final int fmlver = packet.getForgeData().getFMLNetworkVersion();
@@ -866,13 +866,13 @@ public class ForgeHooksClient
             target.forgeData = new ExtendedServerListData("FML", extraServerMods.isEmpty() && fmlNetMatches && channelsMatch && modsMatch, mods.size(), extraReason, packet.getForgeData().isTruncated());
         } else {
             target.forgeData = new ExtendedServerListData("VANILLA", NetworkRegistry.canConnectToVanillaServer(),0, null);
-        }
+        }*/
 
     }
 
     private static final ResourceLocation ICON_SHEET = new ResourceLocation(ForgeVersion.MOD_ID, "textures/gui/icons.png");
     public static void drawForgePingInfo(JoinMultiplayerScreen gui, ServerData target, PoseStack poseStack, int x, int y, int width, int relativeMouseX, int relativeMouseY) {
-        int idx;
+        /*int idx;
         String tooltip;
         if (target.forgeData == null)
             return;
@@ -916,7 +916,7 @@ public class ForgeHooksClient
             //this is not the most proper way to do it,
             //but works best here and has the least maintenance overhead
             gui.setToolTip(Arrays.stream(tooltip.split("\n")).map(Component::literal).collect(Collectors.toList()));
-        }
+        }*/
     }
 
     private static Connection getClientConnection()
@@ -996,7 +996,7 @@ public class ForgeHooksClient
         @SubscribeEvent
         public static void registerShaders(RegisterShadersEvent event) throws IOException
         {
-            event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation("forge","rendertype_entity_unlit_translucent"), DefaultVertexFormat.NEW_ENTITY), (p_172645_) -> {
+            event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation("forge","rendertype_entity_unlit_translucent").toString(), DefaultVertexFormat.NEW_ENTITY), (p_172645_) -> {
                 rendertypeEntityTranslucentUnlitShader = p_172645_;
             });
         }

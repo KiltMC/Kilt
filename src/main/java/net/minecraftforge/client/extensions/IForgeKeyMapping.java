@@ -36,15 +36,15 @@ public interface IForgeKeyMapping
         setKeyModifierAndCode(getDefaultKeyModifier(), self().getDefaultKey());
     }
 
-    void setKeyConflictContext(IKeyConflictContext keyConflictContext);
+    default void setKeyConflictContext(IKeyConflictContext keyConflictContext) { throw new IllegalStateException(); };
 
-    IKeyConflictContext getKeyConflictContext();
+    default IKeyConflictContext getKeyConflictContext() { throw new IllegalStateException(); };
 
-    KeyModifier getDefaultKeyModifier();
+    default KeyModifier getDefaultKeyModifier() { throw new IllegalStateException(); };
 
-    KeyModifier getKeyModifier();
+    default KeyModifier getKeyModifier() { throw new IllegalStateException(); };
 
-    void setKeyModifierAndCode(KeyModifier keyModifier, InputConstants.Key keyCode);
+    default void setKeyModifierAndCode(KeyModifier keyModifier, InputConstants.Key keyCode) { throw new IllegalStateException(); };
 
     default boolean isConflictContextAndModifierActive()
     {

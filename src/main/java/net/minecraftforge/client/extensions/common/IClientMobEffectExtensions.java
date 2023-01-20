@@ -11,13 +11,13 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.fml.LogicalSide;
+import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
 
 import java.util.function.Consumer;
 
 /**
  * {@linkplain LogicalSide#CLIENT Client-only} extensions to {@link MobEffect}.
  *
- * @see MobEffect#initializeClient(Consumer)
  */
 public interface IClientMobEffectExtensions
 {
@@ -30,7 +30,7 @@ public interface IClientMobEffectExtensions
 
     static IClientMobEffectExtensions of(MobEffect effect)
     {
-        return effect.getEffectRendererInternal() instanceof IClientMobEffectExtensions r ? r : DEFAULT;
+        return ((RenderPropertiesInjection<MobEffect>) effect).getRenderPropertiesInternal() instanceof IClientMobEffectExtensions r ? r : DEFAULT;
     }
 
     /**

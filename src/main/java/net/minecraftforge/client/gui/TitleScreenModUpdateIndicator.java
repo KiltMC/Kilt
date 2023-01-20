@@ -8,6 +8,7 @@ package net.minecraftforge.client.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -52,7 +53,7 @@ public class TitleScreenModUpdateIndicator extends Screen
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick)
     {
-        if (showNotification == null || !showNotification.shouldDraw() || !FMLConfig.runVersionCheck())
+        if (showNotification == null || !showNotification.shouldDraw())
         {
             return;
         }
@@ -70,7 +71,7 @@ public class TitleScreenModUpdateIndicator extends Screen
     public static TitleScreenModUpdateIndicator init(TitleScreen guiMainMenu, Button modButton)
     {
         TitleScreenModUpdateIndicator titleScreenModUpdateIndicator = new TitleScreenModUpdateIndicator(modButton);
-        titleScreenModUpdateIndicator.resize(guiMainMenu.getMinecraft(), guiMainMenu.width, guiMainMenu.height);
+        titleScreenModUpdateIndicator.resize(Minecraft.getInstance(), guiMainMenu.width, guiMainMenu.height);
         titleScreenModUpdateIndicator.init();
         return titleScreenModUpdateIndicator;
     }

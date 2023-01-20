@@ -16,6 +16,7 @@
     "network.protocol.status.ServerStatusInject",
     "server.ReloadableServerResourcesInject",
     "stats.RecipeBookSettingsInject",
+    "world.effect.MobEffectInject",
     "world.level.block.BlockInject",
     "world.level.item.BoneMealItemInject",
     "world.level.item.BucketItemInject",
@@ -26,8 +27,11 @@
     "world.level.storage.PlayerDataStorageInject"
   ],
   "client": [
+    "blaze3d.vertex.PoseStackInject",
+    "client.KeyMappingInject",
     "client.MinecraftInject",
     "client.gui.components.AbstractSelectionListInject",
+    "client.gui.components.AbstractWidgetInject",
     "client.renderer.RenderTypeInject",
     "client.renderer.ScreenEffectRendererInject"
   ],

@@ -1,6 +1,7 @@
 package net.minecraftforge.registries
 
 import net.minecraft.core.Holder
+import net.minecraft.core.HolderSet
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagKey
 import net.minecraftforge.registries.tags.IReverseTag
@@ -9,16 +10,19 @@ import net.minecraftforge.registries.tags.ITagManager
 import java.util.*
 import java.util.function.Supplier
 import java.util.stream.Stream
+import kotlin.streams.toList
 
 class ForgeRegistryTagManager<V> internal constructor(
     private val forgeRegistry: ForgeRegistry<V>
 ) : ITagManager<V> {
+    private val tags = mutableMapOf<TagKey<V>, ITag<V>>()
+
     override fun getTag(name: TagKey<V>): ITag<V> {
         val vanillaTag = forgeRegistry.vanillaRegistry.getOrCreateTag(name)
 
-        // this is terrible, but this is probably the
-        // safest way I can do this.
-        return ForgeRegistryTag(name, vanillaTag)
+        return tags.computeIfAbsent(name) {
+            ForgeRegistryTag(name, vanillaTag)
+        }
     }
 
     override fun getReverseTag(value: V): Optional<IReverseTag<V>> {
@@ -34,7 +38,7 @@ class ForgeRegistryTagManager<V> internal constructor(
 
     override fun stream(): Stream<ITag<V>> {
         // I fear for the memory usage.
-        return forgeRegistry.vanillaRegistry.tags.map { ForgeRegistryTag<V>(it.first, it.second) }
+        return tags.values.stream()
     }
 
     override val tagNames: Stream<TagKey<V>>
@@ -45,15 +49,25 @@ class ForgeRegistryTagManager<V> internal constructor(
     }
 
     override fun addOptionalTagDefaults(name: TagKey<V>, defaults: Set<Supplier<V>>) {
-        TODO("Not yet implemented")
+        forgeRegistry.holderHelper.ifPresent {
+            it.addOptionalTag(name, defaults)
+        }
     }
 
     override fun createOptionalTagKey(location: ResourceLocation, defaults: Set<Supplier<V>>): TagKey<V> {
-        TODO("Not yet implemented")
+        return createTagKey(location).apply {
+            addOptionalTagDefaults(this, defaults)
+        }
     }
 
     override fun iterator(): Iterator<ITag<V>> {
-        return forgeRegistry.vanillaRegistry.tags.map { ForgeRegistryTag<V>(it.first, it.second) }.iterator()
+        return tags.values.iterator()
     }
 
+    // why is defaultedTags unused???
+    internal fun bind(holderTags: Map<TagKey<V>, HolderSet.Named<V>>, defaultedTags: Set<TagKey<V>>) {
+        holderTags.forEach { (key, contents) ->
+            (tags.computeIfAbsent(key, ::ForgeRegistryTag) as ForgeRegistryTag<V>).bind(contents)
+        }
+    }
 }

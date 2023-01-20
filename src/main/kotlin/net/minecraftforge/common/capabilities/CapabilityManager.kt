@@ -34,7 +34,7 @@ enum class CapabilityManager {
         Kilt.loader.postEvent(event)
     }
 
-    internal fun <T> get(realName: String, registering: Boolean): Capability<T> {
+    fun <T> get(realName: String, registering: Boolean): Capability<T> {
         var name = realName
         var cap: Capability<T>
 

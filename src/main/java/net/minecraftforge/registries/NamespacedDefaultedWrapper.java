@@ -211,7 +211,7 @@ class NamespacedDefaultedWrapper<T> extends DefaultedRegistry<T> implements ILoc
     @Override public Optional<HolderSet.Named<T>> getTag(TagKey<T> name) { return this.holders.getTag(name); }
     @Override public void bindTags(Map<TagKey<T>, List<Holder<T>>> newTags) { this.holders.bindTags(newTags); }
     @Override public void resetTags() { this.holders.resetTags(); }
-    @Deprecated @Override public void unfreeze() { this.holders.unfreeze(); }
+    //@Deprecated @Override public void unfreeze() { this.holders.unfreeze(); }
 
     /** @deprecated Forge: For internal use only. Use the Register events when registering values. */
     @Deprecated @Override public void lock(){ this.locked = true; }

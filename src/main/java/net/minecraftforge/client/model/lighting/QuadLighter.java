@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.extensions.IForgeBlockAndTintGetter;
 
 import java.util.Objects;
 
@@ -94,9 +95,9 @@ public abstract class QuadLighter
         }
         if (normals[0][0] == 0 && normals[0][1] == 0 && normals[0][2] == 0)
         {
-            Vector3f a = new Vector3f(positions[0]);
-            Vector3f ab = new Vector3f(positions[1]);
-            Vector3f ac = new Vector3f(positions[2]);
+            Vector3f a = new Vector3f(positions[0][0], positions[0][1], positions[0][2]);
+            Vector3f ab = new Vector3f(positions[1][0], positions[1][1], positions[1][2]);
+            Vector3f ac = new Vector3f(positions[2][0], positions[2][1], positions[2][2]);
             ac.sub(a);
             ab.sub(a);
             ab.cross(ac);
@@ -121,7 +122,7 @@ public abstract class QuadLighter
                     position[2] - 0.5f + ((normal[2] / 127f) * 0.5f)
             };
 
-            var shade = level.getShade(normals[i][0] / 127f, normals[i][1] / 127f, normals[i][2] / 127f, quad.isShade());
+            var shade = ((IForgeBlockAndTintGetter) level).getShade(normals[i][0] / 127f, normals[i][1] / 127f, normals[i][2] / 127f, quad.isShade());
             brightness[i] = calculateBrightness(adjustedPosition) * shade;
             int newLightmap = calculateLightmap(adjustedPosition, normal);
             lightmap[i] = Math.max(packedLightmap & 0xFFFF, newLightmap & 0xFFFF) |

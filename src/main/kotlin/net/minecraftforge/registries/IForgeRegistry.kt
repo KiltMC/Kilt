@@ -44,25 +44,26 @@ interface IForgeRegistry<V> : Iterable<V> {
     fun getDelegateOrThrow(value: V): Holder.Reference<V>
 
     fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T
+    fun setSlaveMap(name: ResourceLocation, obj: Any)
 
     fun interface AddCallback<V> {
-        fun onAdd(owner: IForgeRegistry<V>, stage: RegistryManager, id: Int, key: ResourceKey<V>, obj: V, oldObj: V?)
+        fun onAdd(owner: IForgeRegistryInternal<V>, stage: RegistryManager, id: Int, key: ResourceKey<V>, obj: V, oldObj: V?)
     }
 
     fun interface ClearCallback<V> {
-        fun onClear(owner: IForgeRegistry<V>, stage: RegistryManager)
+        fun onClear(owner: IForgeRegistryInternal<V>, stage: RegistryManager)
     }
 
     fun interface CreateCallback<V> {
-        fun onCreate(owner: IForgeRegistry<V>, stage: RegistryManager)
+        fun onCreate(owner: IForgeRegistryInternal<V>, stage: RegistryManager)
     }
 
     fun interface ValidateCallback<V> {
-        fun onValidate(owner: IForgeRegistry<V>, stage: RegistryManager, id: Int, key: ResourceLocation, obj: V)
+        fun onValidate(owner: IForgeRegistryInternal<V>, stage: RegistryManager, id: Int, key: ResourceLocation, obj: V)
     }
 
     fun interface BakeCallback<V> {
-        fun onBake(owner: IForgeRegistry<V>, stage: RegistryManager)
+        fun onBake(owner: IForgeRegistryInternal<V>, stage: RegistryManager)
     }
 
     fun interface DummyFactory<V> {

@@ -23,7 +23,8 @@ public interface IForgeTransformation
 {
     private Transformation self()
     {
-        return (Transformation) this;
+        // oh you'd be surprised to know that it is in fact convertable
+        return (Transformation) (Object) this;
     }
 
     /**

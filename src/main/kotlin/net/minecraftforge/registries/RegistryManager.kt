@@ -6,14 +6,14 @@ import net.minecraft.resources.ResourceLocation
 import xyz.bluspring.kilt.Kilt
 
 class RegistryManager(val name: String) {
-    private val registries = mutableMapOf<ResourceLocation, ForgeRegistry<*>>()
+    @JvmField val registries = mutableMapOf<ResourceLocation, ForgeRegistry<*>>()
     internal constructor() : this("STAGING")
 
     fun <V> getRegistry(key: ResourceLocation): ForgeRegistry<V> {
         return if (registries.contains(key))
             registries[key] as ForgeRegistry<V>
         else {
-            val registry = ForgeRegistry<V>(key, RegistryBuilder())
+            val registry = ForgeRegistry<V>(this, key, RegistryBuilder())
             registries[key] = registry
 
             registry
@@ -22,6 +22,16 @@ class RegistryManager(val name: String) {
 
     fun <V> getRegistry(key: ResourceKey<out Registry<V>>): ForgeRegistry<V> {
         return getRegistry(key.location())
+    }
+
+    fun <V> getRegistry(key: ResourceLocation, other: RegistryManager): ForgeRegistry<V> {
+        if (!registries.contains(key)) {
+            return other.getRegistry<V>(key).apply {
+                registries[key] = this
+            }
+        }
+
+        return getRegistry(key)
     }
 
     fun <V> getName(reg: IForgeRegistry<V>): ResourceLocation? {
@@ -49,5 +59,9 @@ class RegistryManager(val name: String) {
 
             Kilt.loader.postEvent(event)
         }
+
+        @JvmStatic
+        val vanillaRegistryKeys: Set<ResourceLocation>
+            get() = Registry.REGISTRY.keySet()
     }
 }

@@ -7,6 +7,7 @@ package net.minecraftforge.client.model.renderable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector4f;
+import net.fabricmc.fabric.api.client.model.BakedModelManagerHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -40,7 +41,7 @@ public class BakedModelRenderable implements IRenderable<BakedModelRenderable.Co
      */
     public static BakedModelRenderable of(ResourceLocation model)
     {
-        return of(Minecraft.getInstance().getModelManager().getModel(model));
+        return of(BakedModelManagerHelper.getModel(Minecraft.getInstance().getModelManager(), model));
     }
 
     /**

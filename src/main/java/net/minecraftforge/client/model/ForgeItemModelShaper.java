@@ -14,6 +14,7 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

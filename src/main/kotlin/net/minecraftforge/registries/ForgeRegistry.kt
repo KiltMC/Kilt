@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar
 import io.netty.buffer.Unpooled
 import net.minecraft.core.Holder
+import net.minecraft.core.HolderSet
 import net.minecraft.core.Registry
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
@@ -13,17 +14,20 @@ import net.minecraft.nbt.StringTag
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.TagKey
 import net.minecraftforge.registries.tags.ITagManager
 import org.apache.logging.log4j.Marker
 import org.apache.logging.log4j.MarkerManager
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.mixin.MappedRegistryAccessor
 import java.util.*
 import kotlin.Comparator
 
 class ForgeRegistry<V> internal constructor (
+    private val stage: RegistryManager,
     override val registryName: ResourceLocation,
     private val builder: RegistryBuilder<V>
-) : IForgeRegistry<V> {
+) : IForgeRegistryInternal<V> {
     override val registryKey: ResourceKey<Registry<V>> = ResourceKey.createRegistryKey(registryName)
     private val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
     private val vanillaRegistryGetter = fabricRegistry.makeRegistry()
@@ -103,10 +107,6 @@ class ForgeRegistry<V> internal constructor (
         return vanillaRegistry.holders().toList().first { it.key().location() == key }
     }
 
-    override fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T {
-        TODO("Not yet implemented")
-    }
-
     override fun getDelegateOrThrow(value: V): Holder.Reference<V> {
         return vanillaRegistry.holders().toList().first { it.value() == value }
     }
@@ -144,10 +144,6 @@ class ForgeRegistry<V> internal constructor (
     fun getValue(id: Int): V? {
         return fabricRegistry.entries.elementAt(id).get()
     }
-
-    // i still do not know what the fuck this is for
-    override val defaultKey: ResourceLocation?
-        get() = keys.firstOrNull()
 
     companion object {
         // why is this needed
@@ -303,5 +299,124 @@ class ForgeRegistry<V> internal constructor (
                 return snapshot
             }
         }
+    }
+
+    // This is for everything that uses the builder, essentially. Oh, and internal methods too.
+    // Everything is public though, because Java-Kotlin internal doesn't seem to bode well.
+
+    fun size(): Int {
+        return fabricRegistry.entries.size
+    }
+
+    internal val wrapper: Registry<V>?
+        get() {
+            if (!builder.hasWrapper)
+                return null
+
+            return if (defaultKey != null)
+                getSlaveMap(NamespacedDefaultedWrapper.Factory.ID, NamespacedDefaultedWrapper::class.java) as NamespacedDefaultedWrapper<V>
+            else
+                getSlaveMap(NamespacedWrapper.Factory.ID, NamespacedWrapper::class.java) as NamespacedWrapper<V>
+        }
+
+    @JvmName("getWrapperOrThrow")
+    internal fun getWrapperOrThrow(): Registry<V> {
+        return wrapper ?: throw IllegalStateException("Cannot query wrapper for non-wrapped forge registry!")
+    }
+
+    internal val holderHelper: Optional<NamespacedHolderHelper<V>>
+        get() {
+            val wrapper = this.wrapper
+            if (wrapper !is IHolderHelperHolder<*>)
+                return Optional.empty()
+
+            return Optional.of(wrapper.holderHelper as NamespacedHolderHelper<V>)
+        }
+
+    @JvmName("onBindTags")
+    internal fun onBindTags(tags: Map<TagKey<V>, HolderSet.Named<V>>, defaultedTags: Set<TagKey<V>>) {
+        tagManager.bind(tags, defaultedTags)
+    }
+
+    @JvmName("copy")
+    internal fun copy(stage: RegistryManager): ForgeRegistry<V> {
+        return ForgeRegistry(stage, registryName, builder)
+    }
+
+    // i still do not know what the fuck this is for
+    override val defaultKey = builder.default
+
+    // i feel like this could have literally any other name, but oh well.
+    // need to abide by Forge's rules.
+    @JvmField internal val slaves = mutableMapOf<ResourceLocation, Any>()
+
+    override fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T {
+        return slaves[slaveMapName] as T
+    }
+
+    override fun setSlaveMap(name: ResourceLocation, obj: Any) {
+        slaves[name] = obj
+    }
+
+    @JvmName("validateContent")
+    internal fun validateContent(registryName: ResourceLocation) {
+        // validate deez nuts
+        // if this is required. oh fuckin' well.
+    }
+
+    @JvmName("freeze")
+    internal fun freeze() {
+        vanillaRegistry.freeze()
+    }
+
+    @JvmName("dump")
+    internal fun dump(name: ResourceLocation) {
+        // fuck that
+    }
+
+    fun bake() {
+        if (builder.bake != null)
+            builder.bake!!.onBake(this, stage)
+    }
+
+    @JvmName("unfreeze")
+    internal fun unfreeze() {
+        // hope this works
+        (vanillaRegistry as MappedRegistryAccessor).setFrozen(false)
+    }
+
+    @JvmName("resetDelegates")
+    internal fun resetDelegates() {
+        if (!builder.hasWrapper)
+            return
+
+
+    }
+
+    @JvmName("sync")
+    internal fun sync(name: ResourceLocation, from: ForgeRegistry<V>) {
+        if (this == from)
+            throw IllegalArgumentException("maybe i am you...")
+
+        // realistically, this shouldn't be needed, since it *is* relying on
+        // the Vanilla registry system internally here.
+        // but if it is actually needed, well, fuck, guess I've eaten my words.
+    }
+
+    fun getMissingEvent(name: ResourceLocation, map: Map<ResourceLocation, Int>): MissingMappingsEvent {
+        val list = mutableListOf<MissingMappingsEvent.Mapping<V>>()
+        val pool = RegistryManager.ACTIVE.getRegistry<V>(name)
+        map.forEach { (rl, id) ->
+            list.add(MissingMappingsEvent.Mapping<V>(this, pool, rl, id))
+        }
+
+        return MissingMappingsEvent(ResourceKey.createRegistryKey<V>(name), this,
+            list as Collection<MissingMappingsEvent.Mapping<*>>
+        )
+    }
+
+    @JvmName("processMissingEvent")
+    internal fun processMissingEvent(name: ResourceLocation, pool: ForgeRegistry<V>, mappings: List<MissingMappingsEvent.Mapping<V>>, missing: Map<ResourceLocation, Int>, remaps: Map<ResourceLocation, IdMappingEvent.IdRemapping>, defaulted: kotlin.collections.Collection<ResourceLocation>, failed: kotlin.collections.Collection<ResourceLocation>, injectNetworkDummies: Boolean) {
+        // so much info.... fuck that
     }
 }

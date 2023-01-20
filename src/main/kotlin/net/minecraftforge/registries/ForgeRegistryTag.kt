@@ -11,9 +11,9 @@ import java.util.stream.Stream
 class ForgeRegistryTag<V> internal constructor(
     override val key: TagKey<V>
 ) : ITag<V> {
-    private var contents: HolderSet<V>? = null
+    private var contents: HolderSet.Named<V>? = null
 
-    internal constructor(key: TagKey<V>, contents: HolderSet.Named<V>) : this(key) {
+    internal constructor(key: TagKey<V>, contents: HolderSet.Named<V>?) : this(key) {
         this.contents = contents
     }
 
@@ -58,5 +58,9 @@ class ForgeRegistryTag<V> internal constructor(
             listOf<V>().iterator()
         else
             contents!!.map { it.value() }.iterator()
+    }
+
+    internal fun bind(holderSet: HolderSet.Named<V>?) {
+        contents = holderSet
     }
 }

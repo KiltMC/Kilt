@@ -1,9 +1,13 @@
 package net.minecraftforge.registries
 
+import com.mojang.serialization.Codec
 import net.minecraft.core.Registry
 import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraftforge.common.loot.IGlobalLootModifier
+import net.minecraftforge.common.world.BiomeModifier
+import net.minecraftforge.common.world.StructureModifier
 import net.minecraftforge.fluids.FluidType
 import net.minecraftforge.registries.holdersets.HolderSetType
 
@@ -52,15 +56,22 @@ object ForgeRegistries {
 
     internal val DEFERRED_FLUID_TYPES = DeferredRegister.create(Keys.FLUID_TYPES, Keys.FLUID_TYPES.location().namespace)
     @JvmField val FLUID_TYPES = DEFERRED_FLUID_TYPES.makeRegistry {
-        RegistryBuilder<FluidType>().setName(Keys.FLUIDS.location())
+        GameData.getFluidTypeRegistryBuilder()
     }
 
     internal val DEFERRED_HOLDER_SET_TYPES = DeferredRegister.create(Keys.HOLDER_SET_TYPES, Keys.HOLDER_SET_TYPES.location().namespace)
-    @JvmField val HOLDER_SET_TYPES = DEFERRED_HOLDER_SET_TYPES.makeRegistry { RegistryBuilder<HolderSetType>().setName(Keys.HOLDER_SET_TYPES.location()) }
-    // TODO: Implement the rest of these registries
+    @JvmField val HOLDER_SET_TYPES = DEFERRED_HOLDER_SET_TYPES.makeRegistry {
+        GameData.getHolderSetTypeRegistryBuilder()
+    }
+
+    internal val DEFERRED_BIOME_MODIFIERS = DeferredRegister.create(Keys.BIOME_MODIFIERS, "forge")
+    @JvmField val BIOME_MODIFIERS_BUILTIN = DEFERRED_BIOME_MODIFIERS.makeRegistry { RegistryBuilder<BiomeModifier>().disableSaving().dataPackRegistry(BiomeModifier.DIRECT_CODEC) }
+
+    internal val DEFERRED_STRUCTURE_MODIFIERS = DeferredRegister.create(Keys.STRUCTURE_MODIFIERS, "forge")
+    @JvmField val STRUCTURE_MODIFIERS_BUILTIN = DEFERRED_STRUCTURE_MODIFIERS.makeRegistry { RegistryBuilder<StructureModifier>().disableSaving().dataPackRegistry(StructureModifier.DIRECT_CODEC) }
 
     private fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T> {
-        return ForgeRegistry(registry.location(), RegistryBuilder())
+        return RegistryManager.ACTIVE.getRegistry(registry)
     }
 
     object Keys {
@@ -103,15 +114,15 @@ object ForgeRegistries {
 
         // Forge
         @JvmField val ENTITY_DATA_SERIALIZERS = key<EntityDataSerializer<*>>("forge:entity_data_serializers")
-        //@JvmField val GLOBAL_LOOT_MODIFIER_SERIALIZERS = key<Codec<out IGlobalLootModifier>>("forge:global_loot_modifier_serializers")
-        //@JvmField val BIOME_MODIFIER_SERIALIZERS = key<Codec<out BiomeModifier>>("forge:biome_modifier_serializers")
-        //@JvmField val STRUCTURE_MODIFIER_SERIALIZERS = key<Codec<out StructureModifier>>("forge:structure_modifier_serializers")
+        @JvmField val GLOBAL_LOOT_MODIFIER_SERIALIZERS = key<Codec<out IGlobalLootModifier>>("forge:global_loot_modifier_serializers")
+        @JvmField val BIOME_MODIFIER_SERIALIZERS = key<Codec<out BiomeModifier>>("forge:biome_modifier_serializers")
+        @JvmField val STRUCTURE_MODIFIER_SERIALIZERS = key<Codec<out StructureModifier>>("forge:structure_modifier_serializers")
         @JvmField val FLUID_TYPES = key<FluidType>("forge:fluid_type")
         @JvmField val HOLDER_SET_TYPES = key<HolderSetType>("forge:holder_set_type")
 
         // Forge Dynamic
-        //@JvmField val BIOME_MODIFIERS = key<BiomeModifier>("forge:biome_modifier")
-        //@JvmField val STRUCTURE_MODIFIERS = key<StructureModifier>("forge:structure_modifier")
+        @JvmField val BIOME_MODIFIERS = key<BiomeModifier>("forge:biome_modifier")
+        @JvmField val STRUCTURE_MODIFIERS = key<StructureModifier>("forge:structure_modifier")
 
         private fun <T> key(name: String): ResourceKey<Registry<T>> {
             return ResourceKey.createRegistryKey(ResourceLocation(name))

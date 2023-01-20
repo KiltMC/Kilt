@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(HolderSet.Named.class)
-public class HolderSetNamedInject<T> implements IForgeHolderSet<T> {
+public class HolderSetNamedInject<T> implements IForgeHolderSet {
     private final List<Runnable> invalidationCallbacks = new ArrayList<>();
 
     @Override

@@ -64,7 +64,7 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext
     @Nullable
     public IUnbakedGeometry<?> getCustomGeometry()
     {
-        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
+        return /*owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() :*/ customGeometry;
     }
 
     public void setCustomGeometry(IUnbakedGeometry<?> geometry)
@@ -75,8 +75,8 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext
     @Override
     public boolean isComponentVisible(String part, boolean fallback)
     {
-        return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
-                owner.parent.customData.isComponentVisible(part, fallback) :
+        return owner.parent != null && /*!visibilityData.hasCustomVisibility(part) ?
+                owner.parent.customData.isComponentVisible(part, fallback) :*/
                 visibilityData.isVisible(part, fallback);
     }
 
@@ -121,7 +121,7 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext
     {
         if (rootTransform != null)
             return rootTransform;
-        return owner.parent != null ? owner.parent.customData.getRootTransform() : Transformation.identity();
+        return /*owner.parent != null ? owner.parent.customData.getRootTransform() :*/ Transformation.identity();
     }
 
     public void setRootTransform(Transformation rootTransform)
@@ -135,7 +135,7 @@ public class BlockGeometryBakingContext implements IGeometryBakingContext
     {
         if (renderTypeHint != null)
             return renderTypeHint;
-        return owner.parent != null ? owner.parent.customData.getRenderTypeHint() : null;
+        return /*owner.parent != null ? owner.parent.customData.getRenderTypeHint() :*/ null;
     }
 
     public void setRenderTypeHint(ResourceLocation renderTypeHint)

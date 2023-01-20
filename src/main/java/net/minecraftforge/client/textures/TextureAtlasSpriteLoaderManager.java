@@ -38,7 +38,7 @@ public final class TextureAtlasSpriteLoaderManager
     {
         var loaders = new HashMap<ResourceLocation, ITextureAtlasSpriteLoader>();
         var event = new RegisterTextureAtlasSpriteLoadersEvent(loaders);
-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
+        ModLoader.get().postEvent(event);
         LOADERS = ImmutableMap.copyOf(loaders);
     }
 

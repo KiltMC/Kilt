@@ -41,6 +41,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.client.model.geometry.StandaloneGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
