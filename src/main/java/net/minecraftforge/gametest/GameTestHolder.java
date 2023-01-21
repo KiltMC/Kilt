@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 public @interface GameTestHolder
 {
     /**
-     * Used as the default {@link GameTest#templateNamespace() template namespace} for any game tests in the class that do not specify one.
+     * Used as the default  for any game tests in the class that do not specify one.
      */
     String value() default "minecraft";
 }

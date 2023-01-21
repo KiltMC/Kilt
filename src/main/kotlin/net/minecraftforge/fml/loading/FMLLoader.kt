@@ -1,6 +1,7 @@
 package net.minecraftforge.fml.loading
 
 import net.fabricmc.loader.api.FabricLoader
+import java.nio.file.Path
 
 object FMLLoader {
     @JvmStatic
@@ -17,4 +18,8 @@ object FMLLoader {
     fun isSecureJarEnabled(): Boolean {
         return false
     }
+
+    @JvmStatic
+    val gamePath: Path
+        get() = FMLPaths.GAMEDIR.get()
 }

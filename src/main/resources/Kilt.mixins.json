@@ -6,8 +6,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AlternativeLootItemConditionAccessor",
+    "ArgumentTypeInfosAccessor",
     "AttributeSupplierAccessor",
     "AttributeSupplierBuilderAccessor",
+    "BiomeGenerationSettingsAccessor",
     "BuilderAccessor",
     "ClientPacketListenerAccessor",
     "CompositeEntryBaseAccessor",
@@ -22,6 +24,7 @@
     "LootPoolEntryContainerAccessor",
     "MappedRegistryAccessor",
     "MatchToolAccessor",
+    "MobSpawnSettingsAccessor",
     "RecipeBookSettingsAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",

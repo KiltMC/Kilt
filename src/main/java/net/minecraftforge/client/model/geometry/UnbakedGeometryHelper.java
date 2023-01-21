@@ -95,10 +95,10 @@ public class UnbakedGeometryHelper
     @ApiStatus.Internal
     public static BakedModel bake(BlockModel blockModel, ModelBakery modelBakery, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d)
     {
-        IUnbakedGeometry<?> customModel = blockModel.customData.getCustomGeometry();
+        /*IUnbakedGeometry<?> customModel = blockModel.customData.getCustomGeometry();
         if (customModel != null)
             return customModel.bake(blockModel.customData, modelBakery, spriteGetter, modelState, blockModel.getOverrides(modelBakery, owner, spriteGetter), modelLocation);
-
+        */
         // Handle vanilla item models here, since vanilla has a shortcut for them
         if (blockModel.getRootModel() == ModelBakery.GENERATION_MARKER)
             return ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, blockModel).bake(modelBakery, blockModel, spriteGetter, modelState, modelLocation, guiLight3d);
@@ -122,7 +122,7 @@ public class UnbakedGeometryHelper
         }
 
         var elementsModel = new ElementsModel(blockModel.getElements());
-        return elementsModel.bake(blockModel.customData, modelBakery, spriteGetter, modelState, blockModel.getOverrides(modelBakery, owner, spriteGetter), modelLocation);
+        return elementsModel.bake(/*blockModel.customData*/ null, modelBakery, spriteGetter, modelState, blockModel.getOverrides(modelBakery, owner, spriteGetter), modelLocation);
     }
 
     /**

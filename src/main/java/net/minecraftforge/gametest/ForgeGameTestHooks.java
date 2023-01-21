@@ -17,6 +17,7 @@ import net.minecraftforge.forgespi.language.ModFileScanData.AnnotationData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.Type;
+import xyz.bluspring.kilt.remaps.gametest.framework.GameTestRegistryRemap;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -62,7 +63,7 @@ public class ForgeGameTestHooks
 
             for (Method gameTestMethod : gameTestMethods)
             {
-                GameTestRegistry.register(gameTestMethod, enabledNamespaces);
+                GameTestRegistryRemap.register(gameTestMethod, enabledNamespaces);
             }
 
             registeredGametests = true;
@@ -99,10 +100,10 @@ public class ForgeGameTestHooks
     {
         GameTest gameTest = method.getAnnotation(GameTest.class);
 
-        if (gameTest != null && !gameTest.templateNamespace().isEmpty())
+        /*if (gameTest != null && !gameTest.templateNamespace().isEmpty())
         {
             return gameTest.templateNamespace();
-        }
+        }*/
 
         GameTestHolder gameTestHolder = method.getDeclaringClass().getAnnotation(GameTestHolder.class);
 

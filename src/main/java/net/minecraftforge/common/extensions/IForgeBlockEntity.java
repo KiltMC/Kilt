@@ -156,7 +156,7 @@ public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>
          Level level = te.getLevel();
          if (level != null && level.isClientSide)
          {
-             var modelDataManager = level.getModelDataManager();
+             var modelDataManager = ((IForgeBlockGetter) level).getModelDataManager();
              if (modelDataManager != null)
              {
                  modelDataManager.requestRefresh(te);

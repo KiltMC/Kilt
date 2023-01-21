@@ -30,6 +30,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraftforge.network.NetworkHooks;
 
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 

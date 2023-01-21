@@ -52,7 +52,7 @@
       "net/minecraft/class_3610": ["net/minecraftforge/common/extensions/IForgeFluidState"],
       "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock", "xyz/bluspring/kilt/injections/client/render/RenderPropertiesInjection"],
       "net/minecraft/class_1792": ["net/minecraftforge/common/extensions/IForgeItem"],
-      "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack"],
+      "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack", "xyz/bluspring/kilt/injections/CapabilityProviderInjection", "net/minecraftforge/common/capabilities/ICapabilityProviderImpl", "xyz/bluspring/kilt/injections/item/ItemStackInjection"],
       "net/minecraft/class_29": ["xyz/bluspring/kilt/injections/PlayerDataStorageInjection"],
       "net/minecraft/class_129": ["xyz/bluspring/kilt/injections/CrashReportCategoryInjection"],
       "net/minecraft/class_1921": ["xyz/bluspring/kilt/injections/client/RenderTypeInjection"],
@@ -69,7 +69,10 @@
       "net/minecraft/class_4587": ["net/minecraftforge/client/extensions/IForgePoseStack"],
       "net/minecraft/class_339": ["xyz/bluspring/kilt/injections/client/gui/AbstractWidgetInjection"],
       "net/minecraft/class_2791": ["xyz/bluspring/kilt/injections/ChunkAccessInjection"],
-      "net/minecraft/class_1856": ["xyz/bluspring/kilt/injections/item/crafting/IngredientInjection"]
+      "net/minecraft/class_1856": ["xyz/bluspring/kilt/injections/item/crafting/IngredientInjection"],
+      "net/minecraft/class_3495": ["xyz/bluspring/kilt/injections/tags/TagBuilderInjection", "net/minecraftforge/common/extensions/IForgeRawTagBuilder"],
+      "net/minecraft/class_1932": ["xyz/bluspring/kilt/injections/ForcedChunksSavedDataInjection"],
+      "net/minecraft/class_2586": ["net/minecraftforge/common/extensions/IForgeBlockEntity", "xyz/bluspring/kilt/injections/CapabilityProviderInjection", "net/minecraftforge/common/capabilities/ICapabilityProviderImpl"]
     }
   },
   "accessWidener": "kilt.accesswidener"

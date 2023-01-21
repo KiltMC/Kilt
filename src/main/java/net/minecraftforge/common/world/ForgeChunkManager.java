@@ -32,6 +32,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraftforge.fml.ModList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import xyz.bluspring.kilt.injections.ForcedChunksSavedDataInjection;
 
 @ParametersAreNonnullByDefault
 public class ForgeChunkManager
@@ -64,7 +65,7 @@ public class ForgeChunkManager
     {
         ForcedChunksSavedData data = level.getDataStorage().get(ForcedChunksSavedData::load, "chunks");
         if (data == null) return false;
-        return !data.getChunks().isEmpty() || !data.getBlockForcedChunks().isEmpty() || !data.getEntityForcedChunks().isEmpty();
+        return !data.getChunks().isEmpty() || !((ForcedChunksSavedDataInjection) data).getBlockForcedChunks().isEmpty() || !((ForcedChunksSavedDataInjection) data).getEntityForcedChunks().isEmpty();
     }
 
     /**
@@ -75,7 +76,7 @@ public class ForgeChunkManager
      */
     public static boolean forceChunk(ServerLevel level, String modId, BlockPos owner, int chunkX, int chunkZ, boolean add, boolean ticking)
     {
-        return forceChunk(level, modId, owner, chunkX, chunkZ, add, ticking, ticking ? BLOCK_TICKING : BLOCK, ForcedChunksSavedData::getBlockForcedChunks);
+        return forceChunk(level, modId, owner, chunkX, chunkZ, add, ticking, ticking ? BLOCK_TICKING : BLOCK, (data) -> ((ForcedChunksSavedDataInjection) data).getBlockForcedChunks());
     }
 
     /**
@@ -97,7 +98,7 @@ public class ForgeChunkManager
      */
     public static boolean forceChunk(ServerLevel level, String modId, UUID owner, int chunkX, int chunkZ, boolean add, boolean ticking)
     {
-        return forceChunk(level, modId, owner, chunkX, chunkZ, add, ticking, ticking ? ENTITY_TICKING : ENTITY, ForcedChunksSavedData::getEntityForcedChunks);
+        return forceChunk(level, modId, owner, chunkX, chunkZ, add, ticking, ticking ? ENTITY_TICKING : ENTITY, (data) -> ((ForcedChunksSavedDataInjection) data).getEntityForcedChunks());
     }
 
     /**
@@ -152,9 +153,9 @@ public class ForgeChunkManager
           boolean ticking)
     {
         if (add)
-            level.getChunkSource().addRegionTicket(type, pos, 2, owner, ticking);
+            level.getChunkSource().addRegionTicket(type, pos, 2, owner);
         else
-            level.getChunkSource().removeRegionTicket(type, pos, 2, owner, ticking);
+            level.getChunkSource().removeRegionTicket(type, pos, 2, owner);
     }
 
     /**
@@ -168,8 +169,8 @@ public class ForgeChunkManager
         if (!callbacks.isEmpty())
         {
             //If we have any callbacks, gather all owned tickets by modid for both blocks and entities
-            Map<String, Map<BlockPos, Pair<LongSet, LongSet>>> blockTickets = gatherTicketsByModId(saveData.getBlockForcedChunks());
-            Map<String, Map<UUID, Pair<LongSet, LongSet>>> entityTickets = gatherTicketsByModId(saveData.getEntityForcedChunks());
+            Map<String, Map<BlockPos, Pair<LongSet, LongSet>>> blockTickets = gatherTicketsByModId(((ForcedChunksSavedDataInjection) saveData).getBlockForcedChunks());
+            Map<String, Map<UUID, Pair<LongSet, LongSet>>> entityTickets = gatherTicketsByModId(((ForcedChunksSavedDataInjection) saveData).getEntityForcedChunks());
             //Fire the callbacks allowing them to remove any tickets they don't want anymore
             for (Map.Entry<String, LoadingValidationCallback> entry : callbacks.entrySet())
             {
@@ -185,10 +186,10 @@ public class ForgeChunkManager
             }
         }
         //Reinstate the chunks that we want to load
-        reinstatePersistentChunks(level, BLOCK, saveData.getBlockForcedChunks().chunks, false);
-        reinstatePersistentChunks(level, BLOCK_TICKING, saveData.getBlockForcedChunks().tickingChunks, true);
-        reinstatePersistentChunks(level, ENTITY, saveData.getEntityForcedChunks().chunks, false);
-        reinstatePersistentChunks(level, ENTITY_TICKING, saveData.getEntityForcedChunks().tickingChunks, true);
+        reinstatePersistentChunks(level, BLOCK, ((ForcedChunksSavedDataInjection) saveData).getBlockForcedChunks().chunks, false);
+        reinstatePersistentChunks(level, BLOCK_TICKING, ((ForcedChunksSavedDataInjection) saveData).getBlockForcedChunks().tickingChunks, true);
+        reinstatePersistentChunks(level, ENTITY, ((ForcedChunksSavedDataInjection) saveData).getEntityForcedChunks().chunks, false);
+        reinstatePersistentChunks(level, ENTITY_TICKING, ((ForcedChunksSavedDataInjection) saveData).getEntityForcedChunks().tickingChunks, true);
     }
 
     /**
@@ -401,7 +402,7 @@ public class ForgeChunkManager
          */
         public void removeAllTickets(BlockPos owner)
         {
-            removeAllTickets(saveData.getBlockForcedChunks(), owner);
+            removeAllTickets(((ForcedChunksSavedDataInjection) saveData).getBlockForcedChunks(), owner);
         }
 
         /**
@@ -411,7 +412,7 @@ public class ForgeChunkManager
          */
         public void removeAllTickets(UUID owner)
         {
-            removeAllTickets(saveData.getEntityForcedChunks(), owner);
+            removeAllTickets(((ForcedChunksSavedDataInjection) saveData).getEntityForcedChunks(), owner);
         }
 
         /**
@@ -437,7 +438,7 @@ public class ForgeChunkManager
          */
         public void removeTicket(BlockPos owner, long chunk, boolean ticking)
         {
-            removeTicket(saveData.getBlockForcedChunks(), owner, chunk, ticking);
+            removeTicket(((ForcedChunksSavedDataInjection) saveData).getBlockForcedChunks(), owner, chunk, ticking);
         }
 
         /**
@@ -449,7 +450,7 @@ public class ForgeChunkManager
          */
         public void removeTicket(UUID owner, long chunk, boolean ticking)
         {
-            removeTicket(saveData.getEntityForcedChunks(), owner, chunk, ticking);
+            removeTicket(((ForcedChunksSavedDataInjection) saveData).getEntityForcedChunks(), owner, chunk, ticking);
         }
 
         private <T extends Comparable<? super T>> void removeTicket(TicketTracker<T> tickets, T owner, long chunk, boolean ticking)

@@ -30,6 +30,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 

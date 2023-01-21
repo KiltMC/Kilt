@@ -5,10 +5,7 @@
 
 package net.minecraftforge.items;
 
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.common.capabilities.*;
 
 @Deprecated(forRemoval = true, since = "1.19.2")
 public class CapabilityItemHandler

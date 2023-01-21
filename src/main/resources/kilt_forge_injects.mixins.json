@@ -16,13 +16,17 @@
     "network.protocol.status.ServerStatusInject",
     "server.ReloadableServerResourcesInject",
     "stats.RecipeBookSettingsInject",
+    "tags.TagBuilderInject",
     "world.effect.MobEffectInject",
     "world.item.BoneMealItemInject",
     "world.item.BucketItemInject",
     "world.item.ItemInject",
     "world.item.ItemPropertiesInject",
+    "world.item.ItemStackInject",
     "world.item.crafting.IngredientInject",
+    "world.level.ForcedChunksSavedDataInject",
     "world.level.block.BlockInject",
+    "world.level.block.entity.BlockEntityInject",
     "world.level.chunk.ChunkAccessInject",
     "world.level.chunk.LevelChunkInject",
     "world.level.material.FluidInject",
@@ -36,7 +40,8 @@
     "client.gui.components.AbstractSelectionListInject",
     "client.gui.components.AbstractWidgetInject",
     "client.renderer.RenderTypeInject",
-    "client.renderer.ScreenEffectRendererInject"
+    "client.renderer.ScreenEffectRendererInject",
+    "client.renderer.block.model.BakedQuadInject"
   ],
   "injectors": {
     "defaultRequire": 1

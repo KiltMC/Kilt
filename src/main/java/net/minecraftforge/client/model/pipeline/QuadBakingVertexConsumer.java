@@ -129,7 +129,7 @@ public class QuadBakingVertexConsumer implements VertexConsumer
         if (++vertexIndex != 4)
             return;
         // We have a full quad, pass it to the consumer and reset
-        quadConsumer.accept(new BakedQuad(quadData, tintIndex, direction, sprite, shade, hasAmbientOcclusion));
+        quadConsumer.accept(new BakedQuad(quadData, tintIndex, direction, sprite, shade));
         vertexIndex = 0;
         quadData = new int[QUAD_DATA_SIZE];
     }

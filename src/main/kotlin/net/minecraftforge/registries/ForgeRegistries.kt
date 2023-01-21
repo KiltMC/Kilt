@@ -51,30 +51,40 @@ object ForgeRegistries {
     @JvmField val BIOMES = forgeRegistry(Registry.BIOME_REGISTRY)
 
     // Custom Forge Registries
-    internal val DEFERRED_ENTITY_DATA_SERIALIZERS = DeferredRegister.create(Keys.ENTITY_DATA_SERIALIZERS, Keys.ENTITY_DATA_SERIALIZERS.location().namespace)
+    @JvmField val DEFERRED_ENTITY_DATA_SERIALIZERS = DeferredRegister.create(Keys.ENTITY_DATA_SERIALIZERS, Keys.ENTITY_DATA_SERIALIZERS.location().namespace)
     @JvmField val ENTITY_DATA_SERIALIZERS = DEFERRED_ENTITY_DATA_SERIALIZERS.makeRegistry {
         GameData.getDataSerializersRegistryBuilder()
     }
 
-    internal val DEFERRED_FLUID_TYPES = DeferredRegister.create(Keys.FLUID_TYPES, Keys.FLUID_TYPES.location().namespace)
+    @JvmField val DEFERRED_FLUID_TYPES = DeferredRegister.create(Keys.FLUID_TYPES, Keys.FLUID_TYPES.location().namespace)
     @JvmField val FLUID_TYPES = DEFERRED_FLUID_TYPES.makeRegistry {
         GameData.getFluidTypeRegistryBuilder()
     }
 
-    internal val DEFERRED_HOLDER_SET_TYPES = DeferredRegister.create(Keys.HOLDER_SET_TYPES, Keys.HOLDER_SET_TYPES.location().namespace)
+    @JvmField val DEFERRED_HOLDER_SET_TYPES = DeferredRegister.create(Keys.HOLDER_SET_TYPES, Keys.HOLDER_SET_TYPES.location().namespace)
     @JvmField val HOLDER_SET_TYPES = DEFERRED_HOLDER_SET_TYPES.makeRegistry {
         GameData.getHolderSetTypeRegistryBuilder()
     }
 
-    internal val DEFERRED_BIOME_MODIFIERS = DeferredRegister.create(Keys.BIOME_MODIFIERS, "forge")
+    @JvmField val DEFERRED_BIOME_MODIFIERS = DeferredRegister.create(Keys.BIOME_MODIFIERS, "forge")
     @JvmField val BIOME_MODIFIERS_BUILTIN = DEFERRED_BIOME_MODIFIERS.makeRegistry { RegistryBuilder<BiomeModifier>().disableSaving().dataPackRegistry(BiomeModifier.DIRECT_CODEC) }
 
-    internal val DEFERRED_STRUCTURE_MODIFIERS = DeferredRegister.create(Keys.STRUCTURE_MODIFIERS, "forge")
+    @JvmField val DEFERRED_STRUCTURE_MODIFIERS = DeferredRegister.create(Keys.STRUCTURE_MODIFIERS, "forge")
     @JvmField val STRUCTURE_MODIFIERS_BUILTIN = DEFERRED_STRUCTURE_MODIFIERS.makeRegistry { RegistryBuilder<StructureModifier>().disableSaving().dataPackRegistry(StructureModifier.DIRECT_CODEC) }
 
-    internal val DEFERRED_GLOBAL_LOOT_MODIFIER_SERIALIZERS = DeferredRegister.create(Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, "forge")
+    @JvmField val DEFERRED_GLOBAL_LOOT_MODIFIER_SERIALIZERS = DeferredRegister.create(Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, "forge")
     @JvmField val GLOBAL_LOOT_MODIFIER_SERIALIZERS = DEFERRED_GLOBAL_LOOT_MODIFIER_SERIALIZERS.makeRegistry {
         GameData.getGLMSerializersRegistryBuilder()
+    }
+
+    @JvmField val DEFERRED_BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(Keys.BIOME_MODIFIER_SERIALIZERS, "forge")
+    @JvmField val BIOME_MODIFIER_SERIALIZERS = DEFERRED_BIOME_MODIFIER_SERIALIZERS.makeRegistry {
+        GameData.getBiomeModifierSerializersRegistryBuilder()
+    }
+
+    @JvmField val DEFERRED_STRUCTURE_MODIFIER_SERIALIZERS = DeferredRegister.create(Keys.STRUCTURE_MODIFIER_SERIALIZERS, "forge")
+    @JvmField val STRUCTURE_MODIFIER_SERIALIZERS = DEFERRED_STRUCTURE_MODIFIER_SERIALIZERS.makeRegistry {
+        GameData.getStructureModifierSerializersRegistryBuilder()
     }
 
     private fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T> {

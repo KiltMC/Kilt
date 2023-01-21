@@ -11,6 +11,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -18,6 +19,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
@@ -61,7 +63,7 @@ import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.registries.*;
-import net.minecraftforge.registries.holdersets.HolderSetType;
+import net.minecraftforge.registries.holdersets.*;
 import net.minecraftforge.network.NetworkConstants;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -106,10 +108,13 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.commands.synchronization.ArgumentTypeInfosRemap;
+import xyz.bluspring.kilt.remaps.world.item.crafting.IngredientRemap;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Mod("forge")
 public class ForgeMod
@@ -126,9 +131,9 @@ public class ForgeMod
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static final RegistryObject<EnumArgument.Info> ENUM_COMMAND_ARGUMENT_TYPE = COMMAND_ARGUMENT_TYPES.register("enum", () ->
-            ArgumentTypeInfos.registerByClass(EnumArgument.class, new EnumArgument.Info()));
+            ArgumentTypeInfosRemap.registerByClass(EnumArgument.class, new EnumArgument.Info()));
     private static final RegistryObject<SingletonArgumentInfo<ModIdArgument>> MODID_COMMAND_ARGUMENT_TYPE = COMMAND_ARGUMENT_TYPES.register("modid", () ->
-            ArgumentTypeInfos.registerByClass(ModIdArgument.class,
+            ArgumentTypeInfosRemap.registerByClass(ModIdArgument.class,
                     SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument)));
 
     public static final RegistryObject<Attribute> SWIM_SPEED = ATTRIBUTES.register("swim_speed", () -> new RangedAttribute("forge.swimSpeed", 1.0D, 0.0D, 1024.0D).setSyncable(true));
@@ -377,7 +382,7 @@ public class ForgeMod
 
     private static boolean enableMilkFluid = false;
     private static boolean serverChatPreviewEnabled = false;
-    public static final RegistryObject<FluidType> MILK_TYPE = RegistryObject.createOptional(new ResourceLocation("milk"), ForgeRegistries.Keys.FLUID_TYPES.location(), "minecraft");
+    public static final RegistryObject<FluidType> MILK_TYPE = RegistryObject.createOptional(new ResourceLocation("milk"), ForgeRegistries.Keys.FLUID_TYPES, "minecraft");
     public static final RegistryObject<Fluid> MILK = RegistryObject.create(new ResourceLocation("milk"), ForgeRegistries.FLUIDS);
     public static final RegistryObject<Fluid> FLOWING_MILK = RegistryObject.create(new ResourceLocation("flowing_milk"), ForgeRegistries.FLUIDS);
 
@@ -451,7 +456,7 @@ public class ForgeMod
         modEventBus.register(ForgeConfig.class);
         ForgeDeferredRegistriesSetup.setup(modEventBus);
         // Forge does not display problems when the remote is not matching.
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, ()->new IExtensionPoint.DisplayTest(()->"ANY", (remote, isServer)-> true));
+        //ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, ()->new IExtensionPoint.DisplayTest(()->"ANY", (remote, isServer)-> true));
         StartupMessageManager.addModMessage("Forge version "+ForgeVersion.getVersion());
 
         MinecraftForge.EVENT_BUS.addListener(VillagerTradingManager::loadTrades);
@@ -459,12 +464,12 @@ public class ForgeMod
         MinecraftForge.EVENT_BUS.addListener(this::mappingChanged);
         MinecraftForge.EVENT_BUS.addListener(this::registerPermissionNodes);
 
-        ForgeRegistries.ITEMS.tags().addOptionalTagDefaults(Tags.Items.ENCHANTING_FUELS, Set.of(ForgeRegistries.ITEMS.getDelegateOrThrow(Items.LAPIS_LAZULI)));
+        ForgeRegistries.ITEMS.tags().addOptionalTagDefaults(Tags.Items.ENCHANTING_FUELS, Set.of((Supplier<Item>) ForgeRegistries.ITEMS.getDelegateOrThrow(Items.LAPIS_LAZULI)));
     }
 
     public void preInit(FMLCommonSetupEvent evt)
     {
-        VersionChecker.startVersionCheck();
+        //VersionChecker.startVersionCheck();
         VanillaPacketSplitter.register();
     }
 
@@ -479,7 +484,7 @@ public class ForgeMod
 
     public void mappingChanged(IdMappingEvent evt)
     {
-        Ingredient.invalidateAll();
+        //IngredientRemap.invalidateAll();
     }
 
     public void gatherData(GatherDataEvent event)

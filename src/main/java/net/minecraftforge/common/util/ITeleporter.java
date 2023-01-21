@@ -43,7 +43,7 @@ public interface ITeleporter
      * @param yaw the suggested yaw value to apply
      * @param repositionEntity a function to reposition the entity, which returns the new entity in the new dimension. This is the vanilla implementation of the dimension travel logic. If the supplied boolean is true, it is attempted to spawn a new portal.
      *
-     * @return the entity in the new World. Vanilla creates for most {@link Entity}s a new instance and copy the data. But <b>you are not allowed</b> to create a new instance for {@link Player}s! Move the player and update its state, see {@link ServerPlayer#changeDimension(ServerLevel, ITeleporter)}
+     * @return the entity in the new World. Vanilla creates for most {@link Entity}s a new instance and copy the data. But <b>you are not allowed</b> to create a new instance for {@link Player}s! Move the player and update its state, see
      */
     default Entity placeEntity(Entity entity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, Function<Boolean, Entity> repositionEntity)
     {

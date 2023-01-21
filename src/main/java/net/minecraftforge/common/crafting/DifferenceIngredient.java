@@ -70,23 +70,25 @@ public class DifferenceIngredient extends AbstractIngredient
     @Override
     public boolean isSimple()
     {
-        return base.isSimple() && subtracted.isSimple();
+        if (base.isVanilla() || subtracted.isVanilla())
+            return true;
+        return ((AbstractIngredient) base).isSimple() && ((AbstractIngredient) subtracted).isSimple();
     }
 
-    @Override
+    /*@Override
     protected void invalidate()
     {
         super.invalidate();
         this.filteredMatchingStacks = null;
         this.packedMatchingStacks = null;
-    }
+    }*/
 
     @Override
     public IntList getStackingIds()
     {
-        if (this.packedMatchingStacks == null || checkInvalidation())
+        if (this.packedMatchingStacks == null /*|| checkInvalidation()*/)
         {
-            markValid();
+            //markValid();
             ItemStack[] matchingStacks = getItems();
             this.packedMatchingStacks = new IntArrayList(matchingStacks.length);
             for (ItemStack stack : matchingStacks)

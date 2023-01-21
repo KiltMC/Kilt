@@ -14,6 +14,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.common.world.ModifiableBiomeInfo.BiomeInfo;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Function;
 

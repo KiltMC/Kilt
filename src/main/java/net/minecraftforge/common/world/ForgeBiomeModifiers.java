@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.world.ModifiableBiomeInfo.BiomeInfo.Builder;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public final class ForgeBiomeModifiers
 {

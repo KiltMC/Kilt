@@ -15,6 +15,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.world.ModifiableStructureInfo.StructureInfo;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * JSON-serializable structure modifier.

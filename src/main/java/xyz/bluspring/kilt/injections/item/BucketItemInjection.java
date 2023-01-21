@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.injections.item;
 
-public interface BucketItemInjection {
+import net.minecraft.world.level.material.Fluid;
 
+public interface BucketItemInjection {
+    default Fluid getFluid() {
+        throw new IllegalStateException();
+    }
 }

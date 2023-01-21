@@ -29,7 +29,6 @@ import java.util.Set;
  * Properties will be accessed from another thread.
  *
  * @see ModelProperty
- * @see BlockEntity#getModelData()
  * @see BakedModel#getQuads(BlockState, Direction, RandomSource, ModelData, RenderType)
  * @see BakedModel#getModelData(BlockAndTintGetter, BlockPos, BlockState, ModelData)
  */

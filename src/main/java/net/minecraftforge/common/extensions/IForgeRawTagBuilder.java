@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
+import xyz.bluspring.kilt.injections.tags.TagBuilderInjection;
 
 public interface IForgeRawTagBuilder
 {
@@ -27,7 +28,7 @@ public interface IForgeRawTagBuilder
     default void serializeTagAdditions(final JsonObject tagJson)
     {
         TagBuilder rawBuilder = this.getRawBuilder();
-        Stream<TagEntry> removeEntries = rawBuilder.getRemoveEntries();
+        Stream<TagEntry> removeEntries = ((TagBuilderInjection) rawBuilder).getRemoveEntries();
         JsonArray removeEntriesAsJsonArray = new JsonArray();
         //removeEntries.forEach(proxy ->proxy.serializeTo(removeEntriesAsJsonArray)); // TODO: Figure out what the replacement for this is. -C
         if (removeEntriesAsJsonArray.size() > 0)
@@ -45,7 +46,7 @@ public interface IForgeRawTagBuilder
      */
     default TagBuilder remove(final TagEntry tagEntry, final String source)
     {
-        return this.getRawBuilder().remove(tagEntry);
+        return ((TagBuilderInjection) this.getRawBuilder()).remove(tagEntry);
     }
 
     /**

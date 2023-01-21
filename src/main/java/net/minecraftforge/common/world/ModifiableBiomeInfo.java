@@ -111,7 +111,7 @@ public class ModifiableBiomeInfo
             private MobSpawnSettingsBuilder mobSpawnSettings;
             
             /**
-             * @param biome A biome that has not had its modified biome data generated yet
+             * @param original A biome that has not had its modified biome data generated yet
              * @return A ModifiedBiomeInfo.Builder with a copy of the biome's data
              */
             public static Builder copyOf(final BiomeInfo original)

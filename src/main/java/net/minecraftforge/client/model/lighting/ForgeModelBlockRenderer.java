@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.ForgeConfig;
+import xyz.bluspring.kilt.injections.client.render.model.BakedQuadInjection;
 
 import java.util.List;
 
@@ -41,32 +42,32 @@ public class ForgeModelBlockRenderer extends ModelBlockRenderer
     }
 
     @Override
-    public void tesselateWithoutAO(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean checkSides, RandomSource rand, long seed, int packedOverlay, ModelData modelData, RenderType renderType)
+    public void tesselateWithoutAO(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean checkSides, RandomSource rand, long seed, int packedOverlay)
     {
         if (ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get())
         {
-            render(vertexConsumer, flatLighter.get(), level, model, state, pos, poseStack, checkSides, rand, seed, packedOverlay, modelData, renderType);
+            render(vertexConsumer, flatLighter.get(), level, model, state, pos, poseStack, checkSides, rand, seed, packedOverlay);
         }
         else
         {
-            super.tesselateWithoutAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
+            super.tesselateWithoutAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay);
         }
     }
 
     @Override
-    public void tesselateWithAO(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean checkSides, RandomSource rand, long seed, int packedOverlay, ModelData modelData, RenderType renderType)
+    public void tesselateWithAO(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean checkSides, RandomSource rand, long seed, int packedOverlay)
     {
         if (ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get())
         {
-            render(vertexConsumer, smoothLighter.get(), level, model, state, pos, poseStack, checkSides, rand, seed, packedOverlay, modelData, renderType);
+            render(vertexConsumer, smoothLighter.get(), level, model, state, pos, poseStack, checkSides, rand, seed, packedOverlay);
         }
         else
         {
-            super.tesselateWithAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
+            super.tesselateWithAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay);
         }
     }
 
-    public static boolean render(VertexConsumer vertexConsumer, QuadLighter lighter, BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, boolean checkSides, RandomSource rand, long seed, int packedOverlay, ModelData modelData, RenderType renderType)
+    public static boolean render(VertexConsumer vertexConsumer, QuadLighter lighter, BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, boolean checkSides, RandomSource rand, long seed, int packedOverlay)
     {
         ForgeModelBlockRenderer renderer = (ForgeModelBlockRenderer)Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         var pose = poseStack.last();
@@ -75,14 +76,14 @@ public class ForgeModelBlockRenderer extends ModelBlockRenderer
         QuadLighter flatLighter = null;
 
         rand.setSeed(seed);
-        List<BakedQuad> quads = model.getQuads(state, null, rand, modelData, renderType);
+        List<BakedQuad> quads = model.getQuads(state, null, rand);
         if (!quads.isEmpty())
         {
             empty = false;
             lighter.setup(level, pos, state);
             for (BakedQuad quad : quads)
             {
-                if (smoothLighter && !quad.hasAmbientOcclusion())
+                if (smoothLighter && !((BakedQuadInjection) quad).hasAmbientOcclusion())
                 {
                     if (flatLighter == null)
                     {
@@ -105,7 +106,7 @@ public class ForgeModelBlockRenderer extends ModelBlockRenderer
                 continue;
             }
             rand.setSeed(seed);
-            quads = model.getQuads(state, side, rand, modelData, renderType);
+            quads = model.getQuads(state, side, rand);
             if (!quads.isEmpty())
             {
                 if (empty)
@@ -115,7 +116,7 @@ public class ForgeModelBlockRenderer extends ModelBlockRenderer
                 }
                 for (BakedQuad quad : quads)
                 {
-                    if (smoothLighter && !quad.hasAmbientOcclusion())
+                    if (smoothLighter && !((BakedQuadInjection) quad).hasAmbientOcclusion())
                     {
                         if (flatLighter == null)
                         {

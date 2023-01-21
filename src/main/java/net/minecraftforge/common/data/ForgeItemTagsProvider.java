@@ -10,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
@@ -33,7 +34,7 @@ public final class ForgeItemTagsProvider extends TagsProviderRemap<Item>
 {
     private final Function<TagKey<Block>, TagBuilder> blockTags;
 
-    public ForgeItemTagsProvider(DataGenerator gen, BlockTagsProvider blockTagProvider, ExistingFileHelper existingFileHelper)
+    public ForgeItemTagsProvider(DataGenerator gen, TagsProvider<Block> blockTagProvider, ExistingFileHelper existingFileHelper)
     {
         super(gen, Registry.ITEM, "forge", existingFileHelper);
         blockTags = ((TagsProviderAccessor<Block>) blockTagProvider)::callGetOrCreateRawBuilder;

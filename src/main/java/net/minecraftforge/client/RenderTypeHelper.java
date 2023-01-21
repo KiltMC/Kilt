@@ -15,6 +15,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public final class RenderTypeHelper
 {
     /**
      * Provides a {@link RenderType} using {@link DefaultVertexFormat#NEW_ENTITY} for the given {@link DefaultVertexFormat#BLOCK} format.
-     * This should be called for each {@link RenderType} returned by {@link BakedModel#getRenderTypes(BlockState, RandomSource, ModelData)}.
+     * This should be called for each {@link RenderType} returned by {@link IForgeBakedModel#getRenderTypes(BlockState, RandomSource, ModelData)}.
      * <p>
      * Mimics the behavior of vanilla's {@link ItemBlockRenderTypes#getRenderType(BlockState, boolean)}.
      */
@@ -39,7 +40,7 @@ public final class RenderTypeHelper
 
     /**
      * Provides a {@link RenderType} fit for rendering moving blocks given the specified chunk render type.
-     * This should be called for each {@link RenderType} returned by {@link BakedModel#getRenderTypes(BlockState, RandomSource, ModelData)}.
+     * This should be called for each {@link RenderType} returned by {@link IForgeBakedModel#getRenderTypes(BlockState, RandomSource, ModelData)}.
      * <p>
      * Mimics the behavior of vanilla's {@link ItemBlockRenderTypes#getMovingBlockRenderType(BlockState)}.
      */
@@ -62,7 +63,7 @@ public final class RenderTypeHelper
     {
         if (stack.getItem() instanceof BlockItem blockItem)
         {
-            var renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), RandomSource.create(42), ModelData.EMPTY);
+            var renderTypes = ((IForgeBakedModel) model).getRenderTypes(blockItem.getBlock().defaultBlockState(), RandomSource.create(42), ModelData.EMPTY);
             if (renderTypes.contains(RenderType.translucent()))
                 return getEntityRenderType(RenderType.translucent(), cull);
             return Sheets.cutoutBlockSheet();

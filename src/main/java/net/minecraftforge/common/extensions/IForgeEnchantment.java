@@ -39,7 +39,7 @@ public interface IForgeEnchantment
      */
     default boolean allowedInCreativeTab(Item book, CreativeModeTab tab)
     {
-        if (!self().isAllowedOnBooks())
+        if (!/*self().isAllowedOnBooks()*/true)
         {
             return false;
         }

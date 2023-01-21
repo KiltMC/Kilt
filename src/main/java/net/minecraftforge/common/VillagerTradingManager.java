@@ -19,6 +19,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class VillagerTradingManager
 {

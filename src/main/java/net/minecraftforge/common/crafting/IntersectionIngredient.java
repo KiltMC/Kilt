@@ -37,7 +37,12 @@ public class IntersectionIngredient extends AbstractIngredient
         if (children.size() < 2)
             throw new IllegalArgumentException("Cannot create an IntersectionIngredient with one or no children");
         this.children = Collections.unmodifiableList(children);
-        this.isSimple = children.stream().allMatch(Ingredient::isSimple);
+        this.isSimple = children.stream().allMatch((ingredient) -> {
+            if (ingredient.isVanilla())
+                return true;
+
+            return ((AbstractIngredient) ingredient).isSimple();
+        });
     }
 
     /**
@@ -100,20 +105,20 @@ public class IntersectionIngredient extends AbstractIngredient
         return isSimple;
     }
 
-    @Override
+    /*@Override
     protected void invalidate()
     {
         super.invalidate();
         this.intersectedMatchingStacks = null;
         this.packedMatchingStacks = null;
-    }
+    }*/
 
     @Override
     public IntList getStackingIds()
     {
-        if (this.packedMatchingStacks == null || checkInvalidation())
+        if (this.packedMatchingStacks == null /*|| checkInvalidation()*/)
         {
-            markValid();
+            //markValid();
             ItemStack[] matchingStacks = getItems();
             this.packedMatchingStacks = new IntArrayList(matchingStacks.length);
             for(ItemStack stack : matchingStacks)

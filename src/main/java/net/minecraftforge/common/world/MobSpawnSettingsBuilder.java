@@ -13,6 +13,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.mixin.MobSpawnSettingsAccessor;
 
 public class MobSpawnSettingsBuilder extends MobSpawnSettings.Builder
 {
@@ -21,11 +22,11 @@ public class MobSpawnSettingsBuilder extends MobSpawnSettings.Builder
 
     public MobSpawnSettingsBuilder(MobSpawnSettings orig)
     {
-        orig.getSpawnerTypes().forEach(k -> {
+        ((MobSpawnSettingsAccessor) orig).getSpawners().keySet().forEach(k -> {
             spawners.get(k).clear();
             spawners.get(k).addAll(orig.getMobs(k).unwrap());
         });
-        orig.getEntityTypes().forEach(k -> mobSpawnCosts.put(k, orig.getMobSpawnCost(k)));
+        ((MobSpawnSettingsAccessor) orig).getMobSpawnCosts().keySet().forEach(k -> mobSpawnCosts.put(k, orig.getMobSpawnCost(k)));
         creatureGenerationProbability = orig.getCreatureProbability();
     }
 

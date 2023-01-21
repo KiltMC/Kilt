@@ -34,7 +34,7 @@ public abstract class AbstractIngredient extends Ingredient
         super(values);
     }
 
-    @Override
+    //@Override
     public abstract boolean isSimple();
 
     @Override
