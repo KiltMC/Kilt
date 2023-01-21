@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.forgeinjects.world.level.item;
+package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

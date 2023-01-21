@@ -39,6 +39,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
+import xyz.bluspring.kilt.remaps.world.item.crafting.IngredientRemap;
 
 public class CraftingHelper
 {
@@ -75,7 +77,7 @@ public class CraftingHelper
     public static <T extends Ingredient> void write(FriendlyByteBuf buffer, T ingredient)
     {
         @SuppressWarnings("unchecked") //I wonder if there is a better way generic wise...
-        IIngredientSerializer<T> serializer = (IIngredientSerializer<T>)ingredient.getSerializer();
+        IIngredientSerializer<T> serializer = (IIngredientSerializer<T>)((IngredientInjection) (Object) ingredient).getSerializer();
         ResourceLocation key = ingredients.inverse().get(serializer);
         if (key == null)
             throw new IllegalArgumentException("Tried to serialize unregistered Ingredient: " + ingredient + " " + serializer);
@@ -115,7 +117,7 @@ public class CraftingHelper
             });
 
             if (!vanilla.isEmpty())
-                ingredients.add(Ingredient.merge(vanilla));
+                ingredients.add(IngredientRemap.merge(vanilla));
 
             if (ingredients.size() == 0)
                 throw new JsonSyntaxException("Item array cannot be empty, at least one item must be defined");

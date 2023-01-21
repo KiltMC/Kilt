@@ -68,7 +68,8 @@
       "net/minecraft/class_204": ["net/minecraftforge/client/extensions/IForgeKeyMapping"],
       "net/minecraft/class_4587": ["net/minecraftforge/client/extensions/IForgePoseStack"],
       "net/minecraft/class_339": ["xyz/bluspring/kilt/injections/client/gui/AbstractWidgetInjection"],
-      "net/minecraft/class_2791": ["xyz/bluspring/kilt/injections/ChunkAccessInjection"]
+      "net/minecraft/class_2791": ["xyz/bluspring/kilt/injections/ChunkAccessInjection"],
+      "net/minecraft/class_1856": ["xyz/bluspring/kilt/injections/item/crafting/IngredientInjection"]
     }
   },
   "accessWidener": "kilt.accesswidener"

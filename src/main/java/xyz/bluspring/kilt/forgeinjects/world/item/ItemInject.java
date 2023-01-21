@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.forgeinjects.world.level.item;
+package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
