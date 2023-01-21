@@ -21,7 +21,7 @@ import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 import java.util.function.Supplier;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStack>, ItemStackInjection {
+public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStackInject>, ItemStackInjection {
     private CompoundTag capNBT;
 
     @Override
@@ -31,7 +31,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Shadow public abstract void setTag(@Nullable CompoundTag compoundTag);
 
-    private CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class);
+    private CapabilityProviderWorkaround<ItemStackInject> workaround = new CapabilityProviderWorkaround<>((Class<ItemStackInject>) (Object) ItemStack.class);
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {
@@ -76,7 +76,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     }
 
     @Override
-    public boolean areCapsCompatible(CapabilityProvider<ItemStack> other) {
+    public boolean areCapsCompatible(CapabilityProvider<ItemStackInject> other) {
         return workaround.areCapsCompatible(other);
     }
 

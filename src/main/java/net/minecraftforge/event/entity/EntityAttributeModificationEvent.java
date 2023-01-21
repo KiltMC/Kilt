@@ -13,6 +13,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.event.IModBusEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+import xyz.bluspring.kilt.injections.entity.AttributeSupplierBuilderInjection;
 
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class EntityAttributeModificationEvent extends Event implements IModBusEv
     public boolean has(EntityType<? extends LivingEntity> entityType, Attribute attribute)
     {
         AttributeSupplier globalMap = DefaultAttributes.getSupplier(entityType);
-        return globalMap.hasAttribute(attribute) || (entityAttributes.get(entityType) != null && entityAttributes.get(entityType).hasAttribute(attribute));
+        return globalMap.hasAttribute(attribute) || (entityAttributes.get(entityType) != null && ((AttributeSupplierBuilderInjection) entityAttributes.get(entityType)).hasAttribute(attribute));
     }
 
     public List<EntityType<? extends LivingEntity>> getTypes()

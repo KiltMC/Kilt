@@ -12,6 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityDispatcher;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidType;
@@ -50,6 +52,26 @@ public class FluidHandlerBlockEntity extends BlockEntity
     {
         if (capability == ForgeCapabilities.FLUID_HANDLER)
             return holder.cast();
-        return super.getCapability(capability, facing);
+        return this.getWorkaround().getCapability(capability, facing);
+    }
+
+    @Override
+    public boolean areCapsCompatible(CapabilityProvider other) {
+        return this.getWorkaround().areCapsCompatible(other);
+    }
+
+    @Override
+    public boolean areCapsCompatible(@Nullable CapabilityDispatcher other) {
+        return this.getWorkaround().areCapsCompatible(other);
+    }
+
+    @Override
+    public void reviveCaps() {
+        this.getWorkaround().reviveCaps();
+    }
+
+    @Override
+    public CompoundTag getPersistentData() {
+        return null;
     }
 }

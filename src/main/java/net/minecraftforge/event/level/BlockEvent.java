@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
+import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
@@ -86,7 +87,7 @@ public class BlockEvent extends Event
             {
                 int fortuneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, player.getMainHandItem());
                 int silkTouchLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, player.getMainHandItem());
-                this.exp = state.getExpDrop(level, level.random, pos, fortuneLevel, silkTouchLevel);
+                this.exp = ((IForgeBlockState) state).getExpDrop(level, level.random, pos, fortuneLevel, silkTouchLevel);
             }
         }
 

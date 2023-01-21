@@ -21,8 +21,9 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.extensions.IForgePackResources;
 
-public class DelegatingPackResources extends AbstractPackResources
+public class DelegatingPackResources extends AbstractPackResources implements IForgePackResources
 {
     private final List<PackResources> delegates;
     private Map<String, List<PackResources>> namespacesAssets;
@@ -44,13 +45,13 @@ public class DelegatingPackResources extends AbstractPackResources
     @Override
     public void initForNamespace(final String nameSpace)
     {
-        this.delegates.forEach(delegate -> delegate.initForNamespace(nameSpace));
+        this.delegates.forEach(delegate -> ((IForgePackResources) delegate).initForNamespace(nameSpace));
     }
 
     @Override
     public void init(final PackType packType)
     {
-        this.delegates.forEach(packResources -> packResources.init(packType));
+        this.delegates.forEach(packResources -> ((IForgePackResources) packResources).init(packType));
 
         this.namespacesAssets = buildNamespaceMap(PackType.CLIENT_RESOURCES, delegates);
         this.namespacesData = buildNamespaceMap(PackType.SERVER_DATA, delegates);

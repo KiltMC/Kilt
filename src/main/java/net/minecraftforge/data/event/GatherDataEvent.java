@@ -12,6 +12,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.event.IModBusEvent;
+import xyz.bluspring.kilt.injections.data.DataGeneratorInjection;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -96,7 +97,7 @@ public class GatherDataEvent extends Event implements IModBusEvent
             paths.values().forEach(LamdbaExceptionUtils.rethrowConsumer(lst -> {
                 DataGenerator parent = lst.get(0);
                 for (int x = 1; x < lst.size(); x++)
-                    lst.get(x).getProviders().forEach(i -> parent.addProvider(true, i));
+                    ((DataGeneratorInjection) lst.get(x)).getProviders().forEach(i -> parent.addProvider(true, i));
                 parent.run();
             }));
         }

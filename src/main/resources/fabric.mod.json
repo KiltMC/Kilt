@@ -72,7 +72,16 @@
       "net/minecraft/class_1856": ["xyz/bluspring/kilt/injections/item/crafting/IngredientInjection"],
       "net/minecraft/class_3495": ["xyz/bluspring/kilt/injections/tags/TagBuilderInjection", "net/minecraftforge/common/extensions/IForgeRawTagBuilder"],
       "net/minecraft/class_1932": ["xyz/bluspring/kilt/injections/ForcedChunksSavedDataInjection"],
-      "net/minecraft/class_2586": ["net/minecraftforge/common/extensions/IForgeBlockEntity", "xyz/bluspring/kilt/injections/CapabilityProviderInjection", "net/minecraftforge/common/capabilities/ICapabilityProviderImpl"]
+      "net/minecraft/class_2586": ["net/minecraftforge/common/extensions/IForgeBlockEntity", "xyz/bluspring/kilt/injections/CapabilityProviderInjection", "net/minecraftforge/common/capabilities/ICapabilityProviderImpl"],
+      "net/minecraft/class_3283": ["xyz/bluspring/kilt/injections/server/PackRepositoryInjection"],
+      "net/minecraft/class_5359": ["xyz/bluspring/kilt/injections/DataPackConfigInjection"],
+      "net/minecraft/class_1865": ["net/minecraftforge/common/extensions/IForgeRecipeSerializer"],
+      "net/minecraft/class_3262": ["net/minecraftforge/common/extensions/IForgePackResources"],
+      "net/minecraft/class_5132/class_5133": ["xyz/bluspring/kilt/injections/entity/AttributeSupplierBuilderInjection"],
+      "net/minecraft/class_1657": ["net/minecraftforge/common/extensions/IForgePlayer"],
+      "net/minecraft/class_1297": ["net/minecraftforge/common/extensions/IForgeEntity"],
+      "net/minecraft/class_1309": ["net/minecraftforge/common/extensions/IForgeLivingEntity"],
+      "net/minecraft/class_2403": ["xyz/bluspring/kilt/injections/data/DataGeneratorInjection"]
     }
   },
   "accessWidener": "kilt.accesswidener"

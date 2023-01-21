@@ -38,6 +38,7 @@ import net.minecraftforge.network.ServerStatusPing;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.forgespi.locating.IModFile;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.resource.PathPackResources;
 import net.minecraftforge.server.permission.PermissionAPI;
 import org.apache.logging.log4j.LogManager;
@@ -217,7 +218,7 @@ public class ServerLifecycleHooks
             .holders()
             .map(Holder::value)
             .toList();
-        final List<StructureModifier> structureModifiers = registries.registryOrThrow(Keys.STRUCTURE_MODIFIERS)
+        final List<StructureModifier> structureModifiers = registries.registryOrThrow(ForgeRegistries.Keys.STRUCTURE_MODIFIERS)
               .holders()
               .map(Holder::value)
               .toList();

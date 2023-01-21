@@ -178,22 +178,6 @@ public interface IForgeItem
     }
 
     /**
-     * Called before a block is broken. Return true to prevent default block
-     * harvesting.
-     *
-     * Note: In SMP, this is called on both client and server sides!
-     *
-     * @param itemstack The current ItemStack
-     * @param pos       Block's position in world
-     * @param player    The Player that is wielding the item
-     * @return True to prevent harvesting, false to continue as normal
-     */
-    default boolean onBlockStartBreak(ItemStack itemstack, BlockPos pos, Player player)
-    {
-        return false;
-    }
-
-    /**
      * Called each tick while using an item.
      *
      * @param stack  The Item being used
@@ -203,21 +187,6 @@ public interface IForgeItem
      */
     default void onUsingTick(ItemStack stack, LivingEntity player, int count)
     {
-    }
-
-    /**
-     * Called when the player Left Clicks (attacks) an entity. Processed before
-     * damage is done, if return value is true further processing is canceled and
-     * the entity is not attacked.
-     *
-     * @param stack  The Item being used
-     * @param player The player that is attacking
-     * @param entity The entity being attacked
-     * @return True to cancel the rest of the interaction.
-     */
-    default boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity)
-    {
-        return false;
     }
 
     /**
@@ -260,38 +229,6 @@ public interface IForgeItem
     default int getEntityLifespan(ItemStack itemStack, Level level)
     {
         return 6000;
-    }
-
-    /**
-     * Determines if this Item has a special entity for when they are in the world.
-     * Is called when a EntityItem is spawned in the world, if true and
-     * Item#createCustomEntity returns non null, the EntityItem will be destroyed
-     * and the new Entity will be added to the world.
-     *
-     * @param stack The current item stack
-     * @return True of the item has a custom entity, If true,
-     *         Item#createCustomEntity will be called
-     */
-    default boolean hasCustomEntity(ItemStack stack)
-    {
-        return false;
-    }
-
-    /**
-     * This function should return a new entity to replace the dropped item.
-     * Returning null here will not kill the EntityItem and will leave it to
-     * function normally. Called when the item it placed in a level.
-     *
-     * @param level     The level object
-     * @param location  The EntityItem object, useful for getting the position of
-     *                  the entity
-     * @param stack The current item stack
-     * @return A new Entity object to spawn or null
-     */
-    @Nullable
-    default Entity createEntity(Level level, Entity location, ItemStack stack)
-    {
-        return null;
     }
 
     /**
@@ -514,7 +451,7 @@ public interface IForgeItem
      * applies specifically to enchanting an item in the enchanting table and is
      * called when retrieving the list of possible enchantments for an item.
      * Enchantments may additionally (or exclusively) be doing their own checks in
-     * {@link Enchantment#canApplyAtEnchantingTable(ItemStack)};
+     * {@link Enchantment#canEnchant(ItemStack)};
      * check the individual implementation for reference. By default this will check
      * if the enchantment type is valid for this item type.
      *
@@ -621,26 +558,6 @@ public interface IForgeItem
     default boolean canContinueUsing(ItemStack oldStack, ItemStack newStack)
     {
         return ItemStack.isSameIgnoreDurability(oldStack, newStack);
-    }
-
-    /**
-     * Called to get the Mod ID of the mod that *created* the ItemStack, instead of
-     * the real Mod ID that *registered* it.
-     *
-     * For example the Forge Universal Bucket creates a subitem for each modded
-     * fluid, and it returns the modded fluid's Mod ID here.
-     *
-     * Mods that register subitems for other mods can override this. Informational
-     * mods can call it to show the mod that created the item.
-     *
-     * @param itemStack the ItemStack to check
-     * @return the Mod ID for the ItemStack, or null when there is no specially
-     *         associated mod and {@link IForgeRegistry#getKey(Object)} would return null.
-     */
-    @Nullable
-    default String getCreatorModId(ItemStack itemStack)
-    {
-        return net.minecraftforge.common.ForgeHooks.getDefaultCreatorModId(itemStack);
     }
 
     /**
@@ -808,17 +725,6 @@ public interface IForgeItem
     }
 
     /**
-     * Get the tooltip parts that should be hidden by default on the given stack if the {@code HideFlags} tag is not set.
-     * @see ItemStack.TooltipPart
-     * @param stack the stack
-     * @return the default hide flags
-     */
-    default int getDefaultTooltipHideFlags(@NotNull ItemStack stack)
-    {
-        return 0;
-    }
-
-    /**
      * Get the food properties for this item.
      * Use this instead of the {@link Item#getFoodProperties()} method, for ItemStack sensitivity.
      *
@@ -849,4 +755,100 @@ public interface IForgeItem
         return stack.isEnchanted();
     }
 
+    // Starting from here, every following method is not implemented by Kilt,
+    // because Porting Lib already has them implemented, and leaving them in
+    // would cause terrible mod conflicts.
+
+    /**
+     * Get the tooltip parts that should be hidden by default on the given stack if the {@code HideFlags} tag is not set.
+     * @see ItemStack.TooltipPart
+     * @param stack the stack
+     * @return the default hide flags
+     */
+    /*default int getDefaultTooltipHideFlags(@NotNull ItemStack stack)
+    {
+        return 0;
+    }*/
+
+    /**
+     * This function should return a new entity to replace the dropped item.
+     * Returning null here will not kill the EntityItem and will leave it to
+     * function normally. Called when the item it placed in a level.
+     *
+     * @param level     The level object
+     * @param location  The EntityItem object, useful for getting the position of
+     *                  the entity
+     * @param stack The current item stack
+     * @return A new Entity object to spawn or null
+     */
+    /*@Nullable
+    default Entity createEntity(Level level, Entity location, ItemStack stack)
+    {
+        return null;
+    }*/
+    /**
+     * Determines if this Item has a special entity for when they are in the world.
+     * Is called when a EntityItem is spawned in the world, if true and
+     * Item#createCustomEntity returns non null, the EntityItem will be destroyed
+     * and the new Entity will be added to the world.
+     *
+     * @param stack The current item stack
+     * @return True of the item has a custom entity, If true,
+     *         Item#createCustomEntity will be called
+     */
+    /*default boolean hasCustomEntity(ItemStack stack)
+    {
+        return false;
+    }*/
+
+    /**
+     * Called when the player Left Clicks (attacks) an entity. Processed before
+     * damage is done, if return value is true further processing is canceled and
+     * the entity is not attacked.
+     *
+     * @param stack  The Item being used
+     * @param player The player that is attacking
+     * @param entity The entity being attacked
+     * @return True to cancel the rest of the interaction.
+     */
+    /*default boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity)
+    {
+        return false;
+    }*/
+
+    /**
+     * Called before a block is broken. Return true to prevent default block
+     * harvesting.
+     *
+     * Note: In SMP, this is called on both client and server sides!
+     *
+     * @param itemstack The current ItemStack
+     * @param pos       Block's position in world
+     * @param player    The Player that is wielding the item
+     * @return True to prevent harvesting, false to continue as normal
+     */
+    /*default boolean onBlockStartBreak(ItemStack itemstack, BlockPos pos, Player player)
+    {
+        return false;
+    }*/
+
+    /**
+     * Called to get the Mod ID of the mod that *created* the ItemStack, instead of
+     * the real Mod ID that *registered* it.
+     *
+     * For example the Forge Universal Bucket creates a subitem for each modded
+     * fluid, and it returns the modded fluid's Mod ID here.
+     *
+     * Mods that register subitems for other mods can override this. Informational
+     * mods can call it to show the mod that created the item.
+     *
+     * @param itemStack the ItemStack to check
+     * @return the Mod ID for the ItemStack, or null when there is no specially
+     *         associated mod and {@link IForgeRegistry#getKey(Object)} would return null.
+     */
+    /*@Nullable
+    default String getCreatorModId(ItemStack itemStack)
+    {
+        return net.minecraftforge.common.ForgeHooks.getDefaultCreatorModId(itemStack);
+    }*/
 }

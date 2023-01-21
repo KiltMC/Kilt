@@ -8,6 +8,7 @@ package net.minecraftforge.server;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.github.fabricators_of_create.porting_lib.mixin.common.accessor.MinecraftServerAccessor;
 import net.minecraft.locale.Language;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -73,7 +74,7 @@ public class LanguageHook
 
     private static void loadLanguage(String langName, MinecraftServer server) {
         String langFile = String.format(Locale.ROOT, "lang/%s.json", langName);
-        ResourceManager resourceManager = server.getServerResources().resourceManager();
+        ResourceManager resourceManager = ((MinecraftServerAccessor) server).port_lib$getServerResources().resourceManager();
         resourceManager.getNamespaces().forEach(namespace -> {
             try {
                 ResourceLocation langResource = new ResourceLocation(namespace, langFile);

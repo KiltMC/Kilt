@@ -22,6 +22,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.crafting.conditions.ICondition;
+import net.minecraftforge.common.extensions.IForgeRecipeSerializer;
 import net.minecraftforge.registries.ObjectHolder;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +36,7 @@ public class ConditionalRecipe
         return new Builder();
     }
 
-    public static class Serializer<T extends Recipe<?>> implements RecipeSerializer<T>
+    public static class Serializer<T extends Recipe<?>> implements RecipeSerializer<T>, IForgeRecipeSerializer<T>
     {
         @Override
         public T fromJson(ResourceLocation recipeId, JsonObject json)

@@ -24,6 +24,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.SoundActions;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
@@ -89,7 +91,7 @@ public class FluidUtil
         ItemStack heldItem = player.getItemInHand(hand);
         if (!heldItem.isEmpty())
         {
-            return player.getCapability(ForgeCapabilities.ITEM_HANDLER)
+            return ((IForgeEntity) player).getCapability(ForgeCapabilities.ITEM_HANDLER)
                 .map(playerInventory -> {
 
                     FluidActionResult fluidActionResult = tryFillContainerAndStow(heldItem, handler, playerInventory, Integer.MAX_VALUE, player, true);

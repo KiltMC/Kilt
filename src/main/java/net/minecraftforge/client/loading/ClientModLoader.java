@@ -51,6 +51,8 @@ import net.minecraftforge.resource.DelegatingPackResources;
 import net.minecraftforge.resource.ResourcePackLoader;
 import net.minecraftforge.server.LanguageHook;
 import net.minecraftforge.forgespi.language.IModInfo;
+import xyz.bluspring.kilt.injections.DataPackConfigInjection;
+import xyz.bluspring.kilt.injections.server.PackRepositoryInjection;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientModLoader
@@ -92,8 +94,8 @@ public class ClientModLoader
         createRunnableWithCatch(()->ModLoader.get().gatherAndInitializeMods(ModWorkManager.syncExecutor(), ModWorkManager.parallelExecutor(), new SpacedRunnable(earlyLoaderGUI::renderTick))).run();
         if (error == null) {
             ResourcePackLoader.loadResourcePacks(defaultResourcePacks, ClientModLoader::buildPackFinder);
-            ModLoader.get().postEvent(new AddPackFindersEvent(PackType.CLIENT_RESOURCES, defaultResourcePacks::addPackFinder));
-            DataPackConfig.DEFAULT.addModPacks(ResourcePackLoader.getPackNames());
+            ModLoader.get().postEvent(new AddPackFindersEvent(PackType.CLIENT_RESOURCES, ((PackRepositoryInjection) defaultResourcePacks)::addPackFinder));
+            ((DataPackConfigInjection) DataPackConfig.DEFAULT).addModPacks(ResourcePackLoader.getPackNames());
             mcResourceManager.registerReloadListener(ClientModLoader::onResourceReload);
             mcResourceManager.registerReloadListener(BrandingControl.resourceManagerReloadListener());
         }
@@ -127,7 +129,7 @@ public class ClientModLoader
         loading = false;
         loadingComplete = true;
         // reload game settings on main thread
-        syncExecutor.execute(()->mc.options.load(true));
+        syncExecutor.execute(()->mc.options.load());
     }
 
     public static VersionChecker.Status checkForUpdates()

@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +43,7 @@ public class ItemHandlerHelper
         if (a.isEmpty() || !a.sameItem(b) || a.hasTag() != b.hasTag())
             return false;
 
-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible((CapabilityProvider<ItemStack>) (Object) b);
     }
 
     /**
@@ -66,7 +68,7 @@ public class ItemHandlerHelper
         if (a.hasTag() != b.hasTag())
             return false;
 
-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible((CapabilityProvider) (Object) b);
     }
 
     @NotNull

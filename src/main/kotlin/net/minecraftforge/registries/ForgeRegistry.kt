@@ -419,4 +419,18 @@ class ForgeRegistry<V> internal constructor (
     internal fun processMissingEvent(name: ResourceLocation, pool: ForgeRegistry<V>, mappings: List<MissingMappingsEvent.Mapping<V>>, missing: Map<ResourceLocation, Int>, remaps: Map<ResourceLocation, IdMappingEvent.IdRemapping>, defaulted: kotlin.collections.Collection<ResourceLocation>, failed: kotlin.collections.Collection<ResourceLocation>, injectNetworkDummies: Boolean) {
         // so much info.... fuck that
     }
+
+    @get:JvmName("getDefault")
+    internal val default: V?
+        get() {
+            if (defaultKey == null)
+                return null
+
+            return vanillaRegistry.get(defaultKey)
+        }
+
+    @JvmName("isDummied")
+    internal fun isDummied(key: ResourceLocation): Boolean {
+        return false
+    }
 }

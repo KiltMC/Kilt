@@ -331,7 +331,7 @@ public interface IForgeBlock
     * @param plantable The plant that wants to check
     * @return True to allow the plant to be planted/stay.
     */
-    boolean canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction facing, IPlantable plantable);
+    /*boolean canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction facing, IPlantable plantable);*/
 
     /**
      * Called when a tree grows on top of this block and tries to set it to dirt by the trunk placer.
@@ -508,10 +508,10 @@ public interface IForgeBlock
      * @param viewpoint the viewpoint
      * @return the block state that should be 'seen'
      */
-    default BlockState getStateAtViewpoint(BlockState state, BlockGetter level, BlockPos pos, Vec3 viewpoint)
+    /*default BlockState getStateAtViewpoint(BlockState state, BlockGetter level, BlockPos pos, Vec3 viewpoint)
     {
         return state;
-    }
+    }*/
 
     /**
      * Gets the path type of this block when an entity is pathfinding. When
@@ -735,7 +735,7 @@ public interface IForgeBlock
      * @param simulate If {@code true}, no actions that modify the world in any way should be performed. If {@code false}, the world may be modified.
      * @return The resulting state after the action has been performed
      */
-    @Nullable
+    /*@Nullable
     default BlockState getToolModifiedState(BlockState state, UseOnContext context, ToolAction toolAction, boolean simulate)
     {
         ItemStack itemStack = context.getItemInHand();
@@ -773,7 +773,7 @@ public interface IForgeBlock
         }
 
         return null;
-    }
+    }*/
 
     /**
      * Checks if a player or entity handles movement on this block like scaffolding.
@@ -936,7 +936,7 @@ public interface IForgeBlock
      * <b>Note that this method may be called on the server, or on any of the client's meshing threads.</b><br/>
      * As such, if you need any data from your {@link BlockEntity}, you should put it in {@link ModelData} to guarantee
      * safe concurrent access to it on the client.<br/>
-     * Calling {@link BlockGetter#getModelDataManager()} will return {@code null} if in a server context, where it is
+     * Calling {@link IForgeBlockGetter#getModelDataManager()} will return {@code null} if in a server context, where it is
      * safe to query your {@link BlockEntity} directly. Otherwise, {@link ModelDataManager#getAt(BlockPos)} will return
      * the {@link ModelData} for the queried block, or {@code null} if none is present.
      *
@@ -949,8 +949,8 @@ public interface IForgeBlock
      * @return The appearance of this block on the given side. By default, the current state
      * @see IForgeBlockState#getAppearance(BlockAndTintGetter, BlockPos, Direction, BlockState, BlockPos)
      */
-    default BlockState getAppearance(BlockState state, BlockAndTintGetter level, BlockPos pos, Direction side, @Nullable BlockState queryState, @Nullable BlockPos queryPos)
+    /*default BlockState getAppearance(BlockState state, BlockAndTintGetter level, BlockPos pos, Direction side, @Nullable BlockState queryState, @Nullable BlockPos queryPos)
     {
         return state;
-    }
+    }*/ // This isn't implemented because Fabric API implements it.
 }

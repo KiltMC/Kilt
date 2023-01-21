@@ -15,8 +15,13 @@ import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 import java.util.function.Supplier;
 
 @Mixin(BlockEntity.class)
-public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, ICapabilityProviderImpl<BlockEntity> {
-    private CapabilityProviderWorkaround<BlockEntity> workaround = new CapabilityProviderWorkaround<>(BlockEntity.class);
+public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, ICapabilityProviderImpl<BlockEntityInject> {
+    private CapabilityProviderWorkaround<BlockEntityInject> workaround = new CapabilityProviderWorkaround<>((Class<BlockEntityInject>) (Object) BlockEntity.class);
+
+    @Override
+    public CapabilityProviderWorkaround<BlockEntityInject> getWorkaround() {
+        return workaround;
+    }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
@@ -61,7 +66,7 @@ public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderI
     }
 
     @Override
-    public boolean areCapsCompatible(CapabilityProvider<BlockEntity> other) {
+    public boolean areCapsCompatible(CapabilityProvider<BlockEntityInject> other) {
         return workaround.areCapsCompatible(other);
     }
 

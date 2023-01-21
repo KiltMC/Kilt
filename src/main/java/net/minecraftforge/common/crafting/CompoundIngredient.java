@@ -26,6 +26,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.world.item.crafting.IngredientRemap;
 
 /** Ingredient that matches if any of the child ingredients match */
 public class CompoundIngredient extends AbstractIngredient
@@ -60,7 +61,7 @@ public class CompoundIngredient extends AbstractIngredient
                 allIngredients.add(child);
         }
         if (!vanillaIngredients.isEmpty())
-            allIngredients.add(merge(vanillaIngredients));
+            allIngredients.add(IngredientRemap.merge(vanillaIngredients));
         if (allIngredients.size() == 1)
             return allIngredients.get(0);
         return new CompoundIngredient(allIngredients);
@@ -85,7 +86,7 @@ public class CompoundIngredient extends AbstractIngredient
     @NotNull
     public IntList getStackingIds()
     {
-        boolean childrenNeedInvalidation = false;
+        /*boolean childrenNeedInvalidation = false;
         for (Ingredient child : children)
         {
             childrenNeedInvalidation |= child.checkInvalidation();
@@ -97,7 +98,7 @@ public class CompoundIngredient extends AbstractIngredient
             for (Ingredient child : children)
                 this.itemIds.addAll(child.getStackingIds());
             this.itemIds.sort(IntComparators.NATURAL_COMPARATOR);
-        }
+        }*/
 
         return this.itemIds;
     }
@@ -111,12 +112,12 @@ public class CompoundIngredient extends AbstractIngredient
         return children.stream().anyMatch(c -> c.test(target));
     }
 
-    @Override
+    /*@Override
     protected void invalidate()
     {
         this.itemIds = null;
         this.stacks = null;
-    }
+    }*/
 
     @Override
     public boolean isSimple()

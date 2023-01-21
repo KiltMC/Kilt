@@ -63,5 +63,9 @@ class RegistryManager(val name: String) {
         @JvmStatic
         val vanillaRegistryKeys: Set<ResourceLocation>
             get() = Registry.REGISTRY.keySet()
+
+        @JvmStatic
+        val registryNamesForSyncToClient: List<ResourceLocation>
+            get() = ACTIVE.registries.keys.toList()
     }
 }

@@ -15,4 +15,8 @@ public interface IngredientInjection {
 
         return VanillaIngredientSerializer.INSTANCE;
     }
+
+    default boolean isSimple() {
+        return true;
+    }
 }

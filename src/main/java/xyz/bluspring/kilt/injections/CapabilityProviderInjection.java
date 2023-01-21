@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injections;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -34,6 +35,10 @@ public interface CapabilityProviderInjection {
     }
 
     default void deserializeCaps(CompoundTag tag) {
+        throw new IllegalStateException();
+    }
+
+    default CapabilityProviderWorkaround<?> getWorkaround() {
         throw new IllegalStateException();
     }
 }

@@ -72,6 +72,7 @@ public interface ITeleporter
     /**
      * Is this teleporter the vanilla instance.
      */
+    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
     default boolean isVanilla()
     {
         return this.getClass() == PortalForcer.class;
