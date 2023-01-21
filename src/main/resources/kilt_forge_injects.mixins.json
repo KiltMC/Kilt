@@ -15,6 +15,7 @@
     "data.recipes.RecipeProviderAccessor",
     "network.ConnectionInject",
     "network.protocol.status.ServerStatusInject",
+    "server.MinecraftServerInject",
     "server.ReloadableServerResourcesInject",
     "server.packs.PackResourcesInject",
     "server.packs.repository.PackRepositoryInject",

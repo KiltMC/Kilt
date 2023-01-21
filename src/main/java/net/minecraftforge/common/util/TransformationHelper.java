@@ -19,6 +19,8 @@ import com.mojang.math.Transformation;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
 import net.minecraftforge.client.model.generators.BlockModelBuilder.RootTransformBuilder.TransformOrigin;
+import xyz.bluspring.kilt.remaps.math.Matrix4fRemap;
+import xyz.bluspring.kilt.remaps.math.Vector3fRemap;
 
 public final class TransformationHelper
 {
@@ -152,7 +154,7 @@ public final class TransformationHelper
             Set<String> elements = new HashSet<>(obj.keySet());
             if (obj.has("translation"))
             {
-                translation = new Vector3f(parseFloatArray(obj.get("translation"), 3, "Translation"));
+                translation = Vector3fRemap.of(parseFloatArray(obj.get("translation"), 3, "Translation"));
                 elements.remove("translation");
             }
             if (obj.has("rotation"))
@@ -181,7 +183,7 @@ public final class TransformationHelper
                 }
                 else
                 {
-                    scale = new Vector3f(parseFloatArray(obj.get("scale"), 3, "Scale"));
+                    scale = Vector3fRemap.of(parseFloatArray(obj.get("scale"), 3, "Scale"));
                 }
                 elements.remove("scale");
             }
@@ -220,7 +222,7 @@ public final class TransformationHelper
             JsonElement originElement = obj.get("origin");
             if (originElement.isJsonArray())
             {
-                origin = new Vector3f(parseFloatArray(originElement, 3, "Origin"));
+                origin = Vector3fRemap.of(parseFloatArray(originElement, 3, "Origin"));
             }
             else if (originElement.isJsonPrimitive())
             {
@@ -262,7 +264,7 @@ public final class TransformationHelper
                     }
                 }
             }
-            return new Matrix4f(values);
+            return Matrix4fRemap.of(values);
         }
 
         public static float[] parseFloatArray(JsonElement e, int length, String prefix)
