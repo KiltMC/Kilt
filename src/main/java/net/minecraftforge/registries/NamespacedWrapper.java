@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.core.MappedRegistryRemap;
 
 class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>
 {
@@ -55,7 +56,7 @@ class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistr
             throw new IllegalStateException("Can not register to a locked registry. Modder should use Forge Register methods.");
 
         Validate.notNull(value);
-        markKnown();
+        MappedRegistryRemap.getKnownRegistries().add(this.key().location());
         this.elementsLifecycle = this.elementsLifecycle.add(lifecycle);
 
         T oldValue = get(key);
@@ -209,7 +210,7 @@ class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistr
     @Override public Optional<HolderSet.Named<T>> getTag(TagKey<T> name) { return this.holders.getTag(name); }
     @Override public void bindTags(Map<TagKey<T>, List<Holder<T>>> newTags) { this.holders.bindTags(newTags); }
     @Override public void resetTags() { this.holders.resetTags(); }
-    @Deprecated @Override public void unfreeze() { this.holders.unfreeze(); }
+    //@Deprecated @Override public void unfreeze() { this.holders.unfreeze(); }
 
     /** @deprecated Forge: For internal use only. Use the Register events when registering values. */
     @Deprecated @Override public void lock(){ this.locked = true; }

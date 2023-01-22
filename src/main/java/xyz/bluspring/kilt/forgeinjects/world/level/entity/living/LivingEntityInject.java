@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.entity.living;
 
+import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -18,7 +19,7 @@ import java.util.Collection;
 import java.util.function.BiPredicate;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityInject implements IForgeLivingEntity {
+public class LivingEntityInject implements IForgeLivingEntity, EntityExtensions {
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         return null;

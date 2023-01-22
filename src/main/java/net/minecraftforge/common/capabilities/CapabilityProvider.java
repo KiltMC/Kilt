@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public abstract class CapabilityProvider<B extends ICapabilityProviderImpl<B>> implements ICapabilityProviderImpl<B>
+public abstract class CapabilityProvider<B extends ICapabilityProvider> implements ICapabilityProviderImpl<B>
 {
     @VisibleForTesting
     static boolean SUPPORTS_LAZY_CAPABILITIES = true;

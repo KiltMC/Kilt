@@ -658,7 +658,7 @@ public interface IForgeBlockState
     default BlockState getToolModifiedState(UseOnContext context, ToolAction toolAction, boolean simulate)
     {
         BlockState eventState = net.minecraftforge.event.ForgeEventFactory.onToolUse(self(), context, toolAction, simulate);
-        return eventState != self() ? eventState : self().getBlock().getToolModifiedState(self(), context, toolAction, simulate);
+        return eventState != self() ? eventState : self().getBlock().getToolModifiedState(self(), context, toolAction.fabric, simulate);
     }
 
     /**

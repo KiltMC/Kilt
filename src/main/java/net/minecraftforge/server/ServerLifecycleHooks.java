@@ -64,6 +64,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.fml.loading.FileUtils;
 import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.registries.GameData;
+import xyz.bluspring.kilt.injections.network.ClientIntentionPacketInjection;
 
 public class ServerLifecycleHooks
 {
@@ -153,8 +154,8 @@ public class ServerLifecycleHooks
         }
 
         if (packet.getIntention() == ConnectionProtocol.LOGIN) {
-            final ConnectionType connectionType = ConnectionType.forVersionFlag(packet.getFMLVersion());
-            final int versionNumber = connectionType.getFMLVersionNumber(packet.getFMLVersion());
+            final ConnectionType connectionType = ConnectionType.forVersionFlag(((ClientIntentionPacketInjection) packet).getFMLVersion());
+            final int versionNumber = connectionType.getFMLVersionNumber(((ClientIntentionPacketInjection) packet).getFMLVersion());
 
             if (connectionType == ConnectionType.MODDED && versionNumber != NetworkConstants.FMLNETVERSION) {
                 rejectConnection(manager, connectionType, "This modded server is not impl compatible with your modded client. Please verify your Forge version closely matches the server. Got net version " + versionNumber + " this server is net version " + NetworkConstants.FMLNETVERSION);

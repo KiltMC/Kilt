@@ -29,6 +29,7 @@ import net.minecraft.core.DefaultedRegistry;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.remaps.core.MappedRegistryRemap;
 
 class NamespacedDefaultedWrapper<T> extends DefaultedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>
 {
@@ -52,7 +53,7 @@ class NamespacedDefaultedWrapper<T> extends DefaultedRegistry<T> implements ILoc
             throw new IllegalStateException("Can not register to a locked registry. Modder should use Forge Register methods.");
 
         Validate.notNull(value);
-        markKnown();
+        MappedRegistryRemap.getKnownRegistries().add(this.key().location());
         this.elementsLifecycle = this.elementsLifecycle.add(lifecycle);
 
         T oldValue = this.delegate.getRaw(key.location());

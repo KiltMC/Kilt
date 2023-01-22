@@ -3,6 +3,7 @@ package net.minecraftforge.registries
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraftforge.network.HandshakeMessages
 import xyz.bluspring.kilt.Kilt
 
 class RegistryManager(val name: String) {
@@ -67,5 +68,18 @@ class RegistryManager(val name: String) {
         @JvmStatic
         val registryNamesForSyncToClient: List<ResourceLocation>
             get() = ACTIVE.registries.keys.toList()
+
+        @JvmStatic
+        fun generateRegistryPackets(isLocal: Boolean): List<org.apache.commons.lang3.tuple.Pair<String, HandshakeMessages.S2CRegistry>> {
+            return if (!isLocal) {
+                ACTIVE.registries.map {
+                    org.apache.commons.lang3.tuple.Pair.of("Registry ${it.key}", HandshakeMessages.S2CRegistry(it.key, ForgeRegistry.Snapshot().apply {
+                        it.value.vanillaRegistry.keySet().forEach { key ->
+                            this.ids[key] = it.value.getID(key)
+                        }
+                    }))
+                }
+            } else listOf()
+        }
     }
 }

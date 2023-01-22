@@ -40,6 +40,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.injections.HolderReferenceInjection;
 
 class NamespacedHolderHelper<T>
 {
@@ -175,7 +176,7 @@ class NamespacedHolderHelper<T>
 
        if (this.holderLookup != null)
        {
-           List<Holder.Reference<T>> intrusive = this.holders.values().stream().filter(h -> h.getType() == Holder.Reference.Type.INTRUSIVE && !h.isBound()).toList();
+           List<Holder.Reference<T>> intrusive = this.holders.values().stream().filter(h -> ((HolderReferenceInjection) h).getType() == Holder.Reference.Type.INTRUSIVE && !h.isBound()).toList();
            if (!intrusive.isEmpty())
                throw new IllegalStateException("Some intrusive holders were not added to registry: " + intrusive);
        }
@@ -263,7 +264,7 @@ class NamespacedHolderHelper<T>
     @Nullable
     Holder<T> onAdded(RegistryManager stage, int id, ResourceKey<T> key, T newValue, T oldValue)
     {
-        if (stage != RegistryManager.ACTIVE && (this.holderLookup == null || !stage.isStaging()))  // Intrusive handlers need updating in staging.
+        if (stage != RegistryManager.ACTIVE && (this.holderLookup == null || !false))  // Intrusive handlers need updating in staging.
             return null; // Only do holder shit on the active registries, not pending or snapshots.
 
         //Holder.Reference<T> oldHolder = oldValue == null ? null : getHolder(key, oldValue);

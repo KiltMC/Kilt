@@ -9,7 +9,7 @@ import java.util.function.Supplier
 
 // Due to a mixin issue where you can't extend new classes in it, this is a
 // little workaround to help redirect method calls to CapabilityProvider.
-class CapabilityProviderWorkaround<B : ICapabilityProviderImpl<B>>(baseClass: Class<B>, isLazy: Boolean) : CapabilityProvider<B>(baseClass, isLazy) {
+class CapabilityProviderWorkaround<B : ICapabilityProvider>(baseClass: Class<B>, isLazy: Boolean) : CapabilityProvider<B>(baseClass, isLazy) {
     constructor(baseClass: Class<B>) : this(baseClass, false)
 
     fun invokeGatherCapabilities() {

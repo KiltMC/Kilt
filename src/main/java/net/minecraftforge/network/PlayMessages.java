@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.LogicalSidedProvider;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import xyz.bluspring.kilt.injections.entity.EntityTypeInjection;
 import xyz.bluspring.kilt.remaps.client.gui.screens.MenuScreensRemap;
 
 import java.util.Optional;
@@ -147,7 +148,7 @@ public class PlayMessages
                 {
                     EntityType<?> type = Registry.ENTITY_TYPE.byId(msg.typeId);
                     Optional<Level> world = LogicalSidedProvider.CLIENTWORLD.get(ctx.get().getDirection().getReceptionSide());
-                    Entity e = world.map(w -> type.customClientSpawn(msg, w)).orElse(null);
+                    Entity e = world.map(w -> ((EntityTypeInjection<?>) type).customClientSpawn(msg, w)).orElse(null);
                     if (e == null)
                     {
                         return;

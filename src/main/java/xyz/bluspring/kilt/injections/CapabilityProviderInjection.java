@@ -37,8 +37,4 @@ public interface CapabilityProviderInjection {
     default void deserializeCaps(CompoundTag tag) {
         throw new IllegalStateException();
     }
-
-    default CapabilityProviderWorkaround<?> getWorkaround() {
-        throw new IllegalStateException();
-    }
 }

@@ -10,16 +10,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
+import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import java.util.function.Supplier;
 
 @Mixin(BlockEntity.class)
-public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, ICapabilityProviderImpl<BlockEntityInject> {
-    private CapabilityProviderWorkaround<BlockEntityInject> workaround = new CapabilityProviderWorkaround<>((Class<BlockEntityInject>) (Object) BlockEntity.class);
+public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, BlockEntityCapabilityProviderImpl {
+    private CapabilityProviderWorkaround<BlockEntity> workaround = new CapabilityProviderWorkaround<>(BlockEntity.class);
 
     @Override
-    public CapabilityProviderWorkaround<BlockEntityInject> getWorkaround() {
+    public CapabilityProviderWorkaround<BlockEntity> getWorkaround() {
         return workaround;
     }
 
@@ -66,7 +67,7 @@ public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderI
     }
 
     @Override
-    public boolean areCapsCompatible(CapabilityProvider<BlockEntityInject> other) {
+    public boolean areCapsCompatible(CapabilityProvider<BlockEntity> other) {
         return workaround.areCapsCompatible(other);
     }
 

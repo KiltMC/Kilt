@@ -21,12 +21,13 @@ import org.apache.logging.log4j.MarkerManager
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.MappedRegistryAccessor
 import java.util.*
+import java.util.function.Supplier
 import kotlin.Comparator
 
 class ForgeRegistry<V> internal constructor (
     private val stage: RegistryManager,
     override val registryName: ResourceLocation,
-    private val builder: RegistryBuilder<V>
+    val builder: RegistryBuilder<V>
 ) : IForgeRegistryInternal<V> {
     override val registryKey: ResourceKey<Registry<V>> = ResourceKey.createRegistryKey(registryName)
     private val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
@@ -143,6 +144,10 @@ class ForgeRegistry<V> internal constructor (
 
     fun getValue(id: Int): V? {
         return fabricRegistry.entries.elementAt(id).get()
+    }
+
+    fun getRaw(key: ResourceLocation): V? {
+        return vanillaRegistry.get(key)
     }
 
     companion object {
@@ -433,4 +438,20 @@ class ForgeRegistry<V> internal constructor (
     internal fun isDummied(key: ResourceLocation): Boolean {
         return false
     }
+
+    @JvmName("add")
+    internal fun add(id: Int, key: ResourceLocation, value: V): Int {
+        return add(id, key, value, "kilt")
+    }
+
+    @JvmName("add")
+    internal fun add(id: Int, key: ResourceLocation, value: V, owner: String): Int {
+        fabricRegistry.register(key, { value })
+
+        return getID(key)
+    }
+
+    @get:JvmName("getResourceKeys")
+    internal val resourceKeys: Set<ResourceKey<V>>
+        get() = this.vanillaRegistry.registryKeySet()
 }

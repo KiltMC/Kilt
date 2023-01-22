@@ -15,13 +15,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
+import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import java.util.function.Supplier;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStackInject>, ItemStackInjection {
+public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ItemStackCapabilityProviderImpl, ItemStackInjection {
     private CompoundTag capNBT;
 
     @Override
@@ -31,7 +32,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Shadow public abstract void setTag(@Nullable CompoundTag compoundTag);
 
-    private CapabilityProviderWorkaround<ItemStackInject> workaround = new CapabilityProviderWorkaround<>((Class<ItemStackInject>) (Object) ItemStack.class);
+    private CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class);
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {
@@ -76,7 +77,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     }
 
     @Override
-    public boolean areCapsCompatible(CapabilityProvider<ItemStackInject> other) {
+    public boolean areCapsCompatible(CapabilityProvider<ItemStack> other) {
         return workaround.areCapsCompatible(other);
     }
 
@@ -100,7 +101,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         var itemStack = ItemStack.of(nbt);
         this.setTag(nbt);
 
-        if (((ItemStackInjection) (Object) itemStack).getCapNBT() != null)
-            deserializeCaps(((ItemStackInjection) (Object) itemStack).getCapNBT());
+        if (itemStack.getCapNBT() != null)
+            deserializeCaps(itemStack.getCapNBT());
     }
 }

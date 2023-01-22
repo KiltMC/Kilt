@@ -55,9 +55,9 @@ public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>
     boolean canUpdate();
     void canUpdate(boolean value);
 
-    @Nullable
+    /*@Nullable
     Collection<ItemEntity> captureDrops();
-    Collection<ItemEntity> captureDrops(@Nullable Collection<ItemEntity> captureDrops);
+    Collection<ItemEntity> captureDrops(@Nullable Collection<ItemEntity> captureDrops);*/
 
 
     /**

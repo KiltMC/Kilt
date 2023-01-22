@@ -43,7 +43,7 @@ public class ItemHandlerHelper
         if (a.isEmpty() || !a.sameItem(b) || a.hasTag() != b.hasTag())
             return false;
 
-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && ((CapabilityProvider<ItemStack>) (Object) a).areCapsCompatible((CapabilityProvider<ItemStack>) (Object) b);
+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
     }
 
     /**
@@ -68,7 +68,7 @@ public class ItemHandlerHelper
         if (a.hasTag() != b.hasTag())
             return false;
 
-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && ((CapabilityProvider) (Object) a).areCapsCompatible((CapabilityProvider) (Object) b);
+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
     }
 
     @NotNull

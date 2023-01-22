@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.entity;
 
+import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -22,13 +23,14 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
+import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import java.util.Collection;
 import java.util.function.BiPredicate;
 
 @Mixin(Entity.class)
-public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, ICapabilityProviderImpl<EntityInject> {
+public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, EntityCapabilityProviderImpl, EntityExtensions {
     @Shadow public Level level;
 
     @Shadow public abstract float getBbWidth();
@@ -37,7 +39,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
 
     @Shadow protected abstract void unsetRemoved();
 
-    private CapabilityProviderWorkaround<EntityInject> workaround = new CapabilityProviderWorkaround<>((Class<EntityInject>) (Object) Entity.class);
+    private CapabilityProviderWorkaround<Entity> workaround = new CapabilityProviderWorkaround<>(Entity.class);
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
@@ -139,7 +141,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     @Override
-    public boolean areCapsCompatible(CapabilityProvider<EntityInject> other) {
+    public boolean areCapsCompatible(CapabilityProvider<Entity> other) {
         return workaround.areCapsCompatible(other);
     }
 
