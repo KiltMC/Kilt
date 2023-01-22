@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.forgeinjects.world.level.entity.living;
+package xyz.bluspring.kilt.forgeinjects.world.entity.living;
 
 import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;

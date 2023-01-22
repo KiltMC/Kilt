@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.forgeinjects.world.level.entity;
+package xyz.bluspring.kilt.forgeinjects.world.entity;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;

@@ -10,21 +10,14 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
-import net.minecraftforge.eventbus.EventBusErrorMessage
-import net.minecraftforge.eventbus.api.BusBuilder
-import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.eventbus.api.IEventBus
-import net.minecraftforge.eventbus.api.IEventListener
 import net.minecraftforge.fml.ModLoadingStage
-import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
-import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
@@ -33,10 +26,10 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
 import kotlin.system.exitProcess
+import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
 class KiltLoader {
     val mods = mutableListOf<ForgeMod>()

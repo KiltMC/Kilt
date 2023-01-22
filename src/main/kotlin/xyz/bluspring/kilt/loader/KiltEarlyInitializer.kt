@@ -5,5 +5,6 @@ import xyz.bluspring.kilt.Kilt
 
 class KiltEarlyInitializer : PreLaunchEntrypoint {
     override fun onPreLaunch() {
+        Kilt.loader.preloadMods()
     }
 }
