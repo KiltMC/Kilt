@@ -15,6 +15,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.server.level.ServerLevel;
+import xyz.bluspring.kilt.injections.server.MinecraftServerInjection;
 
 class TPSCommand
 {
@@ -44,7 +45,7 @@ class TPSCommand
 
     private static int sendTime(CommandSourceStack cs, ServerLevel dim) throws CommandSyntaxException
     {
-        long[] times = cs.getServer().getTickTime(dim.dimension());
+        long[] times = ((MinecraftServerInjection) cs.getServer()).getTickTime(dim.dimension());
 
         if (times == null) // Null means the world is unloaded. Not invalid. That's taken car of by DimensionArgument itself.
             times = UNLOADED;

@@ -207,7 +207,7 @@ public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>
      * of the {@link net.minecraftforge.common.ForgeMod#STEP_HEIGHT_ADDITION} attribute
      * (if this Entity is a {@link LivingEntity} and has the attribute), clamped at 0.
      */
-    default float getStepHeight()
+    /*default float getStepHeight()
     {
         float vanillaStep = self().maxUpStep;
         if (self() instanceof LivingEntity living)
@@ -219,7 +219,7 @@ public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>
             }
         }
         return vanillaStep;
-    }
+    }*/
 
     /**
      * Returns the height of the fluid type in relation to the bounding box of

@@ -74,4 +74,9 @@ public class FluidHandlerBlockEntity extends BlockEntity
     public CompoundTag getPersistentData() {
         return null;
     }
+
+    @Override
+    public void invalidateCaps() {
+        this.getWorkaround().invalidateCaps();
+    }
 }

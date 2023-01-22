@@ -36,7 +36,7 @@ public class ConditionalRecipe
         return new Builder();
     }
 
-    public static class Serializer<T extends Recipe<?>> implements RecipeSerializer<T>, IForgeRecipeSerializer<T>
+    public static class Serializer<T extends Recipe<?>> implements RecipeSerializer<T>
     {
         @Override
         public T fromJson(ResourceLocation recipeId, JsonObject json)

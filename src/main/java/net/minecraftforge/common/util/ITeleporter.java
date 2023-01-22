@@ -75,7 +75,7 @@ public interface ITeleporter
     @SuppressWarnings("EqualsBetweenInconvertibleTypes")
     default boolean isVanilla()
     {
-        return this.getClass() == PortalForcer.class;
+        return true;
     }
 
     /**

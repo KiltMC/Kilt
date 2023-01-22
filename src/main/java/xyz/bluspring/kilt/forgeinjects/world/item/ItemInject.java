@@ -13,6 +13,8 @@ import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
 import xyz.bluspring.kilt.injections.item.ItemInjection;
 import xyz.bluspring.kilt.injections.item.ItemPropertiesInjection;
 
+import java.util.function.Consumer;
+
 @Mixin(Item.class)
 public class ItemInject implements IForgeItem, ItemInjection, RenderPropertiesInjection {
     private boolean canRepair;
@@ -40,5 +42,10 @@ public class ItemInject implements IForgeItem, ItemInjection, RenderPropertiesIn
     @Override
     public boolean isRepairable(ItemStack stack) {
         return isDamageable(stack) && canRepair;
+    }
+
+    @Override
+    public void initializeClient(Consumer consumer) {
+        ItemInjection.super.initializeClient(consumer);
     }
 }

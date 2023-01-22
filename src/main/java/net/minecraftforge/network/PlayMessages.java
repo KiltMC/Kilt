@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.LogicalSidedProvider;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import xyz.bluspring.kilt.remaps.client.gui.screens.MenuScreensRemap;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class PlayMessages
      * <p>
      * To customize how your entity is created clientside (instead of using the default factory provided to the
      * {@link EntityType})
-     * see {@link EntityType.Builder#setCustomClientFactory}.
+     * see .
      */
     public static class SpawnEntity
     {
@@ -286,8 +287,8 @@ public class PlayMessages
             ctx.get().enqueueWork(() -> {
                 try
                 {
-                    MenuScreens.getScreenFactory(msg.getType(), Minecraft.getInstance(), msg.getWindowId(), msg.getName()).ifPresent(f -> {
-                        AbstractContainerMenu c = msg.getType().create(msg.getWindowId(), Minecraft.getInstance().player.getInventory(), msg.getAdditionalData());
+                    MenuScreensRemap.getScreenFactory(msg.getType(), Minecraft.getInstance(), msg.getWindowId(), msg.getName()).ifPresent(f -> {
+                        AbstractContainerMenu c = msg.getType().create(msg.getWindowId(), Minecraft.getInstance().player.getInventory()/*, msg.getAdditionalData()*/);
 
                         @SuppressWarnings("unchecked") Screen s = ((MenuScreens.ScreenConstructor<AbstractContainerMenu, ?>) f).create(c, Minecraft.getInstance().player.getInventory(), msg.getName());
                         Minecraft.getInstance().player.containerMenu = ((MenuAccess<?>) s).getMenu();

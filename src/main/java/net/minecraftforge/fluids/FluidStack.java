@@ -54,7 +54,7 @@ public class FluidStack
     private boolean isEmpty;
     private int amount;
     private CompoundTag tag;
-    private final Optional<Holder.Reference<Fluid>> fluidDelegate;
+    private final Holder.Reference<Fluid> fluidDelegate;
 
     public FluidStack(Fluid fluid, int amount)
     {
@@ -68,8 +68,7 @@ public class FluidStack
             LOGGER.fatal("Failed attempt to create a FluidStack for an unregistered Fluid {} (type {})", ForgeRegistries.FLUIDS.getKey(fluid), fluid.getClass().getName());
             throw new IllegalArgumentException("Cannot create a fluidstack from an unregistered fluid");
         }
-        // this should be getDelegateOrThrow, but IntelliJ refuses to let it work for some reason.
-        this.fluidDelegate = ForgeRegistries.FLUIDS.getDelegate(fluid);
+        this.fluidDelegate = ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid);
         this.amount = amount;
 
         updateEmpty();
@@ -150,12 +149,12 @@ public class FluidStack
 
     public final Fluid getFluid()
     {
-        return isEmpty ? Fluids.EMPTY : (Fluid) fluidDelegate.get().get();
+        return isEmpty ? Fluids.EMPTY : fluidDelegate.value();
     }
 
     public final Fluid getRawFluid()
     {
-        return (Fluid) fluidDelegate.get().get();
+        return fluidDelegate.value();
     }
 
     public boolean isEmpty() {
