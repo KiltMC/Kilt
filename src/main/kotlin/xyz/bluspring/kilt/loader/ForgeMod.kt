@@ -16,7 +16,6 @@ import net.minecraftforge.forgespi.locating.IModFile
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
-import xyz.bluspring.kilt.Kilt
 import java.io.File
 import java.net.URL
 import java.util.Optional

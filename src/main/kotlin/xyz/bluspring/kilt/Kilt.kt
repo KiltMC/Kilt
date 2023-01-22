@@ -9,6 +9,8 @@ import xyz.bluspring.kilt.loader.KiltLoader
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        loader.loadMods()
+
         loader.mods.forEach { mod ->
             mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
         }

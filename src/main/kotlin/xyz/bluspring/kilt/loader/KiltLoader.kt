@@ -181,7 +181,7 @@ class KiltLoader {
     private fun loadForgeBuiltinMod() {
         // Would be used to load the Forge built-in mod into the mods list.
         // But it's not required right now, I don't think.
-        val kiltFile = FabricLoaderImpl.INSTANCE.getModCandidate("kilt").copyToDir(kiltCacheDir.toPath(), true).toFile()
+        /*val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
         val kiltJar = JarFile(kiltFile)
 
         val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
@@ -193,11 +193,11 @@ class KiltLoader {
         val scanData = ModFileScanData()
         scanData.addModFileInfo(ModFileInfo(forgeMod))
 
-        forgeMod.scanData = scanData
+        forgeMod.scanData = scanData*/
 
         ForgeBuiltinMod()
 
-        mods.add(forgeMod)
+        //mods.add(forgeMod)
     }
 
     private fun preloadJarMod(modFile: File, jarFile: ZipFile): Map<String, Exception> {

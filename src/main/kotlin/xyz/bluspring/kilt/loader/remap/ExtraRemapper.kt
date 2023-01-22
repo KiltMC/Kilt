@@ -4,7 +4,6 @@ import net.fabricmc.mapping.tree.TinyTree
 import net.fabricmc.tinyremapper.MemberInstance
 import net.fabricmc.tinyremapper.TinyRemapper
 import net.fabricmc.tinyremapper.api.TrClass
-import net.fabricmc.tinyremapper.api.TrEnvironment
 import net.fabricmc.tinyremapper.api.TrMethod
 import net.fabricmc.tinyremapper.api.TrRemapper
 import org.objectweb.asm.Type

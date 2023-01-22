@@ -3,32 +3,24 @@ package xyz.bluspring.kilt.loader.remap
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
-import net.fabricmc.loader.impl.util.mappings.TinyRemapperMappingsHelper
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import net.fabricmc.tinyremapper.IMappingProvider
 import net.fabricmc.tinyremapper.NonClassCopyMode
 import net.fabricmc.tinyremapper.OutputConsumerPath
 import net.fabricmc.tinyremapper.TinyRemapper
-import net.minecraftforge.srgutils.IMappingFile
 import org.apache.commons.codec.digest.DigestUtils
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.jar.JarFile
 import java.util.stream.Collectors
-import kotlin.Comparator
-import kotlin.collections.ArrayList
 import kotlin.io.path.name
 
 object KiltRemapper {
