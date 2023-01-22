@@ -27,6 +27,7 @@
     "MatchToolAccessor",
     "MinecraftServerAccessor",
     "MobSpawnSettingsAccessor",
+    "PackRepositoryAccessor",
     "RecipeBookSettingsAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",
