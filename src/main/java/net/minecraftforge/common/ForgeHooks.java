@@ -192,6 +192,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.injections.LevelInjection;
+import xyz.bluspring.kilt.injections.entity.AttributeSupplierBuilderInjection;
 import xyz.bluspring.kilt.remaps.world.entity.ai.attributes.AttributeSupplierBuilderRemap;
 
 public class ForgeHooks
@@ -1368,7 +1369,7 @@ public class ForgeHooks
         {
             AttributeSupplier supplier = DefaultAttributes.getSupplier(k);
             AttributeSupplier.Builder newBuilder = supplier != null ? new AttributeSupplierBuilderRemap(supplier) : new AttributeSupplierBuilderRemap();
-            ((AttributeSupplierBuilderRemap) newBuilder).combine(v);
+            ((AttributeSupplierBuilderInjection) newBuilder).combine(v);
             FORGE_ATTRIBUTES.put(k, newBuilder.build());
         });
     }
