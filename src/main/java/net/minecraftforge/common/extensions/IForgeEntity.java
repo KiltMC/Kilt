@@ -101,10 +101,10 @@ public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>
      *
      * @return if the entity can be interacted with from a rider
      */
-    default boolean canRiderInteract()
+    /*default boolean canRiderInteract()
     {
         return false;
-    }
+    }*/
 
     /**
      * Returns whether the entity can ride in this vehicle under the fluid.

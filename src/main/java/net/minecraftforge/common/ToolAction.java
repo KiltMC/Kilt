@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ToolAction
 {
     private static final Map<String, ToolAction> actions = new ConcurrentHashMap<>();
+    public final io.github.fabricators_of_create.porting_lib.util.ToolAction fabric;
 
     /**
      * Returns all registered actions.
@@ -55,5 +56,6 @@ public final class ToolAction
     private ToolAction(String name)
     {
         this.name = name;
+        this.fabric = io.github.fabricators_of_create.porting_lib.util.ToolAction.get(name);
     }
 }

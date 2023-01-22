@@ -85,10 +85,10 @@ public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>
      * or right before the first tick when the chunk is generated or loaded from disk.
      * Override instead of adding {@code if (firstTick)} stuff in update.
      */
-     default void onLoad()
+     /*default void onLoad()
      {
          requestModelDataUpdate();
-     }
+     }*/
 
      /**
       * Sometimes default render bounding box: infinite in scope. Used to control rendering on {@link BlockEntityWithoutLevelRenderer}.

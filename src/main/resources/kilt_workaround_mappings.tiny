@@ -82,3 +82,5 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate	
 	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;	transformedVec3d	transformedVec3d
 c   net/minecraft/data/tags/TagsProvider xyz/bluspring/kilt/remaps/data/tags/TagsProviderRemap
 c   net/minecraft/client/renderer/block/model/ItemTransform xyz/bluspring/kilt/remaps/client/renderer/block/model/ItemTransformRemap
+c   net/minecraftforge/common/IPlantable io/github/fabricators_of_create/porting_lib/util/IPlantable
+c   net/minecraftforge/common/PlantType io/github/fabricators_of_create/porting_lib/util/PlantType
