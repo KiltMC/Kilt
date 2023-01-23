@@ -31,6 +31,13 @@ public class GatherDataEvent extends Event implements IModBusEvent
     private final ExistingFileHelper existingFileHelper;
     private final ModContainer modContainer;
 
+    public GatherDataEvent() {
+        dataGenerator = null;
+        config = null;
+        existingFileHelper = null;
+        modContainer = null;
+    }
+
     public GatherDataEvent(final ModContainer mc, final DataGenerator dataGenerator, final DataGeneratorConfig dataGeneratorConfig, ExistingFileHelper existingFileHelper)
     {
         this.modContainer = mc;
