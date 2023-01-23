@@ -24,6 +24,12 @@ public class MissingMappingsEvent extends Event
     private final IForgeRegistry<?> registry;
     private final List<Mapping<?>> mappings;
 
+    public MissingMappingsEvent() {
+        key = null;
+        registry = null;
+        mappings = null;
+    }
+
     public MissingMappingsEvent(ResourceKey<? extends Registry<?>> key, IForgeRegistry<?> registry, Collection<Mapping<?>> missed)
     {
         this.key = key;

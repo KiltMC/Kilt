@@ -37,6 +37,11 @@ public class IdMappingEvent extends Event
         public final int oldId;
         public final int newId;
 
+        public ModRemapping() {
+            registry = key = null;
+            oldId = newId = -1;
+        }
+
         private ModRemapping(ResourceLocation registry, ResourceLocation key, int oldId, int newId)
         {
             this.registry = registry;
@@ -52,6 +57,12 @@ public class IdMappingEvent extends Event
     private final ImmutableSet<ResourceLocation> keys;
 
     private final boolean isFrozen;
+
+    public IdMappingEvent() {
+        remaps = null;
+        keys = null;
+        isFrozen = false;
+    }
 
     public IdMappingEvent(Map<ResourceLocation, Map<ResourceLocation, IdRemapping>> remaps, boolean isFrozen)
     {

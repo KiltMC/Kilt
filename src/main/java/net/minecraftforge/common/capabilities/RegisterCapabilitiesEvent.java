@@ -18,6 +18,8 @@ import net.minecraftforge.fml.event.IModBusEvent;
  */
 public final class RegisterCapabilitiesEvent extends Event implements IModBusEvent
 {
+    public RegisterCapabilitiesEvent() {}
+
     /**
      * Registers a capability to be consumed by others.
      * APIs who define the capability should call this.
