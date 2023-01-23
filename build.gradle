@@ -52,6 +52,28 @@ repositories {
     flatDir {
         dir 'libs'
     }
+
+    // Testing mod sources
+    maven {
+        name "Modrinth"
+        url "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+
+    maven {
+        name "CurseMaven"
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
+    maven {
+        name "TerraformersMC"
+        url 'https://maven.terraformersmc.com/'
+    }
 }
 
 dependencies {
@@ -99,6 +121,11 @@ dependencies {
 
     // Remapping SRG to Intermediary
     implementation(include('net.minecraftforge:srgutils:0.4.13'))
+
+    // Runtime mods for testing
+    modRuntimeOnly "com.terraformersmc:modmenu:4.1.0"
+    modRuntimeOnly "curse.maven:ferritecore-fabric-459857:3824694"
+    modRuntimeOnly "maven.modrinth:lazydfu:0.1.3"
 }
 
 processResources {
