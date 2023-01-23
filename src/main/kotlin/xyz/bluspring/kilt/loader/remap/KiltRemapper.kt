@@ -151,7 +151,7 @@ object KiltRemapper {
 
     private fun remapMod(file: File, remapperBuilder: TinyRemapper.Builder, mod: ForgeMod, remappedModsDir: File, gameClassPath: Array<out Path>, extraRemapper: ExtraRemapper) {
         val hash = DigestUtils.md5Hex(file.inputStream())
-        val remappedModFile = File(remappedModsDir, "$hash.jar")
+        val remappedModFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_$hash.jar")
 
         mod.remappedModFile = remappedModFile
 
