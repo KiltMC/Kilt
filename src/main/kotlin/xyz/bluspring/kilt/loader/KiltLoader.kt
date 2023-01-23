@@ -424,9 +424,8 @@ class KiltLoader {
                             // it.annotationData["value"] as String - Mod ID
 
                             try {
-                                val classLoader = launcher.targetClassLoader
-                                val clazz = classLoader.loadClass(it.clazz.className)
-                                mod.modObject = clazz.declaredConstructors[0].newInstance()
+                                val clazz = Class.forName(it.clazz.className)
+                                mod.modObject = clazz.getDeclaredConstructor().newInstance()
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 exceptions.add(e)

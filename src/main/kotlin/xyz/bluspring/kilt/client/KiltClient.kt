@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.client
 
 import net.fabricmc.api.ClientModInitializer
+import net.minecraft.network.Connection
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt

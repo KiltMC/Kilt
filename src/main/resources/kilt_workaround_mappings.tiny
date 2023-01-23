@@ -40,8 +40,6 @@ c	net/minecraft/world/entity/MobCategory	xyz/bluspring/kilt/remaps/world/entity/
 c	net/minecraft/world/entity/SpawnPlacements	xyz/bluspring/kilt/remaps/world/entity/SpawnPlacementsRemap
 	m	()V	fireSpawnPlacementEvent	fireSpawnPlacementEvent
 c	net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder	xyz/bluspring/kilt/remaps/world/entity/ai/attributes/AttributeSupplierBuilderRemap
-c	net/minecraft/world/entity/player/Player	xyz/bluspring/kilt/remaps/world/entity/player/PlayerRemap
-	f	Ljava/lang/String;	PERSISTED_NBT_TAG	PERSISTED_NBT_TAG
 c	net/minecraft/world/entity/projectile/ProjectileUtil	xyz/bluspring/kilt/remaps/world/entity/projectile/ProjectileUtilRemap
 	m	(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/InteractionHand;	getWeaponHoldingHand	getWeaponHoldingHand
 c	net/minecraft/world/entity/vehicle/AbstractMinecart	xyz/bluspring/kilt/remaps/world/entity/vehicle/AbstractMinecartRemap
