@@ -35,6 +35,12 @@ public class FillBucketEvent extends PlayerEvent
 
     private ItemStack result;
 
+    public FillBucketEvent() {
+        current = null;
+        level = null;
+        target = null;
+    }
+
     public FillBucketEvent(Player player, @NotNull ItemStack current, Level level, @Nullable HitResult target)
     {
         super(player);

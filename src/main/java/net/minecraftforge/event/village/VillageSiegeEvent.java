@@ -31,6 +31,13 @@ public class VillageSiegeEvent extends Event
     private final Player player;
     private final Vec3 attemptedSpawnPos;
 
+    public VillageSiegeEvent() {
+        siege = null;
+        level = null;
+        player = null;
+        attemptedSpawnPos = null;
+    }
+
     public VillageSiegeEvent(VillageSiege siege, Level level, Player player, Vec3 attemptedSpawnPos)
     {
        this.siege = siege;

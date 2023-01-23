@@ -36,6 +36,14 @@ public class RenderArmEvent extends Event
     private final AbstractClientPlayer player;
     private final HumanoidArm arm;
 
+    public RenderArmEvent() {
+        poseStack = null;
+        multiBufferSource = null;
+        packedLight = -1;
+        player = null;
+        arm = null;
+    }
+
     @ApiStatus.Internal
     public RenderArmEvent(PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, AbstractClientPlayer player, HumanoidArm arm)
     {

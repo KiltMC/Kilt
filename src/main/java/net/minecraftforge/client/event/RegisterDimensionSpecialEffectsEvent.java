@@ -28,6 +28,10 @@ public class RegisterDimensionSpecialEffectsEvent extends Event implements IModB
 {
     private final Map<ResourceLocation, DimensionSpecialEffects> effects;
 
+    public RegisterDimensionSpecialEffectsEvent() {
+        effects = null;
+    }
+
     @ApiStatus.Internal
     public RegisterDimensionSpecialEffectsEvent(Map<ResourceLocation, DimensionSpecialEffects> effects)
     {

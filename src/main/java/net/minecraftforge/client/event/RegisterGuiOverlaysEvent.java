@@ -35,6 +35,11 @@ public class RegisterGuiOverlaysEvent extends Event implements IModBusEvent
     private final Map<ResourceLocation, IGuiOverlay> overlays;
     private final List<ResourceLocation> orderedOverlays;
 
+    public RegisterGuiOverlaysEvent() {
+        overlays = null;
+        orderedOverlays = null;
+    }
+
     @ApiStatus.Internal
     public RegisterGuiOverlaysEvent(Map<ResourceLocation, IGuiOverlay> overlays, List<ResourceLocation> orderedOverlays)
     {

@@ -17,6 +17,9 @@ public class PlayerFlyableFallEvent extends PlayerEvent
     private float distance;
     private float multiplier;
 
+    public PlayerFlyableFallEvent() {
+    }
+
     public PlayerFlyableFallEvent(Player player, float distance, float multiplier)
     {
         super(player);

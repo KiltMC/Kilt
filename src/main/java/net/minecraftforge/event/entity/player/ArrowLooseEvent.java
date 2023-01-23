@@ -38,6 +38,12 @@ public class ArrowLooseEvent extends PlayerEvent
     private final boolean hasAmmo;
     private int charge;
 
+    public ArrowLooseEvent() {
+        bow = null;
+        level = null;
+        hasAmmo = false;
+    }
+
     public ArrowLooseEvent(Player player, @NotNull ItemStack bow, Level level, int charge, boolean hasAmmo)
     {
         super(player);

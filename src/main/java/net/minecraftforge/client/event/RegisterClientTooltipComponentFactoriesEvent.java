@@ -30,6 +30,10 @@ public class RegisterClientTooltipComponentFactoriesEvent extends Event implemen
 {
     private final Map<Class<? extends TooltipComponent>, Function<TooltipComponent, ClientTooltipComponent>> factories;
 
+    public RegisterClientTooltipComponentFactoriesEvent() {
+        factories = null;
+    }
+
     @ApiStatus.Internal
     public RegisterClientTooltipComponentFactoriesEvent(Map<Class<? extends TooltipComponent>, Function<TooltipComponent, ClientTooltipComponent>> factories)
     {

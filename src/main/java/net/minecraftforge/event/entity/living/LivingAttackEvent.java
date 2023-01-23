@@ -35,6 +35,12 @@ public class LivingAttackEvent extends LivingEvent
 {
     private final DamageSource source;
     private final float amount;
+
+    public LivingAttackEvent() {
+        super(null);
+        source = null;
+        amount = -1;
+    }
     public LivingAttackEvent(LivingEntity entity, DamageSource source, float amount)
     {
         super(entity);

@@ -37,6 +37,11 @@ public class FurnaceFuelBurnTimeEvent extends Event
     private final RecipeType<?> recipeType;
     private int burnTime;
 
+    public FurnaceFuelBurnTimeEvent() {
+        itemStack = ItemStack.EMPTY;
+        recipeType = null;
+    }
+
     public FurnaceFuelBurnTimeEvent(@NotNull ItemStack itemStack, int burnTime, @Nullable RecipeType<?> recipeType)
     {
         this.itemStack = itemStack;

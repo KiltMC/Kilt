@@ -26,6 +26,12 @@ public abstract class RenderGuiEvent extends Event
     private final PoseStack poseStack;
     private final float partialTick;
 
+    public RenderGuiEvent() {
+        window = null;
+        poseStack = null;
+        partialTick = 0F;
+    }
+
     @ApiStatus.Internal
     protected RenderGuiEvent(Window window, PoseStack poseStack, float partialTick)
     {
@@ -64,6 +70,8 @@ public abstract class RenderGuiEvent extends Event
     @Cancelable
     public static class Pre extends RenderGuiEvent
     {
+        public Pre() {}
+
         @ApiStatus.Internal
         public Pre(Window window, PoseStack poseStack, float partialTick)
         {
@@ -81,6 +89,8 @@ public abstract class RenderGuiEvent extends Event
      */
     public static class Post extends RenderGuiEvent
     {
+        public Post() {}
+
         @ApiStatus.Internal
         public Post(Window window, PoseStack poseStack, float partialTick)
         {

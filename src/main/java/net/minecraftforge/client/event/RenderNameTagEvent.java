@@ -43,6 +43,15 @@ public class RenderNameTagEvent extends EntityEvent
     private final int packedLight;
     private final float partialTick;
 
+    public RenderNameTagEvent() {
+        originalContent = null;
+        entityRenderer = null;
+        poseStack = null;
+        multiBufferSource = null;
+        packedLight = 0;
+        partialTick = 0F;
+    }
+
     @ApiStatus.Internal
     public RenderNameTagEvent(Entity entity, Component content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick)
     {

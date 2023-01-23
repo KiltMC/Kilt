@@ -36,6 +36,12 @@ public class ItemAttributeModifierEvent extends Event
     @Nullable
     private Multimap<Attribute, AttributeModifier> modifiableModifiers;
 
+    public ItemAttributeModifierEvent() {
+        stack = null;
+        slotType = null;
+        originalModifiers = null;
+    }
+
     public ItemAttributeModifierEvent(ItemStack stack, EquipmentSlot slotType, Multimap<Attribute, AttributeModifier> modifiers)
     {
         this.stack = stack;

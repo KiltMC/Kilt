@@ -32,6 +32,11 @@ public class EntityAttributeModificationEvent extends Event implements IModBusEv
     private final Map<EntityType<? extends LivingEntity>, AttributeSupplier.Builder> entityAttributes;
     private final List<EntityType<? extends LivingEntity>> entityTypes;
 
+    public EntityAttributeModificationEvent() {
+        entityAttributes = null;
+        entityTypes = null;
+    }
+
     @SuppressWarnings("unchecked")
     public EntityAttributeModificationEvent(Map<EntityType<? extends LivingEntity>, AttributeSupplier.Builder> mapIn)
     {

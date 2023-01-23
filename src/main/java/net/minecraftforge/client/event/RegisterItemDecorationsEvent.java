@@ -33,6 +33,10 @@ public class RegisterItemDecorationsEvent extends Event implements IModBusEvent
 
     private final Map<Item, List<IItemDecorator>> decorators;
 
+    public RegisterItemDecorationsEvent() {
+        decorators = null;
+    }
+
     @ApiStatus.Internal
     public RegisterItemDecorationsEvent(Map<Item, List<IItemDecorator>> decorators)
     {

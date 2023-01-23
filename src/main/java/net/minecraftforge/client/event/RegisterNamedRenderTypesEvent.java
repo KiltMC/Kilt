@@ -32,6 +32,10 @@ public class RegisterNamedRenderTypesEvent extends Event implements IModBusEvent
 {
     private final Map<ResourceLocation, RenderTypeGroup> renderTypes;
 
+    public RegisterNamedRenderTypesEvent() {
+        renderTypes = null;
+    }
+
     @ApiStatus.Internal
     public RegisterNamedRenderTypesEvent(Map<ResourceLocation, RenderTypeGroup> renderTypes)
     {

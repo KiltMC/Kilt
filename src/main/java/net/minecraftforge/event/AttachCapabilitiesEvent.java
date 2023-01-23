@@ -29,6 +29,10 @@ public class AttachCapabilitiesEvent<T> extends GenericEvent<T>
     private final List<Runnable> listeners = Lists.newArrayList();
     private final List<Runnable> listenersView = Collections.unmodifiableList(listeners);
 
+    public AttachCapabilitiesEvent() {
+        obj = null;
+    }
+
     public AttachCapabilitiesEvent(Class<T> type, T obj)
     {
         super(type);

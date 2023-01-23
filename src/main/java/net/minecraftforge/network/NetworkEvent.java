@@ -113,6 +113,11 @@ public class NetworkEvent extends Event
         private final List<NetworkRegistry.LoginPayload> collected;
         private final boolean isLocal;
 
+        public GatherLoginPayloadsEvent() {
+            collected = null;
+            isLocal = false;
+        }
+
         public GatherLoginPayloadsEvent(final List<NetworkRegistry.LoginPayload> loginPayloadList, boolean isLocal) {
             this.collected = loginPayloadList;
             this.isLocal = isLocal;
@@ -133,6 +138,8 @@ public class NetworkEvent extends Event
     }
 
     public static class LoginPayloadEvent extends NetworkEvent {
+        public LoginPayloadEvent() {}
+
         LoginPayloadEvent(final FriendlyByteBuf payload, final Supplier<Context> source, final int loginIndex) {
             super(payload, source, loginIndex);
         }
@@ -151,6 +158,10 @@ public class NetworkEvent extends Event
      */
     public static class ChannelRegistrationChangeEvent extends NetworkEvent {
         private final RegistrationChangeType changeType;
+
+        public ChannelRegistrationChangeEvent() {
+            changeType = null;
+        }
 
         ChannelRegistrationChangeEvent(final Supplier<Context> source, RegistrationChangeType changeType) {
             super(source);

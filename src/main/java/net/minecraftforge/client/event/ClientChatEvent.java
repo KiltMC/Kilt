@@ -27,6 +27,10 @@ public class ClientChatEvent extends Event
     // private String message;
     private final String originalMessage;
 
+    public ClientChatEvent() {
+        originalMessage = null;
+    }
+
     @ApiStatus.Internal
     public ClientChatEvent(String message)
     {

@@ -54,6 +54,14 @@ public class RenderBlockScreenEffectEvent extends Event
     private final BlockState blockState;
     private final BlockPos blockPos;
 
+    public RenderBlockScreenEffectEvent() {
+        player = null;
+        poseStack = null;
+        overlayType = null;
+        blockPos = null;
+        blockState = null;
+    }
+
     @ApiStatus.Internal
     public RenderBlockScreenEffectEvent(Player player, PoseStack poseStack, OverlayType type, BlockState block, BlockPos blockPos)
     {

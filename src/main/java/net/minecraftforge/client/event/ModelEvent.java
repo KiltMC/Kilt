@@ -47,6 +47,12 @@ public abstract class ModelEvent extends Event
         private final Map<ResourceLocation, BakedModel> models;
         private final ModelBakery modelBakery;
 
+        public BakingCompleted() {
+            modelManager = null;
+            models = null;
+            modelBakery = null;
+        }
+
         @ApiStatus.Internal
         public BakingCompleted(ModelManager modelManager, Map<ResourceLocation, BakedModel> models, ModelBakery modelBakery)
         {
@@ -93,6 +99,10 @@ public abstract class ModelEvent extends Event
     {
         private final Set<ResourceLocation> models;
 
+        public RegisterAdditional() {
+            models = null;
+        }
+
         @ApiStatus.Internal
         public RegisterAdditional(Set<ResourceLocation> models)
         {
@@ -119,6 +129,10 @@ public abstract class ModelEvent extends Event
     public static class RegisterGeometryLoaders extends ModelEvent implements IModBusEvent
     {
         private final Map<ResourceLocation, IGeometryLoader<?>> loaders;
+
+        public RegisterGeometryLoaders() {
+            loaders = null;
+        }
 
         @ApiStatus.Internal
         public RegisterGeometryLoaders(Map<ResourceLocation, IGeometryLoader<?>> loaders)

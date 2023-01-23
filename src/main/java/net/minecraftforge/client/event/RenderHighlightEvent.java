@@ -35,6 +35,15 @@ public abstract class RenderHighlightEvent extends Event
     private final PoseStack poseStack;
     private final MultiBufferSource multiBufferSource;
 
+    public RenderHighlightEvent() {
+        levelRenderer = null;
+        camera = null;
+        target = null;
+        partialTick = 0F;
+        poseStack = null;
+        multiBufferSource = null;
+    }
+
     @ApiStatus.Internal
     protected RenderHighlightEvent(LevelRenderer levelRenderer, Camera camera, HitResult target, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource)
     {
@@ -106,6 +115,8 @@ public abstract class RenderHighlightEvent extends Event
     @Cancelable
     public static class Block extends RenderHighlightEvent
     {
+        public Block() {}
+
         @ApiStatus.Internal
         public Block(LevelRenderer levelRenderer, Camera camera, BlockHitResult target, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource)
         {
@@ -132,6 +143,8 @@ public abstract class RenderHighlightEvent extends Event
      */
     public static class Entity extends RenderHighlightEvent
     {
+        public Entity() {}
+
         @ApiStatus.Internal
         public Entity(LevelRenderer levelRenderer, Camera camera, EntityHitResult target, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource)
         {

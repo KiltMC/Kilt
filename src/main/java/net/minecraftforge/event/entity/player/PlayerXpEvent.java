@@ -19,6 +19,7 @@ import net.minecraftforge.eventbus.api.Cancelable;
  */
 public class PlayerXpEvent extends PlayerEvent
 {
+    public PlayerXpEvent() {}
 
     public PlayerXpEvent(Player player)
     {
@@ -34,6 +35,10 @@ public class PlayerXpEvent extends PlayerEvent
     {
 
         private final ExperienceOrb orb;
+
+        public PickupXp() {
+            orb = null;
+        }
 
         public PickupXp(Player player, ExperienceOrb orb)
         {
@@ -57,6 +62,8 @@ public class PlayerXpEvent extends PlayerEvent
     {
 
         private int amount;
+
+        public XpChange() {}
 
         public XpChange(Player player, int amount)
         {
@@ -85,6 +92,8 @@ public class PlayerXpEvent extends PlayerEvent
     {
 
         private int levels;
+
+        public LevelChange() {}
 
         public LevelChange(Player player, int levels)
         {

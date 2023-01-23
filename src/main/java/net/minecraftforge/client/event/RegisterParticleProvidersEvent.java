@@ -32,6 +32,10 @@ public class RegisterParticleProvidersEvent extends Event implements IModBusEven
 {
     private final ParticleEngine particleEngine;
 
+    public RegisterParticleProvidersEvent() {
+        particleEngine = null;
+    }
+
     @ApiStatus.Internal
     public RegisterParticleProvidersEvent(ParticleEngine particleEngine)
     {

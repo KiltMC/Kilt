@@ -29,6 +29,10 @@ public class PlayerSleepInBedEvent extends PlayerEvent
     private BedSleepingProblem result = null;
     private final Optional<BlockPos> pos;
 
+    public PlayerSleepInBedEvent() {
+        pos = Optional.empty();
+    }
+
     public PlayerSleepInBedEvent(Player player, Optional<BlockPos> pos)
     {
         super(player);

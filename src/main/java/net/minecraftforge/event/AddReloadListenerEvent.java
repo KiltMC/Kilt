@@ -32,6 +32,10 @@ public class AddReloadListenerEvent extends Event
     private final List<PreparableReloadListener> listeners = new ArrayList<>();
     private final ReloadableServerResources serverResources;
 
+    public AddReloadListenerEvent() {
+        serverResources = null;
+    }
+
     public AddReloadListenerEvent(ReloadableServerResources serverResources)
     {
         this.serverResources = serverResources;
@@ -69,6 +73,10 @@ public class AddReloadListenerEvent extends Event
 
     private static class WrappedStateAwareListener implements PreparableReloadListener {
         private final PreparableReloadListener wrapped;
+
+        public WrappedStateAwareListener() {
+            wrapped = null;
+        }
 
         private WrappedStateAwareListener(final PreparableReloadListener wrapped) {
             this.wrapped = wrapped;

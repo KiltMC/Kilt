@@ -30,6 +30,8 @@ import net.minecraft.world.entity.LivingEntity;
 @Cancelable
 public class LivingFallEvent extends LivingEvent
 {
+    public LivingFallEvent() {}
+
     private float distance;
     private float damageMultiplier;
     public LivingFallEvent(LivingEntity entity, float distance, float damageMultiplier)

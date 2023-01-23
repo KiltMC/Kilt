@@ -26,6 +26,10 @@ public class EntityItemPickupEvent extends PlayerEvent
 {
     private final ItemEntity item;
 
+    public EntityItemPickupEvent() {
+        item = null;
+    }
+
     public EntityItemPickupEvent(Player player, ItemEntity item)
     {
         super(player);

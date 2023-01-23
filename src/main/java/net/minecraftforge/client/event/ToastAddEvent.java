@@ -26,6 +26,10 @@ public class ToastAddEvent extends Event
 {
     private final Toast toast;
 
+    public ToastAddEvent() {
+        toast = null;
+    }
+
     public ToastAddEvent(Toast toast)
     {
         this.toast = toast;

@@ -16,6 +16,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
  * @author cpw
  */
 public class ServerAboutToStartEvent extends ServerLifecycleEvent {
+    public ServerAboutToStartEvent() {}
 
     public ServerAboutToStartEvent(MinecraftServer server)
     {

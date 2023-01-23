@@ -16,10 +16,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraftforge.common.ForgeInternalHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,6 +38,10 @@ import net.minecraftforge.fml.LogicalSide;
 public class LevelEvent extends Event
 {
     private final LevelAccessor level;
+
+    public LevelEvent() {
+        level = null;
+    }
 
     public LevelEvent(LevelAccessor level)
     {
@@ -61,6 +68,7 @@ public class LevelEvent extends Event
      **/
     public static class Load extends LevelEvent
     {
+        public Load() {}
         public Load(LevelAccessor level) { super(level); }
     }
 
@@ -79,6 +87,7 @@ public class LevelEvent extends Event
      **/
     public static class Unload extends LevelEvent
     {
+        public Unload() {}
         public Unload(LevelAccessor level) { super(level); }
     }
 
@@ -94,6 +103,7 @@ public class LevelEvent extends Event
      **/
     public static class Save extends LevelEvent
     {
+        public Save() {}
         public Save(LevelAccessor level) { super(level); }
     }
 
@@ -114,6 +124,10 @@ public class LevelEvent extends Event
     {
         private final ServerLevelData settings;
 
+        public CreateSpawnPosition() {
+            settings = null;
+        }
+
         public CreateSpawnPosition(LevelAccessor level, ServerLevelData settings)
         {
             super(level);
@@ -131,8 +145,7 @@ public class LevelEvent extends Event
      *
      * <p>If an entry is added to the list, it needs to be a globally unique instance.</p>
      *
-     * The event is called in {@link net.minecraft.world.level.NaturalSpawner#mobsAt(ServerLevel,
-     * StructureManager, ChunkGenerator, MobCategory, RandomSource, BlockPos)}.</p>
+     * The event is called in .</p>
      * 
      * <p>This event is {@linkplain Cancelable cancellable}, and does not {@linkplain HasResult have a result}.
      * Canceling the event will result in an empty list, meaning no entity will be spawned.</p>
@@ -144,6 +157,13 @@ public class LevelEvent extends Event
         private final BlockPos pos;
         private final List<MobSpawnSettings.SpawnerData> list;
         private final List<MobSpawnSettings.SpawnerData> view;
+
+        public PotentialSpawns() {
+            mobcategory = null;
+            pos = null;
+            list = null;
+            view = null;
+        }
 
         public PotentialSpawns(LevelAccessor level, MobCategory category, BlockPos pos, WeightedRandomList<MobSpawnSettings.SpawnerData> oldList)
         {

@@ -38,6 +38,13 @@ public class ChunkTicketLevelUpdatedEvent extends Event
     @Nullable
     private final ChunkHolder chunkHolder;
 
+    public ChunkTicketLevelUpdatedEvent() {
+        level = null;
+        chunkPos = 0L;
+        oldTicketLevel = newTicketLevel = 0;
+        chunkHolder = null;
+    }
+
     public ChunkTicketLevelUpdatedEvent(ServerLevel level, long chunkPos, int oldTicketLevel, int newTicketLevel, @Nullable ChunkHolder chunkHolder)
     {
         this.level = level;

@@ -30,6 +30,10 @@ public class EntityStruckByLightningEvent extends EntityEvent
 {
     private final LightningBolt lightning;
 
+    public EntityStruckByLightningEvent() {
+        lightning = null;
+    }
+
     public EntityStruckByLightningEvent(Entity entity, LightningBolt lightning)
     {
         super(entity);

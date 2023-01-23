@@ -198,7 +198,9 @@ class KiltLoader {
         // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
         // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
         // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
-        if (jarFile.getEntry("fabric.mod.json") != null)
+        if (
+            jarFile.getEntry("fabric.mod.json") != null
+        )
             return mapOf()
 
         val thrownExceptions = mutableMapOf<String, Exception>()

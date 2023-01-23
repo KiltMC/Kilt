@@ -17,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
  */
 public class ServerStartingEvent extends ServerLifecycleEvent
 {
+    public ServerStartingEvent() {}
     public ServerStartingEvent(final MinecraftServer server)
     {
         super(server);

@@ -38,6 +38,11 @@ public class SaplingGrowTreeEvent extends LevelEvent
     private final BlockPos pos;
     private Holder<? extends ConfiguredFeature<?, ?>> feature;
 
+    public SaplingGrowTreeEvent() {
+        randomSource = null;
+        pos = null;
+    }
+
     @Deprecated(forRemoval = true, since = "1.19.2")
     public SaplingGrowTreeEvent(LevelAccessor level, RandomSource randomSource, BlockPos pos)
     {

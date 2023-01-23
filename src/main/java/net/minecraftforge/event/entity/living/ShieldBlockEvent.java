@@ -25,6 +25,11 @@ public class ShieldBlockEvent extends LivingEvent
     private float dmgBlocked;
     private boolean shieldTakesDamage = true;
 
+    public ShieldBlockEvent() {
+        source = null;
+        originalBlocked = -1F;
+    }
+
     public ShieldBlockEvent(LivingEntity blocker, DamageSource source, float blocked)
     {
         super(blocker);

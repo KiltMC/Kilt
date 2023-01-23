@@ -27,6 +27,12 @@ public class TickEvent extends Event
     public final Type type;
     public final LogicalSide side;
     public final Phase phase;
+
+    public TickEvent() {
+        type = null;
+        side = null;
+        phase = null;
+    }
     public TickEvent(Type type, LogicalSide side, Phase phase)
     {
         this.type = type;
@@ -37,6 +43,11 @@ public class TickEvent extends Event
     public static class ServerTickEvent extends TickEvent {
         private final BooleanSupplier haveTime;
         private final MinecraftServer server;
+
+        public ServerTickEvent() {
+            haveTime = null;
+            server = null;
+        }
 
         public ServerTickEvent(Phase phase, BooleanSupplier haveTime, MinecraftServer server)
         {
@@ -65,6 +76,7 @@ public class TickEvent extends Event
     }
 
     public static class ClientTickEvent extends TickEvent {
+        public ClientTickEvent() {}
         public ClientTickEvent(Phase phase)
         {
             super(Type.CLIENT, LogicalSide.CLIENT, phase);
@@ -74,6 +86,11 @@ public class TickEvent extends Event
     public static class LevelTickEvent extends TickEvent {
         public final Level level;
         private final BooleanSupplier haveTime;
+
+        public LevelTickEvent() {
+            level = null;
+            haveTime = null;
+        }
 
         public LevelTickEvent(LogicalSide side, Phase phase, Level level, BooleanSupplier haveTime)
         {
@@ -97,6 +114,10 @@ public class TickEvent extends Event
     public static class PlayerTickEvent extends TickEvent {
         public final Player player;
 
+        public PlayerTickEvent() {
+            player = null;
+        }
+
         public PlayerTickEvent(Phase phase, Player player)
         {
             super(Type.PLAYER, player instanceof ServerPlayer ? LogicalSide.SERVER : LogicalSide.CLIENT, phase);
@@ -106,6 +127,11 @@ public class TickEvent extends Event
 
     public static class RenderTickEvent extends TickEvent {
         public final float renderTickTime;
+
+        public RenderTickEvent() {
+            renderTickTime = 1F;
+        }
+
         public RenderTickEvent(Phase phase, float renderTickTime)
         {
             super(Type.RENDER, LogicalSide.CLIENT, phase);

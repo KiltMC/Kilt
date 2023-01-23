@@ -25,6 +25,8 @@ public class WandererTradesEvent extends Event
     protected List<ItemListing> generic;
     protected List<ItemListing> rare;
 
+    public WandererTradesEvent() {}
+
     public WandererTradesEvent(List<ItemListing> generic, List<ItemListing> rare)
     {
         this.generic = generic;

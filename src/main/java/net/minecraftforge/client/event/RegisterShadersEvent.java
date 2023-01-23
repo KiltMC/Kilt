@@ -32,6 +32,11 @@ public class RegisterShadersEvent extends Event implements IModBusEvent
     private final ResourceManager resourceManager;
     private final List<Pair<ShaderInstance, Consumer<ShaderInstance>>> shaderList;
 
+    public RegisterShadersEvent() {
+        resourceManager = null;
+        shaderList = null;
+    }
+
     @ApiStatus.Internal
     public RegisterShadersEvent(ResourceManager resourceManager, List<Pair<ShaderInstance, Consumer<ShaderInstance>>> shaderList)
     {

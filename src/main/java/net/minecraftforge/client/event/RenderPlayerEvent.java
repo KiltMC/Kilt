@@ -32,6 +32,14 @@ public abstract class RenderPlayerEvent extends PlayerEvent
     private final MultiBufferSource multiBufferSource;
     private final int packedLight;
 
+    public RenderPlayerEvent() {
+        renderer = null;
+        packedLight = 0;
+        partialTick = 0F;
+        poseStack = null;
+        multiBufferSource = null;
+    }
+
     @ApiStatus.Internal
     protected RenderPlayerEvent(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
     {
@@ -99,6 +107,8 @@ public abstract class RenderPlayerEvent extends PlayerEvent
     @Cancelable
     public static class Pre extends RenderPlayerEvent
     {
+        public Pre() {}
+
         @ApiStatus.Internal
         public Pre(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
         {
@@ -116,6 +126,8 @@ public abstract class RenderPlayerEvent extends PlayerEvent
      */
     public static class Post extends RenderPlayerEvent
     {
+        public Post() {}
+
         @ApiStatus.Internal
         public Post(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
         {

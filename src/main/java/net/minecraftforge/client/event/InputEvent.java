@@ -47,6 +47,10 @@ public abstract class InputEvent extends Event
         private final int action;
         private final int modifiers;
 
+        public MouseButton() {
+            button = action = modifiers = 0;
+        }
+
         @ApiStatus.Internal
         protected MouseButton(int button, int action, int modifiers)
         {
@@ -107,6 +111,7 @@ public abstract class InputEvent extends Event
         @Cancelable
         public static class Pre extends MouseButton
         {
+            public Pre() {}
             @ApiStatus.Internal
             public Pre(int button, int action, int modifiers)
             {
@@ -126,6 +131,7 @@ public abstract class InputEvent extends Event
          */
         public static class Post extends MouseButton
         {
+            public Post() {}
             @ApiStatus.Internal
             public Post(int button, int action, int modifiers)
             {
@@ -155,6 +161,11 @@ public abstract class InputEvent extends Event
         private final boolean leftDown;
         private final boolean middleDown;
         private final boolean rightDown;
+
+        public MouseScrollingEvent() {
+            scrollDelta = mouseX = mouseY = 0D;
+            leftDown = middleDown = rightDown = false;
+        }
 
         @ApiStatus.Internal
         public MouseScrollingEvent(double scrollDelta, boolean leftDown, boolean middleDown, boolean rightDown, double mouseX, double mouseY)
@@ -230,6 +241,10 @@ public abstract class InputEvent extends Event
         private final int scanCode;
         private final int action;
         private final int modifiers;
+
+        public Key() {
+            key = scanCode = action = modifiers = 0;
+        }
 
         @ApiStatus.Internal
         public Key(int key, int scanCode, int action, int modifiers)
@@ -319,6 +334,12 @@ public abstract class InputEvent extends Event
         private final KeyMapping keyMapping;
         private final InteractionHand hand;
         private boolean handSwing = true;
+
+        public InteractionKeyMappingTriggered() {
+            button = -1;
+            keyMapping = null;
+            hand = null;
+        }
 
         @ApiStatus.Internal
         public InteractionKeyMappingTriggered(int button, KeyMapping keyMapping, InteractionHand hand)

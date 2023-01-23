@@ -32,6 +32,12 @@ public class AnvilUpdateEvent extends Event
     private int materialCost;
     private final Player player;
 
+    public AnvilUpdateEvent() {
+        player = null;
+        left = right = null;
+        name = null;
+    }
+
     public AnvilUpdateEvent(ItemStack left, ItemStack right, String name, int cost, Player player)
     {
         this.left = left;

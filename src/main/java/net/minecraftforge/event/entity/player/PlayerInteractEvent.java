@@ -45,6 +45,12 @@ public class PlayerInteractEvent extends PlayerEvent
     private final Direction face;
     private InteractionResult cancellationResult = InteractionResult.PASS;
 
+    public PlayerInteractEvent() {
+        hand = null;
+        pos = null;
+        face = null;
+    }
+
     private PlayerInteractEvent(Player player, InteractionHand hand, BlockPos pos, @Nullable Direction face)
     {
         super(Preconditions.checkNotNull(player, "Null player in PlayerInteractEvent!"));
@@ -67,6 +73,11 @@ public class PlayerInteractEvent extends PlayerEvent
     {
         private final Vec3 localPos;
         private final Entity target;
+
+        public EntityInteractSpecific() {
+            localPos = null;
+            target = null;
+        }
 
         public EntityInteractSpecific(Player player, InteractionHand hand, Entity target, Vec3 localPos)
         {
@@ -110,6 +121,10 @@ public class PlayerInteractEvent extends PlayerEvent
     {
         private final Entity target;
 
+        public EntityInteract() {
+            target = null;
+        }
+
         public EntityInteract(Player player, InteractionHand hand, Entity target)
         {
             super(player, hand, target.blockPosition(), null);
@@ -141,6 +156,9 @@ public class PlayerInteractEvent extends PlayerEvent
         private Result useBlock = DEFAULT;
         private Result useItem = DEFAULT;
         private BlockHitResult hitVec;
+
+        public RightClickBlock() {
+        }
 
         public RightClickBlock(Player player, InteractionHand hand, BlockPos pos, BlockHitResult hitVec) {
             super(player, hand, pos, hitVec.getDirection());
@@ -214,6 +232,8 @@ public class PlayerInteractEvent extends PlayerEvent
     @Cancelable
     public static class RightClickItem extends PlayerInteractEvent
     {
+        public RightClickItem() {}
+
         public RightClickItem(Player player, InteractionHand hand)
         {
             super(player, hand, player.blockPosition(), null);
@@ -227,6 +247,8 @@ public class PlayerInteractEvent extends PlayerEvent
      */
     public static class RightClickEmpty extends PlayerInteractEvent
     {
+        public RightClickEmpty() {}
+
         public RightClickEmpty(Player player, InteractionHand hand)
         {
             super(player, hand, player.blockPosition(), null);
@@ -250,6 +272,8 @@ public class PlayerInteractEvent extends PlayerEvent
     {
         private Result useBlock = DEFAULT;
         private Result useItem = DEFAULT;
+
+        public LeftClickBlock() {}
 
         public LeftClickBlock(Player player, BlockPos pos, Direction face)
         {
@@ -301,6 +325,8 @@ public class PlayerInteractEvent extends PlayerEvent
      */
     public static class LeftClickEmpty extends PlayerInteractEvent
     {
+        public LeftClickEmpty() {}
+
         public LeftClickEmpty(Player player)
         {
             super(player, InteractionHand.MAIN_HAND, player.blockPosition(), null);

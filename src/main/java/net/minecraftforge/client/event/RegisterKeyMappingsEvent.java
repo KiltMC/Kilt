@@ -28,6 +28,10 @@ public class RegisterKeyMappingsEvent extends Event implements IModBusEvent
 {
     private final Options options;
 
+    public RegisterKeyMappingsEvent() {
+        options = null;
+    }
+
     @ApiStatus.Internal
     public RegisterKeyMappingsEvent(Options options)
     {

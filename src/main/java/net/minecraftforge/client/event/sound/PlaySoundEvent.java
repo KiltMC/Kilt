@@ -34,6 +34,11 @@ public class PlaySoundEvent extends SoundEvent
     @Nullable
     private SoundInstance sound;
 
+    public PlaySoundEvent() {
+        name = null;
+        originalSound = null;
+    }
+
     @ApiStatus.Internal
     public PlaySoundEvent(SoundEngine manager, SoundInstance sound)
     {

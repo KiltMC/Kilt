@@ -32,6 +32,13 @@ public class BonemealEvent extends PlayerEvent
     private final BlockState block;
     private final ItemStack stack;
 
+    public BonemealEvent() {
+        level = null;
+        pos = null;
+        block = null;
+        stack = null;
+    }
+
     public BonemealEvent(@NotNull Player player, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState block, @NotNull ItemStack stack)
     {
         super(player);

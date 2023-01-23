@@ -30,6 +30,13 @@ import org.jetbrains.annotations.NotNull;
  **/
 public class LivingEquipmentChangeEvent extends LivingEvent
 {
+    public LivingEquipmentChangeEvent() {
+        super(null);
+        slot = null;
+        from = null;
+        to = null;
+    }
+
     private final EquipmentSlot slot;
     private final ItemStack from;
     private final ItemStack to;

@@ -18,6 +18,11 @@ public class PlayerWakeUpEvent extends PlayerEvent
 
     private final boolean updateLevel;
 
+    public PlayerWakeUpEvent() {
+        wakeImmediately = false;
+        updateLevel = false;
+    }
+
     public PlayerWakeUpEvent(Player player, boolean wakeImmediately, boolean updateLevel)
     {
         super(player);

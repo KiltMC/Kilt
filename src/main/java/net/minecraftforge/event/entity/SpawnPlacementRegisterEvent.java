@@ -45,6 +45,10 @@ public class SpawnPlacementRegisterEvent extends Event implements IModBusEvent
 {
     private final Map<EntityType<?>, MergedSpawnPredicate<?>> map;
 
+    public SpawnPlacementRegisterEvent() {
+        map = null;
+    }
+
     @ApiStatus.Internal
     public SpawnPlacementRegisterEvent(Map<EntityType<?>, MergedSpawnPredicate<?>> map)
     {

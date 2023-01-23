@@ -29,6 +29,15 @@ public class EnchantmentLevelSetEvent extends net.minecraftforge.eventbus.api.Ev
     private final int originalLevel;
     private int enchantLevel;
 
+    public EnchantmentLevelSetEvent() {
+        level = null;
+        pos = null;
+        enchantRow = -1;
+        power = -1;
+        itemStack = ItemStack.EMPTY;
+        originalLevel = -1;
+    }
+
     public EnchantmentLevelSetEvent(Level level, BlockPos pos, int enchantRow, int power, @NotNull ItemStack itemStack, int enchantLevel)
     {
         this.level = level;

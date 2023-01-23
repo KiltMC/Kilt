@@ -35,6 +35,11 @@ import net.minecraftforge.event.entity.living.LivingChangeTargetEvent.LivingTarg
 @Deprecated(since = "1.19.2", forRemoval = true)
 public class LivingSetAttackTargetEvent extends LivingEvent
 {
+    public LivingSetAttackTargetEvent() {
+        targetType = null;
+        originalTarget = null;
+    }
+
     private final ILivingTargetType targetType;
     private final LivingEntity originalTarget;
     

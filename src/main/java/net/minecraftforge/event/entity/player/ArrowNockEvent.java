@@ -29,6 +29,13 @@ public class ArrowNockEvent extends PlayerEvent
     private final boolean hasAmmo;
     private InteractionResultHolder<ItemStack> action;
 
+    public ArrowNockEvent() {
+        bow = null;
+        hand = null;
+        level = null;
+        hasAmmo = false;
+    }
+
     public ArrowNockEvent(Player player, @NotNull ItemStack item, InteractionHand hand, Level level, boolean hasAmmo)
     {
         super(player);

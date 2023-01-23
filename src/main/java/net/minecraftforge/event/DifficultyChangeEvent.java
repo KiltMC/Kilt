@@ -24,6 +24,10 @@ public class DifficultyChangeEvent extends Event
     private final Difficulty difficulty;
     private final Difficulty oldDifficulty;
 
+    public DifficultyChangeEvent() {
+        difficulty = oldDifficulty = null;
+    }
+
     public DifficultyChangeEvent(Difficulty difficulty, Difficulty oldDifficulty)
     {
         this.difficulty = difficulty;

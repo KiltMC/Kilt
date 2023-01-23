@@ -31,6 +31,12 @@ public class ChunkWatchEvent extends Event
     private final ServerPlayer player;
     private final ChunkPos pos;
 
+    public ChunkWatchEvent() {
+        level = null;
+        player = null;
+        pos = null;
+    }
+
     public ChunkWatchEvent(ServerPlayer player, ChunkPos pos, ServerLevel level)
     {
         this.player = player;
@@ -80,6 +86,10 @@ public class ChunkWatchEvent extends Event
     {
         private final LevelChunk chunk;
 
+        public Watch() {
+            chunk = null;
+        }
+
         public Watch(ServerPlayer player, LevelChunk chunk, ServerLevel level)
         {
             super(player, chunk.getPos(), level);
@@ -105,6 +115,8 @@ public class ChunkWatchEvent extends Event
      **/
     public static class UnWatch extends ChunkWatchEvent
     {
+        public UnWatch() {}
+
         public UnWatch(ServerPlayer player, ChunkPos pos, ServerLevel level) {super(player, pos, level);}
     }
 }

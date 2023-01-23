@@ -27,6 +27,12 @@ import net.minecraftforge.eventbus.api.Cancelable;
 @Cancelable
 public class LivingDestroyBlockEvent extends LivingEvent
 {
+    public LivingDestroyBlockEvent() {
+        super(null);
+        pos = null;
+        state = null;
+    }
+
     private final BlockPos pos;
     private final BlockState state;
     

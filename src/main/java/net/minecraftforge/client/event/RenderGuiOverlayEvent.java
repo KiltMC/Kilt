@@ -30,6 +30,13 @@ public abstract class RenderGuiOverlayEvent extends Event
     private final float partialTick;
     private final NamedGuiOverlay overlay;
 
+    public RenderGuiOverlayEvent() {
+        window = null;
+        poseStack = null;
+        partialTick = 0F;
+        overlay = null;
+    }
+
     @ApiStatus.Internal
     protected RenderGuiOverlayEvent(Window window, PoseStack poseStack, float partialTick, NamedGuiOverlay overlay)
     {
@@ -74,6 +81,8 @@ public abstract class RenderGuiOverlayEvent extends Event
     @Cancelable
     public static class Pre extends RenderGuiOverlayEvent
     {
+        public Pre() {}
+
         @ApiStatus.Internal
         public Pre(Window window, PoseStack poseStack, float partialTick, NamedGuiOverlay overlay)
         {
@@ -91,6 +100,8 @@ public abstract class RenderGuiOverlayEvent extends Event
      */
     public static class Post extends RenderGuiOverlayEvent
     {
+        public Post() {}
+
         @ApiStatus.Internal
         public Post(Window window, PoseStack poseStack, float partialTick, NamedGuiOverlay overlay)
         {

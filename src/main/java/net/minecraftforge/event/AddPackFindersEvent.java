@@ -20,6 +20,11 @@ public class AddPackFindersEvent extends Event implements IModBusEvent
     private final PackType packType;
     private final Consumer<RepositorySource> sources;
 
+    public AddPackFindersEvent() {
+        packType = null;
+        sources = null;
+    }
+
     public AddPackFindersEvent(PackType packType, Consumer<RepositorySource> sources)
     {
         this.packType = packType;

@@ -31,6 +31,8 @@ public class CommandEvent extends Event
     @Nullable
     private Throwable exception;
 
+    public CommandEvent() {}
+
     public CommandEvent(ParseResults<CommandSourceStack> parse)
     {
         this.parse = parse;

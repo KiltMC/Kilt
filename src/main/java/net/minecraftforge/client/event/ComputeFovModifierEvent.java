@@ -30,6 +30,11 @@ public class ComputeFovModifierEvent extends Event
     private final float fovModifier;
     private float newFovModifier;
 
+    public ComputeFovModifierEvent() {
+        player = null;
+        fovModifier = 0F;
+    }
+
     @ApiStatus.Internal
     public ComputeFovModifierEvent(Player player, float fovModifier)
     {

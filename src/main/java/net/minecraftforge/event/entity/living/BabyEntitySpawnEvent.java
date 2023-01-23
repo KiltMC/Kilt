@@ -43,6 +43,12 @@ public class BabyEntitySpawnEvent extends net.minecraftforge.eventbus.api.Event
     private final Player causedByPlayer;
     private AgeableMob child;
 
+    public BabyEntitySpawnEvent() {
+        parentA = null;
+        parentB = null;
+        causedByPlayer = null;
+    }
+
     public BabyEntitySpawnEvent(Mob parentA, Mob parentB, @Nullable AgeableMob proposedChild)
     {
         //causedByPlayer calculated here to simplify the patch.

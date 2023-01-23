@@ -30,6 +30,10 @@ public class ChunkDataEvent extends ChunkEvent
 {
     private final CompoundTag data;
 
+    public ChunkDataEvent() {
+        data = null;
+    }
+
     public ChunkDataEvent(ChunkAccess chunk, CompoundTag data)
     {
         super(chunk);
@@ -62,6 +66,8 @@ public class ChunkDataEvent extends ChunkEvent
     {
         private ChunkStatus.ChunkType status;
 
+        public Load() {}
+
         public Load(ChunkAccess chunk, CompoundTag data, ChunkStatus.ChunkType status)
         {
             super(chunk, data);
@@ -87,6 +93,7 @@ public class ChunkDataEvent extends ChunkEvent
      **/
     public static class Save extends ChunkDataEvent
     {
+        public Save() {}
         public Save(ChunkAccess chunk, LevelAccessor world, CompoundTag data)
         {
             super(chunk, world, data);

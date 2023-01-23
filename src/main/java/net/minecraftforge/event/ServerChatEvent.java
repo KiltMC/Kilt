@@ -45,6 +45,12 @@ public class ServerChatEvent extends Event
     private final boolean canChangeMessage;
     private Component message;
 
+    public ServerChatEvent() {
+        player = null;
+        username = rawText = null;
+        canChangeMessage = false;
+    }
+
     @ApiStatus.Internal
     protected ServerChatEvent(ServerPlayer player, String rawText, Component message, boolean canChangeMessage)
     {
@@ -128,6 +134,8 @@ public class ServerChatEvent extends Event
      **/
     public static class Preview extends ServerChatEvent
     {
+        public Preview() {}
+
         @ApiStatus.Internal
         public Preview(ServerPlayer player, String rawText, Component message)
         {
@@ -165,6 +173,8 @@ public class ServerChatEvent extends Event
      **/
     public static class Submitted extends ServerChatEvent
     {
+        public Submitted() {}
+
         @ApiStatus.Internal
         public Submitted(ServerPlayer player, String rawText, Component message, boolean canChangeMessage)
         {

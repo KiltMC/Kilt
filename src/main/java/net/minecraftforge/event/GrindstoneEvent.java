@@ -17,6 +17,10 @@ public abstract class GrindstoneEvent extends Event
     private final ItemStack bottom;
     private int xp;
 
+    public GrindstoneEvent() {
+        top = bottom = null;
+    }
+
     protected GrindstoneEvent(ItemStack top, ItemStack bottom, int xp)
     {
         this.top = top;
@@ -83,6 +87,8 @@ public abstract class GrindstoneEvent extends Event
     {
         private ItemStack output;
 
+        public OnplaceItem() {}
+
         public OnplaceItem(ItemStack top, ItemStack bottom, int xp)
         {
             super(top, bottom, xp);
@@ -123,6 +129,8 @@ public abstract class GrindstoneEvent extends Event
     {
         private ItemStack newTop = ItemStack.EMPTY;
         private ItemStack newBottom = ItemStack.EMPTY;
+
+        public OnTakeItem() {}
 
         public OnTakeItem(ItemStack top, ItemStack bottom, int xp)
         {

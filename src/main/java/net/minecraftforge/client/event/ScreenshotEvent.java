@@ -39,6 +39,10 @@ public class ScreenshotEvent extends Event
 
     private Component resultMessage = null;
 
+    public ScreenshotEvent() {
+        image = null;
+    }
+
     @ApiStatus.Internal
     public ScreenshotEvent(NativeImage image, File screenshotFile)
     {

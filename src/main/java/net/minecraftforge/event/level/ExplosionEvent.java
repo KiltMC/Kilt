@@ -30,6 +30,11 @@ public class ExplosionEvent extends Event
     private final Level level;
     private final Explosion explosion;
 
+    public ExplosionEvent() {
+        level = null;
+        explosion = null;
+    }
+
     public ExplosionEvent(Level level, Explosion explosion)
     {
         this.level = level;
@@ -55,6 +60,7 @@ public class ExplosionEvent extends Event
     @Cancelable
     public static class Start extends ExplosionEvent
     {
+        public Start() {}
         public Start(Level level, Explosion explosion)
         {
             super(level, explosion);
@@ -70,6 +76,10 @@ public class ExplosionEvent extends Event
     public static class Detonate extends ExplosionEvent
     {
         private final List<Entity> entityList;
+
+        public Detonate() {
+            entityList = null;
+        }
 
         public Detonate(Level level, Explosion explosion, List<Entity> entityList)
         {

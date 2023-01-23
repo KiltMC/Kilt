@@ -17,6 +17,10 @@ public class SleepFinishedTimeEvent extends LevelEvent
     private long newTime;
     private final long minTime;
 
+    public SleepFinishedTimeEvent() {
+        minTime = -1;
+    }
+
     public SleepFinishedTimeEvent(ServerLevel level, long newTime, long minTime)
     {
         super(level);

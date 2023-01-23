@@ -11,6 +11,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import org.jetbrains.annotations.Nullable;
 
 public class LootingLevelEvent extends LivingEvent {
+    public LootingLevelEvent() {
+        damageSource = null;
+    }
 
     @Nullable
     private final DamageSource damageSource;

@@ -24,6 +24,10 @@ public class RecipesUpdatedEvent extends Event
 {
     private final RecipeManager recipeManager;
 
+    public RecipesUpdatedEvent() {
+        recipeManager = null;
+    }
+
     @ApiStatus.Internal
     public RecipesUpdatedEvent(RecipeManager recipeManager)
     {

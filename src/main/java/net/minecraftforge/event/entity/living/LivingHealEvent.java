@@ -28,6 +28,9 @@ import net.minecraft.world.entity.LivingEntity;
 @Cancelable
 public class LivingHealEvent extends LivingEvent
 {
+    public LivingHealEvent() {
+    }
+
     private float amount;
     public LivingHealEvent(LivingEntity entity, float amount)
     {

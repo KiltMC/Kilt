@@ -25,6 +25,10 @@ import xyz.bluspring.kilt.mixin.EntityAccessor;
  **/
 public class EntityEvent extends Event
 {
+    public EntityEvent() {
+        entity = null;
+    }
+
     private final Entity entity;
 
     public EntityEvent(Entity entity)
@@ -49,6 +53,7 @@ public class EntityEvent extends Event
      **/
     public static class EntityConstructing extends EntityEvent
     {
+        public EntityConstructing() {}
         public EntityConstructing(Entity entity)
         {
             super(entity);
@@ -72,6 +77,10 @@ public class EntityEvent extends Event
 
         private final long packedOldPos;
         private final long packedNewPos;
+
+        public EnteringSection() {
+            packedOldPos = packedNewPos = 0L;
+        }
 
         public EnteringSection(Entity entity, long packedOldPos, long packedNewPos)
         {
@@ -145,6 +154,12 @@ public class EntityEvent extends Event
         private EntityDimensions newSize;
         private final float oldEyeHeight;
         private float newEyeHeight;
+
+        public Size() {
+            pose = null;
+            oldSize = null;
+            oldEyeHeight = 0F;
+        }
 
         public Size(Entity entity, Pose pose, EntityDimensions size, float defaultEyeHeight)
         {

@@ -31,6 +31,13 @@ public class VanillaGameEvent extends Event
     private final Vec3 position;
     private final GameEvent.Context context;
 
+    public VanillaGameEvent() {
+        level = null;
+        vanillaEvent = null;
+        position = null;
+        context = null;
+    }
+
     public VanillaGameEvent(Level level, GameEvent vanillaEvent, Vec3 position, GameEvent.Context context)
     {
         this.level = level;

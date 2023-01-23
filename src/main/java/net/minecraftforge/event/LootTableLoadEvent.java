@@ -27,6 +27,10 @@ public class LootTableLoadEvent extends Event
     private LootTable table;
     private LootTables lootTableManager;
 
+    public LootTableLoadEvent() {
+        name = null;
+    }
+
     public LootTableLoadEvent(ResourceLocation name, LootTable table, LootTables lootTableManager)
     {
         this.name = name;

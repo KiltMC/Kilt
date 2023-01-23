@@ -35,6 +35,12 @@ public class RegisterRecipeBookCategoriesEvent extends Event implements IModBusE
     private final Map<RecipeBookType, ImmutableList<RecipeBookCategories>> typeCategories;
     private final Map<RecipeType<?>, Function<Recipe<?>, RecipeBookCategories>> recipeCategoryLookups;
 
+    public RegisterRecipeBookCategoriesEvent() {
+        aggregateCategories = null;
+        typeCategories = null;
+        recipeCategoryLookups = null;
+    }
+
     @ApiStatus.Internal
     public RegisterRecipeBookCategoriesEvent(
             Map<RecipeBookCategories, ImmutableList<RecipeBookCategories>> aggregateCategories,

@@ -40,6 +40,15 @@ public class RenderHandEvent extends Event
     private final float equipProgress;
     private final ItemStack stack;
 
+    public RenderHandEvent() {
+        hand = null;
+        multiBufferSource = null;
+        poseStack = null;
+        packedLight = -1;
+        partialTick = interpolatedPitch = swingProgress = equipProgress = 0F;
+        stack = null;
+    }
+
     @ApiStatus.Internal
     public RenderHandEvent(InteractionHand hand, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight,
                            float partialTick, float interpolatedPitch,

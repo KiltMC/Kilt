@@ -39,6 +39,15 @@ public class RenderItemInFrameEvent extends Event
     private final MultiBufferSource multiBufferSource;
     private final int packedLight;
 
+    public RenderItemInFrameEvent() {
+        itemStack = null;
+        itemFrameEntity = null;
+        renderer = null;
+        poseStack = null;
+        multiBufferSource = null;
+        packedLight = 0;
+    }
+
     @ApiStatus.Internal
     public RenderItemInFrameEvent(ItemFrame itemFrame, ItemFrameRenderer<?> renderItemFrame, PoseStack poseStack,
                                   MultiBufferSource multiBufferSource, int packedLight)

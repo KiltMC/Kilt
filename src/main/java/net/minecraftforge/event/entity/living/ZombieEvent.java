@@ -23,6 +23,10 @@ import net.minecraftforge.eventbus.api.Cancelable;
 public class ZombieEvent extends EntityEvent {
     private final Zombie zombie;
 
+    public ZombieEvent() {
+        zombie = null;
+    }
+
     public ZombieEvent(Zombie zombie)
     {
         super(zombie);
@@ -68,6 +72,13 @@ public class ZombieEvent extends EntityEvent {
         private final int z;
         private final LivingEntity attacker;
         private final double summonChance;
+
+        public SummonAidEvent() {
+            level = null;
+            x = y = z = 0;
+            attacker = null;
+            summonChance = -1D;
+        }
 
         public SummonAidEvent(Zombie zombie, Level level, int x, int y, int z, LivingEntity attacker, double summonChance)
         {

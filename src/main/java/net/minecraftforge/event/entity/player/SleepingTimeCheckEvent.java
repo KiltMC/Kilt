@@ -26,6 +26,10 @@ public class SleepingTimeCheckEvent extends PlayerEvent
 {
     private final Optional<BlockPos> sleepingLocation;
 
+    public SleepingTimeCheckEvent() {
+        sleepingLocation = Optional.empty();
+    }
+
     public SleepingTimeCheckEvent(Player player, Optional<BlockPos> sleepingLocation)
     {
         super(player);

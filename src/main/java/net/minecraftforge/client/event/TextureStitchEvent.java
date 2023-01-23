@@ -28,6 +28,10 @@ public class TextureStitchEvent extends Event implements IModBusEvent
 {
     private final TextureAtlas atlas;
 
+    public TextureStitchEvent() {
+        atlas = null;
+    }
+
     @ApiStatus.Internal
     public TextureStitchEvent(TextureAtlas atlas)
     {
@@ -54,6 +58,10 @@ public class TextureStitchEvent extends Event implements IModBusEvent
     public static class Pre extends TextureStitchEvent
     {
         private final Set<ResourceLocation> sprites;
+
+        public Pre() {
+            sprites = null;
+        }
 
         @ApiStatus.Internal
         public Pre(TextureAtlas map, Set<ResourceLocation> sprites)
@@ -86,6 +94,8 @@ public class TextureStitchEvent extends Event implements IModBusEvent
      */
     public static class Post extends TextureStitchEvent
     {
+        public Post() {}
+
         @ApiStatus.Internal
         public Post(TextureAtlas map)
         {

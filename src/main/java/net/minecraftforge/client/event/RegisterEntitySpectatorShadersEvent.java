@@ -29,6 +29,10 @@ public class RegisterEntitySpectatorShadersEvent extends Event implements IModBu
 {
     private final Map<EntityType<?>, ResourceLocation> shaders;
 
+    public RegisterEntitySpectatorShadersEvent() {
+        shaders = null;
+    }
+
     @ApiStatus.Internal
     public RegisterEntitySpectatorShadersEvent(Map<EntityType<?>, ResourceLocation> shaders)
     {

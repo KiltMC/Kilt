@@ -13,6 +13,10 @@ public class ServerLifecycleEvent extends Event
 
     protected final MinecraftServer server;
 
+    public ServerLifecycleEvent() {
+        server = null;
+    }
+
     public ServerLifecycleEvent(MinecraftServer server)
     {
         this.server = server;

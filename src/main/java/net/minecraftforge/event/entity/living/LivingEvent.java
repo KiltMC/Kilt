@@ -23,6 +23,11 @@ import org.jetbrains.annotations.Nullable;
  **/
 public class LivingEvent extends EntityEvent
 {
+    public LivingEvent() {
+        super(null);
+        livingEntity = null;
+    }
+
     private final LivingEntity livingEntity;
 
     public LivingEvent(LivingEntity entity)
@@ -52,6 +57,7 @@ public class LivingEvent extends EntityEvent
     @Cancelable
     public static class LivingTickEvent extends LivingEvent
     {
+        public LivingTickEvent() {}
         public LivingTickEvent(LivingEntity e){ super(e); }
     }
 
@@ -71,6 +77,7 @@ public class LivingEvent extends EntityEvent
      **/
     public static class LivingJumpEvent extends LivingEvent
     {
+        public LivingJumpEvent() {}
         public LivingJumpEvent(LivingEntity e){ super(e); }
     }
 
@@ -80,6 +87,9 @@ public class LivingEvent extends EntityEvent
         @Nullable
         private final Entity lookingEntity;
 
+        public LivingVisibilityEvent() {
+            lookingEntity = null;
+        }
         public LivingVisibilityEvent(LivingEntity livingEntity, @Nullable Entity lookingEntity, double originalMultiplier)
         {
             super(livingEntity);

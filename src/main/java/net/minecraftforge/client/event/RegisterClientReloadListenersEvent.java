@@ -31,6 +31,10 @@ public class RegisterClientReloadListenersEvent extends Event implements IModBus
 {
     private final ReloadableResourceManager resourceManager;
 
+    public RegisterClientReloadListenersEvent() {
+        resourceManager = null;
+    }
+
     @ApiStatus.Internal
     public RegisterClientReloadListenersEvent(ReloadableResourceManager resourceManager)
     {

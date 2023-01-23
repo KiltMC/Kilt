@@ -29,6 +29,12 @@ public class PlayerNegotiationEvent extends Event
     private final GameProfile profile;
     private final List<Future<Void>> futures;
 
+    public PlayerNegotiationEvent() {
+        connection = null;
+        profile = null;
+        futures = null;
+    }
+
     public PlayerNegotiationEvent(Connection connection, GameProfile profile, List<Future<Void>> futures)
     {
         this.connection = connection;

@@ -26,6 +26,10 @@ public class RegisterGameTestsEvent extends Event implements IModBusEvent
 {
     private final Set<Method> gameTestMethods;
 
+    public RegisterGameTestsEvent() {
+        gameTestMethods = null;
+    }
+
     public RegisterGameTestsEvent(Set<Method> gameTestMethods)
     {
         this.gameTestMethods = gameTestMethods;

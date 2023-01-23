@@ -36,6 +36,12 @@ public abstract class ViewportEvent extends Event
     private final Camera camera;
     private final double partialTick;
 
+    public ViewportEvent() {
+        renderer = null;
+        camera = null;
+        partialTick = 0D;
+    }
+
     @ApiStatus.Internal
     public ViewportEvent(GameRenderer renderer, Camera camera, double partialTick)
     {
@@ -85,6 +91,11 @@ public abstract class ViewportEvent extends Event
         private float farPlaneDistance;
         private float nearPlaneDistance;
         private FogShape fogShape;
+
+        public RenderFog() {
+            type = null;
+            mode = null;
+        }
 
         @ApiStatus.Internal
         public RenderFog(FogMode mode, FogType type, Camera camera, float partialTicks, float nearPlaneDistance, float farPlaneDistance, FogShape fogShape)
@@ -204,6 +215,8 @@ public abstract class ViewportEvent extends Event
         private float green;
         private float blue;
 
+        public ComputeFogColor() {}
+
         @ApiStatus.Internal
         public ComputeFogColor(Camera camera, float partialTicks, float red, float green, float blue)
         {
@@ -282,6 +295,8 @@ public abstract class ViewportEvent extends Event
         private float yaw;
         private float pitch;
         private float roll;
+
+        public ComputeCameraAngles() {}
 
         @ApiStatus.Internal
         public ComputeCameraAngles(GameRenderer renderer, Camera camera, double renderPartialTicks, float yaw, float pitch, float roll)
@@ -362,6 +377,10 @@ public abstract class ViewportEvent extends Event
     {
         private final boolean usedConfiguredFov;
         private double fov;
+
+        public ComputeFov() {
+            usedConfiguredFov = false;
+        }
 
         @ApiStatus.Internal
         public ComputeFov(GameRenderer renderer, Camera camera, double renderPartialTicks, double fov, boolean usedConfiguredFov)

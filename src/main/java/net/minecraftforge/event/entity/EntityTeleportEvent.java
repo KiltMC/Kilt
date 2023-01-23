@@ -35,6 +35,8 @@ public class EntityTeleportEvent extends EntityEvent
     protected double targetY;
     protected double targetZ;
 
+    public EntityTeleportEvent() {}
+
     public EntityTeleportEvent(Entity entity, double targetX, double targetY, double targetZ) {
         super(entity);
         this.targetX = targetX;
@@ -72,6 +74,8 @@ public class EntityTeleportEvent extends EntityEvent
     @Cancelable
     public static class TeleportCommand extends EntityTeleportEvent
     {
+        public TeleportCommand() {}
+
         public TeleportCommand(Entity entity, double targetX, double targetY, double targetZ)
         {
             super(entity, targetX, targetY, targetZ);
@@ -96,6 +100,8 @@ public class EntityTeleportEvent extends EntityEvent
     @Cancelable
     public static class SpreadPlayersCommand extends EntityTeleportEvent
     {
+        public SpreadPlayersCommand() {}
+
         public SpreadPlayersCommand(Entity entity, double targetX, double targetY, double targetZ)
         {
             super(entity, targetX, targetY, targetZ);
@@ -120,6 +126,10 @@ public class EntityTeleportEvent extends EntityEvent
     public static class EnderEntity extends EntityTeleportEvent
     {
         private final LivingEntity entityLiving;
+
+        public EnderEntity() {
+            entityLiving = null;
+        }
 
         public EnderEntity(LivingEntity entity, double targetX, double targetY, double targetZ)
         {
@@ -155,6 +165,12 @@ public class EntityTeleportEvent extends EntityEvent
         private float attackDamage;
         @Nullable
         private final HitResult hitResult; // TODO - 1.20: make the hit result nonnull, remove the other constructor
+
+        public EnderPearl() {
+            player = null;
+            pearlEntity = null;
+            hitResult = null;
+        }
 
         @ApiStatus.Internal
         public EnderPearl(ServerPlayer entity, double targetX, double targetY, double targetZ, ThrownEnderpearl pearlEntity, float attackDamage, @Nullable HitResult hitResult)
@@ -221,6 +237,10 @@ public class EntityTeleportEvent extends EntityEvent
     public static class ChorusFruit extends EntityTeleportEvent
     {
         private final LivingEntity entityLiving;
+
+        public ChorusFruit() {
+            entityLiving = null;
+        }
 
         public ChorusFruit(LivingEntity entity, double targetX, double targetY, double targetZ)
         {

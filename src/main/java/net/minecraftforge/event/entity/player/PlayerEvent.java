@@ -38,6 +38,10 @@ public class PlayerEvent extends LivingEvent
 {
     private final Player player;
 
+    public PlayerEvent() {
+        player = null;
+    }
+
     public PlayerEvent(Player player)
     {
         super(player);
@@ -71,6 +75,10 @@ public class PlayerEvent extends LivingEvent
         private final BlockState state;
         private boolean success;
 
+        public HarvestCheck() {
+            state = null;
+        }
+
         public HarvestCheck(Player player, BlockState state, boolean success)
         {
             super(player);
@@ -86,7 +94,7 @@ public class PlayerEvent extends LivingEvent
     /**
      * BreakSpeed is fired when a player attempts to harvest a block.<br>
      * This event is fired whenever a player attempts to harvest a block in
-     * {@link Player#getDigSpeed(BlockState, BlockPos)}.<br>
+     * .<br>
      * <br>
      * This event is fired via the {@link ForgeEventFactory#getBreakSpeed(Player, BlockState, float, BlockPos)}.<br>
      * <br>
@@ -111,6 +119,12 @@ public class PlayerEvent extends LivingEvent
         private float newSpeed = 0.0f;
         private final Optional<BlockPos> pos; // Y position of -1 notes unknown location
 
+        public BreakSpeed() {
+            state = null;
+            originalSpeed = 0F;
+            pos = Optional.empty();
+        }
+
         public BreakSpeed(Player player, BlockState state, float original, @Nullable BlockPos pos)
         {
             super(player);
@@ -131,7 +145,7 @@ public class PlayerEvent extends LivingEvent
     /**
      * NameFormat is fired when a player's display name is retrieved.<br>
      * This event is fired whenever a player's name is retrieved in
-     * {@link Player#getDisplayName()} or {@link Player#refreshDisplayName()}.<br>
+     * {@link Player#getDisplayName()} or .<br>
      * <br>
      * This event is fired via the {@link ForgeEventFactory#getPlayerDisplayName(Player, Component)}.<br>
      * <br>
@@ -148,6 +162,10 @@ public class PlayerEvent extends LivingEvent
     {
         private final Component username;
         private Component displayname;
+
+        public NameFormat() {
+            username = null;
+        }
 
         public NameFormat(Player player, Component username)
         {
@@ -175,7 +193,7 @@ public class PlayerEvent extends LivingEvent
     /**
      * TabListNameFormat is fired when a player's display name for the tablist is retrieved.<br>
      * This event is fired whenever a player's display name for the tablist is retrieved in
-     * {@link ServerPlayer#getTabListDisplayName()} or {@link ServerPlayer#refreshTabListName()}.<br>
+     * {@link ServerPlayer#getTabListDisplayName()} or .<br>
      * <br>
      * This event is fired via the {@link ForgeEventFactory#getPlayerTabListDisplayName(Player)}.<br>
      * <br>
@@ -191,6 +209,8 @@ public class PlayerEvent extends LivingEvent
     {
         @Nullable
         private Component displayName;
+
+        public TabListNameFormat() {}
 
         public TabListNameFormat(Player player)
         {
@@ -217,6 +237,11 @@ public class PlayerEvent extends LivingEvent
     {
         private final Player original;
         private final boolean wasDeath;
+
+        public Clone() {
+            original = null;
+            wasDeath = false;
+        }
 
         public Clone(Player _new, Player oldPlayer, boolean wasDeath)
         {
@@ -251,6 +276,10 @@ public class PlayerEvent extends LivingEvent
 
         private final Entity target;
 
+        public StartTracking() {
+            target = null;
+        }
+
         public StartTracking(Player player, Entity target)
         {
             super(player);
@@ -273,6 +302,10 @@ public class PlayerEvent extends LivingEvent
     public static class StopTracking extends PlayerEvent {
 
         private final Entity target;
+
+        public StopTracking() {
+            target = null;
+        }
 
         public StopTracking(Player player, Entity target)
         {
@@ -298,6 +331,11 @@ public class PlayerEvent extends LivingEvent
     public static class LoadFromFile extends PlayerEvent {
         private final File playerDirectory;
         private final String playerUUID;
+
+        public LoadFromFile() {
+            playerDirectory = null;
+            playerUUID = null;
+        }
 
         public LoadFromFile(Player player, File originDirectory, String playerUUID)
         {
@@ -351,6 +389,11 @@ public class PlayerEvent extends LivingEvent
         private final File playerDirectory;
         private final String playerUUID;
 
+        public SaveToFile() {
+            playerDirectory = null;
+            playerUUID = null;
+        }
+
         public SaveToFile(Player player, File originDirectory, String playerUUID)
         {
             super(player);
@@ -396,6 +439,12 @@ public class PlayerEvent extends LivingEvent
          * Clone item stack, containing the item and amount picked up
          */
         private final ItemStack stack;
+
+        public ItemPickupEvent() {
+            originalEntity = null;
+            stack = null;
+        }
+
         public ItemPickupEvent(Player player, ItemEntity entPickedUp, ItemStack stack)
         {
             super(player);
@@ -416,6 +465,12 @@ public class PlayerEvent extends LivingEvent
         @NotNull
         private final ItemStack crafting;
         private final Container craftMatrix;
+
+        public ItemCraftedEvent() {
+            crafting = ItemStack.EMPTY;
+            craftMatrix = null;
+        }
+
         public ItemCraftedEvent(Player player, @NotNull ItemStack crafting, Container craftMatrix)
         {
             super(player);
@@ -438,6 +493,11 @@ public class PlayerEvent extends LivingEvent
     public static class ItemSmeltedEvent extends PlayerEvent {
         @NotNull
         private final ItemStack smelting;
+
+        public ItemSmeltedEvent() {
+            smelting = ItemStack.EMPTY;
+        }
+
         public ItemSmeltedEvent(Player player, @NotNull ItemStack crafting)
         {
             super(player);
@@ -452,6 +512,7 @@ public class PlayerEvent extends LivingEvent
     }
 
     public static class PlayerLoggedInEvent extends PlayerEvent {
+        public PlayerLoggedInEvent() {}
         public PlayerLoggedInEvent(Player player)
         {
             super(player);
@@ -459,6 +520,7 @@ public class PlayerEvent extends LivingEvent
     }
 
     public static class PlayerLoggedOutEvent extends PlayerEvent {
+        public PlayerLoggedOutEvent() {}
         public PlayerLoggedOutEvent(Player player)
         {
             super(player);
@@ -468,6 +530,9 @@ public class PlayerEvent extends LivingEvent
     public static class PlayerRespawnEvent extends PlayerEvent {
         private final boolean endConquered;
 
+        public PlayerRespawnEvent() {
+            endConquered = false;
+        }
         public PlayerRespawnEvent(Player player, boolean endConquered)
         {
             super(player);
@@ -489,6 +554,10 @@ public class PlayerEvent extends LivingEvent
     public static class PlayerChangedDimensionEvent extends PlayerEvent {
         private final ResourceKey<Level> fromDim;
         private final ResourceKey<Level> toDim;
+
+        public PlayerChangedDimensionEvent() {
+            fromDim = toDim = null;
+        }
         public PlayerChangedDimensionEvent(Player player, ResourceKey<Level> fromDim, ResourceKey<Level> toDim)
         {
             super(player);
@@ -516,6 +585,10 @@ public class PlayerEvent extends LivingEvent
     {
         private final GameType currentGameMode;
         private GameType newGameMode;
+
+        public PlayerChangeGameModeEvent() {
+            currentGameMode = null;
+        }
 
         public PlayerChangeGameModeEvent(Player player, GameType currentGameMode, GameType newGameMode)
         {

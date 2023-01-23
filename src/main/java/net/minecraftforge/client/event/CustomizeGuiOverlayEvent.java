@@ -29,6 +29,12 @@ public abstract class CustomizeGuiOverlayEvent extends Event
     private final PoseStack poseStack;
     private final float partialTick;
 
+    public CustomizeGuiOverlayEvent() {
+        window = null;
+        poseStack = null;
+        partialTick = 0F;
+    }
+
     @ApiStatus.Internal
     protected CustomizeGuiOverlayEvent(Window window, PoseStack poseStack, float partialTick)
     {
@@ -68,6 +74,11 @@ public abstract class CustomizeGuiOverlayEvent extends Event
         private final int x;
         private final int y;
         private int increment;
+
+        public BossEventProgress() {
+            bossEvent = null;
+            x = y = 0;
+        }
 
         @ApiStatus.Internal
         public BossEventProgress(Window window, PoseStack poseStack, float partialTick, LerpingBossEvent bossEvent, int x, int y, int increment)
@@ -136,6 +147,10 @@ public abstract class CustomizeGuiOverlayEvent extends Event
         private final ArrayList<String> left;
         private final ArrayList<String> right;
 
+        public DebugText() {
+            left = right = null;
+        }
+
         @ApiStatus.Internal
         public DebugText(Window window, PoseStack poseStack, float partialTick, ArrayList<String> left, ArrayList<String> right)
         {
@@ -173,6 +188,8 @@ public abstract class CustomizeGuiOverlayEvent extends Event
     {
         private int posX;
         private int posY;
+
+        public Chat() {}
 
         @ApiStatus.Internal
         public Chat(Window window, PoseStack poseStack, float partialTick, int posX, int posY)

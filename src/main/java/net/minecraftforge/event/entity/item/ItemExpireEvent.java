@@ -20,6 +20,9 @@ public class ItemExpireEvent extends ItemEvent
 
     private int extraLife;
 
+    public ItemExpireEvent() {
+    }
+
     /**
      * Creates a new event for an expiring EntityItem.
      * 

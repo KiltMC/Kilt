@@ -24,6 +24,7 @@ import net.minecraftforge.eventbus.api.Event.HasResult;
 @HasResult
 public class EntityMobGriefingEvent extends EntityEvent
 {
+    public EntityMobGriefingEvent() {}
     public EntityMobGriefingEvent(Entity entity)
     {
         super(entity);

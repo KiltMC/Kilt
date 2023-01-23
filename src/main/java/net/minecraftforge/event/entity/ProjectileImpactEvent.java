@@ -26,6 +26,11 @@ public class ProjectileImpactEvent extends EntityEvent
     private final HitResult ray;
     private final Projectile projectile;
 
+    public ProjectileImpactEvent() {
+        ray = null;
+        projectile = null;
+    }
+
     public ProjectileImpactEvent(Projectile projectile, HitResult ray)
     {
         super(projectile);

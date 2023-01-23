@@ -28,6 +28,10 @@ public class ItemFishedEvent extends PlayerEvent
     private final FishingHook hook;
     private int rodDamage;
 
+    public ItemFishedEvent() {
+        hook = null;
+    }
+
     public ItemFishedEvent(List<ItemStack> stacks, int rodDamage, FishingHook hook)
     {
         super(hook.getPlayerOwner());

@@ -19,6 +19,10 @@ public class PermissionsChangedEvent extends PlayerEvent
     private final int newLevel;
     private final int oldLevel;
 
+    public PermissionsChangedEvent() {
+        oldLevel = newLevel = -1;
+    }
+
     public PermissionsChangedEvent(ServerPlayer player, int newLevel, int oldLevel)
     {
         super(player);

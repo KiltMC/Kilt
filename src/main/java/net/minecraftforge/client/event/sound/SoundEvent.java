@@ -27,6 +27,10 @@ public abstract class SoundEvent extends Event
 {
     private final SoundEngine engine;
 
+    public SoundEvent() {
+        engine = null;
+    }
+
     @ApiStatus.Internal
     protected SoundEvent(SoundEngine engine)
     {
@@ -55,6 +59,12 @@ public abstract class SoundEvent extends Event
         private final SoundInstance sound;
         private final Channel channel;
         private final String name;
+
+        public SoundSourceEvent() {
+            sound = null;
+            channel = null;
+            name = null;
+        }
 
         @ApiStatus.Internal
         protected SoundSourceEvent(SoundEngine engine, SoundInstance sound, Channel channel)

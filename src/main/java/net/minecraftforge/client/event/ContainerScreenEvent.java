@@ -27,6 +27,10 @@ public abstract class ContainerScreenEvent extends Event
 {
     private final AbstractContainerScreen<?> containerScreen;
 
+    public ContainerScreenEvent() {
+        containerScreen = null;
+    }
+
     @ApiStatus.Internal
     protected ContainerScreenEvent(AbstractContainerScreen<?> containerScreen)
     {
@@ -56,6 +60,11 @@ public abstract class ContainerScreenEvent extends Event
         private final PoseStack poseStack;
         private final int mouseX;
         private final int mouseY;
+
+        public Render() {
+            poseStack = null;
+            mouseX = mouseY = 0;
+        }
 
         @ApiStatus.Internal
         protected Render(AbstractContainerScreen<?> guiContainer, PoseStack poseStack, int mouseX, int mouseY)
@@ -104,6 +113,8 @@ public abstract class ContainerScreenEvent extends Event
          */
         public static class Foreground extends Render
         {
+            public Foreground() {}
+
             @ApiStatus.Internal
             public Foreground(AbstractContainerScreen<?> guiContainer, PoseStack poseStack, int mouseX, int mouseY)
             {
@@ -122,6 +133,8 @@ public abstract class ContainerScreenEvent extends Event
          */
         public static class Background extends Render
         {
+            public Background() {}
+
             @ApiStatus.Internal
             public Background(AbstractContainerScreen<?> guiContainer, PoseStack poseStack, int mouseX, int mouseY)
             {

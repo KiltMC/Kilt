@@ -34,6 +34,11 @@ import net.minecraft.world.entity.LivingEntity;
 @Cancelable
 public class LivingDeathEvent extends LivingEvent
 {
+    public LivingDeathEvent() {
+        super(null);
+        source = null;
+    }
+
     private final DamageSource source;
     public LivingDeathEvent(LivingEntity entity, DamageSource source)
     {

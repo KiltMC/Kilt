@@ -25,6 +25,10 @@ public class AdvancementEvent extends PlayerEvent
 {
     private final Advancement advancement;
 
+    public AdvancementEvent() {
+        advancement = null;
+    }
+
     public AdvancementEvent(Player player, Advancement advancement)
     {
         super(player);
@@ -53,6 +57,10 @@ public class AdvancementEvent extends PlayerEvent
     public static class AdvancementEarnEvent extends PlayerEvent
     {
         private final Advancement advancement;
+
+        public AdvancementEarnEvent() {
+            advancement = null;
+        }
 
         public AdvancementEarnEvent(Player player, Advancement earned)
         {
@@ -89,6 +97,13 @@ public class AdvancementEvent extends PlayerEvent
         private final AdvancementProgress advancementProgress;
         private final String criterionName;
         private final AdvancementEvent.AdvancementProgressEvent.ProgressType progressType;
+
+        public AdvancementProgressEvent() {
+            advancement = null;
+            advancementProgress = null;
+            criterionName = null;
+            progressType = null;
+        }
 
         public AdvancementProgressEvent(Player player, Advancement progressed, AdvancementProgress advancementProgress, String criterionName, AdvancementEvent.AdvancementProgressEvent.ProgressType progressType)
         {

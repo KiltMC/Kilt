@@ -40,6 +40,15 @@ public abstract class RenderLivingEvent<T extends LivingEntity, M extends Entity
     private final MultiBufferSource multiBufferSource;
     private final int packedLight;
 
+    public RenderLivingEvent() {
+        entity = null;
+        renderer = null;
+        partialTick = 0F;
+        poseStack = null;
+        multiBufferSource = null;
+        packedLight = 0;
+    }
+
     @ApiStatus.Internal
     protected RenderLivingEvent(LivingEntity entity, LivingEntityRenderer<T, M> renderer, float partialTick, PoseStack poseStack,
                                 MultiBufferSource multiBufferSource, int packedLight)
@@ -119,6 +128,8 @@ public abstract class RenderLivingEvent<T extends LivingEntity, M extends Entity
     @Cancelable
     public static class Pre<T extends LivingEntity, M extends EntityModel<T>> extends RenderLivingEvent<T, M>
     {
+        public Pre() {}
+
         @ApiStatus.Internal
         public Pre(LivingEntity entity, LivingEntityRenderer<T, M> renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
         {
@@ -139,6 +150,8 @@ public abstract class RenderLivingEvent<T extends LivingEntity, M extends Entity
      */
     public static class Post<T extends LivingEntity, M extends EntityModel<T>> extends RenderLivingEvent<T, M>
     {
+        public Post() {}
+
         @ApiStatus.Internal
         public Post(LivingEntity entity, LivingEntityRenderer<T, M> renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
         {

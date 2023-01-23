@@ -24,6 +24,10 @@ public class MobEffectEvent extends LivingEvent
     @Nullable
     protected final MobEffectInstance effectInstance;
 
+    public MobEffectEvent() {
+        effectInstance = null;
+    }
+
     public MobEffectEvent(LivingEntity living, MobEffectInstance effectInstance)
     {
         super(living);
@@ -45,6 +49,10 @@ public class MobEffectEvent extends LivingEvent
     public static class Remove extends MobEffectEvent
     {
         private final MobEffect effect;
+
+        public Remove() {
+            effect = null;
+        }
 
         public Remove(LivingEntity living, MobEffect effect)
         {
@@ -89,6 +97,8 @@ public class MobEffectEvent extends LivingEvent
     @HasResult
     public static class Applicable extends MobEffectEvent
     {
+        public Applicable() {}
+
         public Applicable(LivingEntity living, @NotNull MobEffectInstance effectInstance)
         {
             super(living, effectInstance);
@@ -112,6 +122,11 @@ public class MobEffectEvent extends LivingEvent
     {
         private final MobEffectInstance oldEffectInstance;
         private final Entity source;
+
+        public Added() {
+            oldEffectInstance = null;
+            source = null;
+        }
 
         public Added(LivingEntity living, MobEffectInstance oldEffectInstance, MobEffectInstance newEffectInstance, Entity source)
         {
@@ -156,6 +171,7 @@ public class MobEffectEvent extends LivingEvent
      */
     public static class Expired extends MobEffectEvent
     {
+        public Expired() {}
         public Expired(LivingEntity living, MobEffectInstance effectInstance)
         {
             super(living, effectInstance);

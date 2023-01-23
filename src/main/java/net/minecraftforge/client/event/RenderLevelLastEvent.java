@@ -37,6 +37,14 @@ public class RenderLevelLastEvent extends net.minecraftforge.eventbus.api.Event
     private final Matrix4f projectionMatrix;
     private final long startNanos;
 
+    public RenderLevelLastEvent() {
+        levelRenderer = null;
+        poseStack = null;
+        partialTick = 0F;
+        projectionMatrix = null;
+        startNanos = 0L;
+    }
+
     @ApiStatus.Internal
     public RenderLevelLastEvent(LevelRenderer levelRenderer, PoseStack poseStack, float partialTick, Matrix4f projectionMatrix, long startNanos)
     {

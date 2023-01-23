@@ -21,6 +21,11 @@ public abstract class PistonEvent extends BlockEvent
     private final Direction direction;
     private final PistonMoveType moveType;
 
+    public PistonEvent() {
+        direction = null;
+        moveType = null;
+    }
+
     /**
      * @param pos - The position of the piston
      * @param direction - The move direction of the piston
@@ -74,6 +79,7 @@ public abstract class PistonEvent extends BlockEvent
      */
     public static class Post extends PistonEvent
     {
+        public Post() {}
 
         public Post(Level world, BlockPos pos, Direction direction, PistonMoveType moveType)
         {
@@ -88,6 +94,7 @@ public abstract class PistonEvent extends BlockEvent
     @Cancelable
     public static class Pre extends PistonEvent
     {
+        public Pre() {}
 
         public Pre(Level world, BlockPos pos, Direction direction, PistonMoveType moveType)
         {

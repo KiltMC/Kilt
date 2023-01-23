@@ -24,6 +24,11 @@ public class EnderManAngerEvent extends LivingEvent
 {
     private final Player player;
 
+    public EnderManAngerEvent() {
+        super(null);
+        player = null;
+    }
+
     public EnderManAngerEvent(EnderMan enderman, Player player)
     {
         super(enderman);

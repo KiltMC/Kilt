@@ -21,6 +21,11 @@ public class OnDatapackSyncEvent extends Event
     @Nullable
     private final ServerPlayer player;
 
+    public OnDatapackSyncEvent() {
+        player = null;
+        playerList = null;
+    }
+
     public OnDatapackSyncEvent(PlayerList playerList, @Nullable ServerPlayer player)
     {
         this.playerList = playerList;

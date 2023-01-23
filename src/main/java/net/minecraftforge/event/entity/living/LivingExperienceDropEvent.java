@@ -18,6 +18,11 @@ import org.jetbrains.annotations.Nullable;
 @Cancelable
 public class LivingExperienceDropEvent extends LivingEvent
 {
+    public LivingExperienceDropEvent() {
+        attackingPlayer = null;
+        originalExperiencePoints = -1;
+    }
+
     @Nullable private final Player attackingPlayer;
     private final int originalExperiencePoints;
 

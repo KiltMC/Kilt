@@ -41,6 +41,12 @@ public abstract class RenderTooltipEvent extends net.minecraftforge.eventbus.api
     protected Font font;
     protected final List<ClientTooltipComponent> components;
 
+    public RenderTooltipEvent() {
+        itemStack = ItemStack.EMPTY;
+        poseStack = null;
+        components = null;
+    }
+
     @ApiStatus.Internal
     protected RenderTooltipEvent(@NotNull ItemStack itemStack, PoseStack poseStack, int x, int y, @NotNull Font font, @NotNull List<ClientTooltipComponent> components)
     {
@@ -125,6 +131,12 @@ public abstract class RenderTooltipEvent extends net.minecraftforge.eventbus.api
         private final int screenHeight;
         private final List<Either<FormattedText, TooltipComponent>> tooltipElements;
         private int maxWidth;
+
+        public GatherComponents() {
+            itemStack = null;
+            screenHeight = screenWidth = 0;
+            tooltipElements = null;
+        }
 
         @ApiStatus.Internal
         public GatherComponents(ItemStack itemStack, int screenWidth, int screenHeight, List<Either<FormattedText, TooltipComponent>> tooltipElements, int maxWidth)
@@ -212,6 +224,10 @@ public abstract class RenderTooltipEvent extends net.minecraftforge.eventbus.api
         private final int screenWidth;
         private final int screenHeight;
 
+        public Pre() {
+            screenHeight = screenWidth = 0;
+        }
+
         @ApiStatus.Internal
         public Pre(@NotNull ItemStack stack, PoseStack poseStack, int x, int y, int screenWidth, int screenHeight, @NotNull Font font, @NotNull List<ClientTooltipComponent> components)
         {
@@ -288,6 +304,10 @@ public abstract class RenderTooltipEvent extends net.minecraftforge.eventbus.api
         private int backgroundEnd;
         private int borderStart;
         private int borderEnd;
+
+        public Color() {
+            originalBackground = originalBorderStart = originalBorderEnd = 0;
+        }
 
         @ApiStatus.Internal
         public Color(@NotNull ItemStack stack, PoseStack poseStack, int x, int y, @NotNull Font fr, int background, int borderStart, int borderEnd, @NotNull List<ClientTooltipComponent> components)

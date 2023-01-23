@@ -47,6 +47,11 @@ public class PlayLevelSoundEvent extends Event
     private float newVolume;
     private float newPitch;
 
+    public PlayLevelSoundEvent() {
+        level = null;
+        originalPitch = originalVolume = 0F;
+    }
+
     public PlayLevelSoundEvent(@NotNull Level level, @NotNull SoundEvent sound, @NotNull SoundSource source, float volume, float pitch)
     {
         this.level = level;
@@ -165,6 +170,10 @@ public class PlayLevelSoundEvent extends Event
     {
         private final Entity entity;
 
+        public AtEntity() {
+            entity = null;
+        }
+
         public AtEntity(Entity entity, SoundEvent sound, SoundSource source, float volume, float pitch)
         {
             super(entity.level, sound, source, volume, pitch);
@@ -194,6 +203,10 @@ public class PlayLevelSoundEvent extends Event
     public static class AtPosition extends PlayLevelSoundEvent
     {
         private final Vec3 position;
+
+        public AtPosition() {
+            position = null;
+        }
 
         public AtPosition(Level level, Vec3 position, SoundEvent sound, SoundSource source, float volume, float pitch)
         {

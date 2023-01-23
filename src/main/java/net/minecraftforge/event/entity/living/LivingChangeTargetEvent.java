@@ -39,6 +39,12 @@ public class LivingChangeTargetEvent extends LivingEvent
     private final ILivingTargetType targetType;
     private final LivingEntity originalTarget;
     private LivingEntity newTarget;
+
+    public LivingChangeTargetEvent() {
+        super(null);
+        targetType = null;
+        originalTarget = null;
+    }
     
     public LivingChangeTargetEvent(LivingEntity entity, LivingEntity originalTarget, ILivingTargetType targetType)
     {

@@ -25,6 +25,12 @@ import net.minecraftforge.fml.LogicalSide;
 @Cancelable
 public class LivingUseTotemEvent extends LivingEvent
 {
+    public LivingUseTotemEvent() {
+        source = null;
+        totem = null;
+        hand = null;
+    }
+
     private final DamageSource source;
     private final ItemStack totem;
     private final InteractionHand hand;

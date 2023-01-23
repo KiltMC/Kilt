@@ -29,6 +29,10 @@ public class SleepingLocationCheckEvent extends LivingEvent
 
     private final BlockPos sleepingLocation;
 
+    public SleepingLocationCheckEvent() {
+        sleepingLocation = null;
+    }
+
     public SleepingLocationCheckEvent(LivingEntity player, BlockPos sleepingLocation)
     {
         super(player);

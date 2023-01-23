@@ -58,6 +58,12 @@ public class ModMismatchEvent extends Event implements IModBusEvent
      */
     private final HashMap<String, ModContainer> resolved;
 
+    public ModMismatchEvent() {
+        levelDirectory = null;
+        versionDifferences = null;
+        resolved = null;
+    }
+
     @ApiStatus.Internal
     public ModMismatchEvent(@Nullable LevelStorageSource.LevelDirectory levelDirectory, Map<String, ArtifactVersion> previousVersions, Map<String, ArtifactVersion> missingVersions)
     {

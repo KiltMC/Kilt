@@ -18,6 +18,11 @@ public class ItemEvent extends EntityEvent
 {
     private final ItemEntity itemEntity;
 
+    public ItemEvent() {
+        super(null);
+        itemEntity = null;
+    }
+
     /**
      * Creates a new event for an {@link ItemEntity}.
      *

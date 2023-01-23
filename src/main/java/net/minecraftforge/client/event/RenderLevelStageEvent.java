@@ -19,8 +19,12 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.ForgeRenderTypes;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.event.IModBusEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * Fires at various times during LevelRenderer.renderLevel. 
@@ -41,6 +45,17 @@ public class RenderLevelStageEvent extends Event
     private final float partialTick;
     private final Camera camera;
     private final Frustum frustum;
+    public RenderLevelStageEvent() {
+        stage = null;
+
+        levelRenderer = null;
+        poseStack = null;
+        projectionMatrix = null;
+        renderTick = 0;
+        partialTick = 0F;
+        camera = null;
+        frustum = null;
+    }
 
     public RenderLevelStageEvent(Stage stage, LevelRenderer levelRenderer, PoseStack poseStack, Matrix4f projectionMatrix, int renderTick, float partialTick, Camera camera, Frustum frustum)
     {

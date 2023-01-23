@@ -24,6 +24,12 @@ public class AnimalTameEvent extends LivingEvent
     private final Animal animal;
     private final Player tamer;
 
+    public AnimalTameEvent() {
+        super(null);
+        animal = null;
+        tamer = null;
+    }
+
     public AnimalTameEvent(Animal animal, Player tamer)
     {
         super(animal);

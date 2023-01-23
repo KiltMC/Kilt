@@ -26,6 +26,10 @@ public class AnvilRepairEvent extends PlayerEvent
     private final ItemStack output; // Set this to set the output stack
     private float breakChance; // Anvil's chance to break (reduced by 1 durability) when this is complete. Default is 12% (0.12f)
 
+    public AnvilRepairEvent() {
+        left = right = output = ItemStack.EMPTY;
+    }
+
     public AnvilRepairEvent(Player player, @NotNull ItemStack left, @NotNull ItemStack right, @NotNull ItemStack output)
     {
         super(player);

@@ -22,6 +22,10 @@ import net.minecraft.world.item.ItemStack;
  */
 public class LivingGetProjectileEvent extends LivingEvent
 {
+    public LivingGetProjectileEvent() {
+        projectileWeaponItemStack = null;
+    }
+
     private final ItemStack projectileWeaponItemStack;
     private ItemStack projectileItemStack;
 

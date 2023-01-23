@@ -24,6 +24,10 @@ public class EntityLeaveLevelEvent extends EntityEvent
 {
     private final Level level;
 
+    public EntityLeaveLevelEvent() {
+        level = null;
+    }
+
     public EntityLeaveLevelEvent(Entity entity, Level level)
     {
         super(entity);

@@ -27,6 +27,11 @@ public class ClientPlayerChangeGameTypeEvent extends Event
     private final GameType currentGameType;
     private final GameType newGameType;
 
+    public ClientPlayerChangeGameTypeEvent() {
+        info = null;
+        newGameType = currentGameType = null;
+    }
+
     @ApiStatus.Internal
     public ClientPlayerChangeGameTypeEvent(PlayerInfo info, GameType currentGameType, GameType newGameType)
     {

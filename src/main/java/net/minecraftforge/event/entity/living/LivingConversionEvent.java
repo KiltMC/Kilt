@@ -13,6 +13,10 @@ import java.util.function.Consumer;
 
 public class LivingConversionEvent extends LivingEvent
 {
+    public LivingConversionEvent() {
+        super(null);
+    }
+
     public LivingConversionEvent(LivingEntity entity)
     {
         super(entity);
@@ -34,6 +38,11 @@ public class LivingConversionEvent extends LivingEvent
     {
         private final EntityType<? extends LivingEntity> outcome;
         private final Consumer<Integer> timer;
+
+        public Pre() {
+            outcome = null;
+            timer = null;
+        }
 
         public Pre(LivingEntity entity, EntityType<? extends LivingEntity> outcome, Consumer<Integer> timer)
         {
@@ -74,6 +83,10 @@ public class LivingConversionEvent extends LivingEvent
     public static class Post extends LivingConversionEvent
     {
         private final LivingEntity outcome;
+
+        public Post() {
+            outcome = null;
+        }
 
         public Post(LivingEntity entity, LivingEntity outcome)
         {

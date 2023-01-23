@@ -31,6 +31,12 @@ public class CriticalHitEvent extends PlayerEvent
     private final float oldDamageModifier;
     private final Entity target;
     private final boolean vanillaCritical;
+
+    public CriticalHitEvent() {
+        oldDamageModifier = -1F;
+        target = null;
+        vanillaCritical = false;
+    }
     
     public CriticalHitEvent(Player player, Entity target, float damageModifier, boolean vanillaCritical)
     {

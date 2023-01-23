@@ -22,6 +22,12 @@ public class ItemTooltipEvent extends PlayerEvent
     private final ItemStack itemStack;
     private final List<Component> toolTip;
 
+    public ItemTooltipEvent() {
+        flags = null;
+        itemStack = ItemStack.EMPTY;
+        toolTip = null;
+    }
+
     /**
      * This event is fired in {@link ItemStack#getTooltipLines(Player, TooltipFlag)}, which in turn is called from its respective GUIContainer.
      * Tooltips are also gathered with a null player during startup by {@link Minecraft#createSearchTrees()}.

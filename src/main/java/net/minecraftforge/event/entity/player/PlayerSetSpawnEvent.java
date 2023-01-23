@@ -24,6 +24,12 @@ public class PlayerSetSpawnEvent extends PlayerEvent
     @Nullable
     private final BlockPos newSpawn;
 
+    public PlayerSetSpawnEvent() {
+        spawnLevel = null;
+        forced = false;
+        newSpawn = null;
+    }
+
     public PlayerSetSpawnEvent(Player player, ResourceKey<Level> spawnLevel, @Nullable BlockPos newSpawn, boolean forced)
     {
         super(player);

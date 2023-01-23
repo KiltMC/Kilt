@@ -25,6 +25,12 @@ import org.jetbrains.annotations.Nullable;
  */
 public class LivingSpawnEvent extends LivingEvent
 {
+    public LivingSpawnEvent() {
+        level = null;
+        mob = null;
+        x = y = z = 0D;
+    }
+
     private final LevelAccessor level;
     private final Mob mob;
     private final double x;
@@ -100,6 +106,11 @@ public class LivingSpawnEvent extends LivingEvent
         private final BaseSpawner spawner;
         private final MobSpawnType spawnReason;
 
+        public CheckSpawn() {
+            spawner = null;
+            spawnReason = null;
+        }
+
         public CheckSpawn(Mob mob, LevelAccessor level, double x, double y, double z, @Nullable BaseSpawner spawner, MobSpawnType spawnReason)
         {
             super(mob, level, x, y, z);
@@ -140,6 +151,11 @@ public class LivingSpawnEvent extends LivingEvent
         private final BaseSpawner spawner;
         private final MobSpawnType spawnReason;
 
+        public SpecialSpawn() {
+            spawner = null;
+            spawnReason = null;
+        }
+
         public SpecialSpawn(Mob entity, LevelAccessor level, double x, double y, double z, @Nullable BaseSpawner spawner, MobSpawnType spawnReason)
         {
             super(entity, level, x, y, z);
@@ -178,6 +194,7 @@ public class LivingSpawnEvent extends LivingEvent
     @HasResult
     public static class AllowDespawn extends LivingSpawnEvent
     {
+        public AllowDespawn() {}
         public AllowDespawn(Mob mob)
         {
             super(mob, mob.level, mob.getX(), mob.getY(), mob.getZ());

@@ -43,6 +43,10 @@ public abstract class ScreenEvent extends Event
 {
     private final Screen screen;
 
+    public ScreenEvent() {
+        screen = null;
+    }
+
     @ApiStatus.Internal
     protected ScreenEvent(Screen screen)
     {
@@ -74,6 +78,11 @@ public abstract class ScreenEvent extends Event
         private final Consumer<GuiEventListener> remove;
 
         private final List<GuiEventListener> listenerList;
+
+        public Init() {
+            add = remove = null;
+            listenerList = null;
+        }
 
         @ApiStatus.Internal
         protected Init(Screen screen, List<GuiEventListener> listenerList, Consumer<GuiEventListener> add, Consumer<GuiEventListener> remove)
@@ -125,6 +134,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends Init
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, List<GuiEventListener> list, Consumer<GuiEventListener> add, Consumer<GuiEventListener> remove)
             {
@@ -142,6 +153,8 @@ public abstract class ScreenEvent extends Event
          */
         public static class Post extends Init
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, List<GuiEventListener> list, Consumer<GuiEventListener> add, Consumer<GuiEventListener> remove)
             {
@@ -163,6 +176,12 @@ public abstract class ScreenEvent extends Event
         private final int mouseX;
         private final int mouseY;
         private final float partialTick;
+
+        public Render() {
+            poseStack = null;
+            mouseX = mouseY = 0;
+            partialTick = 0F;
+        }
 
         @ApiStatus.Internal
         protected Render(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float partialTick)
@@ -218,6 +237,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends Render
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float partialTick)
             {
@@ -235,6 +256,8 @@ public abstract class ScreenEvent extends Event
          */
         public static class Post extends Render
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, PoseStack poseStack, int mouseX, int mouseY, float partialTick)
             {
@@ -255,6 +278,10 @@ public abstract class ScreenEvent extends Event
     public static class BackgroundRendered extends ScreenEvent
     {
         private final PoseStack poseStack;
+
+        public BackgroundRendered() {
+            poseStack = null;
+        }
 
         @ApiStatus.Internal
         public BackgroundRendered(Screen screen, PoseStack poseStack)
@@ -289,6 +316,10 @@ public abstract class ScreenEvent extends Event
         private final int availableSpace;
         private boolean compact;
         private int horizontalOffset;
+
+        public RenderInventoryMobEffects() {
+            availableSpace = -1;
+        }
 
         @ApiStatus.Internal
         public RenderInventoryMobEffects(Screen screen, int availableSpace, boolean compact, int horizontalOffset)
@@ -362,6 +393,10 @@ public abstract class ScreenEvent extends Event
         private final double mouseX;
         private final double mouseY;
 
+        public MouseInput() {
+            mouseX = mouseY = 0D;
+        }
+
         @ApiStatus.Internal
         protected MouseInput(Screen screen, double mouseX, double mouseY)
         {
@@ -398,6 +433,10 @@ public abstract class ScreenEvent extends Event
     {
         private final int button;
 
+        public MouseButtonPressed() {
+            button = -1;
+        }
+
         @ApiStatus.Internal
         public MouseButtonPressed(Screen screen, double mouseX, double mouseY, int button)
         {
@@ -429,6 +468,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends MouseButtonPressed
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, double mouseX, double mouseY, int button)
             {
@@ -455,6 +496,10 @@ public abstract class ScreenEvent extends Event
         public static class Post extends MouseButtonPressed
         {
             private final boolean handled;
+
+            public Post() {
+                handled = false;
+            }
 
             @ApiStatus.Internal
             public Post(Screen screen, double mouseX, double mouseY, int button, boolean handled)
@@ -483,6 +528,10 @@ public abstract class ScreenEvent extends Event
     public static abstract class MouseButtonReleased extends MouseInput
     {
         private final int button;
+
+        public MouseButtonReleased() {
+            button = -1;
+        }
 
         @ApiStatus.Internal
         public MouseButtonReleased(Screen screen, double mouseX, double mouseY, int button)
@@ -515,6 +564,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends MouseButtonReleased
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, double mouseX, double mouseY, int button)
             {
@@ -541,6 +592,10 @@ public abstract class ScreenEvent extends Event
         public static class Post extends MouseButtonReleased
         {
             private final boolean handled;
+
+            public Post() {
+                handled = false;
+            }
 
             @ApiStatus.Internal
             public Post(Screen screen, double mouseX, double mouseY, int button, boolean handled)
@@ -571,6 +626,11 @@ public abstract class ScreenEvent extends Event
         private final int mouseButton;
         private final double dragX;
         private final double dragY;
+
+        public MouseDragged() {
+            mouseButton = -1;
+            dragX = dragY = 0D;
+        }
 
         @ApiStatus.Internal
         public MouseDragged(Screen screen, double mouseX, double mouseY, int mouseButton, double dragX, double dragY)
@@ -621,6 +681,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends MouseDragged
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, double mouseX, double mouseY, int mouseButton, double dragX, double dragY)
             {
@@ -640,6 +702,8 @@ public abstract class ScreenEvent extends Event
          */
         public static class Post extends MouseDragged
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, double mouseX, double mouseY, int mouseButton, double dragX, double dragY)
             {
@@ -658,6 +722,10 @@ public abstract class ScreenEvent extends Event
     public static abstract class MouseScrolled extends MouseInput
     {
         private final double scrollDelta;
+
+        public MouseScrolled() {
+            scrollDelta = 0D;
+        }
 
         @ApiStatus.Internal
         public MouseScrolled(Screen screen, double mouseX, double mouseY, double scrollDelta)
@@ -687,6 +755,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends MouseScrolled
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, double mouseX, double mouseY, double scrollDelta)
             {
@@ -706,6 +776,8 @@ public abstract class ScreenEvent extends Event
          */
         public static class Post extends MouseScrolled
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, double mouseX, double mouseY, double scrollDelta)
             {
@@ -728,6 +800,10 @@ public abstract class ScreenEvent extends Event
         private final int keyCode;
         private final int scanCode;
         private final int modifiers;
+
+        public KeyInput() {
+            keyCode = scanCode = modifiers = 0;
+        }
 
         @ApiStatus.Internal
         protected KeyInput(Screen screen, int keyCode, int scanCode, int modifiers)
@@ -790,6 +866,8 @@ public abstract class ScreenEvent extends Event
      */
     public static abstract class KeyPressed extends KeyInput
     {
+        public KeyPressed() {}
+
         @ApiStatus.Internal
         public KeyPressed(Screen screen, int keyCode, int scanCode, int modifiers)
         {
@@ -809,6 +887,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends KeyPressed
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, int keyCode, int scanCode, int modifiers)
             {
@@ -829,6 +909,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Post extends KeyPressed
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, int keyCode, int scanCode, int modifiers)
             {
@@ -846,6 +928,8 @@ public abstract class ScreenEvent extends Event
      */
     public static abstract class KeyReleased extends KeyInput
     {
+        public KeyReleased() {}
+
         @ApiStatus.Internal
         public KeyReleased(Screen screen, int keyCode, int scanCode, int modifiers)
         {
@@ -865,6 +949,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends KeyReleased
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, int keyCode, int scanCode, int modifiers)
             {
@@ -885,6 +971,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Post extends KeyReleased
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, int keyCode, int scanCode, int modifiers)
             {
@@ -905,6 +993,11 @@ public abstract class ScreenEvent extends Event
     {
         private final char codePoint;
         private final int modifiers;
+
+        public CharacterTyped() {
+            codePoint = 0;
+            modifiers = 0;
+        }
 
         @ApiStatus.Internal
         public CharacterTyped(Screen screen, char codePoint, int modifiers)
@@ -951,6 +1044,8 @@ public abstract class ScreenEvent extends Event
         @Cancelable
         public static class Pre extends CharacterTyped
         {
+            public Pre() {}
+
             @ApiStatus.Internal
             public Pre(Screen screen, char codePoint, int modifiers)
             {
@@ -970,6 +1065,8 @@ public abstract class ScreenEvent extends Event
          */
         public static class Post extends CharacterTyped
         {
+            public Post() {}
+
             @ApiStatus.Internal
             public Post(Screen screen, char codePoint, int modifiers)
             {
@@ -996,6 +1093,10 @@ public abstract class ScreenEvent extends Event
         @Nullable
         private final Screen currentScreen;
         private Screen newScreen;
+
+        public Opening() {
+            currentScreen = null;
+        }
 
         @ApiStatus.Internal
         public Opening(@Nullable Screen currentScreen, Screen screen)
@@ -1045,6 +1146,8 @@ public abstract class ScreenEvent extends Event
      */
     public static class Closing extends ScreenEvent
     {
+        public Closing() {}
+
         @ApiStatus.Internal
         public Closing(Screen screen)
         {

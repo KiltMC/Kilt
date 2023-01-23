@@ -25,6 +25,10 @@ public class EntityAttributeCreationEvent extends Event implements IModBusEvent
 {
     private final Map<EntityType<? extends LivingEntity>, AttributeSupplier> map;
 
+    public EntityAttributeCreationEvent() {
+        map = null;
+    }
+
     public EntityAttributeCreationEvent(Map<EntityType<? extends LivingEntity>, AttributeSupplier> map)
     {
         this.map = map;

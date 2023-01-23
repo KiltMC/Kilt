@@ -17,6 +17,11 @@ public class PlayerBrewedPotionEvent extends PlayerEvent
 {
     private final ItemStack stack;
 
+    public PlayerBrewedPotionEvent() {
+        super(null);
+        stack = null;
+    }
+
     public PlayerBrewedPotionEvent(Player player, @NotNull ItemStack stack)
     {
         super(player);

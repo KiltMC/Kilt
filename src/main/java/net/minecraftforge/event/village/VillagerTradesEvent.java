@@ -32,6 +32,8 @@ public class VillagerTradesEvent extends Event
     protected Int2ObjectMap<List<ItemListing>> trades;
     protected VillagerProfession type;
 
+    public VillagerTradesEvent() {}
+
     public VillagerTradesEvent(Int2ObjectMap<List<ItemListing>> trades, VillagerProfession type)
     {
         this.trades = trades;

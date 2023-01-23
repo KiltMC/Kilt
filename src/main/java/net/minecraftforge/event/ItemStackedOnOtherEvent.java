@@ -43,6 +43,14 @@ public class ItemStackedOnOtherEvent extends Event
     private final Player player;
     private final SlotAccess carriedSlotAccess;
 
+    public ItemStackedOnOtherEvent() {
+        carriedItem = stackedOnItem = null;
+        slot = null;
+        action = null;
+        player = null;
+        carriedSlotAccess = null;
+    }
+
     @ApiStatus.Internal
     public ItemStackedOnOtherEvent(ItemStack carriedItem, ItemStack stackedOnItem, Slot slot, ClickAction action, Player player, SlotAccess carriedSlotAccess)
     {

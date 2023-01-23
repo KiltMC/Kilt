@@ -36,6 +36,12 @@ public class ClientChatReceivedEvent extends Event
     private final PlayerChatMessage playerChatMessage;
     private final MessageSigner messageSigner;
 
+    public ClientChatReceivedEvent() {
+        boundChatType = null;
+        playerChatMessage = null;
+        messageSigner = null;
+    }
+
     @ApiStatus.Internal
     public ClientChatReceivedEvent(ChatType.Bound boundChatType, Component message, PlayerChatMessage playerChatMessage, MessageSigner messageSigner)
     {

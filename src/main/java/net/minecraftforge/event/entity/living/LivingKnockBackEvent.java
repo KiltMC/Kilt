@@ -38,6 +38,12 @@ import net.minecraftforge.eventbus.api.Cancelable;
 @Cancelable
 public class LivingKnockBackEvent extends LivingEvent
 {
+    public LivingKnockBackEvent() {
+        originalStrength = -1F;
+        originalRatioX = 0D;
+        originalRatioZ = 0D;
+    }
+
     protected float strength;
     protected double ratioX, ratioZ;
     protected final float originalStrength;

@@ -25,6 +25,10 @@ public class PotionColorCalculationEvent extends LivingEvent
     private boolean hideParticle;
     private final Collection<MobEffectInstance> effectList;
 
+    public PotionColorCalculationEvent() {
+        effectList = null;
+    }
+
     public PotionColorCalculationEvent(LivingEntity entity, int color, boolean hideParticle,
             Collection<MobEffectInstance> effectList)
     {

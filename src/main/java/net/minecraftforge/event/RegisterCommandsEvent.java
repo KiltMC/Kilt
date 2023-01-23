@@ -26,6 +26,12 @@ public class RegisterCommandsEvent extends Event
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final Commands.CommandSelection environment;
     private final CommandBuildContext context;
+
+    public RegisterCommandsEvent() {
+        dispatcher = null;
+        environment = null;
+        context = null;
+    }
     
     public RegisterCommandsEvent(CommandDispatcher<CommandSourceStack> dispatcher, Commands.CommandSelection environment, CommandBuildContext context)
     {

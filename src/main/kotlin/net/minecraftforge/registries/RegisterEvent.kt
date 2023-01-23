@@ -3,6 +3,7 @@ package net.minecraftforge.registries
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.block.Block
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.event.IModBusEvent
@@ -14,6 +15,8 @@ class RegisterEvent internal constructor(
     val forgeRegistry: ForgeRegistry<*>?,
     val vanillaRegistry: Registry<*>?
 ) : Event(), IModBusEvent {
+    constructor() : this(EMPTY, null, null)
+
     fun <T> register(registryKey: ResourceKey<out Registry<*>>, name: ResourceLocation, valueSupplier: Supplier<T>) {
         if (this.registryKey == registryKey) {
             if (forgeRegistry != null)
@@ -43,5 +46,9 @@ class RegisterEvent internal constructor(
         }
 
         fun register(name: ResourceLocation, value: T)
+    }
+
+    companion object {
+        private val EMPTY = ResourceKey.create<Registry<*>>(Registry.ROOT_REGISTRY_NAME, ResourceLocation("kilt", "empty"))
     }
 }

@@ -26,6 +26,10 @@ public class ChunkEvent extends LevelEvent
 {
     private final ChunkAccess chunk;
 
+    public ChunkEvent() {
+        chunk = null;
+    }
+
     public ChunkEvent(ChunkAccess chunk)
     {
         super(chunk.getWorldForge());
@@ -58,6 +62,7 @@ public class ChunkEvent extends LevelEvent
      **/
     public static class Load extends ChunkEvent
     {
+        public Load() {}
         public Load(ChunkAccess chunk)
         {
             super(chunk);
@@ -77,6 +82,7 @@ public class ChunkEvent extends LevelEvent
      **/
     public static class Unload extends ChunkEvent
     {
+        public Unload() {}
         public Unload(ChunkAccess chunk)
         {
             super(chunk);

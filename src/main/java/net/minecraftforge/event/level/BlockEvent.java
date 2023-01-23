@@ -41,6 +41,13 @@ public class BlockEvent extends Event
     private final LevelAccessor level;
     private final BlockPos pos;
     private final BlockState state;
+
+    public BlockEvent() {
+        level = null;
+        pos = null;
+        state = null;
+    }
+
     public BlockEvent(LevelAccessor level, BlockPos pos, BlockState state)
     {
         this.pos = pos;
@@ -73,6 +80,10 @@ public class BlockEvent extends Event
         /** Reference to the Player who broke the block. If no player is available, use a EntityFakePlayer */
         private final Player player;
         private int exp;
+
+        public BreakEvent() {
+            player = null;
+        }
 
         public BreakEvent(Level level, BlockPos pos, BlockState state, Player player)
         {
@@ -130,6 +141,12 @@ public class BlockEvent extends Event
         private final BlockState placedBlock;
         private final BlockState placedAgainst;
 
+        public EntityPlaceEvent() {
+            entity = null;
+            blockSnapshot = null;
+            placedAgainst = placedBlock = null;
+        }
+
         public EntityPlaceEvent(@NotNull BlockSnapshot blockSnapshot, @NotNull BlockState placedAgainst, @Nullable Entity entity)
         {
             super(blockSnapshot.getLevel(), blockSnapshot.getPos(), !(entity instanceof Player) ? blockSnapshot.getReplacedBlock() : blockSnapshot.getCurrentBlock());
@@ -163,6 +180,10 @@ public class BlockEvent extends Event
     {
         private final List<BlockSnapshot> blockSnapshots;
 
+        public EntityMultiPlaceEvent() {
+            blockSnapshots = null;
+        }
+
         public EntityMultiPlaceEvent(@NotNull List<BlockSnapshot> blockSnapshots, @NotNull BlockState placedAgainst, @Nullable Entity entity) {
             super(blockSnapshots.get(0), placedAgainst, entity);
             this.blockSnapshots = ImmutableList.copyOf(blockSnapshots);
@@ -194,6 +215,11 @@ public class BlockEvent extends Event
     {
         private final EnumSet<Direction> notifiedSides;
         private final boolean forceRedstoneUpdate;
+
+        public NeighborNotifyEvent() {
+            notifiedSides = null;
+            forceRedstoneUpdate = false;
+        }
 
         public NeighborNotifyEvent(Level level, BlockPos pos, BlockState state, EnumSet<Direction> notifiedSides, boolean forceRedstoneUpdate)
         {
@@ -235,6 +261,12 @@ public class BlockEvent extends Event
         private final BlockPos pos;
         private final BlockState state;
 
+        public CreateFluidSourceEvent() {
+            level = null;
+            pos = null;
+            state = null;
+        }
+
         public CreateFluidSourceEvent(LevelReader level, BlockPos pos, BlockState state)
         {
             this.level = level;
@@ -272,6 +304,10 @@ public class BlockEvent extends Event
         private final BlockPos liquidPos;
         private BlockState newState;
         private BlockState origState;
+
+        public FluidPlaceBlockEvent() {
+            liquidPos = null;
+        }
 
         public FluidPlaceBlockEvent(LevelAccessor level, BlockPos pos, BlockPos liquidPos, BlockState state)
         {
@@ -317,6 +353,7 @@ public class BlockEvent extends Event
      */
     public static class CropGrowEvent extends BlockEvent
     {
+        public CropGrowEvent() {}
         public CropGrowEvent(Level level, BlockPos pos, BlockState state)
         {
             super(level, pos, state);
@@ -336,6 +373,7 @@ public class BlockEvent extends Event
         @HasResult
         public static class Pre extends CropGrowEvent
         {
+            public Pre() {}
             public Pre(Level level, BlockPos pos, BlockState state)
             {
                 super(level, pos, state);
@@ -354,6 +392,10 @@ public class BlockEvent extends Event
         public static class Post extends CropGrowEvent
         {
             private final BlockState originalState;
+            public Post() {
+                originalState = null;
+            }
+
             public Post(Level level, BlockPos pos, BlockState original, BlockState state)
             {
                 super(level, pos, state);
@@ -377,6 +419,11 @@ public class BlockEvent extends Event
 
         private final Entity entity;
         private final float fallDistance;
+
+        public FarmlandTrampleEvent() {
+            entity = null;
+            fallDistance = 0F;
+        }
 
         public FarmlandTrampleEvent(Level level, BlockPos pos, BlockState state, float fallDistance, Entity entity)
         {
@@ -404,6 +451,10 @@ public class BlockEvent extends Event
     public static class PortalSpawnEvent extends BlockEvent
     {
         private final PortalShape size;
+
+        public PortalSpawnEvent() {
+            size = null;
+        }
 
         public PortalSpawnEvent(LevelAccessor level, BlockPos pos, BlockState state, PortalShape size)
         {
@@ -434,6 +485,12 @@ public class BlockEvent extends Event
         private final ToolAction toolAction;
         private final boolean simulate;
         private BlockState state;
+
+        public BlockToolModificationEvent() {
+            context = null;
+            toolAction = null;
+            simulate = false;
+        }
 
         public BlockToolModificationEvent(BlockState originalState, @NotNull UseOnContext context, ToolAction toolAction, boolean simulate)
         {

@@ -12,6 +12,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class LivingEntityUseItemEvent extends LivingEvent
 {
+    public LivingEntityUseItemEvent() {
+        super(null);
+        item = null;
+    }
+
     private final ItemStack item;
     private int duration;
 
@@ -52,6 +57,7 @@ public class LivingEntityUseItemEvent extends LivingEvent
     @Cancelable
     public static class Start extends LivingEntityUseItemEvent
     {
+        public Start() {}
         public Start(LivingEntity entity, @NotNull ItemStack item, int duration)
         {
             super(entity, item, duration);
@@ -67,6 +73,7 @@ public class LivingEntityUseItemEvent extends LivingEvent
     @Cancelable
     public static class Tick extends LivingEntityUseItemEvent
     {
+        public Tick() {}
         public Tick(LivingEntity entity, @NotNull ItemStack item, int duration)
         {
             super(entity, item, duration);
@@ -88,6 +95,7 @@ public class LivingEntityUseItemEvent extends LivingEvent
     @Cancelable
     public static class Stop extends LivingEntityUseItemEvent
     {
+        public Stop() {}
         public Stop(LivingEntity entity, @NotNull ItemStack item, int duration)
         {
             super(entity, item, duration);
@@ -109,6 +117,7 @@ public class LivingEntityUseItemEvent extends LivingEvent
     public static class Finish extends LivingEntityUseItemEvent
     {
         private ItemStack result;
+        public Finish() {}
         public Finish(LivingEntity entity, @NotNull ItemStack item, int duration, @NotNull ItemStack result)
         {
             super(entity, item, duration);

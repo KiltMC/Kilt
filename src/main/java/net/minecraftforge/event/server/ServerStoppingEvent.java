@@ -14,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
  */
 public class ServerStoppingEvent extends ServerLifecycleEvent
 {
+    public ServerStoppingEvent() {}
     public ServerStoppingEvent(MinecraftServer server)
     {
         super(server);

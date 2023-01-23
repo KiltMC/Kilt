@@ -25,6 +25,11 @@ public class MovementInputUpdateEvent extends PlayerEvent
 {
     private final Input input;
 
+    public MovementInputUpdateEvent() {
+        input = null;
+
+    }
+
     @ApiStatus.Internal
     public MovementInputUpdateEvent(Player player, Input input)
     {

@@ -11,6 +11,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 public class PlayerContainerEvent extends PlayerEvent
 {
     private final AbstractContainerMenu container;
+
+    public PlayerContainerEvent() {
+        container = null;
+    }
+
     public PlayerContainerEvent(Player player, AbstractContainerMenu container)
     {
         super(player);
@@ -19,6 +24,7 @@ public class PlayerContainerEvent extends PlayerEvent
 
     public static class Open extends PlayerContainerEvent
     {
+        public Open() {}
         public Open(Player player, AbstractContainerMenu container)
         {
             super(player, container);
@@ -26,6 +32,7 @@ public class PlayerContainerEvent extends PlayerEvent
     }
     public static class Close extends PlayerContainerEvent
     {
+        public Close() {}
         public Close(Player player, AbstractContainerMenu container)
         {
             super(player, container);

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.ApiStatus;
  */
 public class SoundEngineLoadEvent extends SoundEvent implements IModBusEvent
 {
+    public SoundEngineLoadEvent() {}
     @ApiStatus.Internal
     public SoundEngineLoadEvent(SoundEngine manager)
     {

@@ -34,6 +34,12 @@ public class EntityMountEvent extends EntityEvent
 
     private final boolean isMounting;
 
+    public EntityMountEvent() {
+        entityBeingMounted = entityMounting = null;
+        level = null;
+        isMounting = false;
+    }
+
     public EntityMountEvent(Entity entityMounting, Entity entityBeingMounted, Level level, boolean isMounting)
     {
         super(entityMounting);

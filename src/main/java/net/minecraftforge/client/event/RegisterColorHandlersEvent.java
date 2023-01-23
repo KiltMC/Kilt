@@ -49,6 +49,10 @@ public abstract class RegisterColorHandlersEvent extends Event implements IModBu
     {
         private final BlockColors blockColors;
 
+        public Block() {
+            blockColors = null;
+        }
+
         @ApiStatus.Internal
         public Block(BlockColors blockColors)
         {
@@ -92,6 +96,11 @@ public abstract class RegisterColorHandlersEvent extends Event implements IModBu
     {
         private final ItemColors itemColors;
         private final BlockColors blockColors;
+
+        public Item() {
+            itemColors = null;
+            blockColors = null;
+        }
 
         @ApiStatus.Internal
         public Item(ItemColors itemColors, BlockColors blockColors)
@@ -138,6 +147,10 @@ public abstract class RegisterColorHandlersEvent extends Event implements IModBu
     public static class ColorResolvers extends RegisterColorHandlersEvent
     {
         private final ImmutableList.Builder<ColorResolver> builder;
+
+        public ColorResolvers() {
+            builder = null;
+        }
 
         @ApiStatus.Internal
         public ColorResolvers(ImmutableList.Builder<ColorResolver> builder)

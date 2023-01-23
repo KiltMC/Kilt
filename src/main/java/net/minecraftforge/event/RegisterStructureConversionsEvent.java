@@ -40,6 +40,10 @@ public class RegisterStructureConversionsEvent extends Event
 {
     private final Map<String, StructuresBecomeConfiguredFix.Conversion> map;
 
+    public RegisterStructureConversionsEvent() {
+        map = null;
+    }
+
     /**
      * @hidden For internal use only.
      */

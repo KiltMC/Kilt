@@ -17,6 +17,12 @@ public class TagsUpdatedEvent extends Event
     private final UpdateCause updateCause;
     private final boolean integratedServer;
 
+    public TagsUpdatedEvent() {
+        registryAccess = null;
+        updateCause = null;
+        integratedServer = false;
+    }
+
     public TagsUpdatedEvent(RegistryAccess registryAccess, boolean fromClientPacket, boolean isIntegratedServerConnection)
     {
         this.registryAccess = registryAccess;

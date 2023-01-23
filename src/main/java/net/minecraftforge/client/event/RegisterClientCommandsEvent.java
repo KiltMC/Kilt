@@ -39,6 +39,11 @@ public class RegisterClientCommandsEvent extends Event
     private final CommandDispatcher<CommandSourceStack> dispatcher;
     private final CommandBuildContext context;
 
+    public RegisterClientCommandsEvent() {
+        dispatcher = null;
+        context = null;
+    }
+
     @ApiStatus.Internal
     public RegisterClientCommandsEvent(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context)
     {

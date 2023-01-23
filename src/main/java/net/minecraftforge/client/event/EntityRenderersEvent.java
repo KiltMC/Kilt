@@ -146,6 +146,11 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
         private final Map<String, EntityRenderer<? extends Player>> skinMap;
         private final EntityModelSet entityModels = Minecraft.getInstance().getEntityModels();
 
+        public AddLayers() {
+            renderers = null;
+            skinMap = null;
+        }
+
         @ApiStatus.Internal
         public AddLayers(Map<EntityType<?>, EntityRenderer<?>> renderers, Map<String, EntityRenderer<? extends Player>> playerRenderers)
         {
@@ -216,6 +221,11 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
     {
         private final ImmutableMap.Builder<Type, SkullModelBase> builder;
         private final EntityModelSet entityModelSet;
+
+        public CreateSkullModels() {
+            builder = null;
+            entityModelSet = null;
+        }
 
         @ApiStatus.Internal
         public CreateSkullModels(ImmutableMap.Builder<Type, SkullModelBase> builder, EntityModelSet entityModelSet)

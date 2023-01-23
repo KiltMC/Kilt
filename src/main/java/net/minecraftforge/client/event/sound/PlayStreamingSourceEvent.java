@@ -28,6 +28,8 @@ import org.jetbrains.annotations.ApiStatus;
  */
 public class PlayStreamingSourceEvent extends SoundSourceEvent
 {
+    public PlayStreamingSourceEvent() {}
+
     @ApiStatus.Internal
     public PlayStreamingSourceEvent(SoundEngine engine, SoundInstance sound, Channel channel)
     {

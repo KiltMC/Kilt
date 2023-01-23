@@ -28,6 +28,10 @@ public class EntityTravelToDimensionEvent extends EntityEvent
 {
     private final ResourceKey<Level> dimension;
 
+    public EntityTravelToDimensionEvent() {
+        dimension = null;
+    }
+
     public EntityTravelToDimensionEvent(Entity entity, ResourceKey<Level> dimension)
     {
         super(entity);

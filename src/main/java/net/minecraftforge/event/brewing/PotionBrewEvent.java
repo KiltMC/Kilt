@@ -16,6 +16,9 @@ public class PotionBrewEvent extends Event
 {
     private NonNullList<ItemStack> stacks;
 
+    public PotionBrewEvent() {
+    }
+
     protected PotionBrewEvent(NonNullList<ItemStack> stacks)
     {
         this.stacks = stacks;
@@ -61,6 +64,7 @@ public class PotionBrewEvent extends Event
     @Cancelable
     public static class Pre extends PotionBrewEvent
     {
+        public Pre() {}
         public Pre(NonNullList<ItemStack> stacks)
         {
             super(stacks);
@@ -82,6 +86,7 @@ public class PotionBrewEvent extends Event
      **/
     public static class Post extends PotionBrewEvent
     {
+        public Post() {}
         public Post(NonNullList<ItemStack> stacks)
         {
             super(stacks);

@@ -53,6 +53,12 @@ public class PlayerDestroyItemEvent extends PlayerEvent
     private final ItemStack original;
     @Nullable
     private final InteractionHand hand; // May be null if this player destroys the item by any use besides holding it.
+
+    public PlayerDestroyItemEvent() {
+        original = ItemStack.EMPTY;
+        hand = null;
+    }
+
     public PlayerDestroyItemEvent(Player player, @NotNull ItemStack original, @Nullable InteractionHand hand)
     {
         super(player);

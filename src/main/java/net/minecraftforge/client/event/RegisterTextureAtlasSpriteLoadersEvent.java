@@ -30,6 +30,10 @@ public class RegisterTextureAtlasSpriteLoadersEvent extends Event implements IMo
 {
     private final Map<ResourceLocation, ITextureAtlasSpriteLoader> loaders;
 
+    public RegisterTextureAtlasSpriteLoadersEvent() {
+        loaders = null;
+    }
+
     @ApiStatus.Internal
     public RegisterTextureAtlasSpriteLoadersEvent(Map<ResourceLocation, ITextureAtlasSpriteLoader> loaders)
     {

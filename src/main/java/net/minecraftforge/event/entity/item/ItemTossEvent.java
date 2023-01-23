@@ -21,6 +21,10 @@ public class ItemTossEvent extends ItemEvent
 
     private final Player player;
 
+    public ItemTossEvent() {
+        player = null;
+    }
+
     /**
      * Creates a new event for EntityItems tossed by a player.
      * 

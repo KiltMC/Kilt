@@ -32,6 +32,12 @@ public abstract class ClientPlayerNetworkEvent extends Event
     private final LocalPlayer player;
     private final Connection connection;
 
+    public ClientPlayerNetworkEvent() {
+        multiPlayerGameMode = null;
+        player = null;
+        connection = null;
+    }
+
     @ApiStatus.Internal
     protected ClientPlayerNetworkEvent(final MultiPlayerGameMode multiPlayerGameMode, final LocalPlayer player, final Connection connection)
     {

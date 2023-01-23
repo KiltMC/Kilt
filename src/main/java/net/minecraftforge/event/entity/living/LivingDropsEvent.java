@@ -36,6 +36,14 @@ import net.minecraftforge.eventbus.api.Cancelable;
 @net.minecraftforge.eventbus.api.Cancelable
 public class LivingDropsEvent extends LivingEvent
 {
+    public LivingDropsEvent() {
+        super(null);
+        source = null;
+        drops = null;
+        lootingLevel = -1;
+        recentlyHit = false;
+    }
+
     private final DamageSource source;
     private final Collection<ItemEntity> drops;
     private final int lootingLevel;
