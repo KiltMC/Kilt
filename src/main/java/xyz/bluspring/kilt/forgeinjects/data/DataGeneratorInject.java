@@ -27,7 +27,7 @@ public class DataGeneratorInject implements DataGeneratorInjection {
     @Shadow @Final private List<DataProvider> allProviders;
 
     @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/data/DataGenerator;inputFolders:Ljava/util/Collection;", opcode = Opcodes.PUTFIELD), method = "<init>")
-    private static void kilt$makeInputsMutable(DataGenerator instance, Collection<Path> value) {
+    public void kilt$makeInputsMutable(DataGenerator instance, Collection<Path> value) {
         ((DataGeneratorAccessor) instance).setInputFolders(Lists.newArrayList(value.iterator()));
     }
 
