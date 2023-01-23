@@ -26,6 +26,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
 import kotlin.system.exitProcess
@@ -172,25 +173,26 @@ class KiltLoader {
     // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
     // Let's do a trick to load the Forge built-in mod.
     private fun loadForgeBuiltinMod() {
-        // Would be used to load the Forge built-in mod into the mods list.
-        // But it's not required right now, I don't think.
-        /*val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
-        val kiltJar = JarFile(kiltFile)
+        val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/mods.toml"))
+            parseModsToml(toml, null, null).first()
+        } else {
+            val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
+            val kiltJar = JarFile(kiltFile)
 
-        val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
+            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
 
-        val forgeMod = parseModsToml(toml, kiltFile, kiltJar).first()
-        // No point, but in case I accidentally called it somewhere.
-        forgeMod.remappedModFile = kiltFile
+            parseModsToml(toml, kiltFile, kiltJar).first()
+        }
 
         val scanData = ModFileScanData()
         scanData.addModFileInfo(ModFileInfo(forgeMod))
 
-        forgeMod.scanData = scanData*/
+        forgeMod.scanData = scanData
+
+        mods.add(forgeMod)
 
         ForgeBuiltinMod()
-
-        //mods.add(forgeMod)
     }
 
     private fun preloadJarMod(modFile: File, jarFile: ZipFile): Map<String, Exception> {
@@ -253,18 +255,20 @@ class KiltLoader {
     }
 
     // Split this off from the main preloadMods method, in case it needs to be used again later.
-    private fun parseModsToml(toml: CommentedConfig, modFile: File, jarFile: ZipFile): List<ForgeMod> {
+    private fun parseModsToml(toml: CommentedConfig, modFile: File?, jarFile: ZipFile?): List<ForgeMod> {
         if (toml.get("modLoader") as String != "javafml")
-            throw Exception("Forge mod file ${modFile.name} is not a javafml mod!")
+            throw Exception("Forge mod file ${modFile?.name ?: "(unknown)"} is not a javafml mod!")
 
         // Load the JAR's manifest file, or at least try to.
-        val manifest = try {
+        val manifest = if (jarFile != null) try {
             Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
-        } catch (_: Exception) { null }
+        } catch (_: Exception) { null } else null
+
+        val fileName = modFile?.name ?: "(unknown)"
 
         val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion") as String)
         if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION))
-            throw Exception("Forge mod file ${modFile.name} does not support Forge loader version $SUPPORTED_FORGE_SPEC_VERSION (mod supports versions between [$loaderVersionRange]))")
+            throw Exception("Forge mod file $fileName does not support Forge loader version $SUPPORTED_FORGE_SPEC_VERSION (mod supports versions between [$loaderVersionRange]))")
 
         val mainConfig = NightConfigWrapper(toml)
 
@@ -273,7 +277,7 @@ class KiltLoader {
 
         modsMetadataList.forEach { metadata ->
             val modId = metadata.getConfigElement<String>("modId").orElseThrow {
-                Exception("Forge mod file ${modFile.name} does not contain a mod ID!")
+                Exception("Forge mod file $fileName does not contain a mod ID!")
             }
 
             val modVersion = DefaultArtifactVersion(
@@ -322,13 +326,13 @@ class KiltLoader {
                         .map {
                             ForgeModInfo.ModDependency(
                                 modId = it.getConfigElement<String>("modId").orElseThrow {
-                                    Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a mod ID!")
+                                    Exception("Forge mod file $fileName's dependencies contains a dependency without a mod ID!")
                                 },
                                 mandatory = it.getConfigElement<Boolean>("mandatory").orElse(false),
                                 versionRange = MavenVersionAdapter.createFromVersionSpec(
                                     it.getConfigElement<String>("versionRange")
                                         .orElseThrow {
-                                            Exception("Forge mod file ${modFile.name}'s dependencies contains a dependency without a version range!")
+                                            Exception("Forge mod file $fileName's dependencies contains a dependency without a version range!")
                                         }
                                 ),
                                 ordering = ForgeModInfo.ModDependency.ModOrdering.valueOf(it.getConfigElement<String>("ordering").orElse("NONE")),

@@ -24,7 +24,7 @@ import java.util.jar.JarFile
 
 class ForgeMod(
     val modInfo: ForgeModInfo,
-    val modFile: File,
+    val modFile: File?,
     val modConfig: IConfigurable
 ) {
     val forgeSpi = ForgeSpiModInfo(this)
@@ -56,7 +56,7 @@ class ForgeMod(
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {
-            SecureJar.from(modFile.toPath())
+            SecureJar.from(modFile?.toPath())
         }
     }
 

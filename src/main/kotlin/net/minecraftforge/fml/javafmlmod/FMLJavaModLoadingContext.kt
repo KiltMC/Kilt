@@ -18,7 +18,7 @@ class FMLJavaModLoadingContext(private val mod: ForgeMod) {
     companion object {
         @JvmStatic
         fun get(): FMLJavaModLoadingContext {
-            return ModLoadingContext.get().extension()
+            return ModLoadingContext.get(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).callerClass).extension()
         }
     }
 }

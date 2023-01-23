@@ -57,7 +57,7 @@ class ModFile(private val kiltMod: ForgeMod) : IModFile {
     }
 
     override fun getFileName(): String {
-        return kiltMod.modFile.name
+        return kiltMod.modFile?.name ?: "(unknown)"
     }
 
     override fun getProvider(): IModProvider {

@@ -80,6 +80,8 @@ public abstract class ClientPlayerNetworkEvent extends Event
      */
     public static class LoggingIn extends ClientPlayerNetworkEvent
     {
+        public LoggingIn() {}
+
         @ApiStatus.Internal
         public LoggingIn(final MultiPlayerGameMode controller, final LocalPlayer player, final Connection networkManager)
         {
@@ -99,6 +101,8 @@ public abstract class ClientPlayerNetworkEvent extends Event
     // Shush IntelliJ, we override non-nullables as nullables in this specific event; see later comment
     public static class LoggingOut extends ClientPlayerNetworkEvent
     {
+        public LoggingOut() {}
+
         @ApiStatus.Internal
         public LoggingOut(@Nullable final MultiPlayerGameMode controller, @Nullable final LocalPlayer player, @Nullable final Connection networkManager)
         {
@@ -154,6 +158,10 @@ public abstract class ClientPlayerNetworkEvent extends Event
     public static class Clone extends ClientPlayerNetworkEvent
     {
         private final LocalPlayer oldPlayer;
+
+        public Clone() {
+            oldPlayer = null;
+        }
 
         @ApiStatus.Internal
         public Clone(final MultiPlayerGameMode pc, final LocalPlayer oldPlayer, final LocalPlayer newPlayer, final Connection networkManager)

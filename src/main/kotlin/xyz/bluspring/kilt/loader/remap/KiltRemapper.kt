@@ -67,6 +67,9 @@ object KiltRemapper {
         logger.info("Remapping Forge mods to use Kilt-remapped APIs...")
 
         modRemapQueue.forEach { mod ->
+            if (mod.modFile == null)
+                return@forEach
+
             try {
                 remapMod(mod.modFile, kiltWorkaroundRemapper, mod, remappedModsDir, arrayOf(
                     srgMappedMinecraft,
@@ -85,6 +88,9 @@ object KiltRemapper {
 
         // Second iteration, for normal mod loading.
         modRemapQueue.forEach { mod ->
+            if (mod.modFile == null)
+                return@forEach
+
             try {
                 remapMod(mod.remappedModFile, remapperBuilder, mod, remappedModsDir, arrayOf(
                     srgMappedMinecraft,
@@ -121,6 +127,9 @@ object KiltRemapper {
             logger.info("Remapping Forge mods from Intermediary to the \"${launcher.mappingConfiguration.targetNamespace}\" namespace...")
 
             modRemapQueue.forEach { mod ->
+                if (mod.modFile == null)
+                    return@forEach
+
                 try {
                     remapMod(mod.remappedModFile, devRemapperBuilder, mod, remappedModsDir, arrayOf(
                         *gameClassPath,
@@ -153,7 +162,7 @@ object KiltRemapper {
         val remapper = remapperBuilder.build()
 
         // Need to get the environment somehow
-        extraRemapper?.remapper = remapper
+        extraRemapper.remapper = remapper
 
         remapper.readClassPath(*gameClassPath)
         remapper.readInputs(file.toPath())
