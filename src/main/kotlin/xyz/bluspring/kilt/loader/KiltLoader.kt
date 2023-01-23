@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
@@ -191,8 +192,10 @@ class KiltLoader {
         forgeMod.scanData = scanData
 
         mods.add(forgeMod)
+        addModToFabric(forgeMod)
 
-        ForgeBuiltinMod()
+        forgeMod.modObject = ForgeBuiltinMod()
+        forgeMod.eventBus.post(FMLConstructModEvent(forgeMod, ModLoadingStage.CONSTRUCT))
     }
 
     private fun preloadJarMod(modFile: File, jarFile: ZipFile): Map<String, Exception> {
@@ -396,6 +399,8 @@ class KiltLoader {
 
                 mod.scanData = scanData
 
+                addModToFabric(mod)
+
                 // basically emulate how Forge loads stuff
                 try {
                     mod.jar.entries().asIterator().forEach {
@@ -461,6 +466,16 @@ class KiltLoader {
 
     fun getMod(id: String): ForgeMod? {
         return mods.firstOrNull { it.modInfo.mod.modId == id }
+    }
+
+    private fun addModToFabric(mod: ForgeMod) {
+        FabricLoaderImpl.INSTANCE.modsInternal.add(mod.container.fabricModContainer)
+
+        val modMapField = FabricLoaderImpl::class.java.getDeclaredField("modMap")
+        modMapField.isAccessible = true
+        val modMap = modMapField.get(FabricLoaderImpl.INSTANCE) as MutableMap<String, ModContainerImpl>
+
+        modMap[mod.modInfo.mod.modId] = mod.container.fabricModContainer
     }
 
     companion object {
