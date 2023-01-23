@@ -46,6 +46,12 @@ public class NetworkEvent extends Event
         this.loginIndex = loginIndex;
     }
 
+    public NetworkEvent() { // for some reason, if this doesn't exist, EventBus genuinely starts to panic. Why does it work in Forge and not here?
+        this.source = null;
+        this.payload = null;
+        this.loginIndex = -1;
+    }
+
     public NetworkEvent(final Supplier<Context> source) {
         this.source = source;
         this.payload = null;
@@ -69,17 +75,25 @@ public class NetworkEvent extends Event
 
     public static class ServerCustomPayloadEvent extends NetworkEvent
     {
+        public ServerCustomPayloadEvent() {
+        }
+
         ServerCustomPayloadEvent(final ICustomPacket<?> payload, final Supplier<Context> source) {
             super(payload, source);
         }
     }
     public static class ClientCustomPayloadEvent extends NetworkEvent
     {
+        public ClientCustomPayloadEvent() {
+        }
+
         ClientCustomPayloadEvent(final ICustomPacket<?> payload, final Supplier<Context> source) {
             super(payload, source);
         }
     }
     public static class ServerCustomPayloadLoginEvent extends ServerCustomPayloadEvent {
+        public ServerCustomPayloadLoginEvent() {
+        }
         ServerCustomPayloadLoginEvent(ICustomPacket<?> payload, Supplier<Context> source)
         {
             super(payload, source);
@@ -87,6 +101,8 @@ public class NetworkEvent extends Event
     }
 
     public static class ClientCustomPayloadLoginEvent extends ClientCustomPayloadEvent {
+        public ClientCustomPayloadLoginEvent() {
+        }
         ClientCustomPayloadLoginEvent(ICustomPacket<?> payload, Supplier<Context> source)
         {
             super(payload, source);
