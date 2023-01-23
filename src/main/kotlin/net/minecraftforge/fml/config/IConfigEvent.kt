@@ -3,7 +3,7 @@ package net.minecraftforge.fml.config
 import net.minecraftforge.fml.Bindings
 
 interface IConfigEvent {
-    val config: ModConfig
+    val config: ModConfig?
 
     @JvmRecord
     data class ConfigConfig(

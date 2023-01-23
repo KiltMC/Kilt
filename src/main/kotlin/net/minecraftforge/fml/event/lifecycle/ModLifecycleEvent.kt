@@ -7,7 +7,9 @@ import xyz.bluspring.kilt.loader.ForgeMod
 import java.util.function.Predicate
 import java.util.stream.Stream
 
-open class ModLifecycleEvent(private val mod: ForgeMod) : Event(), IModBusEvent {
+open class ModLifecycleEvent(private val mod: ForgeMod?) : Event(), IModBusEvent {
+    constructor() : this(null)
+
     fun description(): String {
         return this.javaClass.name.run {
             this.substring(this.lastIndexOf('.') + 1)
@@ -15,10 +17,10 @@ open class ModLifecycleEvent(private val mod: ForgeMod) : Event(), IModBusEvent 
     }
 
     val IMCStream: Stream<InterModComms.IMCMessage>
-        get() = InterModComms.getMessages(mod.modInfo.mod.modId)
+        get() = InterModComms.getMessages(mod!!.modInfo.mod.modId)
 
     fun getIMCStream(methodFilter: Predicate<String>): Stream<InterModComms.IMCMessage> {
-        return InterModComms.getMessages(mod.modInfo.mod.modId, methodFilter)
+        return InterModComms.getMessages(mod!!.modInfo.mod.modId, methodFilter)
     }
 
     override fun toString(): String {
