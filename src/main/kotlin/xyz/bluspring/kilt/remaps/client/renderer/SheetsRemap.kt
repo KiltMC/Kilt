@@ -5,7 +5,7 @@ import net.minecraft.client.resources.model.Material
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.block.state.properties.WoodType
 
-object SheetsRemap {
+object SheetsRemap : Sheets() {
     @JvmStatic
     fun addWoodType(woodType: WoodType) {
         Sheets.SIGN_MATERIALS[woodType] = createSignMaterial(woodType)

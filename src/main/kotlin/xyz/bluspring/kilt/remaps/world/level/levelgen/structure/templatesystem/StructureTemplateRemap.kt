@@ -6,17 +6,21 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate
 import net.minecraft.world.phys.Vec3
 
-object StructureTemplateRemap {
-    @JvmStatic
-    fun transformedVec3d(placementIn: StructurePlaceSettings, pos: Vec3): Vec3 {
-        return StructureTemplate.transform(pos, placementIn.mirror, placementIn.rotation, placementIn.rotationPivot)
-    }
+open class StructureTemplateRemap : StructureTemplate() {
+    companion object {
+        @JvmStatic
+        fun processBlockInfos(
+            level: LevelAccessor,
+            pos: BlockPos,
+            pos2: BlockPos,
+            settings: StructurePlaceSettings,
+            infos: List<StructureTemplate.StructureBlockInfo>,
+            template: StructureTemplate?
+        ): List<StructureTemplate.StructureBlockInfo> {
+            // TODO: Should probably use the structure template system.
+            return StructureTemplate.processBlockInfos(level, pos, pos2, settings, infos)
+        }
 
-    @JvmStatic
-    fun processBlockInfos(level: LevelAccessor, pos: BlockPos, pos2: BlockPos, settings: StructurePlaceSettings, infos: List<StructureTemplate.StructureBlockInfo>, template: StructureTemplate?): List<StructureTemplate.StructureBlockInfo> {
-        // TODO: Should probably use the structure template system.
-        return StructureTemplate.processBlockInfos(level, pos, pos2, settings, infos)
+        // TODO: This is still unfinished, need to add processEntityInfos over.
     }
-
-    // TODO: This is still unfinished, need to add processEntityInfos over.
 }

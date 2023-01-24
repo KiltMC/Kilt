@@ -9,7 +9,7 @@ import net.minecraft.world.level.NaturalSpawner
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraftforge.common.extensions.IForgeBlockState
 
-object NaturalSpawnerRemap {
+object NaturalSpawnerRemap : NaturalSpawner() {
     @JvmStatic
     fun canSpawnAtBody(type: SpawnPlacements.Type, levelReader: LevelReader, blockPos: BlockPos, entityType: EntityType<*>?): Boolean {
         return if (type == SpawnPlacements.Type.NO_RESTRICTIONS) {

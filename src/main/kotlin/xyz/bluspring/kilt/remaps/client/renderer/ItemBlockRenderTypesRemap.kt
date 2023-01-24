@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.remaps.client.renderer
 import com.google.common.base.Preconditions
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minecraft.Util
+import net.minecraft.client.renderer.ItemBlockRenderTypes
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.Holder
 import net.minecraft.world.level.block.Block
@@ -15,7 +16,7 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.mixin.ItemBlockRenderTypesAccessor
 import java.util.function.Predicate
 
-object ItemBlockRenderTypesRemap {
+object ItemBlockRenderTypesRemap : ItemBlockRenderTypes() {
     internal val CUTOUT_MIPPED = ChunkRenderTypeSet.of(RenderType.cutoutMipped())
     internal val SOLID = ChunkRenderTypeSet.of(RenderType.solid())
     internal val BLOCK_RENDER_TYPES = Util.make(Object2ObjectOpenHashMap<Holder.Reference<Block>, ChunkRenderTypeSet>(ItemBlockRenderTypesAccessor.getTypeByBlock().size, .5F)) {

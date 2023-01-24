@@ -4,7 +4,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.enchantment.Enchantment
 import net.minecraft.world.item.enchantment.EnchantmentHelper
 
-object EnchantmentHelperRemap {
+object EnchantmentHelperRemap : EnchantmentHelper() {
     @JvmStatic
     fun getTagEnchantmentLevel(enchantment: Enchantment, stack: ItemStack): Int {
         return EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack)

@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.MenuType
 import org.apache.logging.log4j.LogManager
 import java.util.*
 
-object MenuScreensRemap {
+object MenuScreensRemap : MenuScreens() {
     private val logger = LogManager.getLogger()
 
     // Copied from Minecraft, with Forge's patches added on.

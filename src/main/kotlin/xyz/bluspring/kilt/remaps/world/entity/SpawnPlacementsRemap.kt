@@ -6,7 +6,7 @@ import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent
 import net.minecraftforge.fml.ModLoader
 import xyz.bluspring.kilt.mixin.SpawnPlacementsAccessor
 
-object SpawnPlacementsRemap {
+object SpawnPlacementsRemap : SpawnPlacements() {
     @JvmStatic
     fun fireSpawnPlacementEvent() {
         val map = mutableMapOf<EntityType<*>, SpawnPlacementRegisterEvent.MergedSpawnPredicate<*>>()

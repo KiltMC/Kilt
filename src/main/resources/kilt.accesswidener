@@ -16,6 +16,21 @@ accessible method net/minecraft/world/level/block/FireBlock getIgniteOdds (Lnet/
 accessible class net/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration
 accessible class net/minecraft/data/recipes/ShapedRecipeBuilder$Result
 
+accessible method net/minecraft/advancements/Advancement$Builder <init> ()V
+
+extendable class com/mojang/math/Matrix4f
+extendable class com/mojang/math/Vector3f
+extendable class net/minecraft/stats/RecipeBookSettings
+extendable class net/minecraft/tags/BlockTags
+accessible method net/minecraft/tags/BlockTags <init> ()V
+extendable class net/minecraft/tags/ItemTags
+accessible method net/minecraft/tags/ItemTags <init> ()V
+extendable class net/minecraft/tags/FluidTags
+accessible method net/minecraft/tags/FluidTags <init> ()V
+extendable class net/minecraft/world/entity/projectile/ProjectileUtil
+extendable class net/minecraft/world/level/NaturalSpawner
+accessible method net/minecraft/world/level/NaturalSpawner <init> ()V
+
 # Directly from Forge's Access Transformers, ported to Access Wideners.
 accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_
 extendable method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_

@@ -6,10 +6,16 @@ import net.minecraft.advancements.critereon.DeserializationContext
 import net.minecraftforge.common.crafting.ConditionalAdvancement
 import net.minecraftforge.common.crafting.conditions.ICondition
 
-object AdvancementBuilderRemap {
-    @JvmStatic
-    fun fromJson(json: JsonObject, deserializationContext: DeserializationContext, context: ICondition.IContext): Advancement.Builder? {
-        val processedConditional = ConditionalAdvancement.processConditional(json, context) ?: return null
-        return Advancement.Builder.fromJson(processedConditional, deserializationContext)
+open class AdvancementBuilderRemap : Advancement.Builder() {
+    companion object {
+        @JvmStatic
+        fun fromJson(
+            json: JsonObject,
+            deserializationContext: DeserializationContext,
+            context: ICondition.IContext
+        ): Advancement.Builder? {
+            val processedConditional = ConditionalAdvancement.processConditional(json, context) ?: return null
+            return fromJson(processedConditional, deserializationContext)
+        }
     }
 }
