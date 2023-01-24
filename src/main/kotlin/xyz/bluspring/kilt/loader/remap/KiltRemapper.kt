@@ -220,7 +220,7 @@ object KiltRemapper {
             fixPackageAccess(true)
             resolveMissing(true)
             ignoreConflicts(true)
-            ignoreFieldDesc(true)
+            ignoreFieldDesc(false)
 
             withMappings(provider)
         }

@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
+import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
@@ -403,6 +404,8 @@ class KiltLoader {
 
                 // basically emulate how Forge loads stuff
                 try {
+                    println("Scanning ${mod.remappedModFile.name} for mod initialization points...")
+
                     mod.jar.entries().asIterator().forEach {
                         if (it.name.endsWith(".class")) {
                             val inputStream = mod.jar.getInputStream(it)
@@ -424,7 +427,7 @@ class KiltLoader {
                             // it.annotationData["value"] as String - Mod ID
 
                             try {
-                                val clazz = Class.forName(it.clazz.className)
+                                val clazz = Class.forName(it.clazz.className, false, launcher.targetClassLoader)
                                 mod.modObject = clazz.getDeclaredConstructor().newInstance()
                             } catch (e: Exception) {
                                 e.printStackTrace()
