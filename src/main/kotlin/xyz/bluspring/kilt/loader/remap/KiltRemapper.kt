@@ -22,6 +22,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.stream.Collectors
 import kotlin.io.path.name
+import kotlin.io.path.toPath
 
 object KiltRemapper {
     private val logger = Kilt.logger
@@ -41,6 +42,9 @@ object KiltRemapper {
 
         val srgMappedMinecraft = remapMinecraft()
         val gameClassPath = getGameClassPath()
+
+        if (forceRemap)
+            logger.info("Forced remaps enabled! All Forge mods will be remapped.")
 
         val exceptions = mutableListOf<Exception>()
 
@@ -182,7 +186,10 @@ object KiltRemapper {
 
     private fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
-            arrayOf(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+            arrayOf(
+                FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
+                Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            )
         else
             mutableListOf<Path>().apply {
                 val remapClasspathFile = System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE)
@@ -196,6 +203,8 @@ object KiltRemapper {
                         Paths.get(first)
                     }
                     .collect(Collectors.toList()))
+
+                this.add(Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
             }.toTypedArray()
     }
 
@@ -217,13 +226,8 @@ object KiltRemapper {
 
     private fun createRemapper(provider: IMappingProvider): TinyRemapper.Builder {
         return TinyRemapper.newRemapper().apply {
-            skipLocalVariableMapping(true)
-            renameInvalidLocals(true)
-            rebuildSourceFilenames(true)
+            renameInvalidLocals(false)
             fixPackageAccess(true)
-            resolveMissing(true)
-            ignoreConflicts(true)
-            ignoreFieldDesc(false)
 
             withMappings(provider)
         }
