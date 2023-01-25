@@ -33,6 +33,9 @@ object KiltRemapper {
     private val kiltWorkaroundRemapper = createRemapper(createMappings(kiltWorkaroundTree, "srg", "intermediary"))
         .extraRemapper(extraKiltWorkaroundRemapper)
 
+    // Mainly for debugging, so already-remapped Forge mods will be remapped again.
+    private val forceRemap = System.getProperty("kilt.forceRemap")?.lowercase() == "true"
+
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         val launcher = FabricLauncherBase.getLauncher()
 
@@ -155,7 +158,7 @@ object KiltRemapper {
 
         mod.remappedModFile = remappedModFile
 
-        if (remappedModFile.exists())
+        if (remappedModFile.exists() && !forceRemap)
             return
 
         // I should not have to rebuild this every single fucking time.
