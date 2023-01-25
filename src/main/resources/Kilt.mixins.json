@@ -13,6 +13,7 @@
     "BuilderAccessor",
     "ClientPacketListenerAccessor",
     "CompositeEntryBaseAccessor",
+    "CreativeModeTabAccessor",
     "DataGeneratorAccessor",
     "DebugLevelSourceAccessor",
     "DyeColorAccessor",

@@ -31,6 +31,8 @@ extendable class net/minecraft/world/entity/projectile/ProjectileUtil
 extendable class net/minecraft/world/level/NaturalSpawner
 accessible method net/minecraft/world/level/NaturalSpawner <init> ()V
 
+mutable field net/minecraft/world/item/CreativeModeTab TABS [Lnet/minecraft/world/item/CreativeModeTab;
+
 # Directly from Forge's Access Transformers, ported to Access Wideners.
 accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_
 extendable method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_
