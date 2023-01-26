@@ -19,6 +19,7 @@ import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
+import net.minecraftforge.registries.ForgeRegistries
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
@@ -26,6 +27,7 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -386,6 +388,7 @@ class KiltLoader {
         val launcher = FabricLauncherBase.getLauncher()
         val exceptions = mutableListOf<Exception>()
 
+        initForge()
         loadForgeBuiltinMod()
 
         while (modLoadingQueue.isNotEmpty()) {
@@ -393,14 +396,13 @@ class KiltLoader {
                 val mod = modLoadingQueue.remove()
 
                 // add the mod to the class path
-                launcher.addToClassPath(mod.remappedModFile.toPath())
+                val modPath = mod.remappedModFile.toURI().toPath()
+                launcher.addToClassPath(modPath)
 
                 val scanData = ModFileScanData()
                 scanData.addModFileInfo(ModFileInfo(mod))
 
                 mod.scanData = scanData
-
-                addModToFabric(mod)
 
                 // basically emulate how Forge loads stuff
                 try {
@@ -427,7 +429,7 @@ class KiltLoader {
                             // it.annotationData["value"] as String - Mod ID
 
                             try {
-                                val clazz = Class.forName(it.clazz.className, false, launcher.targetClassLoader)
+                                val clazz = launcher.loadIntoTarget(it.clazz.className)
                                 mod.modObject = clazz.getDeclaredConstructor().newInstance()
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -438,6 +440,7 @@ class KiltLoader {
                     throw e
                 }
 
+                addModToFabric(mod)
                 mods.add(mod)
 
                 mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
@@ -478,6 +481,12 @@ class KiltLoader {
         val modMap = modMapField.get(FabricLoaderImpl.INSTANCE) as MutableMap<String, ModContainerImpl>
 
         modMap[mod.modInfo.mod.modId] = mod.container.fabricModContainer
+    }
+
+    // We need to initialize all early Forge-related things immediately,
+    // because otherwise things will break entirely.
+    private fun initForge() {
+        ForgeRegistries.init()
     }
 
     companion object {

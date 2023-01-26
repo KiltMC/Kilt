@@ -9,15 +9,13 @@ import xyz.bluspring.kilt.loader.KiltLoader
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
-        loader.loadMods()
-
         loader.mods.forEach { mod ->
             mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
         }
     }
 
     companion object {
-        val MOD_ID = "kilt"
+        const val MOD_ID = "kilt"
 
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
         val loader: KiltLoader = KiltLoader()

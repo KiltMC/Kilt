@@ -5,6 +5,8 @@ import net.minecraft.core.Registry
 import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.Bootstrap
+import net.minecraftforge.common.Tags
 import net.minecraftforge.common.loot.IGlobalLootModifier
 import net.minecraftforge.common.world.BiomeModifier
 import net.minecraftforge.common.world.StructureModifier
@@ -12,6 +14,14 @@ import net.minecraftforge.fluids.FluidType
 import net.minecraftforge.registries.holdersets.HolderSetType
 
 object ForgeRegistries {
+    init {
+        Bootstrap.bootStrap()
+        init()
+        Keys.init()
+        Tags.init()
+        GameData.init()
+    }
+
     // Game objects
     @JvmField val BLOCKS = forgeRegistry(Registry.BLOCK_REGISTRY)
     @JvmField val FLUIDS = forgeRegistry(Registry.FLUID_REGISTRY)
@@ -91,6 +101,8 @@ object ForgeRegistries {
         return RegistryManager.ACTIVE.getRegistry(registry)
     }
 
+    internal fun init() {}
+
     object Keys {
         @JvmField val BLOCKS = Registry.BLOCK_REGISTRY
         @JvmField val FLUIDS = Registry.FLUID_REGISTRY
@@ -144,5 +156,7 @@ object ForgeRegistries {
         private fun <T> key(name: String): ResourceKey<Registry<T>> {
             return ResourceKey.createRegistryKey(ResourceLocation(name))
         }
+
+        internal fun init() {}
     }
 }
