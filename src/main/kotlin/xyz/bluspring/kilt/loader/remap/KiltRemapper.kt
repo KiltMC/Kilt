@@ -37,14 +37,29 @@ object KiltRemapper {
     // Mainly for debugging, so already-remapped Forge mods will be remapped again.
     private val forceRemap = System.getProperty("kilt.forceRemap")?.lowercase() == "true"
 
+    // Mainly for debugging, used to test unobfuscated mods and ensure that Kilt is running as intended.
+    private val disableRemaps = System.getProperty("kilt.noRemap")?.lowercase() == "true"
+
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
+        if (disableRemaps) {
+            logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
+            logger.warn("Only have this enabled if you know what you're doing!")
+
+            modLoadingQueue.forEach {
+                if (it.modFile != null)
+                    it.remappedModFile = it.modFile
+            }
+
+            return listOf()
+        }
+
         val launcher = FabricLauncherBase.getLauncher()
 
         val srgMappedMinecraft = remapMinecraft()
         val gameClassPath = getGameClassPath()
 
         if (forceRemap)
-            logger.info("Forced remaps enabled! All Forge mods will be remapped.")
+            logger.warn("Forced remaps enabled! All Forge mods will be remapped.")
 
         val exceptions = mutableListOf<Exception>()
 
