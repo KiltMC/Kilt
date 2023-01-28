@@ -15,6 +15,7 @@ import net.minecraftforge.registries.holdersets.HolderSetType
 
 object ForgeRegistries {
     init {
+        println(ForgeRegistries::class.java.classLoader)
         Bootstrap.bootStrap()
         init()
         Keys.init()

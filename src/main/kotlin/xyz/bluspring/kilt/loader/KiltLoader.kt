@@ -27,7 +27,7 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
-import java.nio.file.Path
+import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -391,13 +391,15 @@ class KiltLoader {
         initForge()
         loadForgeBuiltinMod()
 
+        modLoadingQueue.forEach { mod ->
+            // add the mods to the class path first
+            val modPath = mod.remappedModFile.toURI().toPath()
+            launcher.addToClassPath(modPath)
+        }
+
         while (modLoadingQueue.isNotEmpty()) {
             try {
                 val mod = modLoadingQueue.remove()
-
-                // add the mod to the class path
-                val modPath = mod.remappedModFile.toURI().toPath()
-                launcher.addToClassPath(modPath)
 
                 val scanData = ModFileScanData()
                 scanData.addModFileInfo(ModFileInfo(mod))
