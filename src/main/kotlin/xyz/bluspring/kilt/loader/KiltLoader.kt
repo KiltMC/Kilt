@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.ModLoadingState as ForgeModLoadingState
 import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -482,11 +483,16 @@ class KiltLoader {
     private val statesProvider = ForgeStatesProvider()
 
     fun runPhaseExecutors(phase: ModLoadingPhase) {
-        statesProvider.allStates.forEach {
-            if (it.phase() == phase) {
-                it.inlineRunnable().ifPresent { consumer ->
-                    consumer.accept(ModList.get())
-                }
+        statesProvider.allStates.filter { it.phase() == phase }.sortedWith { first, second ->
+            if (first.previous() == second.name())
+                1
+            else if (first.name() == second.previous())
+                0
+            else
+                -1
+        }.forEach {
+            it.inlineRunnable().ifPresent { consumer ->
+                consumer.accept(ModList.get())
             }
         }
     }

@@ -10,7 +10,7 @@ object ArgumentTypeInfosRemap : ArgumentTypeInfos() {
     @JvmStatic
     @Synchronized
     fun <A : ArgumentType<*>, T : ArgumentTypeInfo.Template<A>, I : ArgumentTypeInfo<A, T>> registerByClass(infoClass: Class<A>, argumentTypeInfo: I): I {
-        ArgumentTypeInfosAccessor.getByClass()[infoClass] = argumentTypeInfo;
+        BY_CLASS[infoClass] = argumentTypeInfo;
 
         return argumentTypeInfo;
     }

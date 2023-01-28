@@ -39,6 +39,8 @@ accessible field net/minecraft/client/renderer/ItemBlockRenderTypes TYPE_BY_FLUI
 accessible field net/minecraft/client/renderer/ItemBlockRenderTypes TYPE_BY_BLOCK Ljava/util/Map;
 accessible field net/minecraft/core/MappedRegistry frozen Z
 mutable field net/minecraft/core/MappedRegistry frozen Z
+accessible field net/minecraft/commands/synchronization/ArgumentTypeInfos BY_CLASS Ljava/util/Map;
+accessible field net/minecraft/world/entity/SpawnPlacements DATA_BY_TYPE Ljava/util/Map;
 
 # Directly from Forge's Access Transformers, ported to Access Wideners.
 accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_

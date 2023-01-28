@@ -51,6 +51,9 @@ class DeferredRegister<T> private constructor(
     class EventDispatcher(private val register: DeferredRegister<*>) {
         @SubscribeEvent
         fun handleEvent(event: RegisterEvent) {
+            if (event.registryKey != register.registryKey)
+                return
+
             register.fabricRegister.register()
             while (register.fabricRegisteredList.isNotEmpty()) {
                 register.fabricRegisteredList.remove().fabricRegistryObject.updateRef()

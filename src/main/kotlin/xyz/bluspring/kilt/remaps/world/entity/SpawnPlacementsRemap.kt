@@ -11,13 +11,13 @@ object SpawnPlacementsRemap : SpawnPlacements() {
     fun fireSpawnPlacementEvent() {
         val map = mutableMapOf<EntityType<*>, SpawnPlacementRegisterEvent.MergedSpawnPredicate<*>>()
 
-        SpawnPlacementsAccessor.getDataByType().forEach { (entityType, data) ->
+        DATA_BY_TYPE.forEach { (entityType, data) ->
             map[entityType] = SpawnPlacementRegisterEvent.MergedSpawnPredicate(data.predicate, data.placement, data.heightMap)
         }
         ModLoader.get().postEvent(SpawnPlacementRegisterEvent(map))
 
         map.forEach { (entityType, merged) ->
-            SpawnPlacementsAccessor.getDataByType()[entityType] = SpawnPlacements.Data(merged.heightmapType, merged.spawnType, merged.build())
+            DATA_BY_TYPE[entityType] = SpawnPlacements.Data(merged.heightmapType, merged.spawnType, merged.build())
         }
     }
 }

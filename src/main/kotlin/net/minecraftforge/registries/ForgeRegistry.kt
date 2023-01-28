@@ -401,9 +401,6 @@ class ForgeRegistry<V> internal constructor (
 
     @JvmName("sync")
     internal fun sync(name: ResourceLocation, from: ForgeRegistry<V>) {
-        if (this == from)
-            throw IllegalArgumentException("maybe i am you...")
-
         // realistically, this shouldn't be needed, since it *is* relying on
         // the Vanilla registry system internally here.
         // but if it is actually needed, well, fuck, guess I've eaten my words.

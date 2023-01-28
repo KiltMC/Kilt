@@ -28,11 +28,7 @@ class RegisterEvent internal constructor(
 
     fun <T> register(registryKey: ResourceKey<out Registry<*>>, consumer: Consumer<RegisterHelper<T>>) {
         if (this.registryKey == registryKey) {
-            consumer.accept(object : RegisterHelper<T> {
-                override fun register(name: ResourceLocation, value: T) {
-                    register(registryKey, name) { value }
-                }
-            })
+            consumer.accept(RegisterHelper { name, value -> register(registryKey, name) { value } })
         }
     }
 

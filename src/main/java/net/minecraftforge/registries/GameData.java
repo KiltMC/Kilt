@@ -239,7 +239,7 @@ public class GameData
         RegistryManager.VANILLA.registries.forEach((name, reg) ->
         {
             reg.validateContent(name);
-            reg.freeze();
+            //reg.freeze();
         });
         RegistryManager.VANILLA.registries.forEach(LOCK_VANILLA);
         RegistryManager.ACTIVE.registries.forEach(LOCK_VANILLA);
@@ -257,7 +257,7 @@ public class GameData
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void freezeData()
     {
-        LOGGER.debug(REGISTRIES, "Freezing registries");
+        /*LOGGER.debug(REGISTRIES, "Freezing registries");
         Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).freeze());
 
         for (Map.Entry<ResourceLocation, ForgeRegistry<?>> r : RegistryManager.ACTIVE.registries.entrySet())
@@ -278,7 +278,7 @@ public class GameData
         // the id mapping is finalized, no ids actually changed but this is a good place to tell everyone to 'bake' their stuff.
         fireRemapEvent(ImmutableMap.of(), true);
 
-        LOGGER.debug(REGISTRIES, "All registries frozen");
+        LOGGER.debug(REGISTRIES, "All registries frozen");*/
     }
 
     public static void revertToFrozen() {
@@ -346,8 +346,6 @@ public class GameData
 
                 ModLoader.get().postEvent(registerEvent);
 
-                if (forgeRegistry != null)
-                    forgeRegistry.freeze();
                 LOGGER.debug(REGISTRIES, "Applying holder lookups: {}", registryKey.location());
                 ObjectHolderRegistry.applyObjectHolders(registryKey.location()::equals);
                 LOGGER.debug(REGISTRIES, "Holder lookups applied: {}", registryKey.location());
