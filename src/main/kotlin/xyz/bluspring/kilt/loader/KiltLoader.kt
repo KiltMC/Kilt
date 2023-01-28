@@ -328,10 +328,10 @@ class KiltLoader {
                     version = modVersion,
                     displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
                     updateJSONURL = metadata.getConfigElement<String>("updateJSONURL").orElse(""),
-                    logoFile = metadata.getConfigElement<String>("logoFile").orElse(""),
+                    logoFile = metadata.getConfigElement<String>("logoFile").orElse(toml.getOrElse("logoFile", "")),
                     credits = metadata.getConfigElement<String>("credits").orElse(""),
                     authors = metadata.getConfigElement<String>("authors").orElse(""),
-                    description = metadata.getConfigElement<String>("logoFile").orElse("MISSING DESCRIPTION"),
+                    description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION"),
                     displayTest = ForgeModInfo.ModMetadata.DisplayTest.valueOf(metadata.getConfigElement<String>("displayTest").orElse("MATCH_VERSION")),
                     dependencies = mainConfig.getConfigList("dependencies", modId)
                         .map {

@@ -38,7 +38,7 @@ class KiltFabricModContainer(private val mod: ForgeMod) : ModContainerImpl(mod.f
     }
 
     override fun getPath(file: String): Path? {
-        return mod.modObject::class.java.getResource(file)?.toURI()?.toPath()
+        return mod.modObject::class.java.getResource("/$file")?.toURI()?.toPath()
     }
 
     override fun getInfo(): LoaderModMetadata {

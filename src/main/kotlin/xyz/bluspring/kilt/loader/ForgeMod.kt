@@ -216,9 +216,42 @@ class ForgeMod(
 
     }
 
+    private class CustomStringValue(private val stringValue: String) : CustomValue {
+        override fun getType(): CustomValue.CvType {
+            return CustomValue.CvType.STRING
+        }
+
+        override fun getAsObject(): CustomValue.CvObject {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsArray(): CustomValue.CvArray {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsString(): String {
+            return stringValue
+        }
+
+        override fun getAsNumber(): Number {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsBoolean(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+    }
+
     open class FabricModMetadata(private val modInfo: ForgeMod) : ModMetadata {
+        private val customValues = mutableMapOf<String, CustomValue>(
+            "name" to CustomStringValue(modInfo.modInfo.mod.displayName),
+            "description" to CustomStringValue(description),
+            "icon" to CustomStringValue(modInfo.modInfo.mod.logoFile)
+        )
+
         override fun getType(): String {
-            return "kilt"
+            return "fabric"
         }
 
         override fun getId(): String {
@@ -302,12 +335,12 @@ class ForgeMod(
             return false
         }
 
-        override fun getCustomValue(key: String?): CustomValue? {
-            return null
+        override fun getCustomValue(key: String): CustomValue? {
+            return customValues[key]
         }
 
         override fun getCustomValues(): MutableMap<String, CustomValue> {
-            return mutableMapOf()
+            return customValues
         }
 
         override fun containsCustomElement(key: String?): Boolean {
