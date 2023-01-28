@@ -19,16 +19,16 @@ import java.util.function.Predicate
 object ItemBlockRenderTypesRemap : ItemBlockRenderTypes() {
     internal val CUTOUT_MIPPED = ChunkRenderTypeSet.of(RenderType.cutoutMipped())
     internal val SOLID = ChunkRenderTypeSet.of(RenderType.solid())
-    internal val BLOCK_RENDER_TYPES = Util.make(Object2ObjectOpenHashMap<Holder.Reference<Block>, ChunkRenderTypeSet>(ItemBlockRenderTypesAccessor.getTypeByBlock().size, .5F)) {
+    internal val BLOCK_RENDER_TYPES = Util.make(Object2ObjectOpenHashMap<Holder.Reference<Block>, ChunkRenderTypeSet>(TYPE_BY_BLOCK.size, .5F)) {
         it.defaultReturnValue(SOLID)
-        ItemBlockRenderTypesAccessor.getTypeByBlock().forEach { entry ->
+        TYPE_BY_BLOCK.forEach { entry ->
             it[ForgeRegistries.BLOCKS.getDelegateOrThrow(entry.key)] = ChunkRenderTypeSet.of(entry.value)
         }
     }
     // why does this feel utterly pointless
-    internal val FLUID_RENDER_TYPES = Util.make(Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType>(ItemBlockRenderTypesAccessor.getTypeByFluid().size, .5F)) {
+    internal val FLUID_RENDER_TYPES = Util.make(Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType>(TYPE_BY_FLUID.size, .5F)) {
         it.defaultReturnValue(RenderType.solid())
-        ItemBlockRenderTypesAccessor.getTypeByFluid().forEach { entry ->
+        TYPE_BY_FLUID.forEach { entry ->
             it[ForgeRegistries.FLUIDS.getDelegateOrThrow(entry.key)] = entry.value
         }
     }

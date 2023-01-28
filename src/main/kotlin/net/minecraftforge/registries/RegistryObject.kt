@@ -13,7 +13,7 @@ import java.util.stream.Stream
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject as FabricRegistryObject
 
 class RegistryObject<T> internal constructor(
-    private val fabricRegistryObject: FabricRegistryObject<T>
+    internal val fabricRegistryObject: FabricRegistryObject<T>
 ) : Supplier<T> {
     private var modId = "kilt"
 

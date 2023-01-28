@@ -249,7 +249,9 @@ public class GameData
     public static void unfreezeData()
     {
         LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
-        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistryAccessor)r).setFrozen(false));
+        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> {
+            ((MappedRegistry) r).frozen = false;
+        });
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

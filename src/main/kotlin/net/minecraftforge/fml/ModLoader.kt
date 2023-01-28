@@ -51,7 +51,7 @@ class ModLoader {
 
         @JvmStatic
         fun get(): ModLoader {
-            return if (this::instance.isInitialized)
+            return if (!this::instance.isInitialized)
                 ModLoader().apply {
                     instance = this
                 }

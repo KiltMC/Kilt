@@ -11,8 +11,12 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
+import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
+import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
@@ -473,6 +477,18 @@ class KiltLoader {
 
     fun getMod(id: String): ForgeMod? {
         return mods.firstOrNull { it.modInfo.mod.modId == id }
+    }
+
+    private val statesProvider = ForgeStatesProvider()
+
+    fun runPhaseExecutors(phase: ModLoadingPhase) {
+        statesProvider.allStates.forEach {
+            if (it.phase() == phase) {
+                it.inlineRunnable().ifPresent { consumer ->
+                    consumer.accept(ModList.get())
+                }
+            }
+        }
     }
 
     private fun addModToFabric(mod: ForgeMod) {

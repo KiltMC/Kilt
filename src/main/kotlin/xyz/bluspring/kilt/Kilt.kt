@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt
 
 import net.fabricmc.api.ModInitializer
+import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import org.slf4j.Logger
@@ -9,9 +10,14 @@ import xyz.bluspring.kilt.loader.KiltLoader
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        loader.runPhaseExecutors(ModLoadingPhase.LOAD)
+        loader.runPhaseExecutors(ModLoadingPhase.GATHER)
+
         loader.mods.forEach { mod ->
             mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
         }
+
+        loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
     }
 
     companion object {

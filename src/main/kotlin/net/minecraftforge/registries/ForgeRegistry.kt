@@ -7,6 +7,7 @@ import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar
 import io.netty.buffer.Unpooled
 import net.minecraft.core.Holder
 import net.minecraft.core.HolderSet
+import net.minecraft.core.MappedRegistry
 import net.minecraft.core.Registry
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
@@ -386,8 +387,8 @@ class ForgeRegistry<V> internal constructor (
 
     @JvmName("unfreeze")
     internal fun unfreeze() {
-        // hope this works
-        (vanillaRegistry as MappedRegistryAccessor).setFrozen(false)
+        // it did not work, needed to AW it
+        (vanillaRegistry as MappedRegistry<V>).frozen = false
     }
 
     @JvmName("resetDelegates")
