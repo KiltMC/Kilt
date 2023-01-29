@@ -127,10 +127,10 @@ public interface IForgeItemStack extends ICapabilitySerializable<CompoundTag>
      * @param player    The Player that is wielding the item
      * @return True to prevent harvesting, false to continue as normal
      */
-    default boolean onBlockStartBreak(BlockPos pos, Player player)
+    /*default boolean onBlockStartBreak(BlockPos pos, Player player)
     {
         return !self().isEmpty() && self().getItem().onBlockStartBreak(self(), pos, player);
-    }
+    }*/
 
     /**
      * Called when the player is mining a block and the item in his hand changes.

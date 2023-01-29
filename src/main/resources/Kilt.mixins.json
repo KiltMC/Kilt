@@ -36,6 +36,7 @@
     "WoodTypeAccessor"
   ],
   "client": [
+    "DebugScreenOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -12,11 +12,14 @@ import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
 import net.minecraftforge.common.ForgeStatesProvider
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
+import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
@@ -423,9 +426,31 @@ class KiltLoader {
                         }
                     }
 
+                    // Automatically subscribe events
+                    scanData.annotations
+                        .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
+                        .forEach {
+                            // it.annotationData["modid"] as String
+                            // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
+
+                            try {
+                                val busTypeHolder = it.annotationData["bus"] as ModAnnotation.EnumHolder
+                                val busType = Mod.EventBusSubscriber.Bus.valueOf(busTypeHolder.value)
+
+                                val clazz = launcher.loadIntoTarget(it.clazz.className)
+                                if (busType == Mod.EventBusSubscriber.Bus.MOD) {
+                                    mod.eventBus.register(clazz)
+                                } else {
+                                    MinecraftForge.EVENT_BUS.register(clazz)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                exceptions.add(e)
+                            }
+                        }
+
                     // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
                     // I hope.
-
                     scanData.annotations
                         .filter { it.annotationType == MOD_ANNOTATION }
                         .forEach {
@@ -515,7 +540,8 @@ class KiltLoader {
         val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
         val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
 
-        private val MOD_ANNOTATION = Type.getType("Lnet/minecraftforge/fml/common/Mod;")
+        private val MOD_ANNOTATION = Type.getType(Mod::class.java)
+        private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(Mod.EventBusSubscriber::class.java)
 
         val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
             if (!this.exists())

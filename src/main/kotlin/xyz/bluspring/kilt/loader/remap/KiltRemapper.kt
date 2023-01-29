@@ -63,13 +63,6 @@ object KiltRemapper {
 
         val exceptions = mutableListOf<Exception>()
 
-        logger.info("Remapping Forge mods to Intermediary...")
-
-        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "srg", "intermediary")
-        // SRG to Intermediary
-        val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "srg", "intermediary"))
-            .extraRemapper(extraRemapper)
-
         val modRemapQueue = ArrayList<ForgeMod>(modLoadingQueue.size).apply {
             addAll(modLoadingQueue)
         }
@@ -107,6 +100,13 @@ object KiltRemapper {
         }
 
         logger.info("Finished remapping mods to use Kilt-remapped APIs!")
+
+        logger.info("Remapping Forge mods to Intermediary...")
+
+        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "srg", "intermediary")
+        // SRG to Intermediary
+        val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "srg", "intermediary"))
+            .extraRemapper(extraRemapper)
 
         // Second iteration, for normal mod loading.
         modRemapQueue.forEach { mod ->
@@ -201,10 +201,10 @@ object KiltRemapper {
 
     private fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
-            arrayOf(
-                FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
-                Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()
-            )
+            mutableListOf<Path>().apply {
+                this.addAll(FabricLauncherBase.getLauncher().classPath)
+                this.add(Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
+            }.toTypedArray()
         else
             mutableListOf<Path>().apply {
                 val remapClasspathFile = System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE)
