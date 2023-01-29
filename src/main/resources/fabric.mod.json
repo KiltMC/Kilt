@@ -39,9 +39,6 @@
     "com_electronwill_night-config_toml": "*",
     "fabric-language-kotlin": "*"
   },
-  "provides": [
-    "forgeconfigapiport"
-  ],
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_2535": ["xyz/bluspring/kilt/injections/ConnectionInjection"],

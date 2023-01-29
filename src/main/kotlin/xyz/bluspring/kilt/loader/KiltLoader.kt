@@ -16,8 +16,6 @@ import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
-import net.minecraftforge.fml.ModLoadingState as ForgeModLoadingState
-import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
@@ -32,7 +30,6 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
-import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -331,7 +328,7 @@ class KiltLoader {
                     logoFile = metadata.getConfigElement<String>("logoFile").orElse(toml.getOrElse("logoFile", "")),
                     credits = metadata.getConfigElement<String>("credits").orElse(""),
                     authors = metadata.getConfigElement<String>("authors").orElse(""),
-                    description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION"),
+                    description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION").replace("\r", ""),
                     displayTest = ForgeModInfo.ModMetadata.DisplayTest.valueOf(metadata.getConfigElement<String>("displayTest").orElse("MATCH_VERSION")),
                     dependencies = mainConfig.getConfigList("dependencies", modId)
                         .map {
