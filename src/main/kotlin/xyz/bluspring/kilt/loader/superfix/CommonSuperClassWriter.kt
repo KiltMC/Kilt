@@ -68,7 +68,7 @@ class CommonSuperClassWriter(
         val superClass = superClassProvider.apply(className)
         if (superClass == null) {
             try {
-                val clazz = Class.forName(className.replace("/", "."))
+                val clazz = Class.forName(className.replace("/", "."), false, this::class.java.classLoader)
                 computeHierarchyFromClass(className, clazz)
             } catch (_: Exception) {
                 CLASS_HIERARCHIES[className] = setOf("java/lang/Object")

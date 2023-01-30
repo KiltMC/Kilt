@@ -14,8 +14,10 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.TypeInsnNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.function.Function
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
@@ -24,11 +26,9 @@ import java.util.regex.Pattern
 object StaticAccessFixer {
     private val logger = Kilt.logger
     private val modifyPackages = listOf(
-        "net/minecraftforge/fml/",
+        "net/minecraftforge/",
         "xyz/bluspring/kilt/remaps/",
-        "net/minecraftforge/registries/",
         "xyz/bluspring/kilt/workarounds/",
-        "net/minecraftforge/common/capabilities/"
     )
 
     fun fixMods(mods: Collection<ForgeMod>, dir: File) {
@@ -63,7 +63,13 @@ object StaticAccessFixer {
 
                     modifyClass(classNode)
 
-                    val classWriter = ClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
+                    val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classNode, Function {
+                        val classEntry = mod.jar.getJarEntry("${it.replace(".", "/")}.class")
+                        return@Function if (classEntry == null)
+                            null
+                        else
+                            mod.jar.getInputStream(classEntry).readAllBytes()
+                    })
                     classNode.accept(classWriter)
 
                     jarOutput.putNextEntry(JarEntry(entry.name))
@@ -99,7 +105,6 @@ object StaticAccessFixer {
                     if (modifyPackages.none { fieldInstruction.owner.startsWith(it) })
                         return@instruction
 
-                    method.instructions.remove(instruction) // remove it first
                     val insnList = InsnList()
 
                     // This is equivalent to:
@@ -116,12 +121,10 @@ object StaticAccessFixer {
                         else this
                     }))
 
-                    if (instruction.previous != null)
-                        method.instructions.insert(instruction.previous, insnList)
-                    else if (instruction.next != null)
-                        method.instructions.insertBefore(instruction.next, insnList)
-                    else
-                        method.instructions.insert(insnList)
+                    // Place it in front of the original instruction,
+                    // only then remove it
+                    method.instructions.insert(instruction, insnList)
+                    method.instructions.remove(instruction)
                 }
             }
 
