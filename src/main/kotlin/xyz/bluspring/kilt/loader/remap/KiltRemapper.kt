@@ -13,6 +13,8 @@ import org.apache.commons.codec.digest.DigestUtils
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
+import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -167,6 +169,9 @@ object KiltRemapper {
 
             logger.info("Finished remapping Forge mods from Intermediary to the \"${launcher.mappingConfiguration.targetNamespace}\" namespace!")
         }
+
+        StaticAccessFixer.fixMods(modLoadingQueue, remappedModsDir)
+        CommonSuperFixer.fixMods(modLoadingQueue, remappedModsDir)
 
         return exceptions
     }

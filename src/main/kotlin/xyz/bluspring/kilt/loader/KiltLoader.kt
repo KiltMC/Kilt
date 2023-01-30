@@ -11,6 +11,7 @@ import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
+import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
@@ -132,6 +133,10 @@ class KiltLoader {
                     dependencies.add(MissingDependencyLoadingState(dependency))
                     return@dependencies
                 }
+
+                // If it's not required, no need to worry.
+                if (modLoadingQueue.none { it.modInfo.mod.modId == dependency.modId })
+                    return@dependencies
 
                 val dependencyMod = modLoadingQueue.first { it.modInfo.mod.modId == dependency.modId }
 
@@ -532,6 +537,7 @@ class KiltLoader {
     // We need to initialize all early Forge-related things immediately,
     // because otherwise things will break entirely.
     private fun initForge() {
+        Bootstrap.bootStrap() // fuck you
         ForgeRegistries.init()
     }
 

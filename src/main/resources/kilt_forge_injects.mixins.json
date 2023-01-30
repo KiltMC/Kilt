@@ -34,6 +34,7 @@
     "world.entity.player.PlayerInject",
     "world.item.BoneMealItemInject",
     "world.item.BucketItemInject",
+    "world.item.DyeColorInject",
     "world.item.ItemInject",
     "world.item.ItemPropertiesInject",
     "world.item.ItemStackInject",

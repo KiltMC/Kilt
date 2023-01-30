@@ -15,7 +15,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
     // this should be Any, but we're only handling Java mods here so
     private var languageExtension: FMLJavaModLoadingContext = FMLJavaModLoadingContext(mod)
 
-    val activeContainer = KiltModContainer(mod)
+    val activeContainer: ModContainer = KiltModContainer(mod)
     val activeNamespace: String
         get() {
             return mod.modInfo.mod.modId
@@ -42,6 +42,14 @@ class ModLoadingContext(private val mod: ForgeMod) {
         private val tomlCache = ConcurrentHashMap<String, String>()
 
         private val tomlParser = TomlParser()
+
+        val activeContainer: ModContainer
+            get() {
+                val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                val source = stackWalker.callerClass
+
+                return get(source).activeContainer
+            }
 
         @JvmStatic
         fun get(): ModLoadingContext {
