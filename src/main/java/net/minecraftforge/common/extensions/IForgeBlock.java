@@ -5,57 +5,42 @@
 
 package net.minecraftforge.common.extensions;
 
-import java.util.Optional;
-import java.util.function.BiConsumer;
-
 import net.minecraft.client.Camera;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.WitherSkull;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.core.Direction;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.IPlantable;
-
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
-import xyz.bluspring.kilt.remaps.world.item.AxeItemRemap;
-import xyz.bluspring.kilt.remaps.world.item.ShovelItemRemap;
+
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 @SuppressWarnings("deprecation")
 public interface IForgeBlock

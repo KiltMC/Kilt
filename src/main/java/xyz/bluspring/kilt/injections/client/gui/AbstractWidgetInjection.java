@@ -1,6 +1,8 @@
 package xyz.bluspring.kilt.injections.client.gui;
 
 public interface AbstractWidgetInjection {
+    int UNSET_FG_COLOR = -1;
+
     default int getFGColor() {
         throw new IllegalStateException();
     }

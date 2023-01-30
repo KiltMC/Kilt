@@ -6,14 +6,11 @@
 package net.minecraftforge.registries;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
-import java.util.LinkedHashSet;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.MappedRegistry;
@@ -23,7 +20,6 @@ import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -33,7 +29,6 @@ import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.ForgeHooks;
@@ -49,31 +44,21 @@ import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.util.EnhancedRuntimeException;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
 import net.minecraftforge.registries.holdersets.HolderSetType;
-
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import xyz.bluspring.kilt.mixin.MappedRegistryAccessor;
-import xyz.bluspring.kilt.remaps.core.MappedRegistryRemap;
-import xyz.bluspring.kilt.remaps.world.entity.SpawnPlacementsRemap;
+import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
+import xyz.bluspring.kilt.injections.entity.SpawnPlacementsInjection;
 import xyz.bluspring.kilt.remaps.world.level.levelgen.DebugLevelSourceRemap;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static net.minecraftforge.registries.ForgeRegistry.REGISTRIES;
 import static net.minecraftforge.registries.ForgeRegistries.Keys.*;
+import static net.minecraftforge.registries.ForgeRegistry.REGISTRIES;
 
 /**
  * INTERNAL ONLY
@@ -325,7 +310,7 @@ public class GameData
         keySet.addAll(RegistryManager.getVanillaRegistryKeys());
         keySet.addAll(BuiltinRegistries.REGISTRY.keySet());
 
-        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryRemap.getKnownRegistries());
+        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
         ordered.retainAll(keySet);
         ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
 
@@ -365,7 +350,7 @@ public class GameData
         } else
         {
             ForgeHooks.modifyAttributes();
-            SpawnPlacementsRemap.fireSpawnPlacementEvent();
+            SpawnPlacementsInjection.fireSpawnPlacementEvent();
         }
     }
 

@@ -4,6 +4,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
 import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 public interface IngredientInjection {
     default boolean isVanilla() {
         throw new IllegalStateException();
@@ -18,5 +21,9 @@ public interface IngredientInjection {
 
     default boolean isSimple() {
         return true;
+    }
+
+    static Ingredient merge(Collection<Ingredient> parts) {
+        return Ingredient.fromValues(parts.stream().flatMap((it) -> Arrays.stream(it.values)));
     }
 }

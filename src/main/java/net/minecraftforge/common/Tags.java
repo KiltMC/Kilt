@@ -17,9 +17,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
-import xyz.bluspring.kilt.remaps.tags.BlockTagsRemap;
-import xyz.bluspring.kilt.remaps.tags.FluidTagsRemap;
-import xyz.bluspring.kilt.remaps.tags.ItemTagsRemap;
+import xyz.bluspring.kilt.injections.tags.BlockTagsInjection;
+import xyz.bluspring.kilt.injections.tags.FluidTagsInjection;
+import xyz.bluspring.kilt.injections.tags.ItemTagsInjection;
 
 public class Tags
 {
@@ -180,7 +180,7 @@ public class Tags
 
         private static TagKey<Block> tag(String name)
         {
-            return BlockTagsRemap.create(new ResourceLocation("forge", name));
+            return BlockTagsInjection.create(new ResourceLocation("forge", name));
         }
     }
 
@@ -532,7 +532,7 @@ public class Tags
 
         private static TagKey<Item> tag(String name)
         {
-            return ItemTagsRemap.create(new ResourceLocation("forge", name));
+            return ItemTagsInjection.create(new ResourceLocation("forge", name));
         }
     }
 
@@ -551,7 +551,7 @@ public class Tags
 
         private static TagKey<Fluid> tag(String name)
         {
-            return FluidTagsRemap.create(new ResourceLocation("forge", name));
+            return FluidTagsInjection.create(new ResourceLocation("forge", name));
         }
     }
 
