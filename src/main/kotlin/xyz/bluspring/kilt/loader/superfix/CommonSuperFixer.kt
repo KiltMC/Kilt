@@ -25,6 +25,12 @@ object CommonSuperFixer {
             logger.info("Modifying ${mod.modInfo.mod.displayName}...")
             val hash = DigestUtils.md5Hex(mod.remappedModFile.inputStream())
             val modifiedJarFile = File(dir, "${mod.modInfo.mod.modId}_superfix_$hash.jar")
+
+            if (modifiedJarFile.exists()) {
+                mod.remappedModFile = modifiedJarFile
+                return@forEach
+            }
+
             modifiedJarFile.createNewFile()
 
             val output = modifiedJarFile.outputStream()

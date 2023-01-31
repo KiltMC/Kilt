@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagKey
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.SubscribeEvent
+import org.apache.logging.log4j.LogManager
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
@@ -49,14 +50,40 @@ class DeferredRegister<T> private constructor(
     }
 
     class EventDispatcher(private val register: DeferredRegister<*>) {
+        private val logger = LogManager.getLogger("Kilt Registry")
+
         @SubscribeEvent
         fun handleEvent(event: RegisterEvent) {
             if (event.registryKey != register.registryKey)
                 return
 
-            register.fabricRegister.register()
+            register(register.fabricRegister)
+
+            if (event.forgeRegistry != null) // let's register you too
+                register(event.forgeRegistry.fabricRegistry)
+
             while (register.fabricRegisteredList.isNotEmpty()) {
                 register.fabricRegisteredList.remove().fabricRegistryObject.updateRef()
+            }
+        }
+
+        private fun <T> register(fabricRegistry: LazyRegistrar<T>) {
+            // Recreate LazyRegistrar#register(), to make it also check and make sure
+            // the registry doesn't register multiple times. This is to temporarily work around
+            // a bug that causes double-registering in Kilt.
+            val registry: Registry<T> = fabricRegistry.makeRegistry().get() as Registry<T>
+            fabricRegistry.entries.forEach {
+                println("registering ${it.key}")
+                if (registry.containsKey(it.key!!)) {
+                    logger.warn("Registry object ${it.key!!} in ${registry.key()} called for registry twice! This is likely a bug in Kilt itself, and has been ignored.")
+                    it.updateRef() // it already exists, let's just get it
+                    return@forEach
+                }
+
+                it.ifPresent { bruh ->
+                    Registry.register(registry, it.key!!, bruh)
+                }
+                it.updateRef()
             }
         }
     }

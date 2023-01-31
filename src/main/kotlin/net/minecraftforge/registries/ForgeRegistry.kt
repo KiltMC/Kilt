@@ -31,7 +31,7 @@ class ForgeRegistry<V> internal constructor (
     val builder: RegistryBuilder<V>
 ) : IForgeRegistryInternal<V> {
     override val registryKey: ResourceKey<Registry<V>> = ResourceKey.createRegistryKey(registryName)
-    private val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
+    val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
     private val vanillaRegistryGetter = fabricRegistry.makeRegistry()
     val vanillaRegistry: Registry<V>
         get() {

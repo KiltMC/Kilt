@@ -16,6 +16,7 @@ import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.common.Mod
@@ -431,6 +432,9 @@ class KiltLoader {
                         }
                     }
 
+                    addModToFabric(mod)
+                    mods.add(mod)
+
                     // Automatically subscribe events
                     scanData.annotations
                         .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
@@ -439,14 +443,21 @@ class KiltLoader {
                             // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                             try {
-                                val busTypeHolder = it.annotationData["bus"] as ModAnnotation.EnumHolder
-                                val busType = Mod.EventBusSubscriber.Bus.valueOf(busTypeHolder.value)
+                                val busType = Mod.EventBusSubscriber.Bus.valueOf(
+                                    if (it.annotationData.contains("bus"))
+                                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value
+                                    else "FORGE"
+                                )
 
                                 val clazz = launcher.loadIntoTarget(it.clazz.className)
+                                val constructor = clazz.getDeclaredConstructor()
+                                constructor.isAccessible = true // some people set this to private
+
+                                val instance = constructor.newInstance()
                                 if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                                    mod.eventBus.register(clazz)
+                                    mod.eventBus.register(instance)
                                 } else {
-                                    MinecraftForge.EVENT_BUS.register(clazz)
+                                    MinecraftForge.EVENT_BUS.register(instance)
                                 }
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -464,7 +475,9 @@ class KiltLoader {
 
                             try {
                                 val clazz = launcher.loadIntoTarget(it.clazz.className)
+                                ModLoadingContext.kiltActiveModId = mod.modInfo.mod.modId
                                 mod.modObject = clazz.getDeclaredConstructor().newInstance()
+                                ModLoadingContext.kiltActiveModId = null
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 exceptions.add(e)
@@ -473,9 +486,6 @@ class KiltLoader {
                 } catch (e: Exception) {
                     throw e
                 }
-
-                addModToFabric(mod)
-                mods.add(mod)
 
                 mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
             } catch (e: Exception) {
@@ -510,15 +520,18 @@ class KiltLoader {
     private val statesProvider = ForgeStatesProvider()
 
     fun runPhaseExecutors(phase: ModLoadingPhase) {
-        statesProvider.allStates.filter { it.phase() == phase }.sortedWith { first, second ->
+        val sortedStates = statesProvider.allStates.filter { it.phase() == phase }.sortedWith { first, second ->
             if (first.previous() == second.name())
                 1
             else if (first.name() == second.previous())
                 0
             else
                 -1
-        }.forEach {
-            it.inlineRunnable().ifPresent { consumer ->
+        }
+
+        for (state in sortedStates) {
+            println("running ${state.name()} in ${state.phase()}")
+            state.inlineRunnable().ifPresent { consumer ->
                 consumer.accept(ModList.get())
             }
         }

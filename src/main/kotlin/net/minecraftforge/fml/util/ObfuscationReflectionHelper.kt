@@ -1,7 +1,6 @@
 package net.minecraftforge.fml.util
 
 import cpw.mods.modlauncher.api.INameMappingService
-import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
@@ -20,4 +19,12 @@ object ObfuscationReflectionHelper {
         // violate the redistribution part of MojMaps.
         return name
     }
+
+    class UnableToAccessFieldException private constructor(e: Exception) : RuntimeException(e)
+
+    class UnableToFindFieldException private constructor(e: Exception) : RuntimeException(e)
+
+    class UnableToFindMethodException(failed: Throwable?) : RuntimeException(failed)
+
+    class UnknownConstructorException(message: String?) : RuntimeException(message)
 }

@@ -26,7 +26,7 @@ import java.util.regex.Pattern
 object StaticAccessFixer {
     private val logger = Kilt.logger
     private val modifyPackages = listOf(
-        "net/minecraftforge/",
+        "net/minecraftforge/registries/",
         "xyz/bluspring/kilt/remaps/",
         "xyz/bluspring/kilt/workarounds/",
     )
@@ -42,6 +42,12 @@ object StaticAccessFixer {
 
             val hash = DigestUtils.md5Hex(mod.remappedModFile.inputStream())
             val modifiedJarFile = File(dir, "${mod.modInfo.mod.modId}_modified_$hash.jar")
+
+            if (modifiedJarFile.exists()) {
+                mod.remappedModFile = modifiedJarFile
+                return@forEach
+            }
+
             modifiedJarFile.createNewFile()
 
             val output = modifiedJarFile.outputStream()

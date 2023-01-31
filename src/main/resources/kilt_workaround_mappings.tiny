@@ -14,3 +14,4 @@ c	net/minecraft/client/renderer/block/model/ItemTransform	xyz/bluspring/kilt/rem
 c	net/minecraftforge/common/IPlantable	io/github/fabricators_of_create/porting_lib/util/IPlantable
 c	net/minecraftforge/common/PlantType	io/github/fabricators_of_create/porting_lib/util/PlantType
 c	net/minecraftforge/fml/config/ModConfig	xyz/bluspring/kilt/remaps/fml/config/ModConfigRemap
+c	net/minecraft/world/level/block/LiquidBlock	xyz/bluspring/kilt/remaps/world/level/block/LiquidBlockRemap

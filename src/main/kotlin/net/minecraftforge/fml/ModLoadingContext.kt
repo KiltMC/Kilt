@@ -28,11 +28,13 @@ class ModLoadingContext(private val mod: ForgeMod) {
     // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise
     // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
-        net.minecraftforge.api.ModLoadingContext.registerConfig(mod.modInfo.mod.modId, type, spec, fileName)
+        val modId = kiltActiveModId ?: mod.modInfo.mod.modId
+        net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec, fileName)
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
-        net.minecraftforge.api.ModLoadingContext.registerConfig(mod.modInfo.mod.modId, type, spec)
+        val modId = kiltActiveModId ?: mod.modInfo.mod.modId
+        net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec)
     }
 
     companion object {
@@ -43,8 +45,14 @@ class ModLoadingContext(private val mod: ForgeMod) {
 
         private val tomlParser = TomlParser()
 
+        // oh so that's why they did it like that
+        var kiltActiveModId: String? = null
+
         val activeContainer: ModContainer
             get() {
+                if (kiltActiveModId == null)
+                    return Kilt.loader.mods.first { it.modInfo.mod.modId == kiltActiveModId }.container
+
                 val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                 val source = stackWalker.callerClass
 
