@@ -16,6 +16,11 @@ public class EnchantmentCategoryInject implements EnchantmentCategoryInjection, 
     private Predicate<Item> delegate;
 
     @Override
+    public Predicate<Item> getDelegate() {
+        return delegate;
+    }
+
+    @Override
     public void setDelegate(Predicate<Item> delegate) {
         this.delegate = delegate;
     }

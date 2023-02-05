@@ -1,11 +1,16 @@
 package xyz.bluspring.kilt;
 
-import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 
+// I use this class to just throw stuff into and
+// see how the bytecode looks when it's built.
+// I know ASM-ifier exists, but this is a better
+// learning experience for me.
 public class TestingMoreShit {
     private static DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "fuck");
 
@@ -15,6 +20,10 @@ public class TestingMoreShit {
 
     public TestingMoreShit(ForgeRegistry<Block> registry) {
         block = registry;
+    }
+
+    public boolean moreRandomShit(Item item) {
+        return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
     }
 
     static {
