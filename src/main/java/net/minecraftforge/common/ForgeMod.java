@@ -84,7 +84,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.jetbrains.annotations.Nullable;
-import xyz.bluspring.kilt.injections.commons.synchronization.ArgumentTypeInfosInjection;
+import xyz.bluspring.kilt.injections.commands.synchronization.ArgumentTypeInfosInjection;
 
 import java.util.*;
 import java.util.function.Consumer;

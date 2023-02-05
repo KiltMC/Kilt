@@ -9,6 +9,13 @@ group = project.maven_group
 
 loom {
     accessWidenerPath = file("src/main/resources/kilt.accesswidener")
+    mixin {
+        showMessageTypes = true
+
+        messages {
+            ACCESSOR_TARGET_NOT_FOUND = 'disabled'
+        }
+    }
 }
 
 repositories {
@@ -116,6 +123,7 @@ dependencies {
         exclude group: 'cpw.mods', module: 'modlauncher'
     }
     implementation(include('net.jodah:typetools:0.8.3'))
+    implementation(include('net.minecraftforge:unsafe:0.2.+'))
 
     // Remapping SRG to Intermediary
     implementation(include('net.minecraftforge:srgutils:0.4.13'))

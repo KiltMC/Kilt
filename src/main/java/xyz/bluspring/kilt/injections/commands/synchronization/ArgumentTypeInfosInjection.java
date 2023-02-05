@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.commons.synchronization;
+package xyz.bluspring.kilt.injections.commands.synchronization;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;

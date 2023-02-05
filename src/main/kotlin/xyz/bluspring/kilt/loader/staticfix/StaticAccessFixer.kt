@@ -31,6 +31,8 @@ object StaticAccessFixer {
         "xyz/bluspring/kilt/workarounds/",
     )
 
+    private val staticMappings = StaticRemapper.read(Kilt::class.java.getResource("/kilt_static_workaround_mappings.txt")!!.readText())
+
     fun fixMods(mods: Collection<ForgeMod>, dir: File) {
         logger.info("Modifying mods to workaround a classloading issue...")
 
@@ -111,6 +113,8 @@ object StaticAccessFixer {
                     if (modifyPackages.none { fieldInstruction.owner.startsWith(it) })
                         return@instruction
 
+                    fieldInstruction.owner = staticMappings.tryRemapOwner(fieldInstruction.owner, fieldInstruction.name, fieldInstruction.desc)
+
                     val insnList = InsnList()
 
                     // This is equivalent to:
@@ -131,6 +135,13 @@ object StaticAccessFixer {
                     // only then remove it
                     method.instructions.insert(instruction, insnList)
                     method.instructions.remove(instruction)
+                } else if (instruction.opcode == Opcodes.INVOKESTATIC) {
+                    val methodInstruction = instruction as MethodInsnNode
+
+                    val remapped = staticMappings.tryRemapOwner(methodInstruction.owner, methodInstruction.name, methodInstruction.desc)
+                    if (remapped != methodInstruction.owner)
+                        methodInstruction.itf = true
+                    methodInstruction.owner = remapped
                 }
             }
 

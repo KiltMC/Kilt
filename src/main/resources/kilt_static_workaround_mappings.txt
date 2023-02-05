@@ -1,0 +1,114 @@
+# so. i just realized my workaround for static doesn't actually work.
+# but now i know how ASM works. so let's just make mappings from MC classes
+# to Kilt mixin interfaces.
+
+# the format here is very similar to Tiny, but this isn't Tiny.
+# The purpose of this file is to provide a specific list of statics that it should be remapping,
+# not remapping the entire class.
+
+c net/minecraft/advancements/critereon/ItemPredicate xyz/bluspring/kilt/injections/advancements/critereon/ItemPredicateInjection
+    f customPredicates Ljava/util/Map;
+    m register (Lnet/minecraft/resources/ResourceLocation;Ljava/util/function/Function;)V
+    m getPredicates ()Ljava/util/Map;
+c net/minecraft/advancements/Advancement$Builder xyz/bluspring/kilt/injections/advancements/AdvancementBuilderInjection
+    m fromJson (Lcom/google/gson/JsonObject;Lnet/minecraft/advancements/critereon/DeserializationContext;Lnet/minecraft/common/crafting/conditions/ICondition$IContext;)Lnet/minecraft/advancements/Advancement$Builder;
+c com/mojang/blaze3d/platform/GlStateManager xyz/bluspring/kilt/injections/blaze3d/GlStateManagerInjection
+    f lastBrightnessX F
+    f lastBrightnessY F
+c net/minecraft/client/gui/screens/MenuScreens xyz/bluspring/kilt/injections/client/gui/screens/MenuScreensInjection
+    m getScreenFactory (Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;Lnet/minecraft/network/chat/Component;)Ljava/util/Optional;
+c net/minecraft/client/gui/components/AbstractWidget xyz/bluspring/kilt/injections/client/gui/AbstractWidgetInjection
+    f UNSET_FG_COLOR I
+c net/minecraft/client/model/HumanoidModel$ArmPose xyz/bluspring/kilt/injections/client/model/HumanoidModelArmPoseInjection
+    m create (Ljava/lang/String;ZLnet/minecraftforge/client/IArmPoseTransformer;)Lnet/minecraft/client/model/HumanoidModel$ArmPose;
+c net/minecraft/client/renderer/block/model/ItemTransforms$TransformType xyz/bluspring/kilt/injections/client/render/block/model/ItemTransformsTransformTypeInjection
+    m create (Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/block/model/ItemTransforms$TransformType;
+    m create (Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/block/model/ItemTransforms$TransformType;)Lnet/minecraft/client/renderer/block/model/ItemTransforms$TransformType;
+c net/minecraft/client/renderer/ItemBlockRenderTypes xyz/bluspring/kilt/injections/client/render/ItemBlockRenderTypesInjection
+    f CUTOUT_MIPPED Lnet/minecraftforge/client/ChunkRenderTypeSet;
+    f SOLID Lnet/minecraftforge/client/ChunkRenderTypeSet;
+    f BLOCK_RENDER_TYPES Lit/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap;
+    f FLUID_RENDER_TYPES Lit/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap;
+    m getRenderLayers (Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraftforge/client/ChunkRenderTypeSet;
+    m setRenderLayer (Lnet/minecraft/world/level/block/Block;Lnet/minecraft/client/renderer/RenderType;)V
+    m setRenderLayer (Lnet/minecraft/world/level/block/Block;Ljava/util/function/Predicate;)V
+    m setRenderLayer (Lnet/minecraft/world/level/block/Block;Lnet/minecraftforge/client/ChunkRenderTypeSet;)V
+    m setRenderLayer (Lnet/minecraft/world/level/material/Fluid;Lnet/minecraft/client/renderer/RenderType;)V
+    m checkClientLoading ()V
+c net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/render/ScreenEffectRendererInjection
+    f currentTexture Ljava/util/concurrent/atomic/AtomicReference;
+    m renderFluid (Lnet/minecraft/client/Minecraft;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/resources/ResourceLocation;)V
+c net/minecraft/client/renderer/Sheets xyz/bluspring/kilt/injections/client/render/SheetsInjection
+    m addWoodType (Lnet/minecraft/world/level/block/state/properties/WoodType;)V
+    m createSignMaterial (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/client/resources/model/Material;
+c net/minecraft/client/RecipeBookCategories xyz/bluspring/kilt/injections/client/RecipeBookCategories
+    m create (Ljava/lang/String;[Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/client/RecipeBookCategories;
+c net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/injections/commands/synchronization/ArgumentTypeInfosSynchronization
+    m registerByClass (Ljava/lang/Class;Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;)Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;
+c net/minecraft/core/MappedRegistry xyz/bluspring/kilt/injections/core/MappedRegistryInjection
+    f knownRegistries Ljava/util/Set;
+    m getKnownRegistries ()Ljava/util/Set;
+c net/minecraft/world/entity/vehicle/AbstractMinecart xyz/bluspring/kilt/injections/entity/AbstractMinecartInjection
+    m registerCollisionHandler (Lnet/minecraftforge/common/IMinecartCollisionHandler;)V
+c net/minecraft/world/entity/MobCategory xyz/bluspring/kilt/injections/entity/MobCategoryInjection
+    f BY_NAME Ljava/util/Map;
+    m byName (Ljava/lang/String;)Lnet/minecraft/world/entity/MobCategory;
+    m create (Ljava/lang/String;Ljava/lang/String;IZZI)Lnet/minecraft/world/entity/MobCategory;
+c net/minecraft/world/entity/player/Player xyz/bluspring/kilt/injections/entity/PlayerInjection
+    f PERSISTED_NBT_TAG Ljava/lang/String;
+c net/minecraft/world/entity/projectile/ProjectileUtil xyz/bluspring/kilt/injections/entity/ProjectileUtilInjection
+    m getWeaponHoldingHand (Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/InteractionHand;
+c net/minecraft/world/entity/raid/Raid$RaiderType xyz/bluspring/kilt/injections/entity/RaidRaiderTypeInjection
+    m create (Ljava/lang/String;Lnet/minecraft/world/entity/EntityType;I)Lnet/minecraft/world/entity/raid/Raid$RaiderType
+c net/minecraft/world/entity/SpawnPlacements xyz/bluspring/kilt/injections/entity/SpawnPlacementsInjection
+    m fireSpawnPlacementEvent ()V
+c net/minecraft/world/entity/SpawnPlacements$Type xyz/bluspring/kilt/injections/SpawnPlacementsTypeInjection
+    m create (Ljava/lang/String;Lnet/minecraftforge/common/util/TriPredicate;)Lnet/minecraft/world/entity/SpawnPlacements$Type;
+c net/minecraft/gametest/framework/GameTestRegistry xyz/bluspring/kilt/injections/gametest/framework/GameTestRegistryInjection
+    m register (Ljava/lang/reflect/Method;Ljava/util/Set;)V
+c net/minecraft/world/item/crafting/Ingredient xyz/bluspring/kilt/injections/item/crafting/IngredientInjection
+    m merge (Ljava/util/Collection;)Lnet/minecraft/world/item/crafting/Ingredient;
+c net/minecraft/world/item/crafting/RecipeManager xyz/bluspring/kilt/injections/item/crafting/RecipeManagerInjection
+    m fromJson (Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;Lnet/minecraftforge/common/crafting/conditions/ICondition$IContext;)Lnet/minecraft/world/item/crafting/Recipe;
+c net/minecraft/world/item/crafting/RecipeType xyz/bluspring/kilt/injections/item/crafting/RecipeTypeInjection
+    m simple (Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/item/crafting/RecipeType;
+c net/minecraft/world/item/enchantment/EnchantmentHelper xyz/bluspring/kilt/injections/item/enchantment/EnchantmentHelperInjection
+    m getTagEnchantmentLevel (Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I
+c net/minecraft/world/item/AxeItem xyz/bluspring/kilt/injections/item/AxeItemInjection
+    m getAxeStrippingState (Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;
+c net/minecraft/world/item/BoneMealItem xyz/bluspring/kilt/injections/item/BoneMealItemInjection
+    m applyBonemeal (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z
+c net/minecraft/world/item/ShovelItem xyz/bluspring/kilt/injections/item/ShovelItemInjection
+    m getShovelPathingState (Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;
+c com/mojang/math/Matrix4f xyz/bluspring/kilt/injections/math/Matrix4fInjection
+    m of ([F)Lcom/mojang/math/Matrix4f;
+c com/mojang/math/Vector3f xyz/bluspring/kilt/injections/math/Vector3fInjection
+    m of ([F)Lcom/mojang/math/Vector3f;
+c net/minecraft/stats/RecipeBookSettings xyz/bluspring/kilt/injections/stats/RecipeBookSettingsAccessor
+    m getTagFields ()Ljava/util/Map;
+c net/minecraft/tags/BlockTags xyz/bluspring/kilt/injections/tags/BlockTagsInjection
+    m create (Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;
+c net/minecraft/tags/FluidTags xyz/bluspring/kilt/injections/tags/FluidTagsInjection
+    m create (Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;
+c net/minecraft/tags/ItemTags xyz/bluspring/kilt/injections/tags/ItemTagsInjection
+    m create (Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/tags/TagKey;
+c net/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection
+    m byName (Ljava/lang/String;)Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
+    m create (Ljava/lang/String;Ljava/lang/String;Lxyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection$ColorModifier;)Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
+# mc remaps the whole class.
+mc net/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier$ColorModifier xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection$ColorModifier
+c net/minecraft/world/inventory/RecipeBookType xyz/bluspring/kilt/injections/world/inventory/RecipeBookTypeInjection
+    m create (Ljava/lang/String;)Lnet/minecraft/world/inventory/RecipeBookType;
+c net/minecraft/world/item/enchantment/EnchantmentCategory xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentCategoryInjection
+    m create (Ljava/lang/String;Ljava/util/function/Predicate;)Lnet/minecraft/world/item/enchantment/EnchantmentCategory;
+c net/minecraft/world/item/DyeColor xyz/bluspring/kilt/injections/world/item/DyeColorInjection
+    m getColor (Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/DyeColor;
+c net/minecraft/world/item/Rarity xyz/bluspring/kilt/injections/world/item/Rarity
+    m create (Ljava/lang/String;Lnet/minecraft/ChatFormatting;)Lnet/minecraft/world/item/Rarity;
+    m create (Ljava/lang/String;Ljava/util/function/UnaryOperator;)Lnet/minecraft/world/item/Rarity;
+c net/minecraft/world/level/block/state/properties/WoodType xyz/bluspring/kilt/injections/world/level/block/state/properties/WoodTypeInjection
+    m create (Ljava/lang/String;)Lnet/minecraft/world/level/block/state/properties/WoodType;
+c net/minecraft/world/level/pathfinder/BlockPathTypes xyz/bluspring/kilt/injections/world/level/pathfinder/BlockPathTypesInjection
+    m create (Ljava/lang/String;F)Lnet/minecraft/world/level/pathfinder/BlockPathTypes;
+c net/minecraft/world/level/NaturalSpawner xyz/bluspring/kilt/injections/world/level/NaturalSpawnerInjection
+    m canSpawnAtBody (Lnet/minecraft/world/entity/SpawnPlacements$Type;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/EntityType;)Z
