@@ -6,6 +6,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
+import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
 
 // I use this class to just throw stuff into and
 // see how the bytecode looks when it's built.
@@ -55,6 +56,10 @@ public class TestingMoreShit {
 
         public static TestingDoubleTime quack() {
             return new TestingDoubleTime();
+        }
+
+        public boolean wow(Item item) {
+            return ((EnchantmentCategoryInjection) (Object) this).getDelegate() != null && ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
         }
     }
 }

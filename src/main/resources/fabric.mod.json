@@ -25,6 +25,9 @@
     ],
     "server": [
       "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
+    ],
+    "mm:early_risers": [
+      "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
     ]
   },
   "mixins": [
@@ -37,7 +40,8 @@
     "minecraft": "1.19.2",
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
-    "fabric-language-kotlin": "*"
+    "fabric-language-kotlin": "*",
+    "mm": ">=2.3"
   },
   "custom": {
     "loom:injected_interfaces": {
