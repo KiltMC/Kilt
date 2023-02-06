@@ -11,14 +11,7 @@ class RegistryManager(val name: String) {
     internal constructor() : this("STAGING")
 
     fun <V> getRegistry(key: ResourceLocation): ForgeRegistry<V> {
-        return if (registries.contains(key))
-            registries[key] as ForgeRegistry<V>
-        else {
-            val registry = ForgeRegistry<V>(this, key, RegistryBuilder())
-            registries[key] = registry
-
-            registry
-        }
+        return registries[key] as ForgeRegistry<V>
     }
 
     fun <V> getRegistry(key: ResourceKey<out Registry<V>>): ForgeRegistry<V> {
@@ -41,7 +34,10 @@ class RegistryManager(val name: String) {
 
     @JvmName("createRegistry")
     internal fun <V> createRegistry(name: ResourceLocation, builder: RegistryBuilder<V>): ForgeRegistry<V> {
-        return getRegistry(name) // literally do not care
+        val registry = ForgeRegistry<V>(this, name, builder)
+        registries[name] = registry
+
+        return registry
     }
 
     companion object {

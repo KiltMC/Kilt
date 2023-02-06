@@ -25,6 +25,9 @@ class RegistryObject<T> internal constructor(
     }
 
     override fun get(): T {
+        if (!fabricRegistryObject.isPresent)
+            fabricRegistryObject.updateRef()
+
         return fabricRegistryObject.get()
     }
 
