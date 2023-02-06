@@ -1,6 +1,8 @@
 package xyz.bluspring.kilt.injections.world.item.enchantment;
 
+import com.google.common.io.Files;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import org.objectweb.asm.ClassWriter;
@@ -8,10 +10,14 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
 import xyz.bluspring.kilt.util.EnumUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 public interface EnchantmentCategoryInjection {
@@ -24,8 +30,14 @@ public interface EnchantmentCategoryInjection {
                     // In our case, we need to generate the classes at runtime.
                     var classNode = new ClassNode(Opcodes.ASM9);
                     var categoryType = Type.getType(EnchantmentCategory.class);
-                    classNode.superName = categoryType.getClassName();
-                    classNode.name = "EnchantmentCategory$" + size;
+
+                    classNode.visit(
+                            Opcodes.V17, Opcodes.ACC_PUBLIC | Opcodes.ACC_ENUM | Opcodes.ACC_SUPER,
+                            categoryType.getInternalName() + "$" + size,
+                            null,
+                            categoryType.getInternalName(),
+                            null
+                    );
 
                     // Separate these into their own blocks, so they're a bit easier to comprehend
                     {
@@ -41,7 +53,7 @@ public interface EnchantmentCategoryInjection {
                         initializer.visitVarInsn(Opcodes.ALOAD, 1);
                         initializer.visitVarInsn(Opcodes.ILOAD, 2);
                         // super(string, i)
-                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, categoryType.getClassName(), "<init>", "(Ljava/lang/String;I)V", false);
+                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, categoryType.getInternalName(), "<init>", "(Ljava/lang/String;I)V", false);
 
                         initializer.visitLabel(label1);
                         initializer.visitLocalVariable("this", categoryType.getInternalName(), null, label0, label1, 0);
@@ -63,10 +75,10 @@ public interface EnchantmentCategoryInjection {
                                 // This is definitely getting remapped,
                                 // so let's remap it when needed.
                                 remapper.mapMethodName(
-                                        remapper.getCurrentRuntimeNamespace(),
+                                        FabricLauncherBase.getLauncher().getTargetNamespace(),
                                         itemType.getClassName(),
                                         "method_8177",
-                                        "(" + itemType.getInternalName() + ")Z"
+                                        "(" + itemType.getDescriptor() + ")Z"
                                 ),
                                 "(" + itemType.getDescriptor() + ")Z",
                                 null, null
@@ -82,8 +94,8 @@ public interface EnchantmentCategoryInjection {
 
                         // ((EnchantmentCategoryInjection) (Object) this).getDelegate()
                         canEnchant.visitVarInsn(Opcodes.ALOAD, 0);
-                        canEnchant.visitTypeInsn(Opcodes.CHECKCAST, injectionType.getClassName());
-                        canEnchant.visitMethodInsn(Opcodes.INVOKEINTERFACE, injectionType.getClassName(), "getDelegate", "()Ljava/util/function/Predicate;", true);
+                        canEnchant.visitTypeInsn(Opcodes.CHECKCAST, injectionType.getInternalName());
+                        canEnchant.visitMethodInsn(Opcodes.INVOKEINTERFACE, injectionType.getInternalName(), "getDelegate", "()Ljava/util/function/Predicate;", true);
 
                         // return Predicate#test(item)
                         canEnchant.visitVarInsn(Opcodes.ALOAD, 1);
@@ -98,17 +110,55 @@ public interface EnchantmentCategoryInjection {
                         canEnchant.visitEnd();
                     }
 
+                    {
+                        // more workarounds. this is to be able to create a new category
+                        // without calling <init> directly.
+
+                        // EnchantmentCategory.kilt$createCategory(String, int)
+                        var initializerAccessor = classNode.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, "kilt$createCategory", "(Ljava/lang/String;I)" + categoryType.getDescriptor(), null, null);
+                        initializerAccessor.visitCode();
+
+                        initializerAccessor.visitTypeInsn(Opcodes.NEW, classNode.name);
+                        initializerAccessor.visitInsn(Opcodes.DUP);
+
+                        initializerAccessor.visitVarInsn(Opcodes.ALOAD, 0);
+                        initializerAccessor.visitVarInsn(Opcodes.ILOAD, 1);
+                        initializerAccessor.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.name, "<init>", "(Ljava/lang/String;I)V", false);
+                        initializerAccessor.visitInsn(Opcodes.ARETURN);
+
+                        initializerAccessor.visitMaxs(0, 0);
+                        initializerAccessor.visitEnd();
+                    }
+
                     var classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
                     classNode.accept(classWriter);
 
-                    var clazz = EnumUtils.loadClass(classNode.name, classWriter.toByteArray());
+                    var byteArray = classWriter.toByteArray();
+
+                    // export the generated classes so i know what's happening
+                    if (System.getProperty("mixin.debug.export").equalsIgnoreCase("true")) {
+                        var file = new File(FabricLoader.getInstance().getGameDir().toFile(), ".mixin.out/class/" + classNode.name + ".class");
+                        try {
+                            file.createNewFile();
+                            Files.write(byteArray, file);
+
+                            Kilt.Companion.getLogger().info("Dumped class file for " + classNode.name);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    var clazz = EnumUtils.loadClass(classNode.name, byteArray);
 
                     if (clazz == null)
                         throw new IllegalStateException();
 
+                    var methods = clazz.getMethods();
+                    var declaredMethods = clazz.getDeclaredMethods();
+
                     try {
-                        return (EnchantmentCategory) clazz.getDeclaredConstructor(String.class, int.class).newInstance(name, size);
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                        return (EnchantmentCategory) clazz.getDeclaredMethod("kilt$createCategory", String.class, int.class).invoke(null, name, size);
+                    } catch (IllegalAccessException | InvocationTargetException |
                              NoSuchMethodException e) {
                         throw new RuntimeException(e);
                     }

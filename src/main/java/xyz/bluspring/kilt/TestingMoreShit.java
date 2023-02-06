@@ -49,4 +49,12 @@ public class TestingMoreShit {
             super((ForgeRegistry<Block>) Class.forName("net.minecraftforge.registries.ForgeRegistries").getDeclaredField("BLOCKS").get(null));
         }
     }
+
+    public enum MoreTestingBullshit {
+        WELL, THEN;
+
+        public static TestingDoubleTime quack() {
+            return new TestingDoubleTime();
+        }
+    }
 }

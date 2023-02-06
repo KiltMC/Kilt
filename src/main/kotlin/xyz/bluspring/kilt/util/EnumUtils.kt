@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.util
 
+import com.chocohead.mm.CasualStreamHandler
+import com.chocohead.mm.api.ClassTinkerers
 import net.minecraftforge.common.IExtensibleEnum
 import net.minecraftforge.fml.unsafe.UnsafeHacks
 import xyz.bluspring.kilt.Kilt
@@ -35,20 +37,12 @@ object EnumUtils {
     @JvmStatic
     fun loadClass(name: String, byteArray: ByteArray): Class<*>? {
         return try {
-            val loader = Kilt::class.java.classLoader
-            // You would think this can be made easier by just doing
-            // ClassLoader::class.java, but you'd be wrong.
-            // There's a module block here. Don't trust it.
-            val classLoaderClass = Class.forName("java.lang.ClassLoader", true, ClassLoader.getSystemClassLoader())
+            val className = name.replace("/", ".")
+            val url = CasualStreamHandler.create(className, byteArray)
+            if (ClassTinkerers.addURL(url))
+                return Class.forName(className)
 
-            val defineClassMethod = classLoaderClass.getDeclaredMethod("defineClass", String::class.java, ByteArray::class.java, Int::class.java, Int::class.java)
-            defineClassMethod.isAccessible = true
-
-            return try {
-                defineClassMethod.invoke(loader, name, byteArray, 0, byteArray.size) as Class<*>
-            } finally {
-                defineClassMethod.isAccessible = false
-            }
+            return null
         } catch (e: Exception) {
             Kilt.logger.error("Failed to dynamically load class $name!")
             e.printStackTrace()
