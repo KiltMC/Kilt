@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.mixin;
 
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -20,6 +21,7 @@ public interface EnchantmentCategoryAccessor {
 
     @SuppressWarnings("MixinAnnotationTarget")
     @Accessor("$VALUES")
+    @Mutable
     static void setValues(EnchantmentCategory[] values) {
         throw new IllegalStateException();
     }
