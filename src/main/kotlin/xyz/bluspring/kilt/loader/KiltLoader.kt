@@ -20,6 +20,8 @@ import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.config.IConfigEvent
+import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -505,6 +507,9 @@ class KiltLoader {
                 it.tabs.removeIf { t -> t != tab }
             }, true)
         }
+
+        runPhaseExecutors(ModLoadingPhase.GATHER)
+        // config load should be here
     }
 
     fun postEvent(ev: Event) {

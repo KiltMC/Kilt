@@ -48,6 +48,7 @@
     "world.entity.raid.RaidRaiderTypeInject",
     "world.entity.vehicle.AbstractMinecartInject",
     "world.food.FoodPropertiesBuilderInject",
+    "world.food.FoodPropertiesInject",
     "world.inventory.RecipeBookTypeInject",
     "world.item.AxeItemInject",
     "world.item.BoneMealItemInject",

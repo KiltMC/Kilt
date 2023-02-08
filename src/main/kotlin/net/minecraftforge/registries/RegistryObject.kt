@@ -28,6 +28,9 @@ class RegistryObject<T> internal constructor(
         if (!fabricRegistryObject.isPresent)
             fabricRegistryObject.updateRef()
 
+        if (!fabricRegistryObject.isPresent)
+            println("still missing. debug please go back in time for this one.")
+
         return fabricRegistryObject.get()
     }
 

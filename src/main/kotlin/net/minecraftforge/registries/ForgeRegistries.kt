@@ -14,12 +14,10 @@ import net.minecraftforge.fluids.FluidType
 import net.minecraftforge.registries.holdersets.HolderSetType
 
 object ForgeRegistries {
+    private var isInit = false
+
     init {
-        Bootstrap.bootStrap()
         init()
-        Keys.init()
-        Tags.init()
-        GameData.init()
     }
 
     // Game objects
@@ -101,7 +99,16 @@ object ForgeRegistries {
         return RegistryManager.ACTIVE.getRegistry(registry)
     }
 
-    internal fun init() {}
+    internal fun init() {
+        if (!isInit) {
+            isInit = true
+
+            Bootstrap.bootStrap()
+            Keys.init()
+            Tags.init()
+            GameData.init()
+        }
+    }
 
     object Keys {
         @JvmField val BLOCKS = Registry.BLOCK_REGISTRY

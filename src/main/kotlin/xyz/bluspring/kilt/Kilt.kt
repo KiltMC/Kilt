@@ -10,7 +10,6 @@ import xyz.bluspring.kilt.loader.KiltLoader
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
-        loader.runPhaseExecutors(ModLoadingPhase.GATHER)
         loader.runPhaseExecutors(ModLoadingPhase.LOAD)
 
         loader.mods.forEach { mod ->

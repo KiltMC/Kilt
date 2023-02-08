@@ -43,7 +43,7 @@ interface IForgeRegistry<V> : Iterable<V> {
     fun getDelegate(value: V): Optional<Holder.Reference<V>>
     fun getDelegateOrThrow(value: V): Holder.Reference<V>
 
-    fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T
+    fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T?
     fun setSlaveMap(name: ResourceLocation, obj: Any)
 
     fun interface AddCallback<V> {

@@ -30,6 +30,21 @@ class ForgeRegistry<V> internal constructor (
     override val registryName: ResourceLocation,
     val builder: RegistryBuilder<V>
 ) : IForgeRegistryInternal<V> {
+    val min = builder.minId
+    val max = builder.maxId
+    val create = builder.create.apply {
+        this?.onCreate(this@ForgeRegistry, stage)
+    }
+    val add = builder.add
+    val clear = builder.clear
+    val validate = builder.validate
+    val bake = builder.bake
+    val missing = builder.missingFactory
+    val dummyFactory = builder.dummyFactory
+    val allowOverrides = builder.allowOverrides
+    val isModifiable = builder.allowModifications
+    val hasWrapper = builder.hasWrapper
+
     override val registryKey: ResourceKey<Registry<V>> = ResourceKey.createRegistryKey(registryName)
     val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
     private val vanillaRegistryGetter = fabricRegistry.makeRegistry()
@@ -82,10 +97,12 @@ class ForgeRegistry<V> internal constructor (
     }
 
     override fun register(key: ResourceLocation, value: V) {
+        this.add?.onAdd(this, stage, vanillaRegistry.size() + fabricRegistry.entries.size, ResourceKey.create(this.registryKey, key), value, null)
         fabricRegistry.register(key) { value }
     }
 
     override fun register(key: String, value: V) {
+        this.add?.onAdd(this, stage, vanillaRegistry.size() + fabricRegistry.entries.size, ResourceKey.create(this.registryKey, ResourceLocation.tryParse(key)!!), value, null)
         fabricRegistry.register(key) { value }
     }
 
@@ -320,9 +337,9 @@ class ForgeRegistry<V> internal constructor (
                 return null
 
             return if (defaultKey != null)
-                getSlaveMap(NamespacedDefaultedWrapper.Factory.ID, NamespacedDefaultedWrapper::class.java) as NamespacedDefaultedWrapper<V>
+                getSlaveMap(NamespacedDefaultedWrapper.Factory.ID, NamespacedDefaultedWrapper::class.java) as NamespacedDefaultedWrapper<V>?
             else
-                getSlaveMap(NamespacedWrapper.Factory.ID, NamespacedWrapper::class.java) as NamespacedWrapper<V>
+                getSlaveMap(NamespacedWrapper.Factory.ID, NamespacedWrapper::class.java) as NamespacedWrapper<V>?
         }
 
     @JvmName("getWrapperOrThrow")
@@ -354,14 +371,18 @@ class ForgeRegistry<V> internal constructor (
 
     // i feel like this could have literally any other name, but oh well.
     // need to abide by Forge's rules.
-    @JvmField internal val slaves = mutableMapOf<ResourceLocation, Any>()
+    @get:JvmName("getSlaves")
+    internal var slaves = mutableMapOf<ResourceLocation, Any?>()
 
-    override fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T {
-        return slaves[slaveMapName] as T
+    override fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T? {
+        return slaves[slaveMapName] as T?
     }
 
-    override fun setSlaveMap(name: ResourceLocation, obj: Any) {
-        slaves[name] = obj
+    override fun setSlaveMap(name: ResourceLocation, obj: Any?) {
+        if (this.slaves == null) // https://akm-img-a-in.tosshub.com/indiatoday/images/story/201701/jackie-story_647_012517032327.jpg
+            this.slaves = mutableMapOf()
+
+        this.slaves[name] = obj
     }
 
     @JvmName("validateContent")
@@ -381,8 +402,7 @@ class ForgeRegistry<V> internal constructor (
     }
 
     fun bake() {
-        if (builder.bake != null)
-            builder.bake!!.onBake(this, stage)
+        this.bake?.onBake(this, stage)
     }
 
     @JvmName("unfreeze")
@@ -404,6 +424,7 @@ class ForgeRegistry<V> internal constructor (
         // realistically, this shouldn't be needed, since it *is* relying on
         // the Vanilla registry system internally here.
         // but if it is actually needed, well, fuck, guess I've eaten my words.
+        this.clear?.onClear(this, stage)
     }
 
     fun getMissingEvent(name: ResourceLocation, map: Map<ResourceLocation, Int>): MissingMappingsEvent {
@@ -444,9 +465,11 @@ class ForgeRegistry<V> internal constructor (
 
     @JvmName("add")
     internal fun add(id: Int, key: ResourceLocation, value: V, owner: String): Int {
-        fabricRegistry.register(key, { value })
+        fabricRegistry.register(key) { value }
 
-        return getID(key)
+        return getID(key).apply {
+            this@ForgeRegistry.add?.onAdd(this@ForgeRegistry, stage, this, ResourceKey.create(this@ForgeRegistry.registryKey, key), value, null)
+        }
     }
 
     @get:JvmName("getResourceKeys")
