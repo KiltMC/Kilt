@@ -50,7 +50,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
 
         val activeContainer: ModContainer
             get() {
-                if (kiltActiveModId == null)
+                if (kiltActiveModId != null)
                     return Kilt.loader.mods.first { it.modInfo.mod.modId == kiltActiveModId }.container
 
                 val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
@@ -61,6 +61,15 @@ class ModLoadingContext(private val mod: ForgeMod) {
 
         @JvmStatic
         fun get(): ModLoadingContext {
+            if (kiltActiveModId != null) {
+                if (!contexts.contains(kiltActiveModId)) {
+                    val mod = Kilt.loader.getMod(kiltActiveModId!!) ?: throw Exception("Kilt has not finished loading mods yet!")
+                    contexts[kiltActiveModId!!] = ModLoadingContext(mod)
+                }
+
+                return contexts[kiltActiveModId]!!
+            }
+
             // Apparently this is possible, and this seems a lot better to do.
             val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
             val source = stackWalker.callerClass ?: return getForgeContext()

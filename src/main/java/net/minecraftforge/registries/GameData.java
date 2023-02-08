@@ -329,7 +329,7 @@ public class GameData
                 if (forgeRegistry != null)
                     forgeRegistry.unfreeze();
 
-                ModLoader.get().postEvent(registerEvent);
+                ModLoader.get().kiltPostEventWrappingMods(registerEvent);
 
                 LOGGER.debug(REGISTRIES, "Applying holder lookups: {}", registryKey.location());
                 ObjectHolderRegistry.applyObjectHolders(registryKey.location()::equals);

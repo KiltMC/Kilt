@@ -3,6 +3,7 @@ package net.minecraftforge.registries
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import net.minecraftforge.fml.ModLoader
 import net.minecraftforge.network.HandshakeMessages
 import xyz.bluspring.kilt.Kilt
 
@@ -54,7 +55,7 @@ class RegistryManager(val name: String) {
         fun postNewRegistryEvent() {
             val event = NewRegistryEvent()
 
-            Kilt.loader.postEvent(event)
+            ModLoader.get().kiltPostEventWrappingMods(event)
         }
 
         @JvmStatic
