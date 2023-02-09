@@ -224,7 +224,11 @@ class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistr
         @SuppressWarnings("unchecked")
         public void onAdd(IForgeRegistryInternal<V> owner, RegistryManager stage, int id, ResourceKey<V> key, V value, V oldValue)
         {
-            owner.getSlaveMap(ID, NamespacedWrapper.class).holders.onAdded(stage, id, key, value, oldValue);
+            var slaveMap = owner.getSlaveMap(ID, NamespacedWrapper.class);
+            if (slaveMap == null)
+                return;
+
+            slaveMap.holders.onAdded(stage, id, key, value, oldValue);
         }
     }
 }

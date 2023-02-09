@@ -21,8 +21,13 @@ class RegisterEvent internal constructor(
         if (this.registryKey == registryKey) {
             if (forgeRegistry != null)
                 (forgeRegistry as ForgeRegistry<T>).register(name, valueSupplier.get())
-            else
+            else {
+                // no double registering. please. i beg.
+                if (vanillaRegistry?.containsKey(name) == true)
+                    return
+
                 Registry.register((vanillaRegistry as Registry<T>), name, valueSupplier.get())
+            }
         }
     }
 

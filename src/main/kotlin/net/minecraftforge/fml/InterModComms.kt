@@ -22,7 +22,7 @@ object InterModComms {
         containerQueues.computeIfAbsent(modId) {
             ConcurrentLinkedQueue()
         }.add(IMCMessage(
-            ModLoadingContext.get(StackWalker.getInstance().callerClass).activeContainer.modId,
+            ModLoadingContext.activeContainer.modId,
             modId, method, thing
         ))
 

@@ -153,15 +153,18 @@ class ForgeRegistry<V> internal constructor (
     }
 
     fun getID(name: ResourceLocation): Int {
-        return fabricRegistry.entries.indexOfFirst { it.id == name }
+        return if (!isEmpty())
+            vanillaRegistry.getId(getValue(name))
+        else
+            fabricRegistry.entries.indexOfFirst { it.id == name }
     }
 
     fun getID(value: V?): Int {
-        return fabricRegistry.entries.indexOfFirst { it.get() == value }
+        return vanillaRegistry.getId(value)
     }
 
     fun getValue(id: Int): V? {
-        return fabricRegistry.entries.elementAt(id).get()
+        return vanillaRegistry.getHolder(id).get().value()
     }
 
     fun getRaw(key: ResourceLocation): V? {

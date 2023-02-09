@@ -507,9 +507,6 @@ class KiltLoader {
                 it.tabs.removeIf { t -> t != tab }
             }, true)
         }
-
-        runPhaseExecutors(ModLoadingPhase.GATHER)
-        // config load should be here
     }
 
     fun postEvent(ev: Event) {

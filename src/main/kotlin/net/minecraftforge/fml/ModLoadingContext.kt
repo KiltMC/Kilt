@@ -28,12 +28,12 @@ class ModLoadingContext(private val mod: ForgeMod) {
     // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise
     // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
-        val modId = kiltActiveModId ?: mod.modInfo.mod.modId
+        val modId = mod.modInfo.mod.modId
         net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec, fileName)
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
-        val modId = kiltActiveModId ?: mod.modInfo.mod.modId
+        val modId = mod.modInfo.mod.modId
         net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec)
     }
 

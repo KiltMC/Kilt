@@ -30,9 +30,18 @@ public final class DataPackRegistriesHooks
     private static final Set<ResourceKey<? extends Registry<?>>> SYNCED_CUSTOM_REGISTRIES_VIEW = Collections.unmodifiableSet(SYNCED_CUSTOM_REGISTRIES); 
 
     /* Internal forge hook for retaining mutable access to RegistryAccess's codec registry when it bootstraps. */
+    // left by Kilt in case mods are using it. however for Kilt it is not used.
     public static Map<ResourceKey<? extends Registry<?>>, RegistryAccess.RegistryData<?>> grabBuiltinRegistries(ImmutableMap.Builder<ResourceKey<? extends Registry<?>>, RegistryAccess.RegistryData<?>> builder)
     {
         REGISTRY_ACCESS_REGISTRIES_COPY = new HashMap<>(builder.build());
+        SYNCED_CUSTOM_REGISTRIES.clear();
+        return REGISTRY_ACCESS_REGISTRIES_COPY;
+    }
+
+    // this is almost exactly the same as the top, but it uses a map
+    // instead of a map builder.
+    public static Map<ResourceKey<? extends Registry<?>>, RegistryAccess.RegistryData<?>> grabBuiltinRegistries(Map<ResourceKey<? extends Registry<?>>, RegistryAccess.RegistryData<?>> map) {
+        REGISTRY_ACCESS_REGISTRIES_COPY = new HashMap<>(map);
         SYNCED_CUSTOM_REGISTRIES.clear();
         return Collections.unmodifiableMap(REGISTRY_ACCESS_REGISTRIES_COPY);
     }

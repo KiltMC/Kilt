@@ -95,7 +95,7 @@ object ForgeRegistries {
         GameData.getStructureModifierSerializersRegistryBuilder()
     }
 
-    private fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T> {
+    fun <T> forgeRegistry(registry: ResourceKey<out Registry<T>>): ForgeRegistry<T>? {
         return RegistryManager.ACTIVE.getRegistry(registry)
     }
 

@@ -11,18 +11,19 @@ class RegistryManager(val name: String) {
     @JvmField val registries = mutableMapOf<ResourceLocation, ForgeRegistry<*>>()
     internal constructor() : this("STAGING")
 
-    fun <V> getRegistry(key: ResourceLocation): ForgeRegistry<V> {
-        return registries[key] as ForgeRegistry<V>
+    fun <V> getRegistry(key: ResourceLocation): ForgeRegistry<V>? {
+        return registries[key] as ForgeRegistry<V>?
     }
 
-    fun <V> getRegistry(key: ResourceKey<out Registry<V>>): ForgeRegistry<V> {
+    fun <V> getRegistry(key: ResourceKey<out Registry<V>>): ForgeRegistry<V>? {
         return getRegistry(key.location())
     }
 
-    fun <V> getRegistry(key: ResourceLocation, other: RegistryManager): ForgeRegistry<V> {
+    fun <V> getRegistry(key: ResourceLocation, other: RegistryManager): ForgeRegistry<V>? {
         if (!registries.contains(key)) {
             return other.getRegistry<V>(key).apply {
-                registries[key] = this
+                if (this != null)
+                    registries[key] = this
             }
         }
 
