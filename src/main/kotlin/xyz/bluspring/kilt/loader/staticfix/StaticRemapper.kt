@@ -8,6 +8,10 @@ class StaticRemapper(private val membersToRemap: List<ClassData>, private val cl
         return classData.to
     }
 
+    fun getSuper(owner: String): String? {
+        return membersToRemap.firstOrNull { it.from == owner }?.members?.firstOrNull { it.type == MemberData.MemberType.SUPER }?.descriptor
+    }
+
     companion object {
         fun read(data: String): StaticRemapper {
             val split = if (data.contains("\r\n")) "\r\n" else "\n"
@@ -48,6 +52,11 @@ class StaticRemapper(private val membersToRemap: List<ClassData>, private val cl
                         lineSplit[1], lineSplit[2],
                         MemberData.MemberType.INITIALIZER
                     ))
+                } else if (lineSplit[0] == "s") {
+                    currentClass?.members?.add(MemberData(
+                        lineSplit[1], lineSplit[2],
+                        MemberData.MemberType.SUPER
+                    ))
                 }
             }
 
@@ -67,7 +76,7 @@ class StaticRemapper(private val membersToRemap: List<ClassData>, private val cl
         val type: MemberType
     ) {
         enum class MemberType {
-            FIELD, METHOD, INITIALIZER
+            FIELD, METHOD, INITIALIZER, SUPER
         }
     }
 }

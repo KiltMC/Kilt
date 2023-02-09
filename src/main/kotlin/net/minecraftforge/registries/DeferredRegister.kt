@@ -9,6 +9,7 @@ import net.minecraft.tags.TagKey
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import org.apache.logging.log4j.LogManager
+import xyz.bluspring.kilt.mixin.LazyRegistrarAccessor
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
@@ -72,17 +73,15 @@ class DeferredRegister<T> private constructor(
             // the registry doesn't register multiple times. This is to temporarily work around
             // a bug that causes double-registering in Kilt.
             val registry: Registry<T> = fabricRegistry.makeRegistry().get() as Registry<T>
-            fabricRegistry.entries.forEach {
+            (fabricRegistry as LazyRegistrarAccessor<T>).entrySet.forEach { (it, value) ->
                 println("registering ${it.key}")
                 if (registry.containsKey(it.key!!)) {
-                    logger.warn("Registry object ${it.key!!} in ${registry.key()} called for registry twice! This is likely a bug in Kilt itself, and has been ignored.")
+                    logger.warn("Registry object ${it.key} in ${registry.key()} called for registry twice! This is likely a bug in Kilt itself, and has been ignored.")
                     it.updateRef() // it already exists, let's just get it
                     return@forEach
                 }
 
-                it.ifPresent { bruh ->
-                    Registry.register(registry, it.key!!, bruh)
-                }
+                Registry.register(registry, it.id, value.get())
                 it.updateRef()
             }
         }

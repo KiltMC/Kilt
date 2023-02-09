@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.event.IModBusEvent;
+import xyz.bluspring.kilt.Kilt;
 
 /**
  * EntityAttributeCreationEvent.<br>
@@ -36,8 +37,12 @@ public class EntityAttributeCreationEvent extends Event implements IModBusEvent
 
     public void put(EntityType<? extends LivingEntity> entity, AttributeSupplier map)
     {
-        if (DefaultAttributes.hasSupplier(entity))
-            throw new IllegalStateException("Duplicate DefaultAttributes entry: " + entity);
+        if (DefaultAttributes.hasSupplier(entity)) {
+            Kilt.Companion.getLogger().warn("Duplicate DefaultAttributes entry: " + entity);
+            Kilt.Companion.getLogger().warn("This will be ignored so Minecraft doesn't throw a fit.");
+
+            return;
+        }
         this.map.put(entity, map);
     }
 }

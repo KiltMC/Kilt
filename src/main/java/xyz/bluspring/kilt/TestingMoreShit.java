@@ -24,7 +24,9 @@ public class TestingMoreShit {
     }
 
     public boolean moreRandomShit(Item item) {
-        return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
+        var quack = new Item(new Item.Properties().durability(0));
+        //return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
+        return quack.equals("a");
     }
 
     static {

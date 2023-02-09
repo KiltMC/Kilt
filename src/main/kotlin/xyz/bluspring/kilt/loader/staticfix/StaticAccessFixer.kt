@@ -149,10 +149,41 @@ object StaticAccessFixer {
 
                     if (methodInstruction.owner != remapped) {
                         methodInstruction.opcode = Opcodes.INVOKESTATIC
+                        val originalOwner = methodInstruction.owner
                         methodInstruction.owner = remapped
-                        methodInstruction.desc = methodInstruction.desc.removeSuffix("V") + "L$remapped;"
+                        methodInstruction.desc = methodInstruction.desc.removeSuffix("V") + "L$originalOwner;"
                         methodInstruction.name = "create"
                         methodInstruction.itf = true
+
+                        val removeInstructions = mutableListOf<AbstractInsnNode>()
+                        var previous = methodInstruction.previous
+
+                        var encounteredNew = false
+                        while (previous != null) {
+                            if (previous.opcode == Opcodes.NEW) {
+                                if ((previous as TypeInsnNode).desc == originalOwner) {
+                                    removeInstructions.add(previous)
+
+                                    if (previous.next.opcode == Opcodes.DUP) {
+                                        removeInstructions.add(previous.next)
+                                        break
+                                    }
+                                }
+                                encounteredNew = true
+                            }
+
+                            previous = previous.previous
+                        }
+
+                        removeInstructions.forEach {
+                            method.instructions.remove(it)
+                        }
+
+                        // this would indicate that it's a super call, so we need to
+                        // do a different workaround for this.
+                        if (!encounteredNew) {
+
+                        }
                     }
                 }
             }
