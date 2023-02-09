@@ -112,3 +112,13 @@ c net/minecraft/world/level/pathfinder/BlockPathTypes xyz/bluspring/kilt/injecti
     m create (Ljava/lang/String;F)Lnet/minecraft/world/level/pathfinder/BlockPathTypes;
 c net/minecraft/world/level/NaturalSpawner xyz/bluspring/kilt/injections/world/level/NaturalSpawnerInjection
     m canSpawnAtBody (Lnet/minecraft/world/entity/SpawnPlacements$Type;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/EntityType;)Z
+c net/minecraft/world/level/levelgen/DebugLevelSource xyz/bluspring/kilt/injections/world/level/levelgen/DebugLevelSourceInjection
+    m initValidStates ()V
+c net/minecraft/client/renderer/block/model/ItemTransform xyz/bluspring/kilt/injections/client/render/block/model/ItemTransformInjection
+    i <init> (Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;)V
+c net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder xyz/bluspring/kilt/injections/entity/AttributeSupplierBuilderInjection
+    i <init> (Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier;)V
+c net/minecraft/world/level/block/LiquidBlock xyz/bluspring/kilt/injections/world/level/block/LiquidBlockInjection
+    i <init> (Ljava/util/function/Supplier;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+c net/minecraft/world/item/BucketItem xyz/bluspring/kilt/injections/item/BucketItemInjection
+    i <init> (Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V

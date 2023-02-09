@@ -142,6 +142,18 @@ object StaticAccessFixer {
                     if (remapped != methodInstruction.owner)
                         methodInstruction.itf = true
                     methodInstruction.owner = remapped
+                } else if (instruction.opcode == Opcodes.INVOKESPECIAL) {
+                    val methodInstruction = instruction as MethodInsnNode
+
+                    val remapped = staticMappings.tryRemapOwner(methodInstruction.owner, methodInstruction.name, methodInstruction.desc)
+
+                    if (methodInstruction.owner != remapped) {
+                        methodInstruction.opcode = Opcodes.INVOKESTATIC
+                        methodInstruction.owner = remapped
+                        methodInstruction.desc = methodInstruction.desc.removeSuffix("V") + "L$remapped;"
+                        methodInstruction.name = "create"
+                        methodInstruction.itf = true
+                    }
                 }
             }
 

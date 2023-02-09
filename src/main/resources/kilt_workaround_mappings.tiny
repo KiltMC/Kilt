@@ -1,17 +1,11 @@
 tiny	2	0	srg	intermediary
-c	net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder	xyz/bluspring/kilt/remaps/world/entity/ai/attributes/AttributeSupplierBuilderRemap
-c	net/minecraft/world/item/BucketItem	xyz/bluspring/kilt/remaps/world/item/BucketItemRemap
 c	net/minecraft/world/item/CreativeModeTab	xyz/bluspring/kilt/remaps/world/item/CreativeModeTabRemap
 	m	()I	getGroupCountSafe	getGroupCountSafe
-c	net/minecraft/world/level/levelgen/DebugLevelSource	xyz/bluspring/kilt/remaps/world/level/levelgen/DebugLevelSourceRemap
-	m	()V	initValidStates	initValidStates
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate	xyz/bluspring/kilt/remaps/world/level/levelgen/structure/templatesystem/StructureTemplateRemap
 	m	(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;)Ljava/util/List;	processBlockInfos	processBlockInfos
 	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;)Ljava/util/List;	processEntityInfos	processEntityInfos
 	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;	transformedVec3d	transformedVec3d
 c	net/minecraft/data/tags/TagsProvider	xyz/bluspring/kilt/remaps/data/tags/TagsProviderRemap
-c	net/minecraft/client/renderer/block/model/ItemTransform	xyz/bluspring/kilt/remaps/client/renderer/block/model/ItemTransformRemap
 c	net/minecraftforge/common/IPlantable	io/github/fabricators_of_create/porting_lib/util/IPlantable
 c	net/minecraftforge/common/PlantType	io/github/fabricators_of_create/porting_lib/util/PlantType
 c	net/minecraftforge/fml/config/ModConfig	xyz/bluspring/kilt/remaps/fml/config/ModConfigRemap
-c	net/minecraft/world/level/block/LiquidBlock	xyz/bluspring/kilt/remaps/world/level/block/LiquidBlockRemap

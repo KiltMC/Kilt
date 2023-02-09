@@ -51,7 +51,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 import xyz.bluspring.kilt.injections.entity.SpawnPlacementsInjection;
-import xyz.bluspring.kilt.remaps.world.level.levelgen.DebugLevelSourceRemap;
+import xyz.bluspring.kilt.injections.world.level.levelgen.DebugLevelSourceInjection;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -458,7 +458,7 @@ public class GameData
 
                 block.getLootTable();
             }
-            DebugLevelSourceRemap.initValidStates();
+            DebugLevelSourceInjection.initValidStates();
         }
 
         private static class BlockDummyAir extends AirBlock //A named class so DummyBlockReplacementTest can detect if its a dummy

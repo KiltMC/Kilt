@@ -72,11 +72,13 @@
     "world.level.biome.BiomeInject",
     "world.level.biome.BiomeSpecialEffectsGrassColorModifierInject",
     "world.level.block.BlockInject",
+    "world.level.block.LiquidBlockInject",
     "world.level.block.entity.BlockEntityInject",
     "world.level.block.state.BlockStateInject",
     "world.level.block.state.properties.WoodTypeInject",
     "world.level.chunk.ChunkAccessInject",
     "world.level.chunk.LevelChunkInject",
+    "world.level.levelgen.DebugLevelSourceInject",
     "world.level.levelgen.structure.StructureInject",
     "world.level.material.FluidInject",
     "world.level.material.FluidStateInject",
@@ -98,6 +100,7 @@
     "client.renderer.ScreenEffectRendererInject",
     "client.renderer.SheetsInject",
     "client.renderer.block.model.BakedQuadInject",
+    "client.renderer.block.model.ItemTransformInject",
     "client.renderer.block.model.ItemTransformsTransformTypeInject"
   ],
   "injectors": {

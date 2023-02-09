@@ -18,7 +18,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import xyz.bluspring.kilt.remaps.world.item.BucketItemRemap;
 
 public class BucketPickupHandlerWrapper implements IFluidHandler
 {
@@ -89,12 +88,12 @@ public class BucketPickupHandlerWrapper implements IFluidHandler
                     ItemStack itemStack = bucketPickupHandler.pickupBlock(world, blockPos, world.getBlockState(blockPos));
                     if (itemStack != ItemStack.EMPTY && itemStack.getItem() instanceof BucketItem bucket)
                     {
-                        FluidStack extracted = new FluidStack(((BucketItemRemap) bucket).getFluid(), FluidType.BUCKET_VOLUME);
+                        FluidStack extracted = new FluidStack(bucket.getFluid(), FluidType.BUCKET_VOLUME);
                         if (!resource.isFluidEqual(extracted))
                         {
                             //Be loud if something went wrong
                             LOGGER.error("Fluid removed without successfully being picked up. Fluid {} at {} in {} matched requested type, but after performing pickup was {}.",
-                                    ForgeRegistries.FLUIDS.getKey(fluidState.getType()), blockPos, world.dimension().location(), ForgeRegistries.FLUIDS.getKey(((BucketItemRemap) bucket).getFluid()));
+                                    ForgeRegistries.FLUIDS.getKey(fluidState.getType()), blockPos, world.dimension().location(), ForgeRegistries.FLUIDS.getKey(bucket.getFluid()));
                             return FluidStack.EMPTY;
                         }
                         return extracted;
@@ -130,7 +129,7 @@ public class BucketPickupHandlerWrapper implements IFluidHandler
                 ItemStack itemStack = bucketPickupHandler.pickupBlock(world, blockPos, world.getBlockState(blockPos));
                 if (itemStack != ItemStack.EMPTY && itemStack.getItem() instanceof BucketItem bucket)
                 {
-                    return new FluidStack(((BucketItemRemap) bucket).getFluid(), FluidType.BUCKET_VOLUME);
+                    return new FluidStack(bucket.getFluid(), FluidType.BUCKET_VOLUME);
                 }
             }
         }

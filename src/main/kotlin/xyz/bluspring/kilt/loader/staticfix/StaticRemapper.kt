@@ -43,6 +43,11 @@ class StaticRemapper(private val membersToRemap: List<ClassData>, private val cl
                     ))
                 } else if (lineSplit[0] == "mc") {
                     classesToRemap.add(lineSplit[1] to lineSplit[2])
+                } else if (lineSplit[0] == "i") {
+                    currentClass?.members?.add(MemberData(
+                        lineSplit[1], lineSplit[2],
+                        MemberData.MemberType.INITIALIZER
+                    ))
                 }
             }
 
@@ -62,7 +67,7 @@ class StaticRemapper(private val membersToRemap: List<ClassData>, private val cl
         val type: MemberType
     ) {
         enum class MemberType {
-            FIELD, METHOD
+            FIELD, METHOD, INITIALIZER
         }
     }
 }
