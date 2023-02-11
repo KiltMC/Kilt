@@ -1,12 +1,19 @@
 package xyz.bluspring.kilt;
 
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
+
+import java.util.function.Supplier;
 
 // I use this class to just throw stuff into and
 // see how the bytecode looks when it's built.
@@ -50,6 +57,12 @@ public class TestingMoreShit {
     public static class TestingTripleTime extends TestingMoreShit {
         public TestingTripleTime() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
             super((ForgeRegistry<Block>) Class.forName("net.minecraftforge.registries.ForgeRegistries").getDeclaredField("BLOCKS").get(null));
+        }
+    }
+
+    public static abstract class TestingQuadrupleTime extends CreativeModeTab {
+        public TestingQuadrupleTime(String string) {
+            super(-1, string);
         }
     }
 

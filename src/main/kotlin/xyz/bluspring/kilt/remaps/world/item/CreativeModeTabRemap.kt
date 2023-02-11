@@ -2,27 +2,20 @@ package xyz.bluspring.kilt.remaps.world.item
 
 import net.minecraft.world.item.CreativeModeTab
 
-abstract class CreativeModeTabRemap : CreativeModeTab {
-    constructor(i: Int, str: String) : super(i.run {
-        var index = this
+// this isn't actually a remap, but i'm keeping it here to make things easier
+object CreativeModeTabRemap {
+    @JvmStatic
+    fun updateIndex(i: Int): Int {
+        var index = i
 
         if (index == -1)
-            index = TABS.size
+            index = CreativeModeTab.TABS.size
 
-        if (index >= TABS.size) {
-            val temp = TABS.copyOf(TABS.size + 1)
+        if (index >= CreativeModeTab.TABS.size) {
+            val temp = CreativeModeTab.TABS.copyOf(CreativeModeTab.TABS.size + 1)
             CreativeModeTab.TABS = temp
         }
 
-        return@run index
-    }, str)
-    constructor(str: String) : this(CreativeModeTab.TABS.size, str)
-
-    companion object {
-        @JvmStatic
-        @Synchronized
-        fun getGroupCountSafe(): Int {
-            return CreativeModeTab.TABS.size
-        }
+        return index
     }
 }

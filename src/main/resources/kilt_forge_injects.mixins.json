@@ -54,6 +54,7 @@
     "world.item.AxeItemInject",
     "world.item.BoneMealItemInject",
     "world.item.BucketItemInject",
+    "world.item.CreativeModeTabInject",
     "world.item.DyeColorInject",
     "world.item.ItemInject",
     "world.item.ItemPropertiesInject",

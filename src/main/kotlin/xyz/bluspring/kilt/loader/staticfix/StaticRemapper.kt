@@ -1,8 +1,12 @@
 package xyz.bluspring.kilt.loader.staticfix
 
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+
 class StaticRemapper(private val membersToRemap: List<ClassData>, private val classesToRemap: List<Pair<String, String>>) {
     fun tryRemapOwner(owner: String, name: String, descriptor: String): String {
-        val classData = membersToRemap.firstOrNull { it.from == owner } ?: return owner
+        val mojmappedName = KiltRemapper.srgIntermediaryTree.classes.firstOrNull { it.getName("intermediary") == owner }?.getName("srg")
+
+        val classData = membersToRemap.firstOrNull { it.from == (mojmappedName ?: owner) } ?: return owner
         classData.members.firstOrNull { it.name == name && it.descriptor == descriptor } ?: return owner
 
         return classData.to
