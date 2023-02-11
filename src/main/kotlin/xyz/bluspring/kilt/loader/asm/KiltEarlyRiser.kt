@@ -131,6 +131,9 @@ class KiltEarlyRiser : Runnable {
             c net/minecraft/world/item/CreativeModeTab xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection
                 s <init> (ILjava/lang/String;)V
                 i <init> (Ljava/lang/String;)V
+            c net/minecraft/world/level/block/PoweredRailBlock xyz/bluspring/kilt/injections/world/level/block/PoweredRailBlockInjection
+                s <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+                i <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Z)V
              */
 
             run {
@@ -339,6 +342,45 @@ class KiltEarlyRiser : Runnable {
                         initializer.visitMaxs(0, 0)
                         initializer.visitEnd()
                     }
+                }
+            }
+
+            run {
+                val poweredRailBlock = namespaced("net/minecraft/class_2442", "net/minecraft/world/level/block/PoweredRailBlock")
+                val blockBehaviourProperties = namespaced("net/minecraft/class_4970\$class_2251", "net/minecraft/world/level/block/state/BlockBehaviour\$Properties")
+                val poweredRailBlockInjection = "xyz/bluspring/kilt/injections/world/level/block/PoweredRailBlockInjection"
+
+                ClassTinkerers.addTransformation(poweredRailBlock) {
+                    val initializer = it.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(L$blockBehaviourProperties;Z)V", null, null)
+
+                    initializer.visitCode()
+
+                    val label0 = Label()
+                    val label1 = Label()
+                    val label2 = Label()
+                    val label3 = Label()
+
+                    initializer.visitLabel(label0)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                    initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, poweredRailBlock, "<init>", "(L$blockBehaviourProperties;)V", false)
+
+                    initializer.visitLabel(label1)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                    initializer.visitTypeInsn(Opcodes.CHECKCAST, poweredRailBlockInjection)
+                    initializer.visitVarInsn(Opcodes.ILOAD, 2)
+                    initializer.visitMethodInsn(Opcodes.INVOKEINTERFACE, poweredRailBlockInjection, "kilt\$setActivator", "(Z)V", true)
+
+                    initializer.visitLabel(label2)
+                    initializer.visitInsn(Opcodes.RETURN)
+
+                    initializer.visitLabel(label3)
+                    initializer.visitLocalVariable("this", "L$poweredRailBlock;", null, label0, label3, 0)
+                    initializer.visitLocalVariable("properties", "L$blockBehaviourProperties;", null, label0, label3, 1)
+                    initializer.visitLocalVariable("isPoweredRail", "Z", null, label0, label3, 2)
+
+                    initializer.visitMaxs(0, 0)
+                    initializer.visitEnd()
                 }
             }
         }

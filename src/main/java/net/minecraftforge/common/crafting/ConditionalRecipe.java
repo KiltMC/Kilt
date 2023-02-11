@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ConditionalRecipe
 {
+    // https://media.tenor.com/7pXIzb8f2rUAAAAd/minor-spelling-mistake.gif
     @ObjectHolder(registryName = "recipe_serializer", value = "forge:conditional")
     public static final RecipeSerializer<Recipe<?>> SERIALZIER = null;
 

@@ -74,6 +74,7 @@
     "world.level.biome.BiomeSpecialEffectsGrassColorModifierInject",
     "world.level.block.BlockInject",
     "world.level.block.LiquidBlockInject",
+    "world.level.block.PoweredRailBlockInject",
     "world.level.block.entity.BlockEntityInject",
     "world.level.block.state.BlockStateInject",
     "world.level.block.state.properties.WoodTypeInject",
