@@ -45,12 +45,10 @@
     "TagsProviderAccessor",
     "TransformTypeAccessor",
     "TypeAccessor",
-    "WoodTypeAccessor",
-    "fabric.ModResourcePackUtilMixin"
+    "WoodTypeAccessor"
   ],
   "client": [
-    "DebugScreenOverlayMixin",
-    "resources.ClientPackSourceMixin"
+    "DebugScreenOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1

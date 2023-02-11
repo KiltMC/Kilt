@@ -57,8 +57,24 @@ class ForgeMod(
 
     val loaderMetadata = KiltFabricModContainer.FabricModMetadata(this)
 
-    val fabricCandidate = createModCandidate(this)
-    val container = KiltModContainer(this)
+    private lateinit var internalFabricCandidate: ModCandidate
+
+    val fabricCandidate: ModCandidate
+        get() {
+            if (!this::internalFabricCandidate.isInitialized)
+                internalFabricCandidate = createModCandidate(this)
+
+            return internalFabricCandidate
+        }
+
+    private lateinit var internalContainer: KiltModContainer
+    val container: KiltModContainer
+        get() {
+            if (!this::internalContainer.isInitialized)
+                internalContainer = KiltModContainer(this)
+
+            return internalContainer
+        }
 
     val jar: JarFile
         get() {

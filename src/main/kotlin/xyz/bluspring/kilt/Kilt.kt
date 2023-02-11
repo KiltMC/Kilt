@@ -1,8 +1,6 @@
 package xyz.bluspring.kilt
 
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.minecraft.server.packs.PackType
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
