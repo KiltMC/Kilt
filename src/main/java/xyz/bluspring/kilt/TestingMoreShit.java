@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt;
 
+import com.mojang.math.Vector3f;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +13,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
 import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
@@ -64,13 +67,10 @@ public class TestingMoreShit {
         }
     }
 
-    public static abstract class TestingQuadrupleTime extends PoweredRailBlock {
-        public TestingQuadrupleTime(BlockBehaviour.Properties properties, boolean welp) {
-            super(properties);
-            ((PoweredRailBlockInjection) this).kilt$setActivator(welp);
-        }
-
-        public static void imdumb(boolean a) {
+    public static abstract class TestingQuadrupleTime extends ItemTransform {
+        public TestingQuadrupleTime(Vector3f vector3f, Vector3f vector3f2, Vector3f vector3f3, Vector3f rightRotation) {
+            super(vector3f, vector3f2, vector3f3);
+            ((ItemTransformInjection) this).setRightRotation(rightRotation);
         }
     }
 

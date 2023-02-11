@@ -2,9 +2,7 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
-import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Label
-import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
 class KiltEarlyRiser : Runnable {
@@ -136,6 +134,7 @@ class KiltEarlyRiser : Runnable {
                 i <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Z)V
              */
 
+            // ItemTransform
             run {
                 val itemTransform = namespaced("net/minecraft/class_804", "net/minecraft/client/renderer/block/model/ItemTransform")
                 val itemTransformInject = "xyz/bluspring/kilt/injections/client/render/block/model/ItemTransformInjection"
@@ -156,6 +155,7 @@ class KiltEarlyRiser : Runnable {
                         val label0 = Label()
                         val label1 = Label()
                         val label2 = Label()
+                        val label3 = Label()
 
                         initializer.visitLabel(label0)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
@@ -166,18 +166,19 @@ class KiltEarlyRiser : Runnable {
 
                         initializer.visitLabel(label1)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitTypeInsn(Opcodes.CHECKCAST, itemTransformInject)
                         initializer.visitVarInsn(Opcodes.ALOAD, 4)
                         initializer.visitMethodInsn(Opcodes.INVOKEINTERFACE, itemTransformInject, "setRightRotation", "(L$vector3f;)V", true)
-                        initializer.visitTypeInsn(Opcodes.CHECKCAST, itemTransformInject)
-
-                        initializer.visitInsn(Opcodes.RETURN)
 
                         initializer.visitLabel(label2)
-                        initializer.visitLocalVariable("this", "L$itemTransform;", null, label0, label2, 0)
-                        initializer.visitLocalVariable("vector3f", "L$vector3f;", null, label0, label2, 1)
-                        initializer.visitLocalVariable("vector3f2", "L$vector3f;", null, label0, label2, 2)
-                        initializer.visitLocalVariable("vector3f3", "L$vector3f;", null, label0, label2, 3)
-                        initializer.visitLocalVariable("vector3f3", "L$vector3f;", null, label0, label2, 4)
+                        initializer.visitInsn(Opcodes.RETURN)
+
+                        initializer.visitLabel(label3)
+                        initializer.visitLocalVariable("this", "L$itemTransform;", null, label0, label3, 0)
+                        initializer.visitLocalVariable("vector3f", "L$vector3f;", null, label0, label3, 1)
+                        initializer.visitLocalVariable("vector3f2", "L$vector3f;", null, label0, label3, 2)
+                        initializer.visitLocalVariable("vector3f3", "L$vector3f;", null, label0, label3, 3)
+                        initializer.visitLocalVariable("rightRotation", "L$vector3f;", null, label0, label3, 4)
 
                         initializer.visitMaxs(0, 0)
                         initializer.visitEnd()
@@ -185,6 +186,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // AttributeSupplier$Builder
             run {
                 val attributeSupplierBuilder = namespaced("net/minecraft/class_5132\$class_5133", "net/minecraft/world/entity/ai/attributes/AttributeSupplier\$Builder")
                 val attributeSupplier = namespaced("net/minecraft/class_5132", "net/minecraft/world/entity/ai/attributes/AttributeSupplier")
@@ -225,6 +227,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // LiquidBlock
             run {
                 val liquidBlock = namespaced("net/minecraft/class_2404", "net/minecraft/world/level/block/LiquidBlock")
                 val blockBehaviourProperties = namespaced("net/minecraft/class_4970\$class_2251", "net/minecraft/world/level/block/state/BlockBehaviour\$Properties")
@@ -269,6 +272,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // BucketItem
             run {
                 val bucketItem = namespaced("net/minecraft/class_1755", "net/minecraft/world/item/BucketItem")
                 val fluid = namespaced("net/minecraft/class_3611", "net/minecraft/world/level/material/Fluid")
@@ -313,6 +317,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // CreativeModeTab
             run {
                 val creativeModeTab = namespaced("net/minecraft/class_1761", "net/minecraft/world/item/CreativeModeTab")
 
@@ -345,6 +350,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // PoweredRailBlock
             run {
                 val poweredRailBlock = namespaced("net/minecraft/class_2442", "net/minecraft/world/level/block/PoweredRailBlock")
                 val blockBehaviourProperties = namespaced("net/minecraft/class_4970\$class_2251", "net/minecraft/world/level/block/state/BlockBehaviour\$Properties")
