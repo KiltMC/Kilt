@@ -1,6 +1,8 @@
 package xyz.bluspring.kilt
 
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.minecraft.server.packs.PackType
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
@@ -11,6 +13,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 class Kilt : ModInitializer {
     override fun onInitialize() {
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
+
         // config load should be here
         loader.runPhaseExecutors(ModLoadingPhase.LOAD)
 

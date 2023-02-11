@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.client
 
 import net.fabricmc.api.ClientModInitializer
-import net.minecraft.network.Connection
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
@@ -9,6 +8,7 @@ import xyz.bluspring.kilt.Kilt
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
         hasInitialized = true
+
         Kilt.loader.mods.forEach { mod ->
             mod.eventBus.post(FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
         }

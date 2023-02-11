@@ -17,10 +17,6 @@ class KiltFabricModContainer(private val mod: ForgeMod) : ModContainerImpl(mod.f
         return mod.loaderMetadata
     }
 
-    override fun getRootPaths(): MutableList<Path> {
-        return mod.paths
-    }
-
     override fun getOrigin(): ModOrigin? {
         return null
     }
@@ -31,10 +27,6 @@ class KiltFabricModContainer(private val mod: ForgeMod) : ModContainerImpl(mod.f
 
     override fun getContainedMods(): MutableCollection<net.fabricmc.loader.api.ModContainer> {
         return mutableListOf()
-    }
-
-    override fun getRootPath(): Path? {
-        return mod.paths.firstOrNull()
     }
 
     override fun getPath(file: String): Path? {
