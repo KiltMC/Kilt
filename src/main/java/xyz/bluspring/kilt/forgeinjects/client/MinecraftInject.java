@@ -5,11 +5,13 @@ import net.minecraft.client.Options;
 import net.minecraft.client.Timer;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.main.GameConfig;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.ClientTooltipComponentManager;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
@@ -26,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 
 @Mixin(Minecraft.class)
-public class MinecraftInject implements MinecraftInjection {
+public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
     @Shadow @Final private ItemColors itemColors;
 
     @Shadow @Final private SearchRegistry searchRegistry;
@@ -35,6 +37,7 @@ public class MinecraftInject implements MinecraftInjection {
     @Shadow private volatile boolean pause;
     @Shadow private float pausePartialTick;
     @Shadow @Final private Timer timer;
+    @Shadow @Final public ParticleEngine particleEngine;
     @Unique
     private float realPartialTick;
 
