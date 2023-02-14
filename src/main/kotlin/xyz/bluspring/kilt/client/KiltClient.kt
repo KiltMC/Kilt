@@ -4,6 +4,7 @@ import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerR
 import net.fabricmc.api.ClientModInitializer
 import net.minecraft.client.Minecraft
 import net.minecraftforge.client.ForgeHooksClient
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
@@ -21,7 +22,9 @@ class KiltClient : ClientModInitializer {
 
     private fun registerFabricEvents() {
         ParticleManagerRegistrationCallback.EVENT.register {
-            ForgeHooksClient.onRegisterParticleProviders(Minecraft.getInstance().particleEngine)
+            // i would call ForgeHooksClient.onRegisterParticleProviders,
+            // but that doesn't work. i don't know why. but it just doesn't.
+            Kilt.loader.postEvent(RegisterParticleProvidersEvent(Minecraft.getInstance().particleEngine))
         }
     }
 

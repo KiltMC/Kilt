@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.forgeinjects.client.renderer.texture;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.Stitcher;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -10,6 +11,10 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.textures.ForgeTextureMetadata;
+import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.fml.StartupMessageManager;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,12 +38,20 @@ public abstract class TextureAtlasInject {
 
     @Inject(method = "prepareToStitch", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
     public void kilt$runPreStitchEvent(ResourceManager resourceManager, Stream<ResourceLocation> stream, ProfilerFiller profilerFiller, int i, CallbackInfoReturnable<TextureAtlas.Preparations> cir, Set<ResourceLocation> set, int j, Stitcher stitcher, int k, int l) {
-        ForgeHooksClient.onTextureStitchedPre((TextureAtlas) (Object) this, set);
+        var map = (TextureAtlas) (Object) this;
+
+        StartupMessageManager.mcLoaderConsumer().ifPresent((c) -> {
+            c.accept("Atlas Stitching : " + map.location().toString());
+        });
+        ModLoader.get().postEvent(new TextureStitchEvent.Pre(map, set));
+        Sheets.SIGN_MATERIALS.values().stream().filter((rm) -> rm.atlasLocation().equals(map.location())).forEach((rm) -> {
+            set.add(rm.texture());
+        });
     }
 
     @Inject(at = @At("TAIL"), method = "reload")
     public void kilt$runPostStitchEvent(TextureAtlas.Preparations preparations, CallbackInfo ci) {
-        ForgeHooksClient.onTextureStitchedPost((TextureAtlas) (Object) this);
+        ModLoader.get().postEvent(new TextureStitchEvent.Post((TextureAtlas) (Object) this));
     }
 
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "load(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite$Info;IIIII)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;")
@@ -58,13 +71,8 @@ public abstract class TextureAtlasInject {
             var inputStream = resource.open();
             var nativeImage = NativeImage.read(inputStream);
 
-            var forgeTextureSprite = ForgeHooksClient.loadTextureAtlasSprite(
-                    (TextureAtlas) (Object) this, resourceManager,
-                    info, resource,
-                    i, j,
-                    l, m,
-                    k, nativeImage
-            );
+            ForgeTextureMetadata metadata = ForgeTextureMetadata.forResource(resource);
+            var forgeTextureSprite = metadata.getLoader() == null ? null : metadata.getLoader().load((TextureAtlas) (Object) this, resourceManager, info, resource, i, j, l, m, k, nativeImage);
 
             if (forgeTextureSprite == null)
                 return atlasSprite;

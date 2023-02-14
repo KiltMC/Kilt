@@ -187,6 +187,7 @@ import static net.minecraftforge.fml.VersionChecker.Status.BETA_OUTDATED;
 
 @SuppressWarnings("removal")
 @ApiStatus.Internal
+@Deprecated(since = "Kilt: Avoid using this at all costs, and just do direct calls. There is a bug that for some reason prevents these methods from actually being used.", forRemoval = true)
 public class ForgeHooksClient
 {
     private static final Logger LOGGER = LogManager.getLogger();

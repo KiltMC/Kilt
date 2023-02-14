@@ -11,6 +11,7 @@ import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.ClientTooltipComponentManager;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
@@ -65,7 +66,7 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
         TextureAtlasSpriteLoaderManager.init();
         ClientTooltipComponentManager.init();
         EntitySpectatorShaderManager.init();
-        ForgeHooksClient.onRegisterKeyMappings(this.options);
+        ModLoader.get().postEvent(new RegisterKeyMappingsEvent(this.options));
         RecipeBookManager.init();
         GuiOverlayManager.init();
         DimensionSpecialEffectsManager.init();
