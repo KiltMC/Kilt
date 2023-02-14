@@ -82,6 +82,9 @@ public class GameData
         init();
     }
 
+    // Kilt: This is to workaround a problem where registries aren't ordered correctly.
+    private static List<IForgeRegistry<?>> kilt$registries;
+
     public static void init()
     {
         if (DISABLE_VANILLA_REGISTRIES)
@@ -93,43 +96,49 @@ public class GameData
             return;
         hasInit = true;
 
+        // Kilt: You would think this is unnecessary, but for some reason,
+        //       the JVM refuses to act like it's initialized when it's in
+        //       the static field above.
+        if (kilt$registries == null)
+            kilt$registries = new LinkedList<>();
+
         // Game objects
-        makeRegistry(BLOCKS, "air").addCallback(BlockCallbacks.INSTANCE).legacyName("blocks").vanillaHolder(Block::builtInRegistryHolder).create();
-        makeRegistry(FLUIDS, "empty").vanillaHolder(Fluid::builtInRegistryHolder).create();
-        makeRegistry(ITEMS, "air").addCallback(ItemCallbacks.INSTANCE).legacyName("items").vanillaHolder(Item::builtInRegistryHolder).create();
-        makeRegistry(MOB_EFFECTS).legacyName("potions").create();
-        makeRegistry(SOUND_EVENTS).legacyName("soundevents").create();
-        makeRegistry(POTIONS, "empty").legacyName("potiontypes").create();
-        makeRegistry(ENCHANTMENTS).legacyName("enchantments").create();
-        makeRegistry(ENTITY_TYPES, "pig").legacyName("entities").vanillaHolder(EntityType::builtInRegistryHolder).create();
-        makeRegistry(BLOCK_ENTITY_TYPES).disableSaving().legacyName("blockentities").create();
-        makeRegistry(PARTICLE_TYPES).disableSaving().create();
-        makeRegistry(MENU_TYPES).disableSaving().create();
-        makeRegistry(PAINTING_VARIANTS, "kebab").create();
-        makeRegistry(RECIPE_TYPES).disableSaving().disableSync().create();
-        makeRegistry(RECIPE_SERIALIZERS).disableSaving().create();
-        makeRegistry(ATTRIBUTES).onValidate(AttributeCallbacks.INSTANCE).disableSaving().disableSync().create();
-        makeRegistry(STAT_TYPES).create();
-        makeRegistry(COMMAND_ARGUMENT_TYPES).disableSaving().create();
+        kilt$registries.add(makeRegistry(BLOCKS, "air").addCallback(BlockCallbacks.INSTANCE).legacyName("blocks").vanillaHolder(Block::builtInRegistryHolder).create());
+        kilt$registries.add(makeRegistry(FLUIDS, "empty").vanillaHolder(Fluid::builtInRegistryHolder).create());
+        kilt$registries.add(makeRegistry(ITEMS, "air").addCallback(ItemCallbacks.INSTANCE).legacyName("items").vanillaHolder(Item::builtInRegistryHolder).create());
+        kilt$registries.add(makeRegistry(MOB_EFFECTS).legacyName("potions").create());
+        kilt$registries.add(makeRegistry(SOUND_EVENTS).legacyName("soundevents").create());
+        kilt$registries.add(makeRegistry(POTIONS, "empty").legacyName("potiontypes").create());
+        kilt$registries.add(makeRegistry(ENCHANTMENTS).legacyName("enchantments").create());
+        kilt$registries.add(makeRegistry(ENTITY_TYPES, "pig").legacyName("entities").vanillaHolder(EntityType::builtInRegistryHolder).create());
+        kilt$registries.add(makeRegistry(BLOCK_ENTITY_TYPES).disableSaving().legacyName("blockentities").create());
+        kilt$registries.add(makeRegistry(PARTICLE_TYPES).disableSaving().create());
+        kilt$registries.add(makeRegistry(MENU_TYPES).disableSaving().create());
+        kilt$registries.add(makeRegistry(PAINTING_VARIANTS, "kebab").create());
+        kilt$registries.add(makeRegistry(RECIPE_TYPES).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(RECIPE_SERIALIZERS).disableSaving().create());
+        kilt$registries.add(makeRegistry(ATTRIBUTES).onValidate(AttributeCallbacks.INSTANCE).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(STAT_TYPES).create());
+        kilt$registries.add(makeRegistry(COMMAND_ARGUMENT_TYPES).disableSaving().create());
 
         // Villagers
-        makeRegistry(VILLAGER_PROFESSIONS, "none").create();
-        makeRegistry(POI_TYPES).addCallback(PointOfInterestTypeCallbacks.INSTANCE).disableSync().create();
-        makeRegistry(MEMORY_MODULE_TYPES, "dummy").disableSync().create();
-        makeRegistry(SENSOR_TYPES, "dummy").disableSaving().disableSync().create();
-        makeRegistry(SCHEDULES).disableSaving().disableSync().create();
-        makeRegistry(ACTIVITIES).disableSaving().disableSync().create();
+        kilt$registries.add(makeRegistry(VILLAGER_PROFESSIONS, "none").create());
+        kilt$registries.add(makeRegistry(POI_TYPES).addCallback(PointOfInterestTypeCallbacks.INSTANCE).disableSync().create());
+        kilt$registries.add(makeRegistry(MEMORY_MODULE_TYPES, "dummy").disableSync().create());
+        kilt$registries.add(makeRegistry(SENSOR_TYPES, "dummy").disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(SCHEDULES).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(ACTIVITIES).disableSaving().disableSync().create());
 
         // Worldgen
-        makeRegistry(WORLD_CARVERS).disableSaving().disableSync().create();
-        makeRegistry(FEATURES).disableSaving().disableSync().create();
-        makeRegistry(CHUNK_STATUS, "empty").disableSaving().disableSync().create();
-        makeRegistry(BLOCK_STATE_PROVIDER_TYPES).disableSaving().disableSync().create();
-        makeRegistry(FOLIAGE_PLACER_TYPES).disableSaving().disableSync().create();
-        makeRegistry(TREE_DECORATOR_TYPES).disableSaving().disableSync().create();
+        kilt$registries.add(makeRegistry(WORLD_CARVERS).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(FEATURES).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(CHUNK_STATUS, "empty").disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(BLOCK_STATE_PROVIDER_TYPES).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(FOLIAGE_PLACER_TYPES).disableSaving().disableSync().create());
+        kilt$registries.add(makeRegistry(TREE_DECORATOR_TYPES).disableSaving().disableSync().create());
 
         // Dynamic Worldgen
-        makeRegistry(BIOMES).disableSync().create();
+        kilt$registries.add(makeRegistry(BIOMES).disableSync().create());
     }
 
     static RegistryBuilder<EntityDataSerializer<?>> getDataSerializersRegistryBuilder()
@@ -306,20 +315,34 @@ public class GameData
     @SuppressWarnings("deprecation")
     public static void postRegisterEvents()
     {
-        Set<ResourceLocation> keySet = new HashSet<>(RegistryManager.ACTIVE.registries.keySet());
+        // Kilt: The logic here needs to be changed by a lot due to an issue where
+        //       the registries are unordered. Someone will probably figure something out
+        //       to make things more Forge-accurate.
+        var keySet = new ArrayList<>(kilt$registries.stream().map(IForgeRegistry::getRegistryName).toList());
+        keySet.addAll(RegistryManager.ACTIVE.registries.keySet());
         keySet.addAll(RegistryManager.getVanillaRegistryKeys());
         keySet.addAll(BuiltinRegistries.REGISTRY.keySet());
 
         Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
-        ordered.retainAll(keySet);
-        ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
+        keySet.forEach(ordered::remove);
+        //ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
+
+        keySet.addAll(ordered);
+
+        // Kilt: no double registering. i beg.
+        var registered = new LinkedList<ResourceLocation>();
 
         RuntimeException aggregate = new RuntimeException();
 
-        for (ResourceLocation rootRegistryName : ordered)
+        for (ResourceLocation rootRegistryName : keySet)
         {
             try
             {
+                if (registered.contains(rootRegistryName))
+                    continue;
+
+                registered.add(rootRegistryName);
+
                 ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(rootRegistryName);
                 ForgeRegistry<?> forgeRegistry = RegistryManager.ACTIVE.getRegistry(rootRegistryName);
                 Registry<?> vanillaRegistry = Registry.REGISTRY.containsKey(rootRegistryName) ? Registry.REGISTRY.get(rootRegistryName) : BuiltinRegistries.REGISTRY.get(rootRegistryName);
