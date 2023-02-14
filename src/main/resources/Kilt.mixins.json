@@ -34,6 +34,7 @@
     "MinecraftServerAccessor",
     "MobCategoryAccessor",
     "MobSpawnSettingsAccessor",
+    "PropertiesAccessor",
     "RaiderTypeAccessor",
     "RarityAccessor",
     "RecipeBookCategoriesAccessor",

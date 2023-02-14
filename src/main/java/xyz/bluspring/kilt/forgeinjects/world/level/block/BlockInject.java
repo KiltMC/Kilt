@@ -4,6 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.IdMapper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -12,8 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeBlockState;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import net.minecraftforge.registries.GameData;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -24,6 +25,8 @@ import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
 
 @Mixin(Block.class)
 public abstract class BlockInject implements IForgeBlock, RenderPropertiesInjection<IClientBlockExtensions> {
+    @Shadow @Final @Mutable
+    public static IdMapper<BlockState> BLOCK_STATE_REGISTRY;
     @Unique
     private Object renderProperties;
 

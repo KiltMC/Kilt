@@ -232,12 +232,14 @@ class KiltEarlyRiser : Runnable {
                 val liquidBlock = namespaced("net/minecraft/class_2404", "net/minecraft/world/level/block/LiquidBlock")
                 val blockBehaviourProperties = namespaced("net/minecraft/class_4970\$class_2251", "net/minecraft/world/level/block/state/BlockBehaviour\$Properties")
                 val flowingFluid = namespaced("net/minecraft/class_3609", "net/minecraft/world/level/material/FlowingFluid")
+                val block = namespaced("net/minecraft/class_2248", "net/minecraft/world/level/block/Block")
+                val stateDefinition = namespaced("net/minecraft/class_2689", "net/minecraft/world/level/block/state/StateDefinition")
 
                 ClassTinkerers.addTransformation(liquidBlock) {
                     run {
                         val initializer = it.visitMethod(
                             Opcodes.ACC_PUBLIC, "<init>", "(Ljava/util/function/Supplier;L$blockBehaviourProperties;)V",
-                            null, null
+                            "(Ljava/util/function/Supplier<+L$flowingFluid;>;L$blockBehaviourProperties;)V", null
                         )
 
                         // this(liquidSupplier.get(), properties)
@@ -246,25 +248,63 @@ class KiltEarlyRiser : Runnable {
                         val label0 = Label()
                         val label1 = Label()
                         val label2 = Label()
+                        val label3 = Label()
+                        val label4 = Label()
+                        val label5 = Label()
+                        val label6 = Label()
 
+                        // super(properties);
                         initializer.visitLabel(label0)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
-                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
-
-                        initializer.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Supplier", "get", "()Ljava/lang/Object;", true)
-                        initializer.visitTypeInsn(Opcodes.CHECKCAST, flowingFluid)
-
                         initializer.visitVarInsn(Opcodes.ALOAD, 2)
+                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, block, "<init>", "(L$blockBehaviourProperties;)V", false)
 
-                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, liquidBlock, "<init>", "(L$flowingFluid;L$blockBehaviourProperties;)V", false)
-
+                        // this.field = null;
                         initializer.visitLabel(label1)
-                        initializer.visitInsn(Opcodes.RETURN)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitInsn(Opcodes.ACONST_NULL)
+                        initializer.visitFieldInsn(Opcodes.PUTFIELD, liquidBlock, namespaced("field_11279", "fluid"), "L$flowingFluid;")
 
                         initializer.visitLabel(label2)
-                        initializer.visitLocalVariable("this", "L$liquidBlock;", null, label0, label2, 0)
-                        initializer.visitLocalVariable("fluidSupplier", "Ljava/util/function/Supplier;", null, label0, label2, 1)
-                        initializer.visitLocalVariable("properties", "L$blockBehaviourProperties;", null, label0, label2, 2)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitMethodInsn(Opcodes.INVOKESTATIC, "com/google/common/collect/Lists", "newArrayList", "()Ljava/util/ArrayList;", false)
+                        initializer.visitFieldInsn(Opcodes.PUTFIELD, liquidBlock, namespaced("field_11276", "stateCache"), "Ljava/util/List;")
+
+                        // this.registerDefaultState(this.stateDefinition.any().setValue(FlowingFluid.LEVEL, 0));
+                        initializer.visitLabel(label3)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitFieldInsn(Opcodes.GETFIELD, liquidBlock, namespaced("field_10647", "stateDefinition"), "L$stateDefinition;")
+
+                        val stateHolder = namespaced("net/minecraft/class_2688", "net/minecraft/world/level/block/state/StateHolder")
+                        val blockState = namespaced("net/minecraft/class_2680", "net/minecraft/world/level/block/state/BlockState")
+                        val integerProperty = namespaced("net/minecraft/class_2758", "net/minecraft/world/level/block/state/properties/IntegerProperty")
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stateDefinition, namespaced("method_11664", "any"), "()L$stateHolder;", false)
+                        initializer.visitTypeInsn(Opcodes.CHECKCAST, blockState)
+                        initializer.visitFieldInsn(Opcodes.GETSTATIC, flowingFluid, namespaced("field_15900", "LEVEL"), "L$integerProperty;")
+
+                        val property = namespaced("net/minecraft/class_2769", "net/minecraft/world/level/block/state/properties/Property")
+                        initializer.visitInsn(Opcodes.ICONST_0)
+                        initializer.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, blockState, namespaced("method_11657", "setValue"), "(L$property;Ljava/lang/Comparable;)Ljava/lang/Object;", false)
+                        initializer.visitTypeInsn(Opcodes.CHECKCAST, blockState)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, liquidBlock, namespaced("method_9590", "registerDefaultState"), "(L$blockState;)V", false)
+
+                        // this.supplier = supplier;
+                        initializer.visitLabel(label4)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                        // by all means, this doesn't exist in LiquidBlock.
+                        // but because of mixin, we're making it exist.
+                        initializer.visitFieldInsn(Opcodes.PUTFIELD, liquidBlock, "supplier", "Ljava/util/function/Supplier;")
+
+                        initializer.visitLabel(label5)
+                        initializer.visitInsn(Opcodes.RETURN)
+
+                        initializer.visitLabel(label6)
+                        initializer.visitLocalVariable("this", "L$liquidBlock;", null, label0, label6, 0)
+                        initializer.visitLocalVariable("fluidSupplier", "Ljava/util/function/Supplier;", "Ljava/util/function/Supplier<+L$flowingFluid;>;", label0, label6, 1)
+                        initializer.visitLocalVariable("properties", "L$blockBehaviourProperties;", null, label0, label6, 2)
 
                         initializer.visitMaxs(0, 0)
                         initializer.visitEnd()

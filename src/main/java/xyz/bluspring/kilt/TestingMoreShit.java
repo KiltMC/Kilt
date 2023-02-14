@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt;
 
+import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.world.item.CreativeModeTab;
@@ -9,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -18,6 +20,7 @@ import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryI
 import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
 import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 // I use this class to just throw stuff into and
@@ -61,9 +64,18 @@ public class TestingMoreShit {
         }
     }
 
-    public static class TestingTripleTime extends TestingMoreShit {
-        public TestingTripleTime() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-            super((ForgeRegistry<Block>) Class.forName("net.minecraftforge.registries.ForgeRegistries").getDeclaredField("BLOCKS").get(null));
+    public static class TestingTripleTime extends Block {
+        private final FlowingFluid bruh;
+        private final List<?> test;
+        private final Supplier<? extends FlowingFluid> supplier;
+
+        public TestingTripleTime(Supplier<? extends FlowingFluid> fluid, BlockBehaviour.Properties properties) {
+            super(properties);
+
+            this.bruh = null;
+            this.test = Lists.newArrayList();
+            this.registerDefaultState(this.stateDefinition.any().setValue(FlowingFluid.LEVEL, 0));
+            this.supplier = fluid;
         }
     }
 
