@@ -105,7 +105,7 @@ class DeferredRegister<T> private constructor(
         }
 
     private fun createRegistry(event: NewRegistryEvent) {
-        event.create(RegistryBuilder()) {
+        event.create(RegistryBuilder<T>().setName(this.registryName)) {
             val tagManager = it.tags() ?: return@create
 
             optionalTags.forEach(tagManager::addOptionalTagDefaults)

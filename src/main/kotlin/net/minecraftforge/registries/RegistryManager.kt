@@ -36,7 +36,7 @@ class RegistryManager(val name: String) {
 
     @JvmName("createRegistry")
     internal fun <V> createRegistry(name: ResourceLocation, builder: RegistryBuilder<V>): ForgeRegistry<V> {
-        val registry = ForgeRegistry<V>(this, name, builder)
+        val registry = ForgeRegistry(this, name, builder)
         registries[name] = registry
 
         return registry
@@ -57,6 +57,7 @@ class RegistryManager(val name: String) {
             val event = NewRegistryEvent()
 
             ModLoader.get().kiltPostEventWrappingMods(event)
+            event.fill()
         }
 
         @JvmStatic

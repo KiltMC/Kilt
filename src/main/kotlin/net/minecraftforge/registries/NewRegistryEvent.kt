@@ -25,9 +25,9 @@ class NewRegistryEvent : Event(), IModBusEvent {
         return holder
     }
 
-    internal fun init() {
+    internal fun fill() {
         registries.forEach { (builder, holder, consumer) ->
-            val registry = (if (forgeRegistries.contains(builder.name))
+            val registry = (if (!forgeRegistries.contains(builder.name))
                 builder.create()
             else forgeRegistries[builder.name]!!) as ForgeRegistry<*>
 

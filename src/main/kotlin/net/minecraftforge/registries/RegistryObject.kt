@@ -2,6 +2,7 @@ package net.minecraftforge.registries
 
 import net.minecraft.core.Holder
 import net.minecraft.core.Registry
+import net.minecraft.data.BuiltinRegistries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import java.util.Optional
@@ -25,10 +26,10 @@ class RegistryObject<T> internal constructor(
     }
 
     override fun get(): T {
-        if (!fabricRegistryObject.isPresent)
+        if (!isPresent())
             fabricRegistryObject.updateRef()
 
-        if (!fabricRegistryObject.isPresent)
+        if (!isPresent())
             println("still missing. debug please go back in time for this one.")
 
         return fabricRegistryObject.get()
@@ -73,8 +74,14 @@ class RegistryObject<T> internal constructor(
     }
 
     fun isPresent(): Boolean {
-        return fabricRegistryObject.isPresent
+        return fabricRegistryObject.isPresent && registry?.containsKey(id) == true
     }
+
+    private val registry: Registry<T>?
+        get() {
+            return Registry.REGISTRY.get(key!!.registry()) as Registry<T>?
+                ?: return BuiltinRegistries.REGISTRY.get(key!!.registry()) as Registry<T>?
+        }
 
     fun <U> lazyMap(mapper: java.util.function.Function<in T, out U>): Supplier<U> {
         return fabricRegistryObject.lazyMap(mapper)
