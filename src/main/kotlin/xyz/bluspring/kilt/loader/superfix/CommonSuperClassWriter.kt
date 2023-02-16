@@ -11,10 +11,10 @@ import java.util.function.Function
 // Most of the code here is derived from ModLauncher, literally the only reason why
 // this class is needed.
 // https://github.com/McModLauncher/modlauncher/blob/main/src/main/java/cpw/mods/modlauncher/TransformerClassWriter.java
-class CommonSuperClassWriter(
+open class CommonSuperClassWriter(
     writerFlags: Int,
-    private val classAccessor: ClassNode,
-    private val superClassProvider: Function<String, ByteArray?>
+    protected val classAccessor: ClassNode,
+    protected val superClassProvider: Function<String, ByteArray?>
 ) : ClassWriter(writerFlags) {
     private var computedThis = false
 

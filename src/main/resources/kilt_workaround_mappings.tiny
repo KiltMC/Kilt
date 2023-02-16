@@ -1,4 +1,4 @@
-tiny	2	0	srg	intermediary
+tiny	2	0	forge	kilt
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate	xyz/bluspring/kilt/remaps/world/level/levelgen/structure/templatesystem/StructureTemplateRemap
 	m	(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;)Ljava/util/List;	processBlockInfos	processBlockInfos
 	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;)Ljava/util/List;	processEntityInfos	processEntityInfos

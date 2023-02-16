@@ -6,14 +6,18 @@ import net.fabricmc.loader.impl.util.SystemProperties
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import net.fabricmc.tinyremapper.IMappingProvider
-import net.fabricmc.tinyremapper.NonClassCopyMode
 import net.fabricmc.tinyremapper.OutputConsumerPath
 import net.fabricmc.tinyremapper.TinyRemapper
 import org.apache.commons.codec.digest.DigestUtils
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
+import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -22,6 +26,10 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Function
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
 import java.util.stream.Collectors
 import kotlin.io.path.name
 import kotlin.io.path.toPath
@@ -29,18 +37,17 @@ import kotlin.io.path.toPath
 object KiltRemapper {
     private val logger = Kilt.logger
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
-    val srgIntermediaryTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
+    // srg -> intermediary
+    val srgIntermediaryTree: TinyTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
-
-    private val extraKiltWorkaroundRemapper = ExtraRemapper(kiltWorkaroundTree, "srg", "intermediary")
-    private val kiltWorkaroundRemapper = createRemapper(createMappings(kiltWorkaroundTree, "srg", "intermediary"))
-        .extraRemapper(extraKiltWorkaroundRemapper)
 
     // Mainly for debugging, so already-remapped Forge mods will be remapped again.
     private val forceRemap = System.getProperty("kilt.forceRemap")?.lowercase() == "true"
 
     // Mainly for debugging, used to test unobfuscated mods and ensure that Kilt is running as intended.
     private val disableRemaps = System.getProperty("kilt.noRemap")?.lowercase() == "true"
+
+    private lateinit var remappedModsDir: File
 
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         if (disableRemaps) {
@@ -55,7 +62,7 @@ object KiltRemapper {
             return listOf()
         }
 
-        val launcher = FabricLauncherBase.getLauncher()
+        this.remappedModsDir = remappedModsDir
 
         val srgMappedMinecraft = remapMinecraft()
         val gameClassPath = getGameClassPath()
@@ -79,96 +86,27 @@ object KiltRemapper {
             else 0
         }
 
-        // First iteration, for patching mods using the static methods and custom constructors that Forge injects into Minecraft directly
-        // as Mixin and Fabric don't allow adding new static methods or new constructors.
-        logger.info("Remapping Forge mods to use Kilt-remapped APIs...")
+        logger.info("Remapping Forge mods...")
 
         modRemapQueue.forEach { mod ->
             if (mod.modFile == null)
                 return@forEach
 
             try {
-                remapMod(mod.modFile, kiltWorkaroundRemapper, mod, remappedModsDir, arrayOf(
+                remapMod(mod.modFile, mod, arrayOf(
                     srgMappedMinecraft,
                     *gameClassPath,
                     *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
                         .map { it.remappedModFile.toPath() }.toTypedArray()
-                ), extraKiltWorkaroundRemapper)
-                logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) to use Kilt-remapped APIs")
+                ))
+                logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId})")
             } catch (e: Exception) {
                 exceptions.add(e)
                 e.printStackTrace()
             }
         }
 
-        logger.info("Finished remapping mods to use Kilt-remapped APIs!")
-
-        logger.info("Remapping Forge mods to Intermediary...")
-
-        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "srg", "intermediary")
-        // SRG to Intermediary
-        val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "srg", "intermediary"))
-            .extraRemapper(extraRemapper)
-
-        // Second iteration, for normal mod loading.
-        modRemapQueue.forEach { mod ->
-            if (mod.modFile == null)
-                return@forEach
-
-            try {
-                remapMod(mod.remappedModFile, remapperBuilder, mod, remappedModsDir, arrayOf(
-                    srgMappedMinecraft,
-                    *gameClassPath,
-                    *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
-                        .map { it.remappedModFile.toPath() }.toTypedArray()
-                ), extraRemapper)
-                logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) from SRG to Intermediary")
-            } catch (e: Exception) {
-                exceptions.add(e)
-                e.printStackTrace()
-            }
-        }
-
-        logger.info("Finished remapping mods to Intermediary!")
-
-        // Third iteration, for developer environments.
-        // This is so the mods actually use the proper class names.
-        if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val extraDevRemapper = ExtraRemapper(
-                launcher.mappingConfiguration.mappings,
-                "intermediary",
-                launcher.mappingConfiguration.targetNamespace
-            )
-
-            // Intermediary to Named
-            val devRemapperBuilder = createRemapper(createMappings(
-                launcher.mappingConfiguration.mappings,
-                "intermediary",
-                launcher.mappingConfiguration.targetNamespace
-            ))
-                .extraRemapper(extraDevRemapper)
-
-            logger.info("Remapping Forge mods from Intermediary to the \"${launcher.mappingConfiguration.targetNamespace}\" namespace...")
-
-            modRemapQueue.forEach { mod ->
-                if (mod.modFile == null)
-                    return@forEach
-
-                try {
-                    remapMod(mod.remappedModFile, devRemapperBuilder, mod, remappedModsDir, arrayOf(
-                        *gameClassPath,
-                        *modRemapQueue.filter { mod.modInfo.mod.dependencies.any { dep -> it.modInfo.mod.modId == dep.modId } }
-                            .map { it.remappedModFile.toPath() }.toTypedArray()
-                    ), extraDevRemapper)
-                    logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId}) from Intermediary to \"${launcher.mappingConfiguration.targetNamespace}\" namespace")
-                } catch (e: Exception) {
-                    exceptions.add(e)
-                    e.printStackTrace()
-                }
-            }
-
-            logger.info("Finished remapping Forge mods from Intermediary to the \"${launcher.mappingConfiguration.targetNamespace}\" namespace!")
-        }
+        logger.info("Finished remapping mods!")
 
         StaticAccessFixer.fixMods(modLoadingQueue, remappedModsDir)
         CommonSuperFixer.fixMods(modLoadingQueue, remappedModsDir)
@@ -176,33 +114,54 @@ object KiltRemapper {
         return exceptions
     }
 
-    private fun remapMod(file: File, remapperBuilder: TinyRemapper.Builder, mod: ForgeMod, remappedModsDir: File, gameClassPath: Array<out Path>, extraRemapper: ExtraRemapper) {
+    private fun remapMod(file: File, mod: ForgeMod, gameClassPath: Array<out Path>) {
         val hash = DigestUtils.md5Hex(file.inputStream())
-        val remappedModFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_$hash.jar")
+        val modifiedJarFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_$hash.jar")
 
-        mod.remappedModFile = remappedModFile
-
-        if (remappedModFile.exists() && !forceRemap)
+        if (modifiedJarFile.exists() && !forceRemap) {
+            mod.remappedModFile = modifiedJarFile
             return
+        }
 
-        // I should not have to rebuild this every single fucking time.
-        val remapper = remapperBuilder.build()
+        val jar = JarFile(file)
+        val output = modifiedJarFile.outputStream()
+        val jarOutput = JarOutputStream(output)
 
-        // Need to get the environment somehow
-        extraRemapper.remapper = remapper
+        for (entry in jar.entries()) {
+            if (!entry.name.endsWith(".class")) {
+                jarOutput.putNextEntry(entry)
+                jarOutput.write(jar.getInputStream(entry).readAllBytes())
+                jarOutput.closeEntry()
+                continue
+            }
 
-        remapper.readClassPath(*gameClassPath)
-        remapper.readInputs(file.toPath())
-        val outputConsumer = OutputConsumerPath.Builder(remappedModFile.toPath()).apply {
-            assumeArchive(true)
-        }.build()
+            val classNode = ClassNode(Opcodes.ASM9)
+            val classReader = ClassReader(jar.getInputStream(entry))
 
-        outputConsumer.addNonClassFiles(file.toPath(), NonClassCopyMode.FIX_META_INF, remapper)
-        remapper.apply(outputConsumer)
+            classReader.accept(classNode, 0)
 
-        remapper.finish()
-        outputConsumer.close()
+            val visitor = KiltRemapperVisitor(srgIntermediaryTree, kiltWorkaroundTree, classNode)
+            visitor.write()
+
+            val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classNode, Function {
+                val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
+                return@Function if (classEntry == null)
+                    null
+                else
+                    jar.getInputStream(classEntry).readAllBytes()
+            })
+            classNode.accept(classWriter)
+
+            jarOutput.putNextEntry(JarEntry(entry.name))
+            jarOutput.write(classWriter.toByteArray())
+            jarOutput.closeEntry()
+        }
+
+        jarOutput.close()
+        mod.remappedModFile = modifiedJarFile
     }
+
+    private val targetNamespace = FabricLauncherBase.getLauncher().targetNamespace
 
     private fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
@@ -226,31 +185,6 @@ object KiltRemapper {
 
                 this.add(Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
             }.toTypedArray()
-    }
-
-    private fun createMappings(tree: TinyTree, from: String, to: String): IMappingProvider {
-        return IMappingProvider { out ->
-            tree.classes.forEach { classDef ->
-                out.acceptClass(classDef.getName(from), classDef.getName(to))
-
-                classDef.fields.forEach { fieldDef ->
-                    out.acceptField(IMappingProvider.Member(classDef.getName(from), fieldDef.getName(from), fieldDef.getDescriptor(to)), fieldDef.getName(to))
-                }
-
-                classDef.methods.forEach { methodDef ->
-                    out.acceptMethod(IMappingProvider.Member(classDef.getName(from), methodDef.getName(from), methodDef.getDescriptor(to)), methodDef.getName(to))
-                }
-            }
-        }
-    }
-
-    private fun createRemapper(provider: IMappingProvider): TinyRemapper.Builder {
-        return TinyRemapper.newRemapper().apply {
-            renameInvalidLocals(false)
-            fixPackageAccess(true)
-
-            withMappings(provider)
-        }
     }
 
     fun remapMinecraft(): Path {
@@ -284,5 +218,30 @@ object KiltRemapper {
         logger.info("Remapped Minecraft from Intermediary to SRG.")
 
         return srgFile.toPath()
+    }
+
+    private fun createMappings(tree: TinyTree, from: String, to: String): IMappingProvider {
+        return IMappingProvider { out ->
+            tree.classes.forEach { classDef ->
+                out.acceptClass(classDef.getName(from), classDef.getName(to))
+
+                classDef.fields.forEach { fieldDef ->
+                    out.acceptField(IMappingProvider.Member(classDef.getName(from), fieldDef.getName(from), fieldDef.getDescriptor(to)), fieldDef.getName(to))
+                }
+
+                classDef.methods.forEach { methodDef ->
+                    out.acceptMethod(IMappingProvider.Member(classDef.getName(from), methodDef.getName(from), methodDef.getDescriptor(to)), methodDef.getName(to))
+                }
+            }
+        }
+    }
+
+    private fun createRemapper(provider: IMappingProvider): TinyRemapper.Builder {
+        return TinyRemapper.newRemapper().apply {
+            renameInvalidLocals(false)
+            fixPackageAccess(true)
+
+            withMappings(provider)
+        }
     }
 }
