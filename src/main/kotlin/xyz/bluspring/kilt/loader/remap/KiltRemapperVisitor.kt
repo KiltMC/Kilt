@@ -10,6 +10,7 @@ import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.TypeInsnNode
@@ -19,14 +20,9 @@ class KiltRemapperVisitor(
     private val kiltWorkaroundTree: TinyTree,
     private val classNode: ClassNode
 ) {
-    private fun getDefsFromField(name: String, descriptor: String, owner: String? = null): Pair<ClassDef, FieldDef>? {
-        val intermediaryClass = if (owner == null || !owner.startsWith("net/minecraft/"))
-            srgIntermediaryTree.classes.firstOrNull { it.fields.any { field -> field.getRawName("srg") == name && remapSrgDescriptor(field.getDescriptor("srg")) == descriptor } }
-        else
-            srgIntermediaryTree.classes.firstOrNull { it.getRawName("srg") == owner }
-
-        if (intermediaryClass == null)
-            return null
+    private fun getDefsFromField(name: String, descriptor: String): Pair<ClassDef, FieldDef>? {
+        val intermediaryClass = srgIntermediaryTree.classes.firstOrNull { it.fields.any { field -> field.getRawName("srg") == name && remapSrgDescriptor(field.getDescriptor("srg")) == descriptor } }
+            ?: return null
 
         val intermediaryField = intermediaryClass.fields.firstOrNull { it.getRawName("srg") == name && remapSrgDescriptor(it.getDescriptor("srg")) == descriptor } ?: return null
 
@@ -39,14 +35,9 @@ class KiltRemapperVisitor(
         return Pair(namedClass, namedField)
     }
 
-    private fun getDefsFromMethod(name: String, descriptor: String, owner: String? = null): Pair<ClassDef, MethodDef>? {
-        val intermediaryClass = if (owner == null || !owner.startsWith("net/minecraft/"))
-            srgIntermediaryTree.classes.firstOrNull { it.methods.any { method -> method.getRawName("srg") == name && remapSrgDescriptor(method.getDescriptor("srg")) == descriptor } }
-        else
-            srgIntermediaryTree.classes.firstOrNull { it.getRawName("srg") == owner }
-
-        if (intermediaryClass == null)
-            return null
+    private fun getDefsFromMethod(name: String, descriptor: String): Pair<ClassDef, MethodDef>? {
+        val intermediaryClass = srgIntermediaryTree.classes.firstOrNull { it.methods.any { method -> method.getRawName("srg") == name && remapSrgDescriptor(method.getDescriptor("srg")) == descriptor } }
+            ?: return null
 
         val intermediaryMethod = intermediaryClass.methods.firstOrNull {
             it.getRawName("srg") == name
@@ -197,6 +188,8 @@ class KiltRemapperVisitor(
                 it.signature = if (it.signature == null) null else remapSignature(it.signature)
             }
 
+            val insnList = InsnList()
+
             method.instructions.forEach insn@{
                 when (it.opcode) {
                     // methods
@@ -204,11 +197,13 @@ class KiltRemapperVisitor(
                     Opcodes.INVOKEINTERFACE -> {
                         val methodInsn = it as MethodInsnNode
 
-                        val methodDefs = getDefsFromMethod(methodInsn.name, methodInsn.desc, methodInsn.owner) ?: return@insn
+                        val methodDefs = getDefsFromMethod(methodInsn.name, methodInsn.desc) ?: return@insn
 
                         methodInsn.owner = methodDefs.first.getRawName(namespace)
                         methodInsn.name = methodDefs.second.getRawName(namespace)
                         methodInsn.desc = methodDefs.second.getDescriptor(namespace)
+
+                        insnList.add(methodInsn)
                     }
 
                     Opcodes.INVOKEDYNAMIC -> {
@@ -218,6 +213,8 @@ class KiltRemapperVisitor(
 
                         methodInsn.name = methodDefs.second.getRawName(namespace)
                         methodInsn.desc = methodDefs.second.getDescriptor(namespace)
+
+                        insnList.add(methodInsn)
                     }
 
                     // classes
@@ -225,20 +222,30 @@ class KiltRemapperVisitor(
                         val typeInsn = it as TypeInsnNode
 
                         typeInsn.desc = remapClass(typeInsn.desc)
+
+                        insnList.add(typeInsn)
                     }
 
                     // fields
                     Opcodes.PUTFIELD, Opcodes.PUTSTATIC, Opcodes.GETFIELD, Opcodes.GETSTATIC -> {
                         val fieldInsn = it as FieldInsnNode
 
-                        val fieldDefs = getDefsFromField(fieldInsn.name, fieldInsn.desc, fieldInsn.owner) ?: return@insn
+                        val fieldDefs = getDefsFromField(fieldInsn.name, fieldInsn.desc) ?: return@insn
 
                         fieldInsn.owner = fieldDefs.first.getRawName(namespace)
                         fieldInsn.name = fieldDefs.second.getRawName(namespace)
                         fieldInsn.desc = fieldDefs.second.getDescriptor(namespace)
+
+                        insnList.add(fieldInsn)
+                    }
+
+                    else -> {
+                        insnList.add(it)
                     }
                 }
             }
+
+            method.instructions = insnList
         }
     }
 
