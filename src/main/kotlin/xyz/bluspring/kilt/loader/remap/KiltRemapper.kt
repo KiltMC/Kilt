@@ -141,7 +141,7 @@ object KiltRemapper {
             classReader.accept(classNode, 0)
 
             val visitor = KiltRemapperVisitor(srgIntermediaryTree, kiltWorkaroundTree, classNode)
-            visitor.write()
+            val modifiedClass = visitor.write()
 
             val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classNode, Function {
                 val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
@@ -150,7 +150,7 @@ object KiltRemapper {
                 else
                     jar.getInputStream(classEntry).readAllBytes()
             })
-            classNode.accept(classWriter)
+            modifiedClass.accept(classWriter)
 
             jarOutput.putNextEntry(JarEntry(entry.name))
             jarOutput.write(classWriter.toByteArray())

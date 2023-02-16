@@ -152,7 +152,7 @@ class KiltRemapperVisitor(
         return writer.toString()
     }
 
-    fun write() {
+    fun write(): ClassNode {
         classNode.superName = if (classNode.superName != null)
             remapClass(classNode.superName)
         else null
@@ -280,6 +280,8 @@ class KiltRemapperVisitor(
                 }
             }
         }
+
+        return classNode
     }
 
     companion object {
