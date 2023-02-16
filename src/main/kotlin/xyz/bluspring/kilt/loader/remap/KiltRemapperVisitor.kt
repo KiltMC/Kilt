@@ -188,64 +188,97 @@ class KiltRemapperVisitor(
                 it.signature = if (it.signature == null) null else remapSignature(it.signature)
             }
 
-            val insnList = InsnList()
-
             method.instructions.forEach insn@{
                 when (it.opcode) {
                     // methods
                     Opcodes.INVOKEVIRTUAL, Opcodes.INVOKESTATIC, Opcodes.INVOKESPECIAL,
                     Opcodes.INVOKEINTERFACE -> {
-                        val methodInsn = it as MethodInsnNode
+                        if (it !is MethodInsnNode)
+                            return@insn
 
-                        val methodDefs = getDefsFromMethod(methodInsn.name, methodInsn.desc) ?: return@insn
+                        val methodDefs = getDefsFromMethod(it.name, it.desc)
 
-                        methodInsn.owner = methodDefs.first.getRawName(namespace)
-                        methodInsn.name = methodDefs.second.getRawName(namespace)
-                        methodInsn.desc = methodDefs.second.getDescriptor(namespace)
+                        if (methodDefs == null && it.name.endsWith("_") && it.name.startsWith("m_")) {
+                            println("${it.owner}#${it.name}${it.desc} under ${classNode.name}#${method.name}${method.desc}")
+                            println("Failed to remap ${it.name}!")
 
-                        insnList.add(methodInsn)
+                            return@insn
+                        } else if (methodDefs == null)
+                            return@insn
+
+                        val owner = methodDefs.first.getRawName(namespace)
+                        val name = methodDefs.second.getRawName(namespace)
+                        val desc = methodDefs.second.getDescriptor(namespace)
+
+                        val methodInsn = MethodInsnNode(it.opcode, owner, name, desc, it.itf)
+
+                        method.instructions.insert(it, methodInsn)
+                        method.instructions.remove(it)
                     }
 
                     Opcodes.INVOKEDYNAMIC -> {
-                        val methodInsn = it as InvokeDynamicInsnNode
+                        if (it !is InvokeDynamicInsnNode)
+                            return@insn
 
-                        val methodDefs = getDefsFromMethod(methodInsn.name, methodInsn.desc) ?: return@insn
+                        val methodDefs = getDefsFromMethod(it.name, it.desc) ?: return@insn
 
-                        methodInsn.name = methodDefs.second.getRawName(namespace)
-                        methodInsn.desc = methodDefs.second.getDescriptor(namespace)
+                        val name = methodDefs.second.getRawName(namespace)
+                        val desc = methodDefs.second.getDescriptor(namespace)
 
-                        insnList.add(methodInsn)
+                        val bsmMethodDefs = getDefsFromMethod(it.bsm.name, it.bsm.desc)
+
+                        val handle = if (bsmMethodDefs != null) {
+                            val bsmOwner = bsmMethodDefs.first.getRawName(namespace)
+                            val bsmName = bsmMethodDefs.second.getRawName(namespace)
+                            val bsmDesc = bsmMethodDefs.second.getDescriptor(namespace)
+
+                            Handle(it.bsm.tag, bsmOwner, bsmName, bsmDesc, it.bsm.isInterface)
+                        } else it.bsm
+
+                        val methodInsn = InvokeDynamicInsnNode(name, desc, handle, it.bsmArgs)
+
+                        method.instructions.insert(it, methodInsn)
+                        method.instructions.remove(it)
                     }
 
                     // classes
                     Opcodes.CHECKCAST, Opcodes.NEW, Opcodes.ANEWARRAY, Opcodes.INSTANCEOF -> {
-                        val typeInsn = it as TypeInsnNode
+                        if (it !is TypeInsnNode)
+                            return@insn
 
-                        typeInsn.desc = remapClass(typeInsn.desc)
+                        val desc = remapClass(it.desc)
 
-                        insnList.add(typeInsn)
+                        val typeInsn = TypeInsnNode(it.opcode, desc)
+                        method.instructions.insert(it, typeInsn)
+                        method.instructions.remove(it)
                     }
 
                     // fields
                     Opcodes.PUTFIELD, Opcodes.PUTSTATIC, Opcodes.GETFIELD, Opcodes.GETSTATIC -> {
-                        val fieldInsn = it as FieldInsnNode
+                        if (it !is FieldInsnNode)
+                            return@insn
 
-                        val fieldDefs = getDefsFromField(fieldInsn.name, fieldInsn.desc) ?: return@insn
+                        val fieldDefs = getDefsFromField(it.name, it.desc)
 
-                        fieldInsn.owner = fieldDefs.first.getRawName(namespace)
-                        fieldInsn.name = fieldDefs.second.getRawName(namespace)
-                        fieldInsn.desc = fieldDefs.second.getDescriptor(namespace)
+                        if (fieldDefs == null && it.name.endsWith("_") && it.name.startsWith("f_")) {
+                            println("${it.owner}.${it.name} ${it.desc} under ${classNode.name}#${method.name}${method.desc}")
+                            println("Failed to remap ${it.name}!")
 
-                        insnList.add(fieldInsn)
-                    }
+                            return@insn
+                        } else if (fieldDefs == null)
+                            return@insn
 
-                    else -> {
-                        insnList.add(it)
+                        val owner = fieldDefs.first.getRawName(namespace)
+                        val name = fieldDefs.second.getRawName(namespace)
+                        val desc = fieldDefs.second.getDescriptor(namespace)
+
+                        val fieldInsn = FieldInsnNode(it.opcode, owner, name, desc)
+
+                        method.instructions.insert(it, fieldInsn)
+                        method.instructions.remove(it)
                     }
                 }
             }
-
-            method.instructions = insnList
         }
     }
 
