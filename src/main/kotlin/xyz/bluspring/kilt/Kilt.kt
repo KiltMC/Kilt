@@ -2,6 +2,7 @@ package xyz.bluspring.kilt
 
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
 import net.fabricmc.api.ModInitializer
+import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
@@ -13,6 +14,14 @@ class Kilt : ModInitializer {
     override fun onInitialize() {
         registerFabricEvents()
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
+
+        ForgeHooksClient::class.java.declaredMethods.forEach {
+            println("${it.name} ${it.parameterCount}")
+        }
+
+        ForgeHooksClient::class.java.methods.forEach {
+            println("${it.name} ${it.parameterCount}")
+        }
 
         // config load should be here
         loader.runPhaseExecutors(ModLoadingPhase.LOAD)

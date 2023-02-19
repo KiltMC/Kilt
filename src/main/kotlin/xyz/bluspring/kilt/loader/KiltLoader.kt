@@ -457,10 +457,14 @@ class KiltLoader {
 
                                 val instance = constructor.newInstance()
                                 if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                                    mod.eventBus.register(instance)
+                                    mod.eventBus.register(instance) // scans non-static methods
+                                    mod.eventBus.register(clazz) // scans static methods
                                 } else {
-                                    MinecraftForge.EVENT_BUS.register(instance)
+                                    MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
+                                    MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
                                 }
+
+                                Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 exceptions.add(e)

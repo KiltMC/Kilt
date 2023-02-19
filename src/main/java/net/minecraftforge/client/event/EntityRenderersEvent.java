@@ -38,6 +38,7 @@ import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.workarounds.LayerDefinitionsWorkaround;
 
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +88,7 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
          */
         public void registerLayerDefinition(ModelLayerLocation layerLocation, Supplier<LayerDefinition> supplier)
         {
-            ForgeHooksClient.registerLayerDefinition(layerLocation, supplier);
+            LayerDefinitionsWorkaround.layerDefinitions.put(layerLocation, supplier);
         }
     }
 

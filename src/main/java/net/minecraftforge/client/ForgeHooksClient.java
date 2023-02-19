@@ -163,6 +163,7 @@ import org.apache.logging.log4j.MarkerManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.workarounds.LayerDefinitionsWorkaround;
 
 import java.io.File;
 import java.io.IOException;
@@ -801,16 +802,16 @@ public class ForgeHooksClient
         return metadata.getLoader() == null ? null : metadata.getLoader().load(textureAtlas, resourceManager, textureInfo, resource, atlasWidth, atlasHeight, spriteX, spriteY, mipmapLevel, image);
     }
 
-
-    private static final Map<ModelLayerLocation, Supplier<LayerDefinition>> layerDefinitions = new HashMap<>();
+    // Kilt: why does this class only work on mods and not kilt itself.
+    //private static final Map<ModelLayerLocation, Supplier<LayerDefinition>> layerDefinitions = new HashMap<>();
 
     public static void registerLayerDefinition(ModelLayerLocation layerLocation, Supplier<LayerDefinition> supplier)
     {
-        layerDefinitions.put(layerLocation, supplier);
+        LayerDefinitionsWorkaround.layerDefinitions.put(layerLocation, supplier);
     }
 
     public static void loadLayerDefinitions(ImmutableMap.Builder<ModelLayerLocation, LayerDefinition> builder) {
-        layerDefinitions.forEach((k, v) -> builder.put(k, v.get()));
+        LayerDefinitionsWorkaround.layerDefinitions.forEach((k, v) -> builder.put(k, v.get()));
     }
 
     public static void processForgeListPingData(ServerStatus packet, ServerData target)
