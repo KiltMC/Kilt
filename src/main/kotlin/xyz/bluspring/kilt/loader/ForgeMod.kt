@@ -256,6 +256,90 @@ class ForgeMod(
         override fun getAsBoolean(): Boolean {
             TODO("Not yet implemented")
         }
+    }
+
+    private class CustomStringSetValue(vararg set: String) : CustomValue.CvArray {
+        private val list = set
+
+        override fun iterator(): MutableIterator<CustomValue> {
+            return list.map {
+                CustomStringValue(it)
+            }.toMutableList().listIterator()
+        }
+
+        override fun getType(): CustomValue.CvType {
+            return CustomValue.CvType.ARRAY
+        }
+
+        override fun getAsObject(): CustomValue.CvObject {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsArray(): CustomValue.CvArray {
+            return this
+        }
+
+        override fun getAsString(): String {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsNumber(): Number {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsBoolean(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun size(): Int {
+            return list.size
+        }
+
+        override fun get(index: Int): CustomValue {
+            return CustomStringValue(list[index])
+        }
+    }
+
+    private class CustomObjectValue(private val map: MutableMap<String, CustomValue>) : CustomValue.CvObject {
+        override fun iterator(): MutableIterator<MutableMap.MutableEntry<String, CustomValue>> {
+            return map.iterator()
+        }
+
+        override fun getType(): CustomValue.CvType {
+            return CustomValue.CvType.OBJECT
+        }
+
+        override fun getAsObject(): CustomValue.CvObject {
+            return this
+        }
+
+        override fun getAsArray(): CustomValue.CvArray {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsString(): String {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsNumber(): Number {
+            TODO("Not yet implemented")
+        }
+
+        override fun getAsBoolean(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun size(): Int {
+            TODO("Not yet implemented")
+        }
+
+        override fun containsKey(key: String?): Boolean {
+            return map.contains(key)
+        }
+
+        override fun get(key: String): CustomValue? {
+            return map[key]
+        }
 
     }
 
@@ -348,6 +432,10 @@ class ForgeMod(
         }
 
         override fun containsCustomValue(key: String?): Boolean {
+            // Trick ModMenu into giving us a Forge badge
+            if (key == "patchwork:patcherMeta")
+                return true
+
             return false
         }
 
