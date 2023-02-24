@@ -35,6 +35,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -156,6 +157,10 @@ class KiltLoader {
             }
 
             preloadedMods[mod] = dependencies
+        }
+
+        modLoadingQueue.forEach { mod ->
+            loadTransformers(mod)
         }
 
         // Check if any of the dependencies failed to load
@@ -510,6 +515,14 @@ class KiltLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
+        }
+    }
+
+    private fun loadTransformers(mod: ForgeMod) {
+        val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
+
+        if (accessTransformer != null) {
+            AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
         }
     }
 
