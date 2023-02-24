@@ -159,10 +159,6 @@ class KiltLoader {
             preloadedMods[mod] = dependencies
         }
 
-        modLoadingQueue.forEach { mod ->
-            loadTransformers(mod)
-        }
-
         // Check if any of the dependencies failed to load
         if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
             Kilt.logger.error("Unloaded dependencies found! Throwing error.")
@@ -397,6 +393,10 @@ class KiltLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
+        } else {
+            modLoadingQueue.forEach { mod ->
+                loadTransformers(mod)
+            }
         }
     }
 
