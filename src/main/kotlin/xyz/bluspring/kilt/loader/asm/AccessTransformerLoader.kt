@@ -156,24 +156,23 @@ object AccessTransformerLoader {
             ClassTinkerers.addTransformation(mappedClassName) { classNode ->
                 println("access transforming class $mappedClassName")
 
-                val bitField = BitField(classNode.access)
-
                 // access modifiers
                 if (classTransformInfo.currentAccessType != AccessType.DEFAULT) {
                     AccessType.values().forEach { accessType ->
-                        bitField.clear(accessType.flag)
+                        // clear bits
+                        classNode.access = classNode.access and accessType.flag.inv()
                     }
 
-                    bitField.set(classTransformInfo.currentAccessType.flag)
+                    classNode.access = classNode.access or classTransformInfo.currentAccessType.flag
                     println("set class to access type ${classTransformInfo.currentAccessType.name}")
                 }
 
                 // final flag
                 if (classTransformInfo.final != Final.DEFAULT) {
-                    if (classTransformInfo.final == Final.ADD)
-                        bitField.set(Opcodes.ACC_FINAL)
+                    classNode.access = if (classTransformInfo.final == Final.ADD)
+                        classNode.access or Opcodes.ACC_FINAL // set bits
                     else
-                        bitField.clear(Opcodes.ACC_FINAL)
+                        classNode.access and Opcodes.ACC_FINAL.inv() // clear bits
 
                     println("set class to final type ${classTransformInfo.final.name}")
                 }
@@ -189,15 +188,16 @@ object AccessTransformerLoader {
                     println("transforming field $mappedFieldName")
 
                     val fieldNode = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@field
-                    val fieldBitField = BitField(fieldNode.access)
 
                     // access modifiers
                     if (fieldTransformInfo.currentAccessType != AccessType.DEFAULT) {
                         AccessType.values().forEach { accessType ->
-                            fieldBitField.clear(accessType.flag)
+                            // clear bits
+                            fieldNode.access = fieldNode.access and accessType.flag.inv()
                         }
 
-                        fieldBitField.set(fieldTransformInfo.currentAccessType.flag)
+                        // add bits
+                        fieldNode.access = fieldNode.access or fieldTransformInfo.currentAccessType.flag
 
                         println("set field to access type ${fieldTransformInfo.currentAccessType.name}")
                     }
@@ -205,9 +205,11 @@ object AccessTransformerLoader {
                     // final flag
                     if (fieldTransformInfo.final != Final.DEFAULT) {
                         if (fieldTransformInfo.final == Final.ADD)
-                            fieldBitField.set(Opcodes.ACC_FINAL)
+                            // add bits
+                            fieldNode.access = fieldNode.access or Opcodes.ACC_FINAL
                         else
-                            fieldBitField.clear(Opcodes.ACC_FINAL)
+                            // clear bits
+                            fieldNode.access = fieldNode.access and Opcodes.ACC_FINAL.inv()
 
                         println("set field to final type ${fieldTransformInfo.final.name}")
                     }
@@ -223,15 +225,16 @@ object AccessTransformerLoader {
                     println("transforming method $mappedMethodName$mappedDescriptor")
 
                     val methodNode = classNode.methods.firstOrNull { it.name == mappedMethodName && it.desc == mappedDescriptor } ?: return@method
-                    val methodBitField = BitField(methodNode.access)
 
                     // access modifiers
                     if (methodTransformInfo.currentAccessType != AccessType.DEFAULT) {
                         AccessType.values().forEach { accessType ->
-                            methodBitField.clear(accessType.flag)
+                            // clear bits
+                            methodNode.access = methodNode.access and accessType.flag.inv()
                         }
 
-                        methodBitField.set(methodTransformInfo.currentAccessType.flag)
+                        // add bits
+                        methodNode.access = methodNode.access or methodTransformInfo.currentAccessType.flag
 
                         println("set method to access type ${methodTransformInfo.currentAccessType.name}")
                     }
@@ -239,9 +242,11 @@ object AccessTransformerLoader {
                     // final flag
                     if (methodTransformInfo.final != Final.DEFAULT) {
                         if (methodTransformInfo.final == Final.ADD)
-                            methodBitField.set(Opcodes.ACC_FINAL)
+                        // add bits
+                            methodNode.access = methodNode.access or Opcodes.ACC_FINAL
                         else
-                            methodBitField.clear(Opcodes.ACC_FINAL)
+                        // clear bits
+                            methodNode.access = methodNode.access and Opcodes.ACC_FINAL.inv()
 
                         println("set method to final type ${methodTransformInfo.final.name}")
                     }
