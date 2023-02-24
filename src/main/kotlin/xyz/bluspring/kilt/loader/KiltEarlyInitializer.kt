@@ -9,9 +9,6 @@ import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 class KiltEarlyInitializer : PreLaunchEntrypoint {
     override fun onPreLaunch() {
         MixinExtrasBootstrap.init()
-        Kilt.loader.preloadMods()
-
-        AccessTransformerLoader.runTransformers()
 
         Kilt.loader.loadMods()
     }

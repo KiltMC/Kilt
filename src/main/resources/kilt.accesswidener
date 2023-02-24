@@ -10,8 +10,6 @@ transitive-accessible field net/minecraft/world/entity/SpawnPlacements$Data plac
 transitive-accessible field net/minecraft/world/entity/SpawnPlacements$Data predicate Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;
 
 transitive-accessible method net/minecraft/world/level/biome/Biome$ClimateSettings <init> (Lnet/minecraft/world/level/biome/Biome$Precipitation;FLnet/minecraft/world/level/biome/Biome$TemperatureModifier;F)V
-transitive-accessible method net/minecraft/world/level/block/FireBlock getBurnOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
-transitive-accessible method net/minecraft/world/level/block/FireBlock getIgniteOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
 
 transitive-accessible class net/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration
 transitive-accessible class net/minecraft/data/recipes/ShapedRecipeBuilder$Result

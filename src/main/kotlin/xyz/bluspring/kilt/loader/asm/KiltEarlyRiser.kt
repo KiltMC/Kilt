@@ -4,6 +4,7 @@ import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
+import xyz.bluspring.kilt.Kilt
 
 class KiltEarlyRiser : Runnable {
     private val namespace = FabricLauncherBase.getLauncher().targetNamespace
@@ -430,6 +431,11 @@ class KiltEarlyRiser : Runnable {
                 }
             }
         }
+
+        // Preload here in order to load access transformers
+        Kilt.loader.preloadMods()
+
+        AccessTransformerLoader.runTransformers()
     }
 
     private fun namespaced(intermediary: String, mojmapped: String): String {

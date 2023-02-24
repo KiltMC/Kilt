@@ -3,14 +3,18 @@ package xyz.bluspring.kilt.loader.asm
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.MappingResolver
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.mapping.tree.TinyTree
 import org.apache.commons.lang3.BitField
 import org.objectweb.asm.Opcodes
+import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.util.regex.Pattern
 
 // A reimplementation of Forge's Access Transformers.
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
+    private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
+
     private val whitespace = Pattern.compile("[ \t]+")
     private val remapper = KiltRemapper.srgIntermediaryTree
 
@@ -46,7 +50,7 @@ object AccessTransformerLoader {
 
             // class name
             val srgClassName = split[1]
-            val intermediaryClass = remapper.classes.firstOrNull { it.getName("srg") == srgClassName }
+            val intermediaryClass = remapper.classes.firstOrNull { it.getName("srg") == srgClassName.replace(".", "/") }
             val intermediaryClassName = intermediaryClass?.getName("intermediary") ?: srgClassName
 
             // field / method
@@ -69,7 +73,12 @@ object AccessTransformerLoader {
                         }
                     }
 
-                    val methodData = intermediaryClass?.methods?.firstOrNull { it.getName("srg") == name && it.getDescriptor("srg") == name }
+                    val intermediaryDescriptor = remapDescriptor(descriptor, "srg", "intermediary", remapper)
+
+                    val methodData = intermediaryClass?.methods?.firstOrNull {
+                        it.getName("srg") == name
+                                && it.getDescriptor("intermediary") == intermediaryDescriptor
+                    }
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
                     val pair = if (methodData == null) Pair(name, descriptor) else Pair(methodData.getName("intermediary"), methodData.getDescriptor("intermediary"))
 
@@ -142,7 +151,11 @@ object AccessTransformerLoader {
         val remapper = FabricLoaderImpl.INSTANCE.mappingResolver
 
         classTransformInfo.forEach { (className, classTransformInfo) ->
-            ClassTinkerers.addTransformation(className) { classNode ->
+            val mappedClassName = remapper.mapClassName("intermediary", className.replace("/", "."))
+
+            ClassTinkerers.addTransformation(mappedClassName) { classNode ->
+                println("access transforming class $mappedClassName")
+
                 val bitField = BitField(classNode.access)
 
                 // access modifiers
@@ -152,6 +165,7 @@ object AccessTransformerLoader {
                     }
 
                     bitField.set(classTransformInfo.currentAccessType.flag)
+                    println("set class to access type ${classTransformInfo.currentAccessType.name}")
                 }
 
                 // final flag
@@ -160,6 +174,8 @@ object AccessTransformerLoader {
                         bitField.set(Opcodes.ACC_FINAL)
                     else
                         bitField.clear(Opcodes.ACC_FINAL)
+
+                    println("set class to final type ${classTransformInfo.final.name}")
                 }
 
                 val remappedClass = this.remapper.classes.firstOrNull { it.getName("intermediary") == className }
@@ -167,8 +183,10 @@ object AccessTransformerLoader {
                 classTransformInfo.fields.forEach field@{ (fieldName, fieldTransformInfo) ->
                     val intermediaryFieldDescriptor = remappedClass?.fields?.firstOrNull { it.getName("intermediary") == fieldName }?.getDescriptor("intermediary")
                     val mappedFieldName = if (intermediaryFieldDescriptor != null)
-                        remapper.mapFieldName("intermediary", className, fieldName, intermediaryFieldDescriptor)
+                        remapper.mapFieldName("intermediary", className.replace("/", "."), fieldName, intermediaryFieldDescriptor)
                     else fieldName
+
+                    println("transforming field $mappedFieldName")
 
                     val fieldNode = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@field
                     val fieldBitField = BitField(fieldNode.access)
@@ -180,6 +198,8 @@ object AccessTransformerLoader {
                         }
 
                         fieldBitField.set(fieldTransformInfo.currentAccessType.flag)
+
+                        println("set field to access type ${fieldTransformInfo.currentAccessType.name}")
                     }
 
                     // final flag
@@ -188,6 +208,8 @@ object AccessTransformerLoader {
                             fieldBitField.set(Opcodes.ACC_FINAL)
                         else
                             fieldBitField.clear(Opcodes.ACC_FINAL)
+
+                        println("set field to final type ${fieldTransformInfo.final.name}")
                     }
                 }
 
@@ -195,8 +217,10 @@ object AccessTransformerLoader {
                     val name = pair.first
                     val descriptor = pair.second
 
-                    val mappedMethodName = remapper.mapMethodName("intermediary", className, name, descriptor)
+                    val mappedMethodName = remapper.mapMethodName("intermediary", className.replace("/", "."), name, descriptor)
                     val mappedDescriptor = remapDescriptor(descriptor, "intermediary", remapper)
+
+                    println("transforming method $mappedMethodName$mappedDescriptor")
 
                     val methodNode = classNode.methods.firstOrNull { it.name == mappedMethodName && it.desc == mappedDescriptor } ?: return@method
                     val methodBitField = BitField(methodNode.access)
@@ -208,6 +232,8 @@ object AccessTransformerLoader {
                         }
 
                         methodBitField.set(methodTransformInfo.currentAccessType.flag)
+
+                        println("set method to access type ${methodTransformInfo.currentAccessType.name}")
                     }
 
                     // final flag
@@ -216,6 +242,8 @@ object AccessTransformerLoader {
                             methodBitField.set(Opcodes.ACC_FINAL)
                         else
                             methodBitField.clear(Opcodes.ACC_FINAL)
+
+                        println("set method to final type ${methodTransformInfo.final.name}")
                     }
                 }
             }
@@ -231,7 +259,36 @@ object AccessTransformerLoader {
             if (it == ';' && isInClass) {
                 isInClass = false
 
-                newDescriptor += remapper.mapClassName(namespace, className)
+                newDescriptor += remapper.mapClassName(namespace, className.replace("/", ".")).replace(".", "/")
+                className = ""
+                newDescriptor += ';'
+
+                return@forEach
+            }
+
+            if (!isInClass)
+                newDescriptor += it
+            else
+                className += it
+
+            if (it == 'L' && !isInClass)
+                isInClass = true
+        }
+
+        return newDescriptor
+    }
+
+    private fun remapDescriptor(descriptor: String, from: String, to: String, tree: TinyTree): String {
+        var newDescriptor = ""
+
+        var isInClass = false
+        var className = ""
+        descriptor.forEach {
+            if (it == ';' && isInClass) {
+                isInClass = false
+
+                val classDef = tree.classes.firstOrNull { def -> def.getName(from) == className }
+                newDescriptor += classDef?.getName(to) ?: className
                 className = ""
                 newDescriptor += ';'
 
