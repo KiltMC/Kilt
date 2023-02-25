@@ -38,6 +38,7 @@
     "tags.TagBuilderInject",
     "world.effect.MobEffectInject",
     "world.entity.EntityInject",
+    "world.entity.EntityTypeBuilderInject",
     "world.entity.EntityTypeInject",
     "world.entity.MobCategoryInject",
     "world.entity.SpawnPlacementsInject",
