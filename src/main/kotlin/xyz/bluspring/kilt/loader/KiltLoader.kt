@@ -15,6 +15,7 @@ import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
@@ -38,6 +39,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -457,15 +459,33 @@ class KiltLoader {
                                 )
 
                                 val clazz = launcher.loadIntoTarget(it.clazz.className)
-                                val constructor = clazz.getDeclaredConstructor()
-                                constructor.isAccessible = true // some people set this to private
 
-                                val instance = constructor.newInstance()
+                                var needsToInitialize = false
+
+                                for (method in clazz.methods) {
+                                    if (method.annotations.any { annotation -> annotation.annotationClass.java == SubscribeEvent::class.java }) {
+                                        if (!Modifier.isStatic(method.modifiers)) {
+                                            needsToInitialize = true
+                                            break
+                                        }
+                                    }
+                                }
+
+                                if (needsToInitialize) {
+                                    val constructor = clazz.getDeclaredConstructor()
+                                    constructor.isAccessible = true // some people set this to private
+
+                                    val instance = constructor.newInstance()
+                                    if (busType == Mod.EventBusSubscriber.Bus.MOD) {
+                                        mod.eventBus.register(instance) // scans non-static methods
+                                    } else {
+                                        MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
+                                    }
+                                }
+
                                 if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                                    mod.eventBus.register(instance) // scans non-static methods
                                     mod.eventBus.register(clazz) // scans static methods
                                 } else {
-                                    MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
                                     MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
                                 }
 
