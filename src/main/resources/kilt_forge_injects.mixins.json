@@ -60,6 +60,7 @@
     "world.item.ItemInject",
     "world.item.ItemPropertiesInject",
     "world.item.ItemStackInject",
+    "world.item.MobBucketItemInject",
     "world.item.RarityInject",
     "world.item.ShovelItemInject",
     "world.item.crafting.IngredientInject",

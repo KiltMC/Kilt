@@ -317,6 +317,8 @@ class KiltEarlyRiser : Runnable {
             run {
                 val bucketItem = namespaced("net/minecraft/class_1755", "net/minecraft/world/item/BucketItem")
                 val fluid = namespaced("net/minecraft/class_3611", "net/minecraft/world/level/material/Fluid")
+                val contentField = namespaced("field_7905", "content")
+                val item = namespaced("net/minecraft/class_1792", "net/minecraft/world/item/Item")
                 val itemProperties = namespaced("net/minecraft/class_1792\$class_1793", "net/minecraft/world/item/Item\$Properties")
 
                 ClassTinkerers.addTransformation(bucketItem) {
@@ -332,25 +334,86 @@ class KiltEarlyRiser : Runnable {
                         val label0 = Label()
                         val label1 = Label()
                         val label2 = Label()
+                        val label3 = Label()
+                        val label4 = Label()
 
                         initializer.visitLabel(label0)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
-                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
-
-                        initializer.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Supplier", "get", "()Ljava/lang/Object;", true)
-                        initializer.visitTypeInsn(Opcodes.CHECKCAST, fluid)
-
                         initializer.visitVarInsn(Opcodes.ALOAD, 2)
-
-                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, bucketItem, "<init>", "(L$fluid;L$itemProperties;)V", false)
+                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, item, "<init>", "(L$itemProperties;)V", false)
 
                         initializer.visitLabel(label1)
-                        initializer.visitInsn(Opcodes.RETURN)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, bucketItem, "kilt\$setFluidSupplier", "(Ljava/util/function/Supplier;)V", false)
 
                         initializer.visitLabel(label2)
-                        initializer.visitLocalVariable("this", "L$bucketItem;", null, label0, label2, 0)
-                        initializer.visitLocalVariable("fluidSupplier", "Ljava/util/function/Supplier;", null, label0, label2, 1)
-                        initializer.visitLocalVariable("properties", "L$itemProperties;", null, label0, label2, 2)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitInsn(Opcodes.ACONST_NULL)
+                        initializer.visitFieldInsn(Opcodes.PUTFIELD, bucketItem, contentField, "L$fluid;")
+
+                        initializer.visitLabel(label3)
+                        initializer.visitInsn(Opcodes.RETURN)
+
+                        initializer.visitLabel(label4)
+                        initializer.visitLocalVariable("this", "L$bucketItem;", null, label0, label4, 0)
+                        initializer.visitLocalVariable("fluidSupplier", "Ljava/util/function/Supplier;", null, label0, label4, 1)
+                        initializer.visitLocalVariable("properties", "L$itemProperties;", null, label0, label4, 2)
+
+                        initializer.visitMaxs(0, 0)
+                        initializer.visitEnd()
+                    }
+                }
+            }
+
+            // MobBucketItem
+            run {
+                val mobBucketItem = namespaced("net/minecraft/class_1785", "net/minecraft/world/item/MobBucketItem")
+                val bucketItem = namespaced("net/minecraft/class_1755", "net/minecraft/world/item/BucketItem")
+                val itemProperties = namespaced("net/minecraft/class_1792\$class_1793", "net/minecraft/world/item/Item\$Properties")
+
+                ClassTinkerers.addTransformation(mobBucketItem) {
+                    // <init>(java.util.function.Supplier<? extends EntityType<?>> entitySupplier, java.util.function.Supplier<? extends Fluid> fluidSupplier, java.util.function.Supplier<? extends SoundEvent> soundSupplier, Item.Properties properties)V
+                    run {
+                        val initializer = it.visitMethod(
+                            Opcodes.ACC_PUBLIC, "<init>",
+                            "(Ljava/util/function/Supplier;Ljava/util/function/Supplier;Ljava/util/function/Supplier;L$itemProperties;)V",
+                            null, null
+                        )
+
+                        initializer.visitCode();
+
+                        val label0 = Label()
+                        val label1 = Label()
+                        val label2 = Label()
+                        val label3 = Label()
+                        val label4 = Label()
+
+                        initializer.visitLabel(label0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 2)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 4)
+                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, bucketItem, "<init>", "(Ljava/util/function/Supplier;L$itemProperties;)V", false)
+
+                        initializer.visitLabel(label1)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, mobBucketItem, "setEntityTypeSupplier", "(Ljava/util/function/Supplier;)V", false)
+
+                        initializer.visitLabel(label2)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 2)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, mobBucketItem, "setEmptySoundSupplier", "(Ljava/util/function/Supplier;)V", false)
+
+                        initializer.visitLabel(label3)
+                        initializer.visitInsn(Opcodes.RETURN)
+
+                        initializer.visitLabel(label4)
+                        initializer.visitLocalVariable("this", "L$mobBucketItem;", null, label0, label4, 0)
+                        initializer.visitLocalVariable("entitySupplier", "Ljava/util/function/Supplier;", null, label0, label4, 1)
+                        initializer.visitLocalVariable("fluidSupplier", "Ljava/util/function/Supplier;", null, label0, label4, 2)
+                        initializer.visitLocalVariable("soundSupplier", "Ljava/util/function/Supplier;", null, label0, label4, 3)
+                        initializer.visitLocalVariable("properties", "L$itemProperties;", null, label0, label4, 4)
 
                         initializer.visitMaxs(0, 0)
                         initializer.visitEnd()
