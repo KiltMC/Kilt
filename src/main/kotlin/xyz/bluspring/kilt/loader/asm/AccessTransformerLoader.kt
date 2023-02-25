@@ -14,11 +14,17 @@ import java.util.regex.Pattern
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
+    private const val debug = false
 
     private val whitespace = Pattern.compile("[ \t]+")
     private val remapper = KiltRemapper.srgIntermediaryTree
 
     private val classTransformInfo = mutableMapOf<String, ClassTransformInfo>()
+
+    private fun println(info: String) {
+        if (debug)
+            logger.info(info)
+    }
 
     fun convertTransformers(data: ByteArray) {
         val textData = String(data)
