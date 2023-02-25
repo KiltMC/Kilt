@@ -99,6 +99,7 @@
     "client.gui.components.AbstractSelectionListInject",
     "client.gui.components.AbstractWidgetInject",
     "client.gui.screens.MenuScreensInject",
+    "client.main.MainInject",
     "client.model.HumanoidModelArmPoseInject",
     "client.model.geom.LayerDefinitionsInject",
     "client.renderer.ItemBlockRenderTypesInject",
