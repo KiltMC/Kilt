@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -22,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
@@ -56,20 +57,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Override
     public void canUpdate(boolean value) {
         canUpdate = value;
-    }
-
-    private Collection<ItemEntity> captureDrops = null;
-
-    @Override
-    public @Nullable Collection<ItemEntity> captureDrops() {
-        return captureDrops;
-    }
-
-    @Override
-    public Collection<ItemEntity> captureDrops(@Nullable Collection<ItemEntity> value) {
-        var ret = captureDrops;
-        this.captureDrops = value;
-        return ret;
     }
 
     private CompoundTag persistentData;
@@ -158,5 +145,15 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Override
     public void reviveCaps() {
         workaround.reviveCaps();
+    }
+
+    @Redirect(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    public boolean kilt$captureSpawnDrops(Level instance, Entity entity) {
+        if (captureDrops() != null) {
+            captureDrops().add((ItemEntity) entity);
+            return false;
+        } else {
+            return instance.addFreshEntity(entity);
+        }
     }
 }
