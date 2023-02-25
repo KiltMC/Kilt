@@ -1,18 +1,32 @@
 package xyz.bluspring.kilt.workarounds
 
+import com.mojang.datafixers.util.Either
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.locale.Language
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FormattedText
 import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.inventory.tooltip.TooltipComponent
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraftforge.client.event.RenderTooltipEvent.GatherComponents
 import net.minecraftforge.client.extensions.IForgeBakedModel
+import net.minecraftforge.client.extensions.common.IClientItemExtensions
 import net.minecraftforge.client.model.data.ModelData
+import net.minecraftforge.common.MinecraftForge
 import java.util.*
 import java.util.function.Consumer
+import java.util.stream.Stream
 
-// this class pretty much has the entire
+
+// this class pretty much has the entire ForgeHooksClient class ported to Kotlin
+// whenever it's needed, because for some reason ForgeHooksClient itself doesn't like to function here.
 object ForgeHooksClientWorkaround {
     private val guiLayers = Stack<Screen>()
 
@@ -81,5 +95,107 @@ object ForgeHooksClientWorkaround {
     fun isBlockInSolidLayer(state: BlockState): Boolean {
         val model = Minecraft.getInstance().blockRenderer.getBlockModel(state) as IForgeBakedModel
         return model.getRenderTypes(state, RandomSource.create(), ModelData.EMPTY).contains(RenderType.solid())
+    }
+
+    @JvmStatic
+    fun gatherTooltipComponents(
+        stack: ItemStack?,
+        textElements: List<FormattedText>,
+        mouseX: Int,
+        screenWidth: Int,
+        screenHeight: Int,
+        forcedFont: Font?,
+        fallbackFont: Font
+    ): List<ClientTooltipComponent?>? {
+        return gatherTooltipComponents(
+            stack,
+            textElements,
+            Optional.empty(),
+            mouseX,
+            screenWidth,
+            screenHeight,
+            forcedFont,
+            fallbackFont
+        )
+    }
+
+    @JvmStatic
+    fun gatherTooltipComponents(
+        stack: ItemStack?,
+        textElements: List<FormattedText>,
+        itemComponent: Optional<TooltipComponent>,
+        mouseX: Int,
+        screenWidth: Int,
+        screenHeight: Int,
+        forcedFont: Font?,
+        fallbackFont: Font
+    ): List<ClientTooltipComponent> {
+        val font: Font = getTooltipFont(forcedFont, stack!!, fallbackFont)
+        val elements = textElements.map { Either.left<FormattedText, TooltipComponent>(it) }.toMutableList()
+
+        itemComponent.ifPresent { c -> elements.add(1, Either.right(c)) }
+        val event = GatherComponents(stack, screenWidth, screenHeight, elements, -1)
+        MinecraftForge.EVENT_BUS.post(event)
+        if (event.isCanceled) return listOf()
+
+        // text wrapping
+        var tooltipTextWidth = event.tooltipElements.stream()
+            .mapToInt { either: Either<FormattedText, TooltipComponent> ->
+                either.map(font::width
+                ) { _ -> 0 }
+            }
+            .max()
+            .orElse(0)
+
+        var needsWrap = false
+        var tooltipX = mouseX + 12
+        if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
+            tooltipX = mouseX - 16 - tooltipTextWidth
+            if (tooltipX < 4) // if the tooltip doesn't fit on the screen
+            {
+                tooltipTextWidth = if (mouseX > screenWidth / 2) mouseX - 12 - 8 else screenWidth - 16 - mouseX
+                needsWrap = true
+            }
+        }
+        if (event.maxWidth in 1 until tooltipTextWidth) {
+            tooltipTextWidth = event.maxWidth
+            needsWrap = true
+        }
+        val tooltipTextWidthF = tooltipTextWidth
+        return if (needsWrap) {
+            event.tooltipElements.flatMap { either ->
+                either.map({ text ->
+                    font.split(text, tooltipTextWidthF).map { ClientTooltipComponent.create(it) }.toList()
+                }, {
+                    Stream.of(ClientTooltipComponent.create(it)).toList()
+                })
+            }.toList()
+        } else {
+            event.tooltipElements
+                .map { either ->
+                    either.map(
+                        { text: FormattedText ->
+                            ClientTooltipComponent.create(
+                                if (text is Component)
+                                    text.visualOrderText
+                                else
+                                    Language.getInstance().getVisualOrder(text)
+                            )
+                        }
+                    ) { tooltipComponent ->
+                        ClientTooltipComponent.create(tooltipComponent)
+                    }
+                }
+                .toList()
+        }
+    }
+
+    @JvmStatic
+    fun getTooltipFont(forcedFont: Font?, stack: ItemStack, fallbackFont: Font): Font {
+        if (forcedFont != null)
+            return forcedFont
+
+        val stackFont = IClientItemExtensions.of(stack).getFont(stack, IClientItemExtensions.FontContext.TOOLTIP)
+        return stackFont ?: fallbackFont
     }
 }
