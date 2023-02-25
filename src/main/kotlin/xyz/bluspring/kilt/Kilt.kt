@@ -1,8 +1,11 @@
 package xyz.bluspring.kilt
 
-import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
+import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
+import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraftforge.client.ForgeHooksClient
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
@@ -34,7 +37,10 @@ class Kilt : ModInitializer {
     }
 
     private fun registerFabricEvents() {
-
+        LivingEntityEvents.DROPS.register { entity, source, drops ->
+            val lootingLevel = EnchantmentHelper.getMobLooting(entity)
+            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, lootingLevel, true))
+        }
     }
 
     companion object {
