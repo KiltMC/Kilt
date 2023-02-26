@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'fabric-loom' version '1.1-SNAPSHOT'
     id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm' version '1.7.20'
 }
@@ -81,6 +81,11 @@ repositories {
         name "TerraformersMC"
         url 'https://maven.terraformersmc.com/'
     }
+
+    maven {
+        name "Architectury"
+        url "https://maven.architectury.dev"
+    }
 }
 
 dependencies {
@@ -98,15 +103,15 @@ dependencies {
     // Forge Reimplementations
     var portingLibs = ["accessors", "attributes", "base", "common", "constants", "entity", "extensions", "model_generators", "model_loader", "models", "networking", "obj_loader", "tags", "transfer", "lazy_registration", "fake_players"];
     portingLibs.forEach((lib) -> {
-        modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:2.1.675+1.19.2"))
+        modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${project.porting_lib_version}"))
     })
-
+    modImplementation "dev.architectury:architectury-fabric:${project.architectury_version}"
     implementation(include("com.github.LlamaLad7:MixinExtras:0.2.0-beta.1"))
     annotationProcessor("com.github.LlamaLad7:MixinExtras:0.2.0-beta.1")
     modImplementation(include('com.github.Chocohead:Fabric-ASM:v2.3'))
     modImplementation(include("io.github.tropheusj:serialization-hooks:0.3.26"))
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:2.3.0"))
-    modImplementation(include("net.minecraftforge:forgeconfigapiport-fabric:4.2.10"))
+    modImplementation(include("net.minecraftforge:forgeconfigapiport-fabric:${project.forgeconfigapiport_version}"))
 
     // required by Forge Config API Port
     implementation(include('com.electronwill.night-config:core:3.6.5'))
