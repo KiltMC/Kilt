@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+
 plugins {
     kotlin("jvm")
     id ("fabric-loom") version "1.1-SNAPSHOT"
@@ -6,6 +8,7 @@ plugins {
 
 version = property("mod_version")!!
 group = property("maven_group")!!
+archivesName.set(property("archives_base_name")!! as String)
 
 loom {
     accessWidenerPath.set(file("src/main/resources/kilt.accesswidener"))
@@ -121,6 +124,9 @@ dependencies {
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0")
     modRuntimeOnly ("curse.maven:ferritecore-fabric-459857:3824694")
     modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3")
+
+    // apparently I need this for Nullable to exist
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
 }
 
 configurations.all {
@@ -145,7 +151,7 @@ tasks {
 
     jar {
         from("LICENSE") {
-            rename { "${it}_${property("archivesBaseName")}" }
+            rename { "${it}_$archivesName" }
         }
     }
 

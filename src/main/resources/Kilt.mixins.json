@@ -46,7 +46,9 @@
     "TagsProviderAccessor",
     "TransformTypeAccessor",
     "TypeAccessor",
-    "WoodTypeAccessor"
+    "WoodTypeAccessor",
+    "porting_lib.RegistryObjectAccessor",
+    "porting_lib.RegistryObjectMixin"
   ],
   "client": [
     "DebugScreenOverlayMixin"

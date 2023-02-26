@@ -10,6 +10,8 @@ import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import org.apache.logging.log4j.LogManager
 import xyz.bluspring.kilt.mixin.LazyRegistrarAccessor
+import xyz.bluspring.kilt.mixin.porting_lib.RegistryObjectAccessor
+import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
@@ -64,7 +66,7 @@ class DeferredRegister<T> private constructor(
                 register(event.forgeRegistry.fabricRegistry)
 
             while (register.fabricRegisteredList.isNotEmpty()) {
-                register.fabricRegisteredList.remove().fabricRegistryObject.updateRef()
+                (register.fabricRegisteredList.remove().fabricRegistryObject as RegistryObjectInjection).updateRef()
             }
         }
 
@@ -75,14 +77,16 @@ class DeferredRegister<T> private constructor(
             val registry: Registry<T> = fabricRegistry.makeRegistry().get() as Registry<T>
             (fabricRegistry as LazyRegistrarAccessor<T>).entrySet.forEach { (it, value) ->
                 println("registering ${it.key}")
+                val registryValue = value.get()
+
                 if (registry.containsKey(it.key!!)) {
                     logger.warn("Registry object ${it.key} in ${registry.key()} called for registry twice! This is likely a bug in Kilt itself, and has been ignored.")
-                    it.updateRef() // it already exists, let's just get it
+                    (it as RegistryObjectAccessor<T>).callSetValue(registryValue)
                     return@forEach
                 }
 
-                Registry.register(registry, it.id, value.get())
-                it.updateRef()
+                (it as RegistryObjectAccessor<T>).callSetValue(registryValue)
+                Registry.register(registry, it.id, it.get())
             }
         }
     }
