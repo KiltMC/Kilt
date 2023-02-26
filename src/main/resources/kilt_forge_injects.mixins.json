@@ -123,6 +123,7 @@
     "client.renderer.block.model.ItemTransformInject",
     "client.renderer.block.model.ItemTransformsTransformTypeInject",
     "client.renderer.entity.ItemRendererInject",
+    "client.renderer.entity.layers.HumanoidArmorLayerInject",
     "client.renderer.texture.TextureAtlasInject"
   ],
   "injectors": {
