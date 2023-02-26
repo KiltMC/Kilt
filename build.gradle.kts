@@ -122,7 +122,7 @@ dependencies {
 
     // Runtime mods for testing
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0")
-    modRuntimeOnly ("curse.maven:ferritecore-fabric-459857:3824694")
+    //modRuntimeOnly ("curse.maven:ferritecore-fabric-459857:4117902") // 5.0.3
     modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3")
 
     // apparently I need this for Nullable to exist
