@@ -7,7 +7,6 @@ pluginManagement {
         gradlePluginPortal()
     }
 
-    val loom_version: String by settings
     val fabric_kotlin_version: String by settings
     plugins {
         id("org.jetbrains.kotlin.jvm") version

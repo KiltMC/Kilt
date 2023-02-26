@@ -100,11 +100,11 @@ dependencies {
     modImplementation(include("com.github.Chocohead:Fabric-ASM:v2.3")!!)
     modImplementation(include("io.github.tropheusj:serialization-hooks:0.3.26")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:2.3.0")!!)
-    modImplementation(include("net.minecraftforge:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")!!)
+    modImplementation("net.minecraftforge:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // required by Forge Config API Port
-    implementation(include("com.electronwill.night-config:core:3.6.5")!!)
-    implementation(include("com.electronwill.night-config:toml:3.6.5")!!)
+    implementation("com.electronwill.night-config:core:3.6.5")
+    implementation("com.electronwill.night-config:toml:3.6.5")
 
     // Forge stuff
     implementation(include("net.minecraftforge:eventbus:6.0.4")!!)

@@ -35,13 +35,15 @@
     "kilt_forge_injects.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.12",
+    "fabricloader": ">=0.14.14",
     "fabric": "*",
     "minecraft": "1.19.2",
     "com_electronwill_night-config_core": "*",
     "com_electronwill_night-config_toml": "*",
     "fabric-language-kotlin": "*",
-    "mm": ">=2.3"
+    "mm": ">=2.3",
+    "forgeconfigapiport": ">=4.2.10",
+    "architectury": ">=6.5.69"
   },
   "custom": {
     "loom:injected_interfaces": {
