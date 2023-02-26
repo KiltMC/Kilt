@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientTooltipComponent.class)
 public interface ClientTooltipComponentInject {
-    @Inject(at = @At(value = "NEW", target = "Ljava/lang/IllegalArgumentException;<init>(Ljava/lang/String;)V", shift = At.Shift.BEFORE), method = "create(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;", cancellable = true)
+    @Inject(at = @At(value = "INVOKE", target = "Ljava/lang/IllegalArgumentException;<init>(Ljava/lang/String;)V", shift = At.Shift.BEFORE), method = "create(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;", cancellable = true)
     private static void kilt$getForgeClientTooltip(TooltipComponent tooltipComponent, CallbackInfoReturnable<ClientTooltipComponent> cir) {
         var result = ClientTooltipComponentManager.createClientTooltipComponent(tooltipComponent);
         if (result != null)
