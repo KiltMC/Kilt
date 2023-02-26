@@ -17,4 +17,8 @@ public interface RecipeManagerInjection {
                 .orElseThrow(() -> new JsonSyntaxException("Invalid or unsupported recipe type '" + string + "'"))
         ).fromJson(location, json, context);
     }
+
+    default void setContext(ICondition.IContext context) {
+        throw new IllegalStateException();
+    }
 }
