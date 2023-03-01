@@ -40,7 +40,7 @@ public class ShapelessRecipeInject {
 	public void kilt$matches(CraftingContainer inv, Level level, CallbackInfoReturnable<Boolean> cir) {
 		if (!isSimple) {
 			StackedContents stackedcontents = new StackedContents();
-			java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
+			List<ItemStack> inputs = new ArrayList<>();
 			int i = 0;
 
 			for(int j = 0; j < inv.getContainerSize(); ++j) {
