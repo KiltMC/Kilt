@@ -32,8 +32,8 @@ object KiltRemapper {
     val srgIntermediaryTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
 
-    private val extraKiltWorkaroundRemapper = ExtraRemapper(kiltWorkaroundTree, "srg", "intermediary")
-    private val kiltWorkaroundRemapper = createRemapper(createMappings(kiltWorkaroundTree, "srg", "intermediary"))
+    private val extraKiltWorkaroundRemapper = ExtraRemapper(kiltWorkaroundTree, "searge", "intermediary")
+    private val kiltWorkaroundRemapper = createRemapper(createMappings(kiltWorkaroundTree, "searge", "intermediary"))
         .extraRemapper(extraKiltWorkaroundRemapper)
 
     // Mainly for debugging, so already-remapped Forge mods will be remapped again.
@@ -105,9 +105,9 @@ object KiltRemapper {
 
         logger.info("Remapping Forge mods to Intermediary...")
 
-        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "srg", "intermediary")
+        val extraRemapper = ExtraRemapper(srgIntermediaryTree, "searge", "intermediary")
         // SRG to Intermediary
-        val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "srg", "intermediary"))
+        val remapperBuilder = createRemapper(createMappings(srgIntermediaryTree, "searge", "intermediary"))
             .extraRemapper(extraRemapper)
 
         // Second iteration, for normal mod loading.
@@ -269,7 +269,7 @@ object KiltRemapper {
             getGameClassPath().first { it.name.contains("intermediary") }
         } else minecraftPath // intermediary, or well should be.
 
-        val srgRemapper = createRemapper(createMappings(srgIntermediaryTree, "intermediary", "srg")).build()
+        val srgRemapper = createRemapper(createMappings(srgIntermediaryTree, "intermediary", "searge")).build()
 
         srgRemapper.readInputs(intermediaryPath)
         val outputConsumer = OutputConsumerPath.Builder(srgFile.toPath()).apply {

@@ -495,9 +495,6 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        // Preload here in order to load access transformers
-        Kilt.loader.preloadMods()
-
         AccessTransformerLoader.runTransformers()
     }
 

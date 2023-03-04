@@ -56,7 +56,7 @@ object AccessTransformerLoader {
 
             // class name
             val srgClassName = split[1]
-            val intermediaryClass = remapper.classes.firstOrNull { it.getName("srg") == srgClassName.replace(".", "/") }
+            val intermediaryClass = remapper.classes.firstOrNull { it.getName("searge") == srgClassName.replace(".", "/") }
             val intermediaryClassName = intermediaryClass?.getName("intermediary") ?: srgClassName
 
             // field / method
@@ -79,10 +79,10 @@ object AccessTransformerLoader {
                         }
                     }
 
-                    val intermediaryDescriptor = remapDescriptor(descriptor, "srg", "intermediary", remapper)
+                    val intermediaryDescriptor = remapDescriptor(descriptor, "searge", "intermediary", remapper)
 
                     val methodData = intermediaryClass?.methods?.firstOrNull {
-                        it.getName("srg") == name
+                        it.getName("searge") == name
                                 && it.getDescriptor("intermediary") == intermediaryDescriptor
                     }
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
@@ -109,7 +109,7 @@ object AccessTransformerLoader {
                 } else { // field
                     val name = split[2]
 
-                    val fieldData = intermediaryClass?.fields?.firstOrNull { it.getName("srg") == name }
+                    val fieldData = intermediaryClass?.fields?.firstOrNull { it.getName("searge") == name }
                     val fieldName = fieldData?.getName("intermediary") ?: name
 
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)

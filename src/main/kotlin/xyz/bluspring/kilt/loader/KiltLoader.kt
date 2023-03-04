@@ -48,7 +48,7 @@ import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
 class KiltLoader {
     val mods = mutableListOf<ForgeMod>()
-    private val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+    internal val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
     private val tomlParser = TomlParser()
 
     fun preloadMods() {
@@ -367,7 +367,9 @@ class KiltLoader {
                     modInfo,
                     modFile,
                     mainConfig
-                )
+                ).apply {
+                    this.manifest = manifest
+                }
             )
         }
 
@@ -409,12 +411,6 @@ class KiltLoader {
         initForge()
         loadForgeBuiltinMod()
 
-        modLoadingQueue.forEach { mod ->
-            // add the mods to the class path first
-            val modPath = mod.remappedModFile.toURI().toPath()
-            launcher.addToClassPath(modPath)
-        }
-
         while (modLoadingQueue.isNotEmpty()) {
             try {
                 val mod = modLoadingQueue.remove()
@@ -439,7 +435,6 @@ class KiltLoader {
                         }
                     }
 
-                    addModToFabric(mod)
                     mods.add(mod)
 
                     // Automatically subscribe events
@@ -560,7 +555,7 @@ class KiltLoader {
         }
     }
 
-    private fun addModToFabric(mod: ForgeMod) {
+    internal fun addModToFabric(mod: ForgeMod) {
         FabricLoaderImpl.INSTANCE.modsInternal.add(mod.container.fabricModContainer)
 
         val modMapField = FabricLoaderImpl::class.java.getDeclaredField("modMap")

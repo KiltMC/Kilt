@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.bluspring.kilt.mixin",
-  "plugin": "xyz.bluspring.kilt.loader.KiltSuperEarlyInitializer",
+  "plugin": "xyz.bluspring.kilt.KiltMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AlternativeLootItemConditionAccessor",

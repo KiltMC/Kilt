@@ -29,6 +29,7 @@ import java.nio.file.Path
 import java.util.Optional
 import java.util.function.Supplier
 import java.util.jar.JarFile
+import java.util.jar.Manifest
 
 class ForgeMod(
     val modInfo: ForgeModInfo,
@@ -94,6 +95,8 @@ class ForgeMod(
             SecureJar.from(modFile?.toPath())
         }
     }
+
+    var manifest: Manifest? = null
 
     // TODO: Make the Kilt mod infos use ForgeSPI's classes
     class ForgeSpiModInfo(val modInfo: ForgeMod) : IModInfo {
