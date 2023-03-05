@@ -13,9 +13,6 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         MixinExtrasBootstrap.init();
-
-        Kilt.Companion.getLoader().preloadMods();
-        KiltMixinLoader.INSTANCE.init(Kilt.Companion.getLoader().getModLoadingQueue$Kilt().stream().toList());
     }
 
     @Override
@@ -35,6 +32,9 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        Kilt.Companion.getLoader().preloadMods();
+        KiltMixinLoader.INSTANCE.init(Kilt.Companion.getLoader().getModLoadingQueue$Kilt().stream().toList());
+
         return null;
     }
 
