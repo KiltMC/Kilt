@@ -8,6 +8,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
+import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
@@ -21,7 +22,7 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 
 object KiltRemapper {
-    private val logger = Kilt.logger
+    private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
     val srgIntermediaryTree: TinyTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
@@ -39,8 +40,8 @@ object KiltRemapper {
     // SRG field -> Intermediary/Named name + descriptor
     private val fieldMappings = mutableMapOf<String, Pair<String, String>>()
 
-    // SRG method name + descriptor -> Intermediary/Named name + descriptor
-    private val methodMappings = mutableMapOf<Pair<String, String>, Pair<String, String>>()
+    // SRG method name -> descriptor -> Intermediary/Named name + descriptor
+    private val methodMappings = mutableMapOf<String, Pair<String, String>>()
 
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
@@ -55,40 +56,56 @@ object KiltRemapper {
     init {
         val mappings = FabricLauncherBase.getLauncher().mappingConfiguration.mappings
 
+        val start = System.currentTimeMillis()
+        logger.info("Loading mappings from Searge to $namespace... (this may take a while!)")
+
         srgIntermediaryTree.classes.forEach { srgClass ->
             val intermediaryClass = mappings.classes.first { it.getName("intermediary") == srgClass.getName("intermediary") }
 
             classMappings[srgClass.getName("searge")] = intermediaryClass.getName(namespace)
 
             srgClass.fields.forEach field@{ srgField ->
+                val srgName = srgField.getName("searge")
+
+                if (fieldMappings.contains(srgName))
+                    return@field
+
                 val intermediaryField = intermediaryClass.fields.firstOrNull { it.getName("intermediary") == srgField.getName("intermediary") }
 
-                if (intermediaryField == null) {
-                    fieldMappings[srgField.getName("searge")] = Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
+                if (namespace == "intermediary" || intermediaryField == null) {
+                    fieldMappings[srgName] = Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
                     return@field
                 }
 
-                fieldMappings[srgField.getName("searge")] = Pair(intermediaryField.getName(namespace), intermediaryField.getDescriptor(
+                fieldMappings[srgName] = Pair(intermediaryField.getName(namespace), intermediaryField.getDescriptor(
                     namespace
                 ))
             }
 
             srgClass.methods.forEach method@{ srgMethod ->
+                val name = srgMethod.getName("searge")
+
+                // let's not map something that already exists.
+                if (methodMappings.contains(name))
+                    return@method
+
                 // need to use a different way of getting the method, because SRG stores method members in literally everyone
                 val intermediaryClass2 = mappings.classes.firstOrNull { it.methods.any { m -> m.getName("intermediary") == srgMethod.getName("intermediary") && m.getDescriptor("intermediary") == srgMethod.getDescriptor("intermediary") } }
 
-                if (intermediaryClass2 == null) {
-                    methodMappings[Pair(srgMethod.getName("searge"), srgMethod.getDescriptor("searge"))] = Pair(srgMethod.getName("intermediary"), srgMethod.getDescriptor("intermediary"))
+                if (namespace == "intermediary" || intermediaryClass2 == null) {
+                    methodMappings[name] = Pair(srgMethod.getName("intermediary"), srgMethod.getDescriptor("intermediary"))
                     return@method
                 }
 
                 val intermediaryMethod = intermediaryClass2.methods.first { it.getName("intermediary") == srgMethod.getName("intermediary") && it.getDescriptor("intermediary") == srgMethod.getDescriptor("intermediary") }
 
-                methodMappings[Pair(srgMethod.getName("searge"), srgMethod.getDescriptor("searge"))] = Pair(intermediaryMethod.getName(
+                methodMappings[name] = Pair(intermediaryMethod.getName(
                     namespace
                 ), intermediaryMethod.getDescriptor(namespace))
             }
         }
+
+        logger.info("Finished loading mappings! (took ${System.currentTimeMillis() - start}ms)")
     }
 
     private lateinit var remappedModsDir: File
@@ -177,7 +194,7 @@ object KiltRemapper {
             classReader.accept(classNode, 0)
 
             val visitor = KiltRemapperVisitor(
-                srgIntermediaryTree, kiltWorkaroundTree, classNode,
+                kiltWorkaroundTree, classNode,
                 classMappings, fieldMappings, methodMappings
             )
             val modifiedClass = visitor.write()

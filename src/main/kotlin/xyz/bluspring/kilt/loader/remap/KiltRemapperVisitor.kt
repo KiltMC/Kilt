@@ -9,13 +9,12 @@ import org.objectweb.asm.signature.SignatureWriter
 import org.objectweb.asm.tree.*
 
 class KiltRemapperVisitor(
-    private val srgIntermediaryTree: TinyTree,
     private val kiltWorkaroundTree: TinyTree,
     private val classNode: ClassNode,
 
     private val classMappings: Map<String, String>,
     private val fieldMappings: Map<String, Pair<String, String>>,
-    private val methodMappings: Map<Pair<String, String>, Pair<String, String>>
+    private val methodMappings: Map<String, Pair<String, String>>
 ) {
     private fun remapClass(name: String): String {
         val workaround = kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
@@ -24,13 +23,7 @@ class KiltRemapperVisitor(
             return workaround ?: name
         }
 
-         val intermediaryName = srgIntermediaryTree.classes.firstOrNull { it.getRawName("searge") == name }?.getRawName("intermediary")
-             ?: return name
-
-        if (KiltRemapper.useNamed)
-            return mappings.classes.firstOrNull { it.getRawName("intermediary") == intermediaryName }?.getRawName("named") ?: name
-
-        return intermediaryName
+         return classMappings[name] ?: name
     }
 
     private fun remapDescriptor(descriptor: String): String {
@@ -106,14 +99,14 @@ class KiltRemapperVisitor(
         }
 
         classNode.methods.forEach { method ->
-            val mapping = methodMappings[Pair(method.name, method.desc)] ?: return@forEach
+            val mapping = methodMappings[method.name]
             val signature = if (method.signature != null) remapSignature(method.signature) else null
 
-            method.name = mapping.first
-            method.desc = mapping.second
+            method.name = mapping?.first ?: method.name
+            method.desc = mapping?.second ?: method.desc
             method.signature = signature
 
-            method.localVariables.forEach local@{
+            method.localVariables?.forEach local@{
                 it.desc = remapDescriptor(it.desc)
                 it.signature = if (it.signature == null) null else remapSignature(it.signature)
             }
@@ -126,7 +119,7 @@ class KiltRemapperVisitor(
                         if (it !is MethodInsnNode)
                             return@insn
 
-                        val methodMapping = methodMappings[Pair(it.name, it.desc)]
+                        val methodMapping = methodMappings[it.name]
 
                         if (methodMapping == null && it.name.endsWith("_") && it.name.startsWith("m_")) {
                             println("${it.owner}#${it.name}${it.desc} under ${classNode.name}#${method.name}${method.desc}")
@@ -142,20 +135,19 @@ class KiltRemapperVisitor(
 
                         val methodInsn = MethodInsnNode(it.opcode, owner, name, desc, it.itf)
 
-                        method.instructions.insert(it, methodInsn)
-                        method.instructions.remove(it)
+                        method.instructions.set(it, methodInsn)
                     }
 
                     Opcodes.INVOKEDYNAMIC -> {
                         if (it !is InvokeDynamicInsnNode)
                             return@insn
 
-                        val methodMapping = methodMappings[Pair(it.name, it.desc)]
+                        val methodMapping = methodMappings[it.name]
 
                         val name = methodMapping?.first ?: it.name
                         val desc = methodMapping?.second ?: it.desc
 
-                        val bsmMethodMapping = methodMappings[Pair(it.bsm.name, it.bsm.desc)]
+                        val bsmMethodMapping = methodMappings[it.bsm.name]
 
                         val handle = if (bsmMethodMapping != null) {
                             val bsmOwner = classMappings[it.bsm.owner] ?: it.bsm.owner
@@ -167,8 +159,7 @@ class KiltRemapperVisitor(
 
                         val methodInsn = InvokeDynamicInsnNode(name, desc, handle, it.bsmArgs)
 
-                        method.instructions.insert(it, methodInsn)
-                        method.instructions.remove(it)
+                        method.instructions.set(it, methodInsn)
                     }
 
                     // classes
@@ -179,8 +170,7 @@ class KiltRemapperVisitor(
                         val desc = classMappings[it.desc] ?: it.desc
 
                         val typeInsn = TypeInsnNode(it.opcode, desc)
-                        method.instructions.insert(it, typeInsn)
-                        method.instructions.remove(it)
+                        method.instructions.set(it, typeInsn)
                     }
 
                     // fields
@@ -204,18 +194,16 @@ class KiltRemapperVisitor(
 
                         val fieldInsn = FieldInsnNode(it.opcode, owner, name, desc)
 
-                        method.instructions.insert(it, fieldInsn)
-                        method.instructions.remove(it)
+                        method.instructions.set(it, fieldInsn)
                     }
                 }
             }
+
+            // reset these
+            method.maxLocals = 0
+            method.maxStack = 0
         }
 
         return classNode
-    }
-
-    companion object {
-        private val launcher = FabricLauncherBase.getLauncher()
-        private val mappings = launcher.mappingConfiguration.mappings
     }
 }
