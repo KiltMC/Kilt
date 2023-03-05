@@ -41,7 +41,7 @@ c net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injectio
 c net/minecraft/client/renderer/Sheets xyz/bluspring/kilt/injections/client/render/SheetsInjection
     m addWoodType (Lnet/minecraft/world/level/block/state/properties/WoodType;)V
     m createSignMaterial (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/client/resources/model/Material;
-c net/minecraft/client/RecipeBookCategories xyz/bluspring/kilt/injections/client/RecipeBookCategories
+c net/minecraft/client/RecipeBookCategories xyz/bluspring/kilt/injections/client/RecipeBookCategoriesInjection
     m create (Ljava/lang/String;[Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/client/RecipeBookCategories;
 c net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/injections/commands/synchronization/ArgumentTypeInfosSynchronization
     m registerByClass (Ljava/lang/Class;Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;)Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;

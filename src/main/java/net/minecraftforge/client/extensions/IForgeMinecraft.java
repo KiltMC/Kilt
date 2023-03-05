@@ -8,6 +8,7 @@ package net.minecraftforge.client.extensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.client.ForgeHooksClient;
+import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
 
 import java.util.Locale;
 
@@ -28,7 +29,7 @@ public interface IForgeMinecraft
      */
     default void pushGuiLayer(Screen screen)
     {
-        ForgeHooksClient.pushGuiLayer(self(), screen);
+        ForgeHooksClientWorkaround.pushGuiLayer(self(), screen);
     }
 
     /**
@@ -36,7 +37,7 @@ public interface IForgeMinecraft
      */
     default void popGuiLayer()
     {
-        ForgeHooksClient.popGuiLayer(self());
+        ForgeHooksClientWorkaround.popGuiLayer(self());
     }
 
     /**

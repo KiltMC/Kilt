@@ -35,6 +35,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -47,7 +48,7 @@ import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
 class KiltLoader {
     val mods = mutableListOf<ForgeMod>()
-    private val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+    internal val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
     private val tomlParser = TomlParser()
 
     fun preloadMods() {
@@ -366,7 +367,9 @@ class KiltLoader {
                     modInfo,
                     modFile,
                     mainConfig
-                )
+                ).apply {
+                    this.manifest = manifest
+                }
             )
         }
 
@@ -392,6 +395,10 @@ class KiltLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
+        } else {
+            modLoadingQueue.forEach { mod ->
+                loadTransformers(mod)
+            }
         }
     }
 
@@ -403,12 +410,6 @@ class KiltLoader {
 
         initForge()
         loadForgeBuiltinMod()
-
-        modLoadingQueue.forEach { mod ->
-            // add the mods to the class path first
-            val modPath = mod.remappedModFile.toURI().toPath()
-            launcher.addToClassPath(modPath)
-        }
 
         while (modLoadingQueue.isNotEmpty()) {
             try {
@@ -434,7 +435,6 @@ class KiltLoader {
                         }
                     }
 
-                    addModToFabric(mod)
                     mods.add(mod)
 
                     // Automatically subscribe events
@@ -452,15 +452,23 @@ class KiltLoader {
                                 )
 
                                 val clazz = launcher.loadIntoTarget(it.clazz.className)
-                                val constructor = clazz.getDeclaredConstructor()
-                                constructor.isAccessible = true // some people set this to private
+                                val constructor = try {
+                                    clazz.getDeclaredConstructor()
+                                } catch (_: Exception) { null }
+                                constructor?.isAccessible = true // some people set this to private
 
-                                val instance = constructor.newInstance()
+                                val instance = constructor?.newInstance()
                                 if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                                    mod.eventBus.register(instance)
+                                    if (instance != null)
+                                        mod.eventBus.register(instance) // scans non-static methods
+                                    mod.eventBus.register(clazz) // scans static methods
                                 } else {
-                                    MinecraftForge.EVENT_BUS.register(instance)
+                                    if (instance != null)
+                                        MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
+                                    MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
                                 }
+
+                                Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 exceptions.add(e)
@@ -509,6 +517,14 @@ class KiltLoader {
         }
     }
 
+    private fun loadTransformers(mod: ForgeMod) {
+        val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
+
+        if (accessTransformer != null) {
+            AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
+        }
+    }
+
     fun postEvent(ev: Event) {
         mods.forEach {
             it.eventBus.post(ev)
@@ -539,7 +555,7 @@ class KiltLoader {
         }
     }
 
-    private fun addModToFabric(mod: ForgeMod) {
+    internal fun addModToFabric(mod: ForgeMod) {
         FabricLoaderImpl.INSTANCE.modsInternal.add(mod.container.fabricModContainer)
 
         val modMapField = FabricLoaderImpl::class.java.getDeclaredField("modMap")

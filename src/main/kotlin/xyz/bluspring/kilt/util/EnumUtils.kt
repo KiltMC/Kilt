@@ -12,9 +12,9 @@ object EnumUtils {
     fun <T : Enum<*>> addEnumToClass(clazz: Class<T>, values: Array<out T>, name: String, createValue: java.util.function.Function<Int, T>, setValues: Consumer<List<T>>): T {
         val list = values.toMutableList()
 
-        for (recipeBookCategories in values) {
-            if (!recipeBookCategories.name.equals(name, ignoreCase = true)) continue
-            return recipeBookCategories
+        for (enumValue in values) {
+            if (!enumValue.name.equals(name, ignoreCase = true)) continue
+            return enumValue
         }
 
         val value = createValue.apply(values.size)

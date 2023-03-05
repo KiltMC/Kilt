@@ -203,7 +203,7 @@ object KiltRemapper {
             getGameClassPath().first { it.name.contains("intermediary") }
         } else minecraftPath // intermediary, or well should be.
 
-        val srgRemapper = createRemapper(createMappings(srgIntermediaryTree, "intermediary", "srg")).build()
+        val srgRemapper = createRemapper(createMappings(srgIntermediaryTree, "intermediary", "searge")).build()
 
         srgRemapper.readInputs(intermediaryPath)
         val outputConsumer = OutputConsumerPath.Builder(srgFile.toPath()).apply {

@@ -38,6 +38,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -858,7 +859,7 @@ public interface IForgeBlock
     {
         if (FMLEnvironment.dist.isClient())
         {
-            return !ForgeHooksClient.isBlockInSolidLayer(state);
+            return !ForgeHooksClientWorkaround.isBlockInSolidLayer(state);
         }
         return true;
     }

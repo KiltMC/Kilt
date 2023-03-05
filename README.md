@@ -1,4 +1,6 @@
 # Kilt
+[Join us on Discord](https://discord.gg/enGK2TymYJ) | [Buy me a coffee!](https://ko-fi.com/bluspring)
+
 A Fabric mod that brings Forge mods into the Fabric ecosystem. Very experimental.
 
 ## FAQ (probably)

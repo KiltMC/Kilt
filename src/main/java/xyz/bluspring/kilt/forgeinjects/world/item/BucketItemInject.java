@@ -13,14 +13,23 @@ import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.injections.item.BucketItemInjection;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Mixin(BucketItem.class)
 public abstract class BucketItemInject extends ItemInject implements BucketItemInjection {
     @Shadow @Final private Fluid content;
+    private Supplier<? extends Fluid> fluidSupplier;
+
+    private void kilt$setFluidSupplier(Supplier<? extends Fluid> supplier) {
+        fluidSupplier = supplier;
+    }
 
     @Override
     public Fluid getFluid() {
-        return this.content;
+        if (fluidSupplier == null)
+            return this.content;
+        else
+            return fluidSupplier.get();
     }
 
     @Nullable

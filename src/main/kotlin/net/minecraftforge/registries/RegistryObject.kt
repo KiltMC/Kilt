@@ -5,6 +5,7 @@ import net.minecraft.core.Registry
 import net.minecraft.data.BuiltinRegistries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
+import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import java.util.Optional
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -27,7 +28,7 @@ class RegistryObject<T> internal constructor(
 
     override fun get(): T {
         if (!isPresent())
-            fabricRegistryObject.updateRef()
+            (fabricRegistryObject as RegistryObjectInjection).updateRef()
 
         if (!isPresent())
             println("still missing. debug please go back in time for this one.")

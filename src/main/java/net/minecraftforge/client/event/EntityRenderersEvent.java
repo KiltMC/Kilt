@@ -38,6 +38,7 @@ import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.workarounds.LayerDefinitionsWorkaround;
 
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +88,7 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
          */
         public void registerLayerDefinition(ModelLayerLocation layerLocation, Supplier<LayerDefinition> supplier)
         {
-            ForgeHooksClient.registerLayerDefinition(layerLocation, supplier);
+            LayerDefinitionsWorkaround.layerDefinitions.put(layerLocation, supplier);
         }
     }
 
@@ -144,11 +145,12 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
     {
         private final Map<EntityType<?>, EntityRenderer<?>> renderers;
         private final Map<String, EntityRenderer<? extends Player>> skinMap;
-        private final EntityModelSet entityModels = Minecraft.getInstance().getEntityModels();
+        private final EntityModelSet entityModels;
 
         public AddLayers() {
             renderers = null;
             skinMap = null;
+            entityModels = null;
         }
 
         @ApiStatus.Internal
@@ -156,6 +158,7 @@ public abstract class EntityRenderersEvent extends Event implements IModBusEvent
         {
             this.renderers = renderers;
             this.skinMap = playerRenderers;
+            entityModels = Minecraft.getInstance().getEntityModels();
         }
 
         /**
