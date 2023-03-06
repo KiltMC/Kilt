@@ -11,6 +11,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
 import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
@@ -46,63 +47,113 @@ object KiltRemapper {
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
 
-    private val namespace: String
-        get() {
-            return if (useNamed)
-                launcher.targetNamespace
-            else "intermediary"
-        }
+    private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
+
+    private val mappingCacheFile = File(KiltLoader.kiltCacheDir, "mapping_${KiltLoader.SUPPORTED_FORGE_SPEC_VERSION}_$namespace.txt")
 
     init {
         val mappings = FabricLauncherBase.getLauncher().mappingConfiguration.mappings
 
         val start = System.currentTimeMillis()
-        logger.info("Loading mappings from Searge to $namespace... (this may take a while!)")
+        logger.info("Loading mappings from Searge to $namespace...")
 
-        srgIntermediaryTree.classes.forEach { srgClass ->
-            val intermediaryClass = mappings.classes.first { it.getName("intermediary") == srgClass.getName("intermediary") }
+        if (mappingCacheFile.exists()) {
+            logger.info("Found cached mapping file")
 
-            classMappings[srgClass.getName("searge")] = intermediaryClass.getName(namespace)
-
-            srgClass.fields.forEach field@{ srgField ->
-                val srgName = srgField.getName("searge")
-
-                if (fieldMappings.contains(srgName))
-                    return@field
-
-                val intermediaryField = intermediaryClass.fields.firstOrNull { it.getName("intermediary") == srgField.getName("intermediary") }
-
-                if (namespace == "intermediary" || intermediaryField == null) {
-                    fieldMappings[srgName] = Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
-                    return@field
-                }
-
-                fieldMappings[srgName] = Pair(intermediaryField.getName(namespace), intermediaryField.getDescriptor(
-                    namespace
-                ))
+            val lines = mappingCacheFile.readLines()
+            // Classes
+            lines[0].split(",").forEach {
+                val split = it.split(">")
+                classMappings[split[0]] = split[1]
             }
 
-            srgClass.methods.forEach method@{ srgMethod ->
-                val name = srgMethod.getName("searge")
+            // Fields
+            lines[1].split(",").forEach {
+                val split = it.split(">")
+                val descSplit = split[1].split("&")
+                fieldMappings[split[0]] = Pair(descSplit[0], descSplit[1])
+            }
 
-                // let's not map something that already exists.
-                if (methodMappings.contains(name))
-                    return@method
+            // Methods
+            lines[2].split(",").forEach {
+                val split = it.split(">")
+                val descSplit = split[1].split("&")
+                methodMappings[split[0]] = Pair(descSplit[0], descSplit[1])
+            }
+        } else {
+            logger.info("No cached mapping file found, this may take a while to load!")
+            srgIntermediaryTree.classes.forEach { srgClass ->
+                val intermediaryClass =
+                    mappings.classes.first { it.getName("intermediary") == srgClass.getName("intermediary") }
 
-                // need to use a different way of getting the method, because SRG stores method members in literally everyone
-                val intermediaryClass2 = mappings.classes.firstOrNull { it.methods.any { m -> m.getName("intermediary") == srgMethod.getName("intermediary") && m.getDescriptor("intermediary") == srgMethod.getDescriptor("intermediary") } }
+                classMappings[srgClass.getName("searge")] = intermediaryClass.getName(namespace)
 
-                if (namespace == "intermediary" || intermediaryClass2 == null) {
-                    methodMappings[name] = Pair(srgMethod.getName("intermediary"), srgMethod.getDescriptor("intermediary"))
-                    return@method
+                srgClass.fields.forEach field@{ srgField ->
+                    val srgName = srgField.getName("searge")
+
+                    if (fieldMappings.contains(srgName))
+                        return@field
+
+                    val intermediaryField =
+                        intermediaryClass.fields.firstOrNull { it.getName("intermediary") == srgField.getName("intermediary") }
+
+                    if (namespace == "intermediary" || intermediaryField == null) {
+                        fieldMappings[srgName] =
+                            Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
+                        return@field
+                    }
+
+                    fieldMappings[srgName] = Pair(
+                        intermediaryField.getName(namespace), intermediaryField.getDescriptor(
+                            namespace
+                        )
+                    )
                 }
 
-                val intermediaryMethod = intermediaryClass2.methods.first { it.getName("intermediary") == srgMethod.getName("intermediary") && it.getDescriptor("intermediary") == srgMethod.getDescriptor("intermediary") }
+                srgClass.methods.forEach method@{ srgMethod ->
+                    val name = srgMethod.getName("searge")
 
-                methodMappings[name] = Pair(intermediaryMethod.getName(
-                    namespace
-                ), intermediaryMethod.getDescriptor(namespace))
+                    // let's not map something that already exists.
+                    if (methodMappings.contains(name))
+                        return@method
+
+                    // need to use a different way of getting the method, because SRG stores method members in literally everyone
+                    val intermediaryClass2 = mappings.classes.firstOrNull {
+                        it.methods.any { m ->
+                            m.getName("intermediary") == srgMethod.getName("intermediary") && m.getDescriptor("intermediary") == srgMethod.getDescriptor(
+                                "intermediary"
+                            )
+                        }
+                    }
+
+                    if (namespace == "intermediary" || intermediaryClass2 == null) {
+                        methodMappings[name] =
+                            Pair(srgMethod.getName("intermediary"), srgMethod.getDescriptor("intermediary"))
+                        return@method
+                    }
+
+                    val intermediaryMethod = intermediaryClass2.methods.first {
+                        it.getName("intermediary") == srgMethod.getName("intermediary") && it.getDescriptor("intermediary") == srgMethod.getDescriptor(
+                            "intermediary"
+                        )
+                    }
+
+                    methodMappings[name] = Pair(
+                        intermediaryMethod.getName(
+                            namespace
+                        ), intermediaryMethod.getDescriptor(namespace)
+                    )
+                }
             }
+
+            mappingCacheFile.createNewFile()
+            val writer = mappingCacheFile.writer()
+            writer.write(classMappings.map { "${it.key}>${it.value}" }.joinToString(","))
+            writer.write("\n")
+            writer.write(fieldMappings.map { "${it.key}>${it.value.first}&${it.value.second}" }.joinToString(","))
+            writer.write("\n")
+            writer.write(methodMappings.map { "${it.key}>${it.value.first}&${it.value.second}" }.joinToString(","))
+            writer.close()
         }
 
         logger.info("Finished loading mappings! (took ${System.currentTimeMillis() - start}ms)")
