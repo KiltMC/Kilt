@@ -202,7 +202,7 @@ object KiltRemapper {
                 return@forEach
 
             try {
-                remapMod(mod.modFile, mod)
+                exceptions.addAll(remapMod(mod.modFile, mod))
                 logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId})")
             } catch (e: Exception) {
                 exceptions.add(e)
@@ -212,19 +212,26 @@ object KiltRemapper {
 
         logger.info("Finished remapping mods!")
 
+        if (exceptions.isNotEmpty()) {
+            logger.error("Ran into some errors, we're not going to continue with the repairing process.")
+            return exceptions
+        }
+
         StaticAccessFixer.fixMods(modLoadingQueue, remappedModsDir)
         CommonSuperFixer.fixMods(modLoadingQueue, remappedModsDir)
 
         return exceptions
     }
 
-    private fun remapMod(file: File, mod: ForgeMod) {
+    private fun remapMod(file: File, mod: ForgeMod): List<Exception> {
+        val exceptions = mutableListOf<Exception>()
+
         val hash = DigestUtils.md5Hex(file.inputStream())
         val modifiedJarFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_$hash.jar")
 
         if (modifiedJarFile.exists() && !forceRemap) {
             mod.remappedModFile = modifiedJarFile
-            return
+            return exceptions
         }
 
         val jar = JarFile(file)
@@ -244,27 +251,39 @@ object KiltRemapper {
 
             classReader.accept(classNode, 0)
 
-            val visitor = KiltRemapperVisitor(
-                kiltWorkaroundTree, classNode,
-                classMappings, fieldMappings, methodMappings
-            )
-            val modifiedClass = visitor.write()
+            try {
+                val visitor = KiltRemapperVisitor(
+                    kiltWorkaroundTree, classNode,
+                    classMappings, fieldMappings, methodMappings
+                )
+                val modifiedClass = visitor.write()
 
-            val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classNode, Function {
-                val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
-                return@Function if (classEntry == null)
-                    null
-                else
-                    jar.getInputStream(classEntry).readAllBytes()
-            })
-            modifiedClass.accept(classWriter)
+                val classWriter = CommonSuperClassWriter.createClassWriter(
+                    0, // we're not adding new methods, are we?
+                    classNode,
+                    Function {
+                        val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
+                        return@Function if (classEntry == null)
+                            null
+                        else
+                            jar.getInputStream(classEntry).readAllBytes()
+                    })
+                modifiedClass.accept(classWriter)
 
-            jarOutput.putNextEntry(JarEntry(entry.name))
-            jarOutput.write(classWriter.toByteArray())
-            jarOutput.closeEntry()
+                jarOutput.putNextEntry(JarEntry(entry.name))
+                jarOutput.write(classWriter.toByteArray())
+                jarOutput.closeEntry()
+            } catch (e: Exception) {
+                logger.error("Failed to remap class ${classNode.name}!")
+                e.printStackTrace()
+
+                exceptions.add(e)
+            }
         }
 
         jarOutput.close()
         mod.remappedModFile = modifiedJarFile
+
+        return exceptions
     }
 }

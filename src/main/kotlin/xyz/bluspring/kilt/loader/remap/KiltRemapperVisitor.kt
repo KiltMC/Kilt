@@ -4,6 +4,7 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.mapping.tree.TinyTree
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
 import org.objectweb.asm.tree.*
@@ -157,7 +158,16 @@ class KiltRemapperVisitor(
                             Handle(it.bsm.tag, bsmOwner, bsmName, bsmDesc, it.bsm.isInterface)
                         } else it.bsm
 
-                        val methodInsn = InvokeDynamicInsnNode(name, desc, handle, it.bsmArgs)
+                        val args = mutableListOf<Any>()
+                        it.bsmArgs.forEach { arg ->
+                            if (arg is Type) {
+                                args.add(remapType(arg))
+                            } else if (arg is Handle) {
+                                args.add(remapHandle(arg))
+                            }
+                        }
+
+                        val methodInsn = InvokeDynamicInsnNode(name, desc, handle, *args.toTypedArray())
 
                         method.instructions.set(it, methodInsn)
                     }
@@ -198,12 +208,42 @@ class KiltRemapperVisitor(
                     }
                 }
             }
-
-            // reset these
-            method.maxLocals = 0
-            method.maxStack = 0
         }
 
         return classNode
+    }
+
+    private fun remapType(type: Type): Type {
+        return when (type.sort) {
+            Type.METHOD -> {
+                val returnType = remapType(type.returnType)
+                val argumentTypes = type.argumentTypes.map { remapType(it) }
+
+                Type.getMethodType(returnType, *argumentTypes.toTypedArray())
+            }
+
+            Type.ARRAY -> {
+                val elementType = remapType(type.elementType)
+
+                Type.getType("[${elementType.internalName}")
+            }
+
+            Type.OBJECT -> {
+                val internalName = type.internalName
+
+                Type.getObjectType(remapDescriptor(internalName))
+            }
+
+            else -> type
+        }
+    }
+
+    private fun remapHandle(handle: Handle): Handle {
+        val owner = classMappings[handle.owner]
+        val method = methodMappings[handle.name]
+        val name = method?.first
+        val desc = remapDescriptor(handle.desc)
+
+        return Handle(handle.tag, owner ?: handle.owner, name ?: handle.name, desc, handle.isInterface)
     }
 }
