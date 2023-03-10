@@ -5,11 +5,10 @@ import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
@@ -50,6 +49,7 @@ object KiltRemapper {
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
     private val mappingCacheFile = File(KiltLoader.kiltCacheDir, "mapping_${KiltLoader.SUPPORTED_FORGE_SPEC_VERSION}_$namespace.txt")
+    private val remapper: KiltAsmRemapper
 
     init {
         val mappings = FabricLauncherBase.getLauncher().mappingConfiguration.mappings
@@ -157,6 +157,8 @@ object KiltRemapper {
         }
 
         logger.info("Finished loading mappings! (took ${System.currentTimeMillis() - start}ms)")
+
+        remapper = KiltAsmRemapper(kiltWorkaroundTree, classMappings, fieldMappings, methodMappings)
     }
 
     private lateinit var remappedModsDir: File
@@ -246,18 +248,13 @@ object KiltRemapper {
                 continue
             }
 
-            val classNode = ClassNode(Opcodes.ASM9)
             val classReader = ClassReader(jar.getInputStream(entry))
 
+            // we need the info for this for the class writer
+            val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
             try {
-                val visitor = KiltRemapperVisitor(
-                    kiltWorkaroundTree, classNode,
-                    classMappings, fieldMappings, methodMappings
-                )
-                val modifiedClass = visitor.write()
-
                 val classWriter = CommonSuperClassWriter.createClassWriter(
                     0, // we're not adding new methods, are we?
                     classNode,
@@ -268,7 +265,9 @@ object KiltRemapper {
                         else
                             jar.getInputStream(classEntry).readAllBytes()
                     })
-                modifiedClass.accept(classWriter)
+
+                val visitor = ClassRemapper(classWriter, remapper)
+                classNode.accept(visitor)
 
                 jarOutput.putNextEntry(JarEntry(entry.name))
                 jarOutput.write(classWriter.toByteArray())
