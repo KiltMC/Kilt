@@ -31,6 +31,8 @@
     "network.protocol.status.ServerStatusInject",
     "server.MinecraftServerInject",
     "server.ReloadableServerResourcesInject",
+    "server.level.ServerLevelInject",
+    "server.level.ServerPlayerInject",
     "server.packs.PackResourcesInject",
     "server.packs.repository.PackRepositoryInject",
     "stats.RecipeBookSettingsInject",
