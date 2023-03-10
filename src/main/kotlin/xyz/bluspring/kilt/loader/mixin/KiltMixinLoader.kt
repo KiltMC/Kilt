@@ -11,8 +11,18 @@ import xyz.bluspring.kilt.loader.ForgeMod
 import kotlin.io.path.toPath
 
 object KiltMixinLoader {
+    private val logger = LoggerFactory.getLogger("Kilt Mixin Loader")
+
     fun init(mods: List<ForgeMod>) {
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
+
+        try {
+            MixinEnvironment.getDefaultEnvironment().remappers.add(SrgMixinRemapper())
+            logger.info("Loaded Forge SRG mappings for mixin remapper!")
+        } catch (e: Exception) {
+            logger.error("Failed to set up Forge SRG mixins, the game is very likely going to crash!")
+            e.printStackTrace()
+        }
 
         mods.forEach { mod ->
             if (mod.manifest == null)
