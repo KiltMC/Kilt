@@ -5,6 +5,7 @@ import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
@@ -220,7 +221,6 @@ object KiltRemapper {
         }
 
         StaticAccessFixer.fixMods(modLoadingQueue, remappedModsDir)
-        CommonSuperFixer.fixMods(modLoadingQueue, remappedModsDir)
 
         return exceptions
     }
@@ -254,9 +254,11 @@ object KiltRemapper {
             val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
+            CommonSuperFixer.fixClass(classNode)
+
             try {
                 val classWriter = CommonSuperClassWriter.createClassWriter(
-                    0, // we're not adding new methods, are we?
+                    ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS,
                     classNode,
                     Function {
                         val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
