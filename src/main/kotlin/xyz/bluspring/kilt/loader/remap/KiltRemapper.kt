@@ -36,13 +36,13 @@ object KiltRemapper {
     private val disableRemaps = System.getProperty("kilt.noRemap")?.lowercase() == "true"
 
     // SRG class -> Intermediary/Named class
-    private val classMappings = mutableMapOf<String, String>()
+    val classMappings = mutableMapOf<String, String>()
 
     // SRG field -> Intermediary/Named name + descriptor
-    private val fieldMappings = mutableMapOf<String, Pair<String, String>>()
+    val fieldMappings = mutableMapOf<String, Pair<String, String>>()
 
     // SRG method name -> descriptor -> Intermediary/Named name + descriptor
-    private val methodMappings = mutableMapOf<String, Pair<String, String>>()
+    val methodMappings = mutableMapOf<String, Pair<String, String>>()
 
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
@@ -159,7 +159,7 @@ object KiltRemapper {
 
         logger.info("Finished loading mappings! (took ${System.currentTimeMillis() - start}ms)")
 
-        remapper = KiltAsmRemapper(kiltWorkaroundTree, classMappings, fieldMappings, methodMappings)
+        remapper = KiltAsmRemapper(fieldMappings, methodMappings)
     }
 
     private lateinit var remappedModsDir: File
@@ -286,5 +286,50 @@ object KiltRemapper {
         mod.remappedModFile = modifiedJarFile
 
         return exceptions
+    }
+
+    fun remapClass(name: String): String {
+        val workaround = kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
+
+        return workaround ?: classMappings[name] ?: name
+    }
+
+    fun unmapClass(name: String): String {
+        return classMappings.entries.firstOrNull { it.value == name }?.key ?: name
+    }
+
+    fun remapDescriptor(descriptor: String, reverse: Boolean = false): String {
+        var formedString = ""
+
+        var incompleteString = ""
+        var isInClass = false
+        descriptor.forEach {
+            if (it == 'L' && !isInClass)
+                isInClass = true
+
+            if (isInClass) {
+                incompleteString += it
+
+                if (it == ';') {
+                    isInClass = false
+
+                    formedString += 'L'
+
+                    val name = incompleteString.removePrefix("L").removeSuffix(";")
+                    formedString += if (!reverse)
+                        remapClass(name)
+                    else
+                        unmapClass(name)
+
+                    formedString += ';'
+
+                    incompleteString = ""
+                }
+            } else {
+                formedString += it
+            }
+        }
+
+        return formedString
     }
 }

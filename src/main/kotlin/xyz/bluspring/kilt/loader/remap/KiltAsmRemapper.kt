@@ -6,45 +6,15 @@ import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
 
 class KiltAsmRemapper(
-    private val kiltWorkaroundTree: TinyTree,
-
-    private val classMappings: Map<String, String>,
     private val fieldMappings: Map<String, Pair<String, String>>,
     private val methodMappings: Map<String, Pair<String, String>>
 ) : Remapper() {
     private fun remapClass(name: String): String {
-        val workaround = kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
-
-         return workaround ?: classMappings[name] ?: name
+        return KiltRemapper.remapClass(name)
     }
 
     private fun remapDescriptor(descriptor: String): String {
-        var formedString = ""
-
-        var incompleteString = ""
-        var isInClass = false
-        descriptor.forEach {
-            if (it == 'L' && !isInClass)
-                isInClass = true
-
-            if (isInClass) {
-                incompleteString += it
-
-                if (it == ';') {
-                    isInClass = false
-
-                    formedString += 'L'
-                    formedString += remapClass(incompleteString.removePrefix("L").removeSuffix(";"))
-                    formedString += ';'
-
-                    incompleteString = ""
-                }
-            } else {
-                formedString += it
-            }
-        }
-
-        return formedString
+        return KiltRemapper.remapDescriptor(descriptor)
     }
 
     private fun remapSignature(signature: String): String {
