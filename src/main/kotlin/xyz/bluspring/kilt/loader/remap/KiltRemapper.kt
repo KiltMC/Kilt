@@ -101,6 +101,10 @@ object KiltRemapper {
                     if (namespace == "intermediary" || intermediaryField == null) {
                         fieldMappings[srgName] =
                             Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
+
+                        if (srgField.getDescriptor("searge").startsWith("("))
+                            methodMappings[srgName] = fieldMappings[srgName]!!
+
                         return@field
                     }
 
@@ -109,6 +113,9 @@ object KiltRemapper {
                             namespace
                         )
                     )
+
+                    if (srgField.getDescriptor("searge").startsWith("("))
+                        methodMappings[srgName] = fieldMappings[srgName]!!
                 }
 
                 srgClass.methods.forEach method@{ srgMethod ->

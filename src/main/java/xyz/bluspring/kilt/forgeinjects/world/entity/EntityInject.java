@@ -40,11 +40,16 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
 
     @Shadow protected abstract void unsetRemoved();
 
-    private CapabilityProviderWorkaround<Entity> workaround = new CapabilityProviderWorkaround<>(Entity.class);
+    private final CapabilityProviderWorkaround<Entity> workaround = new CapabilityProviderWorkaround<>(Entity.class);
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         return workaround.getCapability(cap, side);
+    }
+
+    @Override
+    public CapabilityProviderWorkaround<Entity> getWorkaround() {
+        return workaround;
     }
 
     private boolean canUpdate = true;

@@ -5,6 +5,7 @@
 
 package net.minecraftforge.common.extensions;
 
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.Connection;
@@ -24,9 +25,16 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>
+public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>, RenderAttachmentBlockEntity
 {
+    // Kilt: Otherwise shit gets fucked, dude
+    @Override
+    default @Nullable Object getRenderAttachmentData() {
+        return null;
+    }
+
     private BlockEntity self() { return (BlockEntity) this; }
 
     @Override
