@@ -6,7 +6,7 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.loader.ForgeMod
 
-class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
+open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
     private val kiltModInfo = kiltMod.modInfo
 
     override fun getMods(): MutableList<IModInfo> {

@@ -13,6 +13,7 @@ import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.IEventListener
 import net.minecraftforge.fml.event.IModBusEvent
+import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.forgespi.language.IConfigurable
 import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
@@ -101,7 +102,7 @@ class ForgeMod(
     // TODO: Make the Kilt mod infos use ForgeSPI's classes
     class ForgeSpiModInfo(val modInfo: ForgeMod) : IModInfo {
         override fun getOwningFile(): IModFileInfo {
-            return ForgeSpiModFileInfo(this)
+            return ForgeSpiModFileInfo(this, modInfo)
         }
 
         override fun getModId(): String {
@@ -192,7 +193,7 @@ class ForgeMod(
 
     }
 
-    class ForgeSpiModFileInfo(private val main: ForgeSpiModInfo) : IModFileInfo {
+    class ForgeSpiModFileInfo(private val main: ForgeSpiModInfo, mod: ForgeMod) : ModFileInfo(mod) {
         override fun getMods(): MutableList<IModInfo> {
             return mutableListOf(main)
         }
@@ -224,15 +225,6 @@ class ForgeMod(
         override fun usesServices(): MutableList<String> {
             return mutableListOf()
         }
-
-        override fun getFile(): IModFile? {
-            return null
-        }
-
-        override fun getConfig(): IConfigurable? {
-            return null
-        }
-
     }
 
     private class CustomStringValue(private val stringValue: String) : CustomValue {

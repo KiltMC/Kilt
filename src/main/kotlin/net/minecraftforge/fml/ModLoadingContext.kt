@@ -10,6 +10,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltModContainer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Supplier
 
 class ModLoadingContext(private val mod: ForgeMod) {
     // this should be Any, but we're only handling Java mods here so
@@ -23,6 +24,10 @@ class ModLoadingContext(private val mod: ForgeMod) {
 
     fun extension(): FMLJavaModLoadingContext {
         return languageExtension
+    }
+
+    fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {
+        activeContainer.registerExtensionPoint(point, extension)
     }
 
     // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise

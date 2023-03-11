@@ -47,6 +47,7 @@
     "TransformTypeAccessor",
     "TypeAccessor",
     "WoodTypeAccessor",
+    "porting_lib.ConditionalRecipeSerializerMixin",
     "porting_lib.RegistryObjectAccessor",
     "porting_lib.RegistryObjectMixin"
   ],
