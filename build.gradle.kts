@@ -1,14 +1,27 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+import org.ajoberstar.grgit.Grgit
 
 plugins {
     kotlin("jvm")
     id ("fabric-loom") version "1.1-SNAPSHOT"
     id ("maven-publish")
+    id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
 
 version = property("mod_version")!!
 group = property("maven_group")!!
 archivesName.set(property("archives_base_name")!! as String)
+
+sourceSets {
+    getByName("main") {
+        java.srcDir("src/main/java")
+        java.srcDir("src/main/kotlin")
+        java.srcDir("src/forge/java")
+
+        resources.srcDir("src/main/resources")
+        resources.srcDir("src/forge/resources")
+    }
+}
 
 loom {
     accessWidenerPath.set(file("src/main/resources/kilt.accesswidener"))
@@ -134,8 +147,53 @@ configurations.all {
 }
 
 val targetJavaVersion = "17"
+val forgeCommitHash = property("forge_commit_hash")
 
 tasks {
+    register("cloneForgeApi") {
+        description = "Clones the Forge repository. It's best you use :getForgeApi."
+
+        doFirst {
+            println("Cloning MinecraftForge repository to commit hash $forgeCommitHash..")
+            val forgeSrcDir = File("$buildDir/forge")
+
+            val grgit = if (!forgeSrcDir.exists())
+                Grgit.clone(mutableMapOf<String, Any?>(
+                    "uri" to "https://github.com/MinecraftForge/MinecraftForge.git",
+                    "dir" to forgeSrcDir
+                ))
+            else
+                Grgit.open(mutableMapOf<String, Any?>(
+                    "dir" to forgeSrcDir
+                ))
+
+            grgit.fetch()
+            grgit.checkout(mutableMapOf<String, Any?>(
+                "branch" to forgeCommitHash
+            ))
+
+            println(grgit.describe())
+        }
+    }
+
+    register<Copy>("getForgeApi") {
+        dependsOn("cloneForgeApi")
+        description = "Clones the Forge repository, and places the API code into the 'forge' source set."
+
+        doFirst {
+            println("Copying Forge API-specific files into Kilt source dir...")
+
+            val file = File("src/forge")
+            if (file.exists()) {
+                println("Found that Forge API already exists in a directory, replacing..")
+                file.deleteRecursively()
+            }
+        }
+
+        from("$buildDir/forge/src/main", "$buildDir/forge/src/generated")
+        into("src/forge")
+    }
+
     processResources {
         inputs.property("version", project.version)
         filteringCharset = "UTF-8"
