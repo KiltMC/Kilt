@@ -25,7 +25,7 @@ import java.util.*
 import java.util.function.Supplier
 import kotlin.Comparator
 
-class ForgeRegistry<V> internal constructor (
+class ForgeRegistry<V : Any> internal constructor (
     private val stage: RegistryManager,
     override val registryName: ResourceLocation,
     val builder: RegistryBuilder<V>
@@ -115,7 +115,7 @@ class ForgeRegistry<V> internal constructor (
     }
 
     override fun getDelegate(key: ResourceLocation): Optional<Holder.Reference<V>> {
-        return Optional.ofNullable(vanillaRegistry.holders().toList().firstOrNull { it.key().location() == key })
+        return Optional.ofNullable(vanillaRegistry.holders().toList().firstOrNull { it.key().location().equals(key) })
     }
 
     override fun getDelegate(value: V): Optional<Holder.Reference<V>> {
@@ -123,7 +123,7 @@ class ForgeRegistry<V> internal constructor (
     }
 
     override fun getDelegateOrThrow(key: ResourceLocation): Holder.Reference<V> {
-        return vanillaRegistry.holders().toList().first { it.key().location() == key }
+        return vanillaRegistry.holders().toList().first { it.key().location().equals(key) }
     }
 
     override fun getDelegateOrThrow(value: V): Holder.Reference<V> {
@@ -156,7 +156,7 @@ class ForgeRegistry<V> internal constructor (
         return if (!isEmpty())
             vanillaRegistry.getId(getValue(name))
         else
-            fabricRegistry.entries.indexOfFirst { it.id == name }
+            fabricRegistry.entries.indexOfFirst { it.id.equals(name) }
     }
 
     fun getID(value: V?): Int {
@@ -231,7 +231,7 @@ class ForgeRegistry<V> internal constructor (
 
         @Synchronized
         fun getPacketData(): FriendlyByteBuf {
-            if (binary == null) {
+            if ((binary as Any?) == null) {
                 val packet = FriendlyByteBuf(Unpooled.buffer())
 
                 packet.writeVarInt(ids.size)
@@ -268,10 +268,10 @@ class ForgeRegistry<V> internal constructor (
             @JvmStatic
             fun read(nbt: CompoundTag?): Snapshot {
                 val snapshot = Snapshot()
-                if (nbt == null)
+                if ((nbt as Any?) == null)
                     return snapshot
 
-                nbt.getList("ids", 10).forEach {
+                nbt!!.getList("ids", 10).forEach {
                     val compound = it as CompoundTag
                     snapshot.ids[ResourceLocation(compound.getString("K"))] = compound.getInt("V")
                 }
@@ -297,12 +297,12 @@ class ForgeRegistry<V> internal constructor (
 
             @JvmStatic
             fun read(buff: FriendlyByteBuf?): Snapshot {
-                if (buff == null)
+                if ((buff as Any?) == null)
                     return Snapshot()
 
                 val snapshot = Snapshot()
 
-                var length = buff.readVarInt()
+                var length = buff!!.readVarInt()
                 for (i in 0..length)
                     snapshot.ids[buff.readResourceLocation()] = buff.readVarInt()
 
@@ -339,7 +339,7 @@ class ForgeRegistry<V> internal constructor (
             if (!builder.hasWrapper)
                 return null
 
-            return if (defaultKey != null)
+            return if ((defaultKey as Any?) != null)
                 getSlaveMap(NamespacedDefaultedWrapper.Factory.ID, NamespacedDefaultedWrapper::class.java) as NamespacedDefaultedWrapper<V>?
             else
                 getSlaveMap(NamespacedWrapper.Factory.ID, NamespacedWrapper::class.java) as NamespacedWrapper<V>?
@@ -381,7 +381,7 @@ class ForgeRegistry<V> internal constructor (
         return slaves[slaveMapName] as T?
     }
 
-    override fun setSlaveMap(name: ResourceLocation, obj: Any?) {
+    override fun setSlaveMap(name: ResourceLocation, obj: Any) {
         if (this.slaves == null) // https://akm-img-a-in.tosshub.com/indiatoday/images/story/201701/jackie-story_647_012517032327.jpg
             this.slaves = mutableMapOf()
 
@@ -450,7 +450,7 @@ class ForgeRegistry<V> internal constructor (
     @get:JvmName("getDefault")
     internal val default: V?
         get() {
-            if (defaultKey == null)
+            if ((defaultKey as Any?) == null)
                 return null
 
             return vanillaRegistry.get(defaultKey)

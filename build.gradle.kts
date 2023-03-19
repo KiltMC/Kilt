@@ -183,7 +183,7 @@ tasks {
         doFirst {
             println("Copying Forge API-specific files into Kilt source dir...")
 
-            val file = File("src/forge")
+            val file = File("$projectDir/src/forge")
             if (file.exists()) {
                 println("Found that Forge API already exists in a directory, replacing..")
                 file.deleteRecursively()
@@ -191,7 +191,33 @@ tasks {
         }
 
         from("$buildDir/forge/src/main", "$buildDir/forge/src/generated")
-        into("src/forge")
+        into("$projectDir/src/forge")
+
+        doLast {
+            println("Removing reimplemented Forge API sources...")
+
+            val reimplemented = listOf(
+                "net/minecraftforge/registries/DeferredRegister",
+                "net/minecraftforge/registries/ForgeRegistries",
+                "net/minecraftforge/registries/ForgeRegistry",
+                "net/minecraftforge/registries/ForgeRegistryTag",
+                "net/minecraftforge/registries/ForgeRegistryTagManager",
+                "net/minecraftforge/registries/IForgeRegistry",
+                "net/minecraftforge/registries/NewRegistryEvent",
+                "net/minecraftforge/registries/RegisterEvent",
+                "net/minecraftforge/registries/RegistryManager",
+                "net/minecraftforge/registries/RegistryObject",
+            )
+
+            reimplemented.forEach {
+                val file = File("$projectDir/src/forge/java/$it.java")
+                file.delete()
+            }
+        }
+    }
+
+    jar {
+        dependsOn("getForgeApi")
     }
 
     processResources {

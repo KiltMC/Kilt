@@ -17,7 +17,7 @@ class RegisterEvent internal constructor(
 ) : Event(), IModBusEvent {
     constructor() : this(EMPTY, null, null)
 
-    fun <T> register(registryKey: ResourceKey<out Registry<*>>, name: ResourceLocation, valueSupplier: Supplier<T>) {
+    fun <T : Any> register(registryKey: ResourceKey<out Registry<*>>, name: ResourceLocation, valueSupplier: Supplier<T>) {
         if (this.registryKey == registryKey) {
             if (forgeRegistry != null)
                 (forgeRegistry as ForgeRegistry<T>).register(name, valueSupplier.get())
@@ -31,7 +31,7 @@ class RegisterEvent internal constructor(
         }
     }
 
-    fun <T> register(registryKey: ResourceKey<out Registry<*>>, consumer: Consumer<RegisterHelper<T>>) {
+    fun <T : Any> register(registryKey: ResourceKey<out Registry<*>>, consumer: Consumer<RegisterHelper<T>>) {
         if (this.registryKey == registryKey) {
             consumer.accept(RegisterHelper { name, value -> register(registryKey, name) { value } })
         }

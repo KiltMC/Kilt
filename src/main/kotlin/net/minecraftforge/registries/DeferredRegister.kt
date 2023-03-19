@@ -70,7 +70,7 @@ class DeferredRegister<T> private constructor(
             }
         }
 
-        private fun <T> register(fabricRegistry: LazyRegistrar<T>) {
+        private fun <T : Any> register(fabricRegistry: LazyRegistrar<T>) {
             // Recreate LazyRegistrar#register(), to make it also check and make sure
             // the registry doesn't register multiple times. This is to temporarily work around
             // a bug that causes double-registering in Kilt.
