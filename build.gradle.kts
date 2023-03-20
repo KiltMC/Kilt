@@ -200,6 +200,14 @@ tasks {
         modified = "$projectDir/src/forge/java"
         destination = "$projectDir/patches"
 
+        doFirst {
+            val patchesDir = File("$projectDir/patches")
+            if (patchesDir.exists()) {
+                println("Removing old patches before creating new patches...")
+                patchesDir.deleteRecursively()
+            }
+        }
+
         doLast {
             println("Removing empty patches...")
 
