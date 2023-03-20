@@ -5,11 +5,14 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 
 class KiltEarlyRiser : Runnable {
     private val namespace = FabricLauncherBase.getLauncher().targetNamespace
 
     override fun run() {
+        superFixForgeClasses()
+
         // EnchantmentCategory has an abstract method that doesn't exactly play nicely with enum extension.
         // So, we need to modify it to have a method body that works with the Forge API.
         run {
@@ -503,5 +506,34 @@ class KiltEarlyRiser : Runnable {
             intermediary
         else
             mojmapped
+    }
+
+    private val classLoader = FabricLauncherBase.getLauncher().targetClassLoader
+
+    private fun getClassesFromPackageRecursive(packageName: String): List<String> {
+        val slashedPackageName = packageName.replace(".", "/")
+
+        val classes = mutableListOf<String>()
+        for (resource in classLoader.getResources(slashedPackageName)) {
+            val fileName = resource.path.replace("$slashedPackageName/", "")
+            if (fileName.endsWith(".class")) {
+                classes.add("$packageName.${fileName.substring(0, fileName.lastIndexOf('.'))}")
+            } else if (fileName.indexOf('.') == -1) {
+                classes.addAll(getClassesFromPackageRecursive("$packageName.$fileName"))
+            }
+        }
+
+        return classes
+    }
+
+    // We need to emulate what ModLauncher does in order for Forge's events to even remotely function.
+    private fun superFixForgeClasses() {
+        val classes = getClassesFromPackageRecursive("net.minecraftforge")
+
+        classes.forEach { className ->
+            ClassTinkerers.addTransformation(className) {
+                CommonSuperFixer.fixClass(it)
+            }
+        }
     }
 }
