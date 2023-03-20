@@ -273,7 +273,7 @@ tasks {
     }
 
     jar {
-        dependsOn("getForgeApi")
+        dependsOn("createPatches", "getForgeApi")
     }
 
     processResources {
