@@ -1,0 +1,29 @@
+--- ForgeHooks.java
++++ ForgeHooks.java
+@@ -111,4 +111,5 @@
+ import net.minecraft.world.level.biome.MobSpawnSettings;
+ import net.minecraftforge.common.crafting.conditions.ICondition;
++import net.minecraftforge.common.extensions.IForgeBlockState;
+ import net.minecraftforge.common.loot.IGlobalLootModifier;
+ import net.minecraftforge.common.loot.LootModifierManager;
+@@ -238,5 +239,5 @@
+                 te = level.getBlockEntity(pos);
+ 
+-            result = state.getCloneItemStack(target, level, pos, player);
++            result = ((IForgeBlockState) state).getCloneItemStack(target, level, pos, player);
+ 
+             if (result.isEmpty())
+@@ -396,5 +397,5 @@
+         if (!ForgeConfig.SERVER.fullBoundingBoxLadders.get())
+         {
+-            return state.isLadder(level, pos, entity) ? Optional.of(pos) : Optional.empty();
++            return ((IForgeBlockState) state).isLadder(level, pos, entity) ? Optional.of(pos) : Optional.empty();
+         }
+         else
+@@ -412,5 +413,5 @@
+                         BlockPos tmp = new BlockPos(x2, y2, z2);
+                         state = level.getBlockState(tmp);
+-                        if (state.isLadder(level, tmp, entity))
++                        if (((IForgeBlockState) state).isLadder(level, tmp, entity))
+                         {
+                             return Optional.of(tmp);

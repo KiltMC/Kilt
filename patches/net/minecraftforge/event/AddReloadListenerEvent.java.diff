@@ -1,0 +1,15 @@
+--- AddReloadListenerEvent.java
++++ AddReloadListenerEvent.java
+@@ -15,4 +15,5 @@
+ import net.minecraftforge.eventbus.api.Event;
+ import net.minecraftforge.fml.ModLoader;
++import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection;
+ 
+ import java.util.ArrayList;
+@@ -64,5 +65,5 @@
+     public ICondition.IContext getConditionContext()
+     {
+-        return serverResources.getConditionContext();
++        return ((ReloadableServerResourcesInjection) serverResources).getConditionContext();
+     }
+ 

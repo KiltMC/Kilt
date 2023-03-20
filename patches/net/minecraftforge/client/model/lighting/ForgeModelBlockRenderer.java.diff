@@ -1,0 +1,44 @@
+--- ForgeModelBlockRenderer.java
++++ ForgeModelBlockRenderer.java
+@@ -22,4 +22,6 @@
+ import net.minecraftforge.client.model.data.ModelData;
+ import net.minecraftforge.common.ForgeConfig;
++import xyz.bluspring.kilt.injections.client.render.block.ModelBlockRendererInjection;
++import xyz.bluspring.kilt.injections.client.render.model.BakedQuadInjection;
+ 
+ import java.util.List;
+@@ -28,5 +30,5 @@
+  * Wrapper around {@link ModelBlockRenderer} to allow rendering blocks via Forge's lighting pipeline.
+  */
+-public class ForgeModelBlockRenderer extends ModelBlockRenderer
++public class ForgeModelBlockRenderer extends ModelBlockRenderer implements ModelBlockRendererInjection
+ {
+     private static final Direction[] SIDES = Direction.values();
+@@ -50,5 +52,5 @@
+         else
+         {
+-            super.tesselateWithoutAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
++            ModelBlockRendererInjection.super.tesselateWithoutAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
+         }
+     }
+@@ -63,5 +65,5 @@
+         else
+         {
+-            super.tesselateWithAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
++            ModelBlockRendererInjection.super.tesselateWithAO(level, model, state, pos, poseStack, vertexConsumer, checkSides, rand, seed, packedOverlay, modelData, renderType);
+         }
+     }
+@@ -83,5 +85,5 @@
+             for (BakedQuad quad : quads)
+             {
+-                if (smoothLighter && !quad.hasAmbientOcclusion())
++                if (smoothLighter && !((BakedQuadInjection) quad).hasAmbientOcclusion())
+                 {
+                     if (flatLighter == null)
+@@ -116,5 +118,5 @@
+                 for (BakedQuad quad : quads)
+                 {
+-                    if (smoothLighter && !quad.hasAmbientOcclusion())
++                    if (smoothLighter && !((BakedQuadInjection) quad).hasAmbientOcclusion())
+                     {
+                         if (flatLighter == null)

@@ -92,7 +92,8 @@
       "net/minecraft/class_2658": ["net/minecraftforge/network/ICustomPacket"],
       "net/minecraft/class_2817": ["net/minecraftforge/network/ICustomPacket"],
       "net/minecraft/class_2899": ["net/minecraftforge/network/ICustomPacket"],
-      "net/minecraft/class_2913": ["net/minecraftforge/network/ICustomPacket"]
+      "net/minecraft/class_2913": ["net/minecraftforge/network/ICustomPacket"],
+      "net/minecraft/class_1937": ["xyz/bluspring/kilt/injections/CapabilityProviderInjection", "xyz/bluspring/kilt/injections/capabilities/LevelCapabilityProviderImpl"]
     }
   },
   "accessWidener": "kilt.accesswidener"
