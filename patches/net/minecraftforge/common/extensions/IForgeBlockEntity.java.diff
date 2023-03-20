@@ -1,0 +1,9 @@
+--- IForgeBlockEntity.java
++++ IForgeBlockEntity.java
+@@ -157,5 +157,5 @@
+          if (level != null && level.isClientSide)
+          {
+-             var modelDataManager = level.getModelDataManager();
++             var modelDataManager = ((IForgeBlockGetter) level).getModelDataManager();
+              if (modelDataManager != null)
+              {

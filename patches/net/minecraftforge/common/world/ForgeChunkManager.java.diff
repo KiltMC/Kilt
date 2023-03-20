@@ -1,0 +1,18 @@
+--- ForgeChunkManager.java
++++ ForgeChunkManager.java
+@@ -33,4 +33,5 @@
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import xyz.bluspring.kilt.injections.server.level.ServerChunkCacheInjection;
+ 
+ @ParametersAreNonnullByDefault
+@@ -153,7 +154,7 @@
+     {
+         if (add)
+-            level.getChunkSource().addRegionTicket(type, pos, 2, owner, ticking);
++            ((ServerChunkCacheInjection) level.getChunkSource()).addRegionTicket(type, pos, 2, owner, ticking);
+         else
+-            level.getChunkSource().removeRegionTicket(type, pos, 2, owner, ticking);
++            ((ServerChunkCacheInjection) level.getChunkSource()).removeRegionTicket(type, pos, 2, owner, ticking);
+     }
+ 

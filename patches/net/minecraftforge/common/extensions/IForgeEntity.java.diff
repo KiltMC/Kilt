@@ -1,15 +1,16 @@
 --- IForgeEntity.java
 +++ IForgeEntity.java
-@@ -9,4 +9,5 @@
+@@ -9,4 +9,6 @@
  import java.util.function.BiPredicate;
  
++import io.github.fabricators_of_create.porting_lib.attributes.extensions.EntityAttributes;
 +import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
  import net.minecraft.sounds.SoundEvent;
  import net.minecraft.world.entity.LivingEntity;
-@@ -33,5 +34,5 @@
+@@ -33,5 +35,5 @@
  import org.jetbrains.annotations.Nullable;
  
 -public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>
-+public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>, EntityExtensions
++public interface IForgeEntity extends ICapabilitySerializable<CompoundTag>, EntityExtensions, EntityAttributes
  {
      private Entity self() { return (Entity) this; }

@@ -1,0 +1,22 @@
+--- CompoundIngredient.java
++++ CompoundIngredient.java
+@@ -27,4 +27,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
+ 
+ /** Ingredient that matches if any of the child ingredients match */
+@@ -61,5 +62,5 @@
+         }
+         if (!vanillaIngredients.isEmpty())
+-            allIngredients.add(merge(vanillaIngredients));
++            allIngredients.add(IngredientInjection.merge(vanillaIngredients));
+         if (allIngredients.size() == 1)
+             return allIngredients.get(0);
+@@ -113,5 +114,5 @@
+ 
+     @Override
+-    protected void invalidate()
++    public void invalidate()
+     {
+         this.itemIds = null;

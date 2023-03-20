@@ -1,0 +1,15 @@
+--- CraftingHelper.java
++++ CraftingHelper.java
+@@ -40,4 +40,5 @@
+ import org.apache.logging.log4j.MarkerManager;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
+ 
+ public class CraftingHelper
+@@ -116,5 +117,5 @@
+ 
+             if (!vanilla.isEmpty())
+-                ingredients.add(Ingredient.merge(vanilla));
++                ingredients.add(IngredientInjection.merge(vanilla));
+ 
+             if (ingredients.size() == 0)

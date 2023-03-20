@@ -1,29 +1,99 @@
 --- ForgeHooksClient.java
 +++ ForgeHooksClient.java
-@@ -164,4 +164,5 @@
+@@ -164,4 +164,8 @@
  import org.jetbrains.annotations.NotNull;
  import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.multiplayer.ServerDataInjection;
++import xyz.bluspring.kilt.injections.client.render.ShaderInstanceInjection;
++import xyz.bluspring.kilt.injections.client.render.block.ModelBlockRendererInjection;
 +import xyz.bluspring.kilt.injections.client.render.model.BakedQuadInjection;
  
  import java.io.File;
-@@ -565,5 +566,5 @@
+@@ -565,5 +569,5 @@
      public static boolean calculateFaceWithoutAO(BlockAndTintGetter getter, BlockState state, BlockPos pos, BakedQuad quad, boolean isFaceCubic, float[] brightness, int[] lightmap)
      {
 -        if (quad.hasAmbientOcclusion())
 +        if (((BakedQuadInjection) quad).hasAmbientOcclusion())
              return false;
  
-@@ -675,5 +676,5 @@
+@@ -675,5 +679,5 @@
      public static boolean onScreenMouseScrollPre(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
      {
 -        Window mainWindow = guiScreen.getMinecraft().getWindow();
 +        Window mainWindow = Minecraft.getInstance().getWindow();
          double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
          double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();
-@@ -684,5 +685,5 @@
+@@ -684,5 +688,5 @@
      public static void onScreenMouseScrollPost(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
      {
 -        Window mainWindow = guiScreen.getMinecraft().getWindow();
 +        Window mainWindow = Minecraft.getInstance().getWindow();
          double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
          double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();
+@@ -776,5 +780,5 @@
+         {
+             VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypeHelper.getMovingBlockRenderType(renderType));
+-            blockRenderer.getModelRenderer().tesselateBlock(level, model, state, pos, stack, vertexConsumer, checkSides, RandomSource.create(), state.getSeed(pos), packedOverlay, ModelData.EMPTY, renderType);
++            ((ModelBlockRendererInjection) blockRenderer.getModelRenderer()).tesselateBlock(level, model, state, pos, stack, vertexConsumer, checkSides, RandomSource.create(), state.getSeed(pos), packedOverlay, ModelData.EMPTY, renderType);
+         }
+     }
+@@ -862,7 +866,7 @@
+                 extraReason = "fml.menu.multiplayer.clientoutdated";
+             }
+-            target.forgeData = new ExtendedServerListData("FML", extraServerMods.isEmpty() && fmlNetMatches && channelsMatch && modsMatch, mods.size(), extraReason, packet.getForgeData().isTruncated());
++            ((ServerDataInjection) target).setForgeData(new ExtendedServerListData("FML", extraServerMods.isEmpty() && fmlNetMatches && channelsMatch && modsMatch, mods.size(), extraReason, packet.getForgeData().isTruncated()));
+         } else {
+-            target.forgeData = new ExtendedServerListData("VANILLA", NetworkRegistry.canConnectToVanillaServer(),0, null);
++            ((ServerDataInjection) target).setForgeData(new ExtendedServerListData("VANILLA", NetworkRegistry.canConnectToVanillaServer(),0, null));
+         }
+ 
+@@ -873,15 +877,15 @@
+         int idx;
+         String tooltip;
+-        if (target.forgeData == null)
++        if (((ServerDataInjection) target).getForgeData() == null)
+             return;
+-        switch (target.forgeData.type()) {
++        switch (((ServerDataInjection) target).getForgeData().type()) {
+             case "FML":
+-                if (target.forgeData.isCompatible()) {
++                if (((ServerDataInjection) target).getForgeData().isCompatible()) {
+                     idx = 0;
+-                    tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.compatible", target.forgeData.numberOfMods());
++                    tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.compatible", ((ServerDataInjection) target).getForgeData().numberOfMods());
+                 } else {
+                     idx = 16;
+-                    if(target.forgeData.extraReason() != null) {
+-                        String extraReason = ForgeI18n.parseMessage(target.forgeData.extraReason());
++                    if(((ServerDataInjection) target).getForgeData().extraReason() != null) {
++                        String extraReason = ForgeI18n.parseMessage(((ServerDataInjection) target).getForgeData().extraReason());
+                         tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.incompatible.extra", extraReason);
+                     } else {
+@@ -889,5 +893,5 @@
+                     }
+                 }
+-                if (target.forgeData.truncated())
++                if (((ServerDataInjection) target).getForgeData().truncated())
+                 {
+                     tooltip += "\n" + ForgeI18n.parseMessage("fml.menu.multiplayer.truncated");
+@@ -895,5 +899,5 @@
+                 break;
+             case "VANILLA":
+-                if (target.forgeData.isCompatible()) {
++                if (((ServerDataInjection) target).getForgeData().isCompatible()) {
+                     idx = 48;
+                     tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.vanilla");
+@@ -905,5 +909,5 @@
+             default:
+                 idx = 64;
+-                tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.unknown", target.forgeData.type());
++                tooltip = ForgeI18n.parseMessage("fml.menu.multiplayer.unknown", ((ServerDataInjection) target).getForgeData().type());
+         }
+ 
+@@ -995,5 +999,5 @@
+         public static void registerShaders(RegisterShadersEvent event) throws IOException
+         {
+-            event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation("forge","rendertype_entity_unlit_translucent"), DefaultVertexFormat.NEW_ENTITY), (p_172645_) -> {
++            event.registerShader(ShaderInstanceInjection.create(event.getResourceManager(), new ResourceLocation("forge","rendertype_entity_unlit_translucent"), DefaultVertexFormat.NEW_ENTITY), (p_172645_) -> {
+                 rendertypeEntityTranslucentUnlitShader = p_172645_;
+             });

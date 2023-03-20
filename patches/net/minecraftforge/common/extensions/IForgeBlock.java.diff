@@ -1,48 +1,58 @@
 --- IForgeBlock.java
 +++ IForgeBlock.java
-@@ -55,4 +55,6 @@
+@@ -9,4 +9,5 @@
+ import java.util.function.BiConsumer;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.BlockExtensions;
+ import net.minecraft.client.Camera;
+ import net.minecraft.util.RandomSource;
+@@ -55,7 +56,9 @@
  import net.minecraftforge.fml.loading.FMLEnvironment;
  import org.jetbrains.annotations.Nullable;
 +import xyz.bluspring.kilt.injections.item.AxeItemInjection;
 +import xyz.bluspring.kilt.injections.item.ShovelItemInjection;
  
  @SuppressWarnings("deprecation")
-@@ -525,5 +527,5 @@
+-public interface IForgeBlock
++public interface IForgeBlock extends BlockExtensions
+ {
+     private Block self()
+@@ -525,5 +528,5 @@
      default BlockPathTypes getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob)
      {
 -        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : state.isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
 +        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : ((IForgeBlockState) state).isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
      }
  
-@@ -578,5 +580,5 @@
+@@ -578,5 +581,5 @@
          if (state.getBlock() == Blocks.HONEY_BLOCK && other.getBlock() == Blocks.SLIME_BLOCK) return false;
          if (state.getBlock() == Blocks.SLIME_BLOCK && other.getBlock() == Blocks.HONEY_BLOCK) return false;
 -        return state.isStickyBlock() || other.isStickyBlock();
 +        return ((IForgeBlockState) state).isStickyBlock() || ((IForgeBlockState) other).isStickyBlock();
      }
  
-@@ -608,5 +610,5 @@
+@@ -608,5 +611,5 @@
      default boolean isFlammable(BlockState state, BlockGetter level, BlockPos pos, Direction direction)
      {
 -        return state.getFlammability(level, pos, direction) > 0;
 +        return ((IForgeBlockState) state).getFlammability(level, pos, direction) > 0;
      }
  
-@@ -743,5 +745,5 @@
+@@ -743,5 +746,5 @@
          if (ToolActions.AXE_STRIP == toolAction)
          {
 -            return AxeItem.getAxeStrippingState(state);
 +            return AxeItemInjection.getAxeStrippingState(state);
          } else if (ToolActions.AXE_SCRAPE == toolAction)
          {
-@@ -752,5 +754,5 @@
+@@ -752,5 +755,5 @@
          } else if (ToolActions.SHOVEL_FLATTEN == toolAction)
          {
 -            return ShovelItem.getShovelPathingState(state);
 +            return ShovelItemInjection.getShovelPathingState(state);
          } else if (ToolActions.HOE_TILL == toolAction)
          {
-@@ -935,5 +937,5 @@
+@@ -935,5 +938,5 @@
       * As such, if you need any data from your {@link BlockEntity}, you should put it in {@link ModelData} to guarantee
       * safe concurrent access to it on the client.<br/>
 -     * Calling {@link BlockGetter#getModelDataManager()} will return {@code null} if in a server context, where it is

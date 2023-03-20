@@ -4,12 +4,12 @@
      public final Fluid getFluid()
      {
 -        return isEmpty ? Fluids.EMPTY : fluidDelegate.get();
-+        return isEmpty ? Fluids.EMPTY : (Fluid) fluidDelegate.get();
++        return isEmpty ? Fluids.EMPTY : fluidDelegate.value();
      }
  
      public final Fluid getRawFluid()
      {
 -        return fluidDelegate.get();
-+        return (Fluid) fluidDelegate.get();
++        return fluidDelegate.value();
      }
  

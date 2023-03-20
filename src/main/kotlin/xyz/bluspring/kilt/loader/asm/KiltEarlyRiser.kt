@@ -496,6 +496,43 @@ class KiltEarlyRiser : Runnable {
                     initializer.visitEnd()
                 }
             }
+
+            run {
+                val shaderInstance = namespaced("net/minecraft/class_5944", "net/minecraft/client/renderer/ShaderInstance")
+                val resourceProvider = namespaced("net/minecraft/class_5912", "net/minecraft/server/packs/resources/ResourceProvider")
+                val resourceLocation = namespaced("net/minecraft/class_2960", "net/minecraft/resources/ResourceLocation")
+                val vertexFormat = namespaced("net/minecraft/class_293", "com/mojang/blaze3d/vertex/VertexFormat")
+
+                ClassTinkerers.addTransformation(shaderInstance) {
+                    val initializer = it.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(L$resourceProvider;L$resourceLocation;L$vertexFormat;)V", null, arrayOf("java/io/IOException"))
+
+                    initializer.visitCode()
+
+                    val label0 = Label()
+                    val label3 = Label()
+                    val label4 = Label()
+
+                    initializer.visitLabel(label0)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 2)
+                    initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false)
+                    initializer.visitVarInsn(Opcodes.ALOAD, 3)
+                    initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, shaderInstance, "<init>", "(L$resourceProvider;Ljava/lang/String;L$vertexFormat;)V", false)
+
+                    initializer.visitLabel(label3)
+                    initializer.visitInsn(Opcodes.RETURN)
+
+                    initializer.visitLabel(label4)
+                    initializer.visitLocalVariable("this", "L$shaderInstance;", null, label0, label4, 0)
+                    initializer.visitLocalVariable("resourceProvider", "L$resourceProvider;", null, label0, label4, 1)
+                    initializer.visitLocalVariable("resourceLocation", "L$resourceLocation;", null, label0, label4, 2)
+                    initializer.visitLocalVariable("vertexFormat", "L$vertexFormat;", null, label0, label4, 3)
+
+                    initializer.visitMaxs(0, 0)
+                    initializer.visitEnd()
+                }
+            }
         }
 
         AccessTransformerLoader.runTransformers()

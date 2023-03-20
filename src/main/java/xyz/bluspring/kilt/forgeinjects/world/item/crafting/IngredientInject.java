@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.CraftingHelper;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,6 +25,32 @@ import java.util.stream.Stream;
 
 @Mixin(Ingredient.class)
 public class IngredientInject implements IngredientInjection {
+    @Shadow @Nullable public ItemStack[] itemStacks;
+    @Shadow @Nullable public IntList stackingIds;
+    private int invalidationCounter;
+
+    @Override
+    public boolean checkInvalidation() {
+        var currentInvalidationCounter = IngredientInjection.INVALIDATION_COUNTER.get();
+        if (this.invalidationCounter != currentInvalidationCounter) {
+            invalidate();
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void markValid() {
+        invalidationCounter = INVALIDATION_COUNTER.get();
+    }
+
+    @Override
+    public void invalidate() {
+        this.itemStacks = null;
+        this.stackingIds = null;
+    }
+
     @Override
     public boolean isVanilla() {
         return this.getClass().getPackageName().startsWith("net.minecraft");

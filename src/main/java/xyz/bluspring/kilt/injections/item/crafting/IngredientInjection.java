@@ -6,9 +6,27 @@ import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface IngredientInjection {
+    AtomicInteger INVALIDATION_COUNTER = new AtomicInteger();
+    static void invalidateAll() {
+        INVALIDATION_COUNTER.incrementAndGet();
+    }
+
     default boolean isVanilla() {
+        throw new IllegalStateException();
+    }
+
+    default boolean checkInvalidation() {
+        throw new IllegalStateException();
+    }
+
+    default void markValid() {
+        throw new IllegalStateException();
+    }
+
+    default void invalidate() {
         throw new IllegalStateException();
     }
 

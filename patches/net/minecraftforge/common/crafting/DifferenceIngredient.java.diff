@@ -1,0 +1,9 @@
+--- DifferenceIngredient.java
++++ DifferenceIngredient.java
+@@ -75,5 +75,5 @@
+ 
+     @Override
+-    protected void invalidate()
++    public void invalidate()
+     {
+         super.invalidate();

@@ -1,0 +1,15 @@
+--- ForgeLootTableProvider.java
++++ ForgeLootTableProvider.java
+@@ -47,10 +47,10 @@
+ 
+     @Override
+-    protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
++    public void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
+         // do not validate against all registered loot tables
+     }
+ 
+     @Override
+-    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
++    public List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
+         return super.getTables().stream().map(pair -> {
+             // provides new consumer with filtering only changed loot tables and replacing condition item to condition tag
