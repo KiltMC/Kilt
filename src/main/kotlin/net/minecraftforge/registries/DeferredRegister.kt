@@ -15,7 +15,7 @@ import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
-class DeferredRegister<T> private constructor(
+class DeferredRegister<T : Any> private constructor(
     private val fabricRegister: LazyRegistrar<T>
 ) {
     private val optionalTags = mutableMapOf<TagKey<T>, MutableSet<Supplier<T>>>()
@@ -139,27 +139,27 @@ class DeferredRegister<T> private constructor(
 
     companion object {
         @JvmStatic
-        fun <B> create(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
+        fun <B : Any> create(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
             return DeferredRegister(LazyRegistrar.create(key, modid))
         }
 
         @JvmStatic
-        fun <B> create(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
+        fun <B : Any> create(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
             return DeferredRegister(LazyRegistrar.create(registryName, modid))
         }
 
         @JvmStatic
-        fun <B> create(reg: IForgeRegistry<B>, modid: String): DeferredRegister<B> {
+        fun <B : Any> create(reg: IForgeRegistry<B>, modid: String): DeferredRegister<B> {
             return DeferredRegister(LazyRegistrar.create(reg.registryKey, modid))
         }
 
         @JvmStatic
-        fun <B> createOptional(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
+        fun <B : Any> createOptional(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
             return DeferredRegister(LazyRegistrar.create(key, modid))
         }
 
         @JvmStatic
-        fun <B> createOptional(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
+        fun <B : Any> createOptional(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
             return DeferredRegister(LazyRegistrar.create(registryName, modid))
         }
     }

@@ -23,6 +23,11 @@ object FMLLoader {
     val loadingModList = LoadingModList()
 
     @JvmStatic
+    fun versionInfo(): VersionInfo {
+        return VersionInfo
+    }
+
+    @JvmStatic
     val gamePath: Path
         get() = FMLPaths.GAMEDIR.get()
 }
