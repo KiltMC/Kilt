@@ -1,0 +1,15 @@
+--- IClientMobEffectExtensions.java
++++ IClientMobEffectExtensions.java
+@@ -12,4 +12,5 @@
+ import net.minecraft.world.effect.MobEffectInstance;
+ import net.minecraftforge.fml.LogicalSide;
++import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
+ 
+ import java.util.function.Consumer;
+@@ -31,5 +32,5 @@
+     static IClientMobEffectExtensions of(MobEffect effect)
+     {
+-        return effect.getEffectRendererInternal() instanceof IClientMobEffectExtensions r ? r : DEFAULT;
++        return ((RenderPropertiesInjection<MobEffect>) effect).getRenderPropertiesInternal() instanceof IClientMobEffectExtensions r ? r : DEFAULT;
+     }
+ 

@@ -1,0 +1,9 @@
+--- EmptyModel.java
++++ EmptyModel.java
+@@ -71,5 +71,5 @@
+         public Baked()
+         {
+-            super(List.of(), Map.of(), false, false, false, UnitTextureAtlasSprite.INSTANCE, ItemTransforms.NO_TRANSFORMS, ItemOverrides.EMPTY, RenderTypeGroup.EMPTY);
++            super(List.of(), Map.of(), false, false, false, UnitTextureAtlasSprite.INSTANCE, ItemTransforms.NO_TRANSFORMS, ItemOverrides.EMPTY);
+         }
+ 

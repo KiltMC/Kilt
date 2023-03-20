@@ -1,0 +1,15 @@
+--- BakedModelRenderable.java
++++ BakedModelRenderable.java
+@@ -8,4 +8,5 @@
+ import com.mojang.blaze3d.vertex.PoseStack;
+ import com.mojang.math.Vector4f;
++import net.fabricmc.fabric.api.client.model.BakedModelManagerHelper;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.renderer.MultiBufferSource;
+@@ -41,5 +42,5 @@
+     public static BakedModelRenderable of(ResourceLocation model)
+     {
+-        return of(Minecraft.getInstance().getModelManager().getModel(model));
++        return of(BakedModelManagerHelper.getModel(Minecraft.getInstance().getModelManager(), model));
+     }
+ 

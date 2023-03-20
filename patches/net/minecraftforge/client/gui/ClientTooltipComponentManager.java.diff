@@ -1,0 +1,9 @@
+--- ClientTooltipComponentManager.java
++++ ClientTooltipComponentManager.java
+@@ -42,5 +42,5 @@
+         var factories = new HashMap<Class<? extends TooltipComponent>, Function<TooltipComponent, ClientTooltipComponent>>();
+         var event = new RegisterClientTooltipComponentFactoriesEvent(factories);
+-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
++        ModLoader.get().kiltPostEventWrappingMods(event);
+         FACTORIES = ImmutableMap.copyOf(factories);
+     }

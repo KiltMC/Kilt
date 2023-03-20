@@ -1,0 +1,19 @@
+--- IGeometryBakingContext.java
++++ IGeometryBakingContext.java
+@@ -22,5 +22,5 @@
+  * @see BlockGeometryBakingContext
+  */
+-public interface IGeometryBakingContext
++public interface IGeometryBakingContext extends io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext
+ {
+     /**
+@@ -88,7 +88,7 @@
+      * {@return a {@link RenderTypeGroup} with the given name, or the empty group if not found.}
+      */
+-    default RenderTypeGroup getRenderType(ResourceLocation name)
++    default io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup getRenderType(ResourceLocation name)
+     {
+-        return NamedRenderTypeManager.get(name);
++        return NamedRenderTypeManager.get(name).getFabric();
+     }
+ }

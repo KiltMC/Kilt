@@ -1,0 +1,51 @@
+--- IForgeBlock.java
++++ IForgeBlock.java
+@@ -55,4 +55,6 @@
+ import net.minecraftforge.fml.loading.FMLEnvironment;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.item.AxeItemInjection;
++import xyz.bluspring.kilt.injections.item.ShovelItemInjection;
+ 
+ @SuppressWarnings("deprecation")
+@@ -525,5 +527,5 @@
+     default BlockPathTypes getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob)
+     {
+-        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : state.isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
++        return state.getBlock() == Blocks.LAVA ? BlockPathTypes.LAVA : ((IForgeBlockState) state).isBurning(level, pos) ? BlockPathTypes.DAMAGE_FIRE : null;
+     }
+ 
+@@ -578,5 +580,5 @@
+         if (state.getBlock() == Blocks.HONEY_BLOCK && other.getBlock() == Blocks.SLIME_BLOCK) return false;
+         if (state.getBlock() == Blocks.SLIME_BLOCK && other.getBlock() == Blocks.HONEY_BLOCK) return false;
+-        return state.isStickyBlock() || other.isStickyBlock();
++        return ((IForgeBlockState) state).isStickyBlock() || ((IForgeBlockState) other).isStickyBlock();
+     }
+ 
+@@ -608,5 +610,5 @@
+     default boolean isFlammable(BlockState state, BlockGetter level, BlockPos pos, Direction direction)
+     {
+-        return state.getFlammability(level, pos, direction) > 0;
++        return ((IForgeBlockState) state).getFlammability(level, pos, direction) > 0;
+     }
+ 
+@@ -743,5 +745,5 @@
+         if (ToolActions.AXE_STRIP == toolAction)
+         {
+-            return AxeItem.getAxeStrippingState(state);
++            return AxeItemInjection.getAxeStrippingState(state);
+         } else if (ToolActions.AXE_SCRAPE == toolAction)
+         {
+@@ -752,5 +754,5 @@
+         } else if (ToolActions.SHOVEL_FLATTEN == toolAction)
+         {
+-            return ShovelItem.getShovelPathingState(state);
++            return ShovelItemInjection.getShovelPathingState(state);
+         } else if (ToolActions.HOE_TILL == toolAction)
+         {
+@@ -935,5 +937,5 @@
+      * As such, if you need any data from your {@link BlockEntity}, you should put it in {@link ModelData} to guarantee
+      * safe concurrent access to it on the client.<br/>
+-     * Calling {@link BlockGetter#getModelDataManager()} will return {@code null} if in a server context, where it is
++     * Calling {@link IForgeBlockGetter#getModelDataManager()} will return {@code null} if in a server context, where it is
+      * safe to query your {@link BlockEntity} directly. Otherwise, {@link ModelDataManager#getAt(BlockPos)} will return
+      * the {@link ModelData} for the queried block, or {@code null} if none is present.

@@ -7,3 +7,4 @@ c	net/minecraft/data/tags/TagsProvider	xyz/bluspring/kilt/remaps/data/tags/TagsP
 c	net/minecraftforge/common/IPlantable	io/github/fabricators_of_create/porting_lib/util/IPlantable
 c	net/minecraftforge/common/PlantType	io/github/fabricators_of_create/porting_lib/util/PlantType
 c	net/minecraftforge/fml/config/ModConfig	xyz/bluspring/kilt/remaps/fml/config/ModConfigRemap
+c	net/minecraftforge/client/RenderTypeGroup	io/github/fabricators_of_create/porting_lib/client/RenderTypeGroup

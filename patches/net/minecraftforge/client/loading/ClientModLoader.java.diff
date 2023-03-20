@@ -1,0 +1,9 @@
+--- ClientModLoader.java
++++ ClientModLoader.java
+@@ -127,5 +127,5 @@
+         loadingComplete = true;
+         // reload game settings on main thread
+-        syncExecutor.execute(()->mc.options.load(true));
++        syncExecutor.execute(()->mc.options.load());
+     }
+ 

@@ -1,0 +1,29 @@
+--- ForgeHooksClient.java
++++ ForgeHooksClient.java
+@@ -164,4 +164,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.render.model.BakedQuadInjection;
+ 
+ import java.io.File;
+@@ -565,5 +566,5 @@
+     public static boolean calculateFaceWithoutAO(BlockAndTintGetter getter, BlockState state, BlockPos pos, BakedQuad quad, boolean isFaceCubic, float[] brightness, int[] lightmap)
+     {
+-        if (quad.hasAmbientOcclusion())
++        if (((BakedQuadInjection) quad).hasAmbientOcclusion())
+             return false;
+ 
+@@ -675,5 +676,5 @@
+     public static boolean onScreenMouseScrollPre(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
+     {
+-        Window mainWindow = guiScreen.getMinecraft().getWindow();
++        Window mainWindow = Minecraft.getInstance().getWindow();
+         double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
+         double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();
+@@ -684,5 +685,5 @@
+     public static void onScreenMouseScrollPost(MouseHandler mouseHelper, Screen guiScreen, double scrollDelta)
+     {
+-        Window mainWindow = guiScreen.getMinecraft().getWindow();
++        Window mainWindow = Minecraft.getInstance().getWindow();
+         double mouseX = mouseHelper.xpos() * (double) mainWindow.getGuiScaledWidth() / (double) mainWindow.getScreenWidth();
+         double mouseY = mouseHelper.ypos() * (double) mainWindow.getGuiScaledHeight() / (double) mainWindow.getScreenHeight();

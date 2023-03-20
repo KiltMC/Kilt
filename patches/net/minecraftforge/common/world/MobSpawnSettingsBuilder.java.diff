@@ -1,0 +1,21 @@
+--- MobSpawnSettingsBuilder.java
++++ MobSpawnSettingsBuilder.java
+@@ -14,4 +14,5 @@
+ import net.minecraft.world.level.biome.MobSpawnSettings;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.mixin.MobSpawnSettingsAccessor;
+ 
+ public class MobSpawnSettingsBuilder extends MobSpawnSettings.Builder
+@@ -22,9 +23,9 @@
+     public MobSpawnSettingsBuilder(MobSpawnSettings orig)
+     {
+-        orig.getSpawnerTypes().forEach(k -> {
++        ((MobSpawnSettingsAccessor) orig).getSpawners().forEach((k, a) -> {
+             spawners.get(k).clear();
+-            spawners.get(k).addAll(orig.getMobs(k).unwrap());
++            spawners.get(k).addAll(a.unwrap());
+         });
+-        orig.getEntityTypes().forEach(k -> mobSpawnCosts.put(k, orig.getMobSpawnCost(k)));
++        mobSpawnCosts.putAll(((MobSpawnSettingsAccessor) orig).getMobSpawnCosts());
+         creatureGenerationProbability = orig.getCreatureProbability();
+     }

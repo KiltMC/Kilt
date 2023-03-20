@@ -1,0 +1,15 @@
+--- IForgeItem.java
++++ IForgeItem.java
+@@ -46,4 +46,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.item.enchantment.EnchantmentHelperInjection;
+ 
+ // TODO systemic review of all extension functions. lots of unused -C
+@@ -536,5 +537,5 @@
+     default int getEnchantmentLevel(ItemStack stack, Enchantment enchantment)
+     {
+-        return EnchantmentHelper.getTagEnchantmentLevel(enchantment, stack);
++        return EnchantmentHelperInjection.getTagEnchantmentLevel(enchantment, stack);
+     }
+ 

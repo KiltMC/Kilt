@@ -12,4 +12,9 @@ object JarVersionLookupHandler {
     fun getSpecificationVersion(clazz: Class<*>): Optional<String> {
         return Optional.empty()
     }
+
+    @JvmStatic
+    fun getImplementationTitle(clazz: Class<*>): Optional<String> {
+        return Optional.empty()
+    }
 }

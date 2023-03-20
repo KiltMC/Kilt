@@ -1,0 +1,15 @@
+--- FluidStack.java
++++ FluidStack.java
+@@ -150,10 +150,10 @@
+     public final Fluid getFluid()
+     {
+-        return isEmpty ? Fluids.EMPTY : fluidDelegate.get();
++        return isEmpty ? Fluids.EMPTY : (Fluid) fluidDelegate.get();
+     }
+ 
+     public final Fluid getRawFluid()
+     {
+-        return fluidDelegate.get();
++        return (Fluid) fluidDelegate.get();
+     }
+ 

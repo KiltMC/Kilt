@@ -6,6 +6,7 @@ plugins {
     id ("fabric-loom") version "1.1-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
+    id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
 }
 
 version = property("mod_version")!!
@@ -177,8 +178,9 @@ tasks {
         }
     }
 
-    register<Copy>("getForgeApi") {
+    register("getForgeApi") {
         dependsOn("cloneForgeApi")
+        finalizedBy("processPatches")
         description = "Clones the Forge repository, and places the API code into the 'forge' source set."
 
         doFirst {
@@ -190,9 +192,54 @@ tasks {
                 file.deleteRecursively()
             }
         }
+    }
 
-        from("$buildDir/forge/src/main", "$buildDir/forge/src/generated")
-        into("$projectDir/src/forge")
+    createPatches {
+        dependsOn("cloneForgeApi")
+        content = "$buildDir/forge/src/main/java"
+        modified = "$projectDir/src/forge/java"
+        destination = "$projectDir/patches"
+
+        doLast {
+            println("Removing empty patches...")
+
+            fun readDir(file: File): Boolean {
+                val files = file.listFiles()!!
+
+                if (files.isEmpty()) {
+                    file.delete()
+                    return true
+                }
+
+                var deletedCount = 0
+                files.forEach {
+                    if (it.isDirectory) {
+                        if (readDir(it))
+                            deletedCount++
+                    } else {
+                        if (it.readText().isBlank()) {
+                            it.delete()
+                            deletedCount++
+                        }
+                    }
+                }
+
+                if (deletedCount == files.size) {
+                    file.delete()
+                    return true
+                }
+                return false
+            }
+
+            readDir(File("$projectDir/patches"))
+            readDir(File("$projectDir/patches")) // run again to clear empty dirs
+        }
+    }
+
+    processPatches {
+        content = "$buildDir/forge/src/main/java"
+        patches = "$projectDir/patches"
+        destination = "$projectDir/src/forge/java"
 
         doLast {
             println("Removing reimplemented Forge API sources...")

@@ -1,0 +1,20 @@
+--- IUnbakedGeometry.java
++++ IUnbakedGeometry.java
+@@ -28,6 +28,16 @@
+  * @see IGeometryBakingContext
+  */
+-public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>>
++public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>> extends io.github.fabricators_of_create.porting_lib.model.geometry.IUnbakedGeometry<T>
+ {
++    @Override
++    default BakedModel bake(io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
++        return bake((IGeometryBakingContext) context, bakery, spriteGetter, modelState, overrides, modelLocation);
++    }
++
++    @Override
++    default Collection<Material> getMaterials(io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
++        return getMaterials((IGeometryBakingContext) context, modelGetter, missingTextureErrors);
++    }
++
+     BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation);
+ 
