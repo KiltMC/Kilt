@@ -18,7 +18,6 @@ sourceSets {
         java.srcDir("src/main/kotlin")
         java.srcDir("src/forge/java")
 
-        resources.srcDir("src/main/resources")
         resources.srcDir("src/forge/resources")
     }
 }
@@ -129,6 +128,8 @@ dependencies {
     implementation(include("cpw.mods:securejarhandler:2.1.4")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
     implementation(include("net.minecraftforge:unsafe:0.2.+")!!)
+    implementation(include("org.jline:jline-reader:3.12.+")!!)
+    implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
