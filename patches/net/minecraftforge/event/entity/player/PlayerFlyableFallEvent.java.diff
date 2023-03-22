@@ -1,0 +1,10 @@
+--- PlayerFlyableFallEvent.java
++++ PlayerFlyableFallEvent.java
+@@ -18,4 +18,7 @@
+     private float multiplier;
+ 
++    public PlayerFlyableFallEvent() {
++    }
++
+     public PlayerFlyableFallEvent(Player player, float distance, float multiplier)
+     {

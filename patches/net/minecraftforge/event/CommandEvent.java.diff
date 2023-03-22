@@ -1,0 +1,9 @@
+--- CommandEvent.java
++++ CommandEvent.java
+@@ -32,4 +32,6 @@
+     private Throwable exception;
+ 
++    public CommandEvent() {}
++
+     public CommandEvent(ParseResults<CommandSourceStack> parse)
+     {

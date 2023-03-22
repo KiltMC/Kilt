@@ -1,0 +1,11 @@
+--- SleepFinishedTimeEvent.java
++++ SleepFinishedTimeEvent.java
+@@ -18,4 +18,8 @@
+     private final long minTime;
+ 
++    public SleepFinishedTimeEvent() {
++        minTime = -1;
++    }
++
+     public SleepFinishedTimeEvent(ServerLevel level, long newTime, long minTime)
+     {

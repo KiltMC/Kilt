@@ -1,0 +1,8 @@
+--- ServerStoppedEvent.java
++++ ServerStoppedEvent.java
+@@ -16,4 +16,5 @@
+  */
+ public class ServerStoppedEvent extends ServerLifecycleEvent {
++    public ServerStoppedEvent() {}
+     public ServerStoppedEvent(MinecraftServer server)
+     {

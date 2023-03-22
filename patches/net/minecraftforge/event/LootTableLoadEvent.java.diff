@@ -1,0 +1,11 @@
+--- LootTableLoadEvent.java
++++ LootTableLoadEvent.java
+@@ -28,4 +28,8 @@
+     private LootTables lootTableManager;
+ 
++    public LootTableLoadEvent() {
++        name = null;
++    }
++
+     public LootTableLoadEvent(ResourceLocation name, LootTable table, LootTables lootTableManager)
+     {

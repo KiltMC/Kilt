@@ -6,10 +6,28 @@
 +import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection;
  
  import java.util.ArrayList;
-@@ -64,5 +65,5 @@
+@@ -32,4 +33,8 @@
+     private final ReloadableServerResources serverResources;
+ 
++    public AddReloadListenerEvent() {
++        serverResources = null;
++    }
++
+     public AddReloadListenerEvent(ReloadableServerResources serverResources)
+     {
+@@ -64,5 +69,5 @@
      public ICondition.IContext getConditionContext()
      {
 -        return serverResources.getConditionContext();
 +        return ((ReloadableServerResourcesInjection) serverResources).getConditionContext();
      }
  
+@@ -70,4 +75,8 @@
+         private final PreparableReloadListener wrapped;
+ 
++        public WrappedStateAwareListener() {
++            wrapped = null;
++        }
++
+         private WrappedStateAwareListener(final PreparableReloadListener wrapped) {
+             this.wrapped = wrapped;

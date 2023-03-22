@@ -1,0 +1,11 @@
+--- LivingGetProjectileEvent.java
++++ LivingGetProjectileEvent.java
+@@ -23,4 +23,8 @@
+ public class LivingGetProjectileEvent extends LivingEvent
+ {
++    public LivingGetProjectileEvent() {
++        projectileWeaponItemStack = null;
++    }
++
+     private final ItemStack projectileWeaponItemStack;
+     private ItemStack projectileItemStack;

@@ -1,0 +1,11 @@
+--- SleepingTimeCheckEvent.java
++++ SleepingTimeCheckEvent.java
+@@ -27,4 +27,8 @@
+     private final Optional<BlockPos> sleepingLocation;
+ 
++    public SleepingTimeCheckEvent() {
++        sleepingLocation = Optional.empty();
++    }
++
+     public SleepingTimeCheckEvent(Player player, Optional<BlockPos> sleepingLocation)
+     {

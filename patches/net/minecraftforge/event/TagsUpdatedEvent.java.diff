@@ -1,0 +1,13 @@
+--- TagsUpdatedEvent.java
++++ TagsUpdatedEvent.java
+@@ -18,4 +18,10 @@
+     private final boolean integratedServer;
+ 
++    public TagsUpdatedEvent() {
++        registryAccess = null;
++        updateCause = null;
++        integratedServer = false;
++    }
++
+     public TagsUpdatedEvent(RegistryAccess registryAccess, boolean fromClientPacket, boolean isIntegratedServerConnection)
+     {

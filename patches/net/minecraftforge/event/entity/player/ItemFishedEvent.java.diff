@@ -1,0 +1,11 @@
+--- ItemFishedEvent.java
++++ ItemFishedEvent.java
+@@ -29,4 +29,8 @@
+     private int rodDamage;
+ 
++    public ItemFishedEvent() {
++        hook = null;
++    }
++
+     public ItemFishedEvent(List<ItemStack> stacks, int rodDamage, FishingHook hook)
+     {

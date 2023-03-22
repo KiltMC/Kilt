@@ -1,0 +1,12 @@
+--- AddPackFindersEvent.java
++++ AddPackFindersEvent.java
+@@ -21,4 +21,9 @@
+     private final Consumer<RepositorySource> sources;
+ 
++    public AddPackFindersEvent() {
++        packType = null;
++        sources = null;
++    }
++
+     public AddPackFindersEvent(PackType packType, Consumer<RepositorySource> sources)
+     {

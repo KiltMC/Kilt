@@ -1,0 +1,23 @@
+--- ZombieEvent.java
++++ ZombieEvent.java
+@@ -24,4 +24,8 @@
+     private final Zombie zombie;
+ 
++    public ZombieEvent() {
++        zombie = null;
++    }
++
+     public ZombieEvent(Zombie zombie)
+     {
+@@ -70,4 +74,11 @@
+         private final double summonChance;
+ 
++        public SummonAidEvent() {
++            level = null;
++            x = y = z = 0;
++            attacker = null;
++            summonChance = -1D;
++        }
++
+         public SummonAidEvent(Zombie zombie, Level level, int x, int y, int z, LivingEntity attacker, double summonChance)
+         {

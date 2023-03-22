@@ -1,0 +1,36 @@
+--- LivingEntityUseItemEvent.java
++++ LivingEntityUseItemEvent.java
+@@ -13,4 +13,9 @@
+ public class LivingEntityUseItemEvent extends LivingEvent
+ {
++    public LivingEntityUseItemEvent() {
++        super(null);
++        item = null;
++    }
++
+     private final ItemStack item;
+     private int duration;
+@@ -53,4 +58,5 @@
+     public static class Start extends LivingEntityUseItemEvent
+     {
++        public Start() {}
+         public Start(LivingEntity entity, @NotNull ItemStack item, int duration)
+         {
+@@ -68,4 +74,5 @@
+     public static class Tick extends LivingEntityUseItemEvent
+     {
++        public Tick() {}
+         public Tick(LivingEntity entity, @NotNull ItemStack item, int duration)
+         {
+@@ -89,4 +96,5 @@
+     public static class Stop extends LivingEntityUseItemEvent
+     {
++        public Stop() {}
+         public Stop(LivingEntity entity, @NotNull ItemStack item, int duration)
+         {
+@@ -110,4 +118,5 @@
+     {
+         private ItemStack result;
++        public Finish() {}
+         public Finish(LivingEntity entity, @NotNull ItemStack item, int duration, @NotNull ItemStack result)
+         {

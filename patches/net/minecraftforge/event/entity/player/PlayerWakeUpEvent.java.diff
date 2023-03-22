@@ -1,0 +1,12 @@
+--- PlayerWakeUpEvent.java
++++ PlayerWakeUpEvent.java
+@@ -19,4 +19,9 @@
+     private final boolean updateLevel;
+ 
++    public PlayerWakeUpEvent() {
++        wakeImmediately = false;
++        updateLevel = false;
++    }
++
+     public PlayerWakeUpEvent(Player player, boolean wakeImmediately, boolean updateLevel)
+     {

@@ -1,0 +1,10 @@
+--- LivingHealEvent.java
++++ LivingHealEvent.java
+@@ -29,4 +29,7 @@
+ public class LivingHealEvent extends LivingEvent
+ {
++    public LivingHealEvent() {
++    }
++
+     private float amount;
+     public LivingHealEvent(LivingEntity entity, float amount)

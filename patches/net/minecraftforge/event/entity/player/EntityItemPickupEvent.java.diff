@@ -1,0 +1,11 @@
+--- EntityItemPickupEvent.java
++++ EntityItemPickupEvent.java
+@@ -27,4 +27,8 @@
+     private final ItemEntity item;
+ 
++    public EntityItemPickupEvent() {
++        item = null;
++    }
++
+     public EntityItemPickupEvent(Player player, ItemEntity item)
+     {
