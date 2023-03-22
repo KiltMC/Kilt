@@ -9,18 +9,21 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ShaderInstance.class)
 public class ShaderInstanceInject {
-    @Redirect(at = @At(value = "NEW", target = "Lnet/minecraft/resources/ResourceLocation;<init>(Ljava/lang/String;)V"), method = "<init>")
-    public ResourceLocation kilt$addNamespaceToResourceLocation(String string, ResourceProvider provider, String serialized) {
+    @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;<init>(Ljava/lang/String;)V"), method = "<init>")
+    public String kilt$addNamespaceToResourceLocation(String string) {
+        var serialized = string.replaceFirst("shaders/core/", "").replace(".json", "");
         var location = ResourceLocation.tryParse(serialized);
-        if (location == null)
-            return new ResourceLocation(string);
 
-        return new ResourceLocation(location.getNamespace(), "shaders/core/" + location.getPath() + ".json");
+        if (location == null)
+            return string;
+
+        return location.getNamespace() + ":" + "shaders/core/" + location.getPath() + ".json";
     }
 
     @ModifyVariable(method = "getOrCreate", at = @At("STORE"), ordinal = 0, argsOnly = true)
