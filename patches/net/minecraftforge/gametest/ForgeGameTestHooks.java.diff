@@ -1,0 +1,26 @@
+--- ForgeGameTestHooks.java
++++ ForgeGameTestHooks.java
+@@ -18,4 +18,6 @@
+ import org.apache.logging.log4j.Logger;
+ import org.objectweb.asm.Type;
++import xyz.bluspring.kilt.injections.gametest.framework.GameTestInjection;
++import xyz.bluspring.kilt.injections.gametest.framework.GameTestRegistryInjection;
+ 
+ import java.lang.reflect.Method;
+@@ -63,5 +65,5 @@
+             for (Method gameTestMethod : gameTestMethods)
+             {
+-                GameTestRegistry.register(gameTestMethod, enabledNamespaces);
++                GameTestRegistryInjection.register(gameTestMethod, enabledNamespaces);
+             }
+ 
+@@ -100,7 +102,7 @@
+         GameTest gameTest = method.getAnnotation(GameTest.class);
+ 
+-        if (gameTest != null && !gameTest.templateNamespace().isEmpty())
++        if (gameTest != null && !((GameTestInjection) gameTest).templateNamespace().isEmpty())
+         {
+-            return gameTest.templateNamespace();
++            return ((GameTestInjection) gameTest).templateNamespace();
+         }
+ 

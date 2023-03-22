@@ -30,6 +30,7 @@ import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -83,5 +84,12 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
         if (value > maxEntityRadius)
             maxEntityRadius = value;
         return maxEntityRadius;
+    }
+
+    public ArrayList<BlockSnapshot> capturedBlockSnapshots = new ArrayList<>();
+
+    @Override
+    public ArrayList<BlockSnapshot> getCapturedBlockSnapshots() {
+        return capturedBlockSnapshots;
     }
 }

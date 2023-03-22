@@ -1,0 +1,15 @@
+--- ModelDataManager.java
++++ ModelDataManager.java
+@@ -12,4 +12,5 @@
+ import net.minecraft.world.level.block.entity.BlockEntity;
+ import net.minecraftforge.api.distmarker.Dist;
++import net.minecraftforge.common.extensions.IForgeBlockGetter;
+ import net.minecraftforge.event.level.ChunkEvent;
+ import net.minecraftforge.eventbus.api.SubscribeEvent;
+@@ -92,5 +93,5 @@
+             return;
+ 
+-        var modelDataManager = level.getModelDataManager();
++        var modelDataManager = ((IForgeBlockGetter) level).getModelDataManager();
+         if (modelDataManager == null)
+             return;

@@ -1,0 +1,9 @@
+--- ItemDecoratorHandler.java
++++ ItemDecoratorHandler.java
+@@ -43,5 +43,5 @@
+         var decorators = new HashMap<Item, List<IItemDecorator>>();
+         var event = new RegisterItemDecorationsEvent(decorators);
+-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
++        ModLoader.get().kiltPostEventWrappingMods(event);
+         var builder = new ImmutableMap.Builder<Item, ItemDecoratorHandler>();
+         decorators.forEach((item, itemDecorators) -> builder.put(item, new ItemDecoratorHandler(itemDecorators)));

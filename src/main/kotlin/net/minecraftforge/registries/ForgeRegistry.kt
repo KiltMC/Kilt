@@ -478,4 +478,13 @@ class ForgeRegistry<V : Any> internal constructor (
     @get:JvmName("getResourceKeys")
     internal val resourceKeys: Set<ResourceKey<V>>
         get() = this.vanillaRegistry.registryKeySet()
+
+    fun makeSnapshot(): Snapshot {
+        val snapshot = Snapshot()
+        fabricRegistry.entries.forEach {
+            snapshot.ids[it.id] = getID(it.id)
+        }
+
+        return snapshot
+    }
 }

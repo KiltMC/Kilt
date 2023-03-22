@@ -19,6 +19,17 @@ class RegistryManager(val name: String) {
         return getRegistry(key.location())
     }
 
+    fun takeSnapshot(savingToDisk: Boolean): Map<ResourceLocation, ForgeRegistry.Snapshot> {
+        val map = mutableMapOf<ResourceLocation, ForgeRegistry.Snapshot>()
+
+        registries.forEach { (key, registry) ->
+            if ((registry.builder.saveToDisc && savingToDisk) || !savingToDisk)
+                map[key] = registry.makeSnapshot()
+        }
+
+        return map
+    }
+
     fun <V : Any> getRegistry(key: ResourceLocation, other: RegistryManager): ForgeRegistry<V>? {
         if (!registries.contains(key)) {
             return other.getRegistry<V>(key).apply {

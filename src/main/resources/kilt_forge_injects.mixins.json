@@ -20,6 +20,7 @@
     "data.DataGeneratorInject",
     "data.loot.LootTableProviderInject",
     "data.recipes.RecipeProviderAccessor",
+    "gametest.framework.GameTestInject",
     "gametest.framework.GameTestRegistryInject",
     "math.Matrix4fInject",
     "math.TransformationInject",

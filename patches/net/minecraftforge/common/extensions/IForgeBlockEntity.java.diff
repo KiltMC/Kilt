@@ -1,6 +1,15 @@
 --- IForgeBlockEntity.java
 +++ IForgeBlockEntity.java
-@@ -157,5 +157,5 @@
+@@ -77,5 +77,7 @@
+      * @return A compound tag for custom persistent data
+      */
+-     CompoundTag getPersistentData();
++     default CompoundTag getPersistentData() {
++         throw new IllegalStateException("this should be overridden by mixins");
++     }
+ 
+      default void onChunkUnloaded(){}
+@@ -157,5 +159,5 @@
           if (level != null && level.isClientSide)
           {
 -             var modelDataManager = level.getModelDataManager();

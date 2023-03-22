@@ -1,0 +1,12 @@
+--- SimpleUnbakedGeometry.java
++++ SimpleUnbakedGeometry.java
+@@ -35,7 +35,7 @@
+ 
+         var renderTypeHint = context.getRenderTypeHint();
+-        var renderTypes = renderTypeHint != null ? context.getRenderType(renderTypeHint) : RenderTypeGroup.EMPTY;
++        var renderTypes = renderTypeHint != null ? context.getRenderType(renderTypeHint) : RenderTypeGroup.EMPTY.getFabric();
+         IModelBuilder<?> builder = IModelBuilder.of(context.useAmbientOcclusion(), context.useBlockLight(), context.isGui3d(),
+-                context.getTransforms(), overrides, particle, renderTypes);
++                context.getTransforms(), overrides, particle, RenderTypeGroup.getForge(renderTypes));
+ 
+         addQuads(context, builder, bakery, spriteGetter, modelState, modelLocation);
