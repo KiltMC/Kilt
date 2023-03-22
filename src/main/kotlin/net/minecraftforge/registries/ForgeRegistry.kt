@@ -381,7 +381,7 @@ class ForgeRegistry<V : Any> internal constructor (
         return slaves[slaveMapName] as T?
     }
 
-    override fun setSlaveMap(name: ResourceLocation, obj: Any) {
+    override fun setSlaveMap(name: ResourceLocation, obj: Any?) {
         if (this.slaves == null) // https://akm-img-a-in.tosshub.com/indiatoday/images/story/201701/jackie-story_647_012517032327.jpg
             this.slaves = mutableMapOf()
 
