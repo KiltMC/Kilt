@@ -154,6 +154,7 @@ val forgeCommitHash = property("forge_commit_hash")
 tasks {
     register("cloneForgeApi") {
         description = "Clones the Forge repository. It's best you use :getForgeApi."
+        group = "kilt"
 
         doFirst {
             println("Cloning MinecraftForge repository to commit hash $forgeCommitHash..")
@@ -182,6 +183,7 @@ tasks {
         dependsOn("cloneForgeApi")
         finalizedBy("processPatches")
         description = "Clones the Forge repository, and places the API code into the 'forge' source set."
+        group = "kilt"
 
         doFirst {
             println("Copying Forge API-specific files into Kilt source dir...")
@@ -199,6 +201,7 @@ tasks {
         content = "$buildDir/forge/src/main/java"
         modified = "$projectDir/src/forge/java"
         destination = "$projectDir/patches"
+        group = "kilt"
 
         doFirst {
             val patchesDir = File("$projectDir/patches")
@@ -248,6 +251,7 @@ tasks {
         content = "$buildDir/forge/src/main/java"
         patches = "$projectDir/patches"
         destination = "$projectDir/src/forge/java"
+        group = "kilt"
 
         doLast {
             println("Removing reimplemented Forge API sources...")
