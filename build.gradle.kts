@@ -277,10 +277,6 @@ tasks {
         }
     }
 
-    jar {
-        dependsOn("createPatches", "getForgeApi")
-    }
-
     processResources {
         inputs.property("version", project.version)
         filteringCharset = "UTF-8"
@@ -292,6 +288,7 @@ tasks {
 
     compileKotlin {
         kotlinOptions.jvmTarget = targetJavaVersion
+        dependsOn("processPatches")
     }
 
     jar {
