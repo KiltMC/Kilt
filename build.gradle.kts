@@ -248,11 +248,19 @@ tasks {
         }
     }
 
+    register<Copy>("copyForgeResources") {
+        group = "kilt"
+        from("$buildDir/forge/src/main/resources")
+        into("$projectDir/src/forge/resources")
+    }
+
     processPatches {
         content = "$buildDir/forge/src/main/java"
         patches = "$projectDir/patches"
         destination = "$projectDir/src/forge/java"
         group = "kilt"
+
+        finalizedBy("copyForgeResources")
 
         doLast {
             println("Removing reimplemented Forge API sources...")
