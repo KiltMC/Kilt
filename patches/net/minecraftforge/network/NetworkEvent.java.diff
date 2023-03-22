@@ -3,7 +3,7 @@
 @@ -33,4 +33,10 @@
      private final int loginIndex;
  
-+    private NetworkEvent() {
++    public NetworkEvent() {
 +        this.payload = null;
 +        this.source = null;
 +        this.loginIndex = -1;
