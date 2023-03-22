@@ -1,0 +1,11 @@
+--- NamespacedWrapper.java
++++ NamespacedWrapper.java
+@@ -32,6 +32,7 @@
+ import com.mojang.serialization.Lifecycle;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
+ 
+-class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>
++class NamespacedWrapper<T> extends MappedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>, MappedRegistryInjection
+ {
+     private static final Logger LOGGER = LogManager.getLogger();

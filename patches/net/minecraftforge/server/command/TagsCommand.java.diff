@@ -1,0 +1,9 @@
+--- TagsCommand.java
++++ TagsCommand.java
+@@ -167,5 +167,5 @@
+ 
+         final ResourceLocation elementLocation = ResourceLocationArgument.getId(ctx, "element");
+-        final ResourceKey<?> elementKey = ResourceKey.create(cast(registryKey), elementLocation);
++        final ResourceKey<?> elementKey = ResourceKey.create(registryKey.location(), elementLocation);
+ 
+         final Holder<?> elementHolder = registry.getHolder(cast(elementKey))
