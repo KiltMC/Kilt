@@ -202,6 +202,7 @@ tasks {
         modified = "$projectDir/src/forge/java"
         destination = "$projectDir/patches"
         group = "kilt"
+        doNotTrackState("The up-to-date patch track is entirely unreliable, and it's fast enough anyway to not have to bother about it.")
 
         doFirst {
             val patchesDir = File("$projectDir/patches")
