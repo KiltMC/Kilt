@@ -1,6 +1,19 @@
 --- IForgeBlockEntity.java
 +++ IForgeBlockEntity.java
-@@ -77,5 +77,7 @@
+@@ -6,4 +6,5 @@
+ package net.minecraftforge.common.extensions;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.BlockEntityExtensions;
+ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+ import net.minecraft.client.resources.model.BakedModel;
+@@ -26,5 +27,5 @@
+ import org.jetbrains.annotations.NotNull;
+ 
+-public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>
++public interface IForgeBlockEntity extends ICapabilitySerializable<CompoundTag>, BlockEntityExtensions
+ {
+     private BlockEntity self() { return (BlockEntity) this; }
+@@ -77,5 +78,7 @@
       * @return A compound tag for custom persistent data
       */
 -     CompoundTag getPersistentData();
@@ -9,7 +22,7 @@
 +     }
  
       default void onChunkUnloaded(){}
-@@ -157,5 +159,5 @@
+@@ -157,5 +160,5 @@
           if (level != null && level.isClientSide)
           {
 -             var modelDataManager = level.getModelDataManager();
