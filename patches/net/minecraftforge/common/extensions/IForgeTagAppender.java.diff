@@ -1,0 +1,29 @@
+--- IForgeTagAppender.java
++++ IForgeTagAppender.java
+@@ -9,4 +9,5 @@
+ import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.tags.TagKey;
++import xyz.bluspring.kilt.mixin.TagAppenderAccessor;
+ 
+ public interface IForgeTagAppender<T>
+@@ -30,5 +31,5 @@
+ 
+     default TagsProvider.TagAppender<T> replace(boolean value) {
+-        self().getInternalBuilder().replace(value);
++        ((TagAppenderAccessor) self()).getBuilder().replace(value);
+         return self();
+     }
+@@ -68,5 +69,5 @@
+     {
+         TagsProvider.TagAppender<T> builder = self();
+-        builder.getInternalBuilder().removeElement(location, builder.getModID());
++        ((TagAppenderAccessor) builder).getBuilder().removeElement(location, location.getNamespace());
+         return builder;
+     }
+@@ -95,5 +96,5 @@
+     {
+         TagsProvider.TagAppender<T> builder = self();
+-        builder.getInternalBuilder().removeTag(tag.location(), builder.getModID());
++        ((TagAppenderAccessor) builder).getBuilder().removeTag(tag.location(), tag.location().getNamespace());
+         return builder;
+     }

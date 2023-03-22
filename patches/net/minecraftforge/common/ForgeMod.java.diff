@@ -1,0 +1,46 @@
+--- ForgeMod.java
++++ ForgeMod.java
+@@ -115,4 +115,6 @@
+ import com.mojang.serialization.codecs.RecordCodecBuilder;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.commands.synchronization.ArgumentTypeInfosInjection;
++import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
+ 
+ import java.util.*;
+@@ -135,7 +137,7 @@
+     @SuppressWarnings({ "unchecked", "rawtypes" })
+     private static final RegistryObject<EnumArgument.Info> ENUM_COMMAND_ARGUMENT_TYPE = COMMAND_ARGUMENT_TYPES.register("enum", () ->
+-            ArgumentTypeInfos.registerByClass(EnumArgument.class, new EnumArgument.Info()));
++            ArgumentTypeInfosInjection.registerByClass(EnumArgument.class, new EnumArgument.Info()));
+     private static final RegistryObject<SingletonArgumentInfo<ModIdArgument>> MODID_COMMAND_ARGUMENT_TYPE = COMMAND_ARGUMENT_TYPES.register("modid", () ->
+-            ArgumentTypeInfos.registerByClass(ModIdArgument.class,
++            ArgumentTypeInfosInjection.registerByClass(ModIdArgument.class,
+                     SingletonArgumentInfo.contextFree(ModIdArgument::modIdArgument)));
+ 
+@@ -386,5 +388,5 @@
+     private static boolean enableMilkFluid = false;
+     private static boolean serverChatPreviewEnabled = false;
+-    public static final RegistryObject<FluidType> MILK_TYPE = RegistryObject.createOptional(new ResourceLocation("milk"), ForgeRegistries.Keys.FLUID_TYPES.location(), "minecraft");
++    public static final RegistryObject<FluidType> MILK_TYPE = RegistryObject.createOptional(new ResourceLocation("milk"), ForgeRegistries.Keys.FLUID_TYPES, "minecraft");
+     public static final RegistryObject<Fluid> MILK = RegistryObject.create(new ResourceLocation("milk"), ForgeRegistries.FLUIDS);
+     public static final RegistryObject<Fluid> FLOWING_MILK = RegistryObject.create(new ResourceLocation("flowing_milk"), ForgeRegistries.FLUIDS);
+@@ -468,10 +470,10 @@
+         MinecraftForge.EVENT_BUS.addListener(this::registerPermissionNodes);
+ 
+-        ForgeRegistries.ITEMS.tags().addOptionalTagDefaults(Tags.Items.ENCHANTING_FUELS, Set.of(ForgeRegistries.ITEMS.getDelegateOrThrow(Items.LAPIS_LAZULI)));
++        ForgeRegistries.ITEMS.tags().addOptionalTagDefaults(Tags.Items.ENCHANTING_FUELS, Set.of(() -> ForgeRegistries.ITEMS.getDelegateOrThrow(Items.LAPIS_LAZULI).value()));
+     }
+ 
+     public void preInit(FMLCommonSetupEvent evt)
+     {
+-        VersionChecker.startVersionCheck();
++        //VersionChecker.startVersionCheck();
+         VanillaPacketSplitter.register();
+     }
+@@ -488,5 +490,5 @@
+     public void mappingChanged(IdMappingEvent evt)
+     {
+-        Ingredient.invalidateAll();
++        IngredientInjection.invalidateAll();
+     }
+ 

@@ -1,0 +1,18 @@
+--- NamespacedDefaultedWrapper.java
++++ NamespacedDefaultedWrapper.java
+@@ -30,6 +30,7 @@
+ import com.mojang.serialization.Lifecycle;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
+ 
+-class NamespacedDefaultedWrapper<T> extends DefaultedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>
++class NamespacedDefaultedWrapper<T> extends DefaultedRegistry<T> implements ILockableRegistry, IHolderHelperHolder<T>, MappedRegistryInjection
+ {
+     private final ForgeRegistry<T> delegate;
+@@ -53,5 +54,5 @@
+ 
+         Validate.notNull(value);
+-        markKnown();
++        ((MappedRegistryInjection) this).markKnown();
+         this.elementsLifecycle = this.elementsLifecycle.add(lifecycle);
+ 

@@ -10,6 +10,11 @@ public class ItemTransformInject implements ItemTransformInjection {
     public Vector3f rightRotation = Vector3f.ZERO.copy();
 
     @Override
+    public Vector3f getRightRotation() {
+        return rightRotation;
+    }
+
+    @Override
     public void setRightRotation(Vector3f rightRotation) {
         this.rightRotation = rightRotation.copy();
     }

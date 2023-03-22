@@ -1,0 +1,9 @@
+--- IntersectionIngredient.java
++++ IntersectionIngredient.java
+@@ -102,5 +102,5 @@
+ 
+     @Override
+-    protected void invalidate()
++    public void invalidate()
+     {
+         super.invalidate();

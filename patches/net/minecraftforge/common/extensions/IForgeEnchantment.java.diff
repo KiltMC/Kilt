@@ -1,0 +1,15 @@
+--- IForgeEnchantment.java
++++ IForgeEnchantment.java
+@@ -11,4 +11,5 @@
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.enchantment.Enchantment;
++import xyz.bluspring.kilt.injections.item.enchantment.EnchantmentInjection;
+ 
+ public interface IForgeEnchantment
+@@ -40,5 +41,5 @@
+     default boolean allowedInCreativeTab(Item book, CreativeModeTab tab)
+     {
+-        if (!self().isAllowedOnBooks())
++        if (!((EnchantmentInjection) self()).isAllowedOnBooks())
+         {
+             return false;

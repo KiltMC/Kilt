@@ -1,0 +1,16 @@
+--- IForgeBlockGetter.java
++++ IForgeBlockGetter.java
+@@ -37,5 +37,5 @@
+             }
+ 
+-            return level.getChunk(pos).getExistingBlockEntity(pos);
++            return ((IForgeBlockGetter) level.getChunk(pos)).getExistingBlockEntity(pos);
+         }
+         else if (this instanceof LevelChunk chunk)
+@@ -45,5 +45,5 @@
+         else if (this instanceof ImposterProtoChunk chunk)
+         {
+-            return chunk.getWrapped().getExistingBlockEntity(pos);
++            return ((IForgeBlockGetter) chunk.getWrapped()).getExistingBlockEntity(pos);
+         }
+         return self().getBlockEntity(pos);
