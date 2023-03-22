@@ -1,0 +1,15 @@
+--- IModelBuilder.java
++++ IModelBuilder.java
+@@ -14,4 +14,5 @@
+ import net.minecraft.core.Direction;
+ import net.minecraftforge.client.RenderTypeGroup;
++import xyz.bluspring.kilt.injections.client.resources.model.SimpleBakedModelBuilderInjection;
+ 
+ import java.util.List;
+@@ -81,5 +82,5 @@
+         public BakedModel build()
+         {
+-            return builder.build(renderTypes);
++            return ((SimpleBakedModelBuilderInjection) builder).build(renderTypes);
+         }
+     }

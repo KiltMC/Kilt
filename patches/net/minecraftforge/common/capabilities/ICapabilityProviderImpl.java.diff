@@ -1,6 +1,6 @@
 --- ICapabilityProviderImpl.java
 +++ ICapabilityProviderImpl.java
-@@ -12,7 +12,15 @@
+@@ -12,7 +12,16 @@
  public interface ICapabilityProviderImpl<B extends ICapabilityProviderImpl<B>> extends ICapabilityProvider
  {
 -    boolean areCapsCompatible(CapabilityProvider<B> other);
@@ -14,7 +14,8 @@
 +        throw new IllegalStateException("should be overridden by mixin");
 +    }
 +    default void invalidateCaps() {
-+        throw new IllegalStateException("should be overridden by mixin");
++        // we don't throw anything here because otherwise
++        // Porting Lib will go into my house and murder me
 +    }
 +    default void reviveCaps() {
 +        throw new IllegalStateException("should be overridden by mixin");
