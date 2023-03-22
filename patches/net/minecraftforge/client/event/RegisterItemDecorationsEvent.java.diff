@@ -1,0 +1,11 @@
+--- RegisterItemDecorationsEvent.java
++++ RegisterItemDecorationsEvent.java
+@@ -34,4 +34,8 @@
+     private final Map<Item, List<IItemDecorator>> decorators;
+ 
++    public RegisterItemDecorationsEvent() {
++        decorators = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterItemDecorationsEvent(Map<Item, List<IItemDecorator>> decorators)

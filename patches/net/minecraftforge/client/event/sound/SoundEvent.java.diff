@@ -1,0 +1,22 @@
+--- SoundEvent.java
++++ SoundEvent.java
+@@ -28,4 +28,8 @@
+     private final SoundEngine engine;
+ 
++    public SoundEvent() {
++        engine = null;
++    }
++
+     @ApiStatus.Internal
+     protected SoundEvent(SoundEngine engine)
+@@ -57,4 +61,10 @@
+         private final String name;
+ 
++        public SoundSourceEvent() {
++            sound = null;
++            channel = null;
++            name = null;
++        }
++
+         @ApiStatus.Internal
+         protected SoundSourceEvent(SoundEngine engine, SoundInstance sound, Channel channel)

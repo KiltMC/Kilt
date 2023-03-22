@@ -1,0 +1,30 @@
+--- RegisterColorHandlersEvent.java
++++ RegisterColorHandlersEvent.java
+@@ -50,4 +50,8 @@
+         private final BlockColors blockColors;
+ 
++        public Block() {
++            blockColors = null;
++        }
++
+         @ApiStatus.Internal
+         public Block(BlockColors blockColors)
+@@ -94,4 +98,9 @@
+         private final BlockColors blockColors;
+ 
++        public Item() {
++            itemColors = null;
++            blockColors = null;
++        }
++
+         @ApiStatus.Internal
+         public Item(ItemColors itemColors, BlockColors blockColors)
+@@ -140,4 +149,8 @@
+         private final ImmutableList.Builder<ColorResolver> builder;
+ 
++        public ColorResolvers() {
++            builder = null;
++        }
++
+         @ApiStatus.Internal
+         public ColorResolvers(ImmutableList.Builder<ColorResolver> builder)

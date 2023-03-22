@@ -1,0 +1,11 @@
+--- RegisterParticleProvidersEvent.java
++++ RegisterParticleProvidersEvent.java
+@@ -33,4 +33,8 @@
+     private final ParticleEngine particleEngine;
+ 
++    public RegisterParticleProvidersEvent() {
++        particleEngine = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterParticleProvidersEvent(ParticleEngine particleEngine)

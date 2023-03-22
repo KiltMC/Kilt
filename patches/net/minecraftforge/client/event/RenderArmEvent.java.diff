@@ -1,0 +1,15 @@
+--- RenderArmEvent.java
++++ RenderArmEvent.java
+@@ -37,4 +37,12 @@
+     private final HumanoidArm arm;
+ 
++    public RenderArmEvent() {
++        poseStack = null;
++        multiBufferSource = null;
++        packedLight = -1;
++        player = null;
++        arm = null;
++    }
++
+     @ApiStatus.Internal
+     public RenderArmEvent(PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, AbstractClientPlayer player, HumanoidArm arm)

@@ -1,0 +1,11 @@
+--- RegisterDimensionSpecialEffectsEvent.java
++++ RegisterDimensionSpecialEffectsEvent.java
+@@ -29,4 +29,8 @@
+     private final Map<ResourceLocation, DimensionSpecialEffects> effects;
+ 
++    public RegisterDimensionSpecialEffectsEvent() {
++        effects = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterDimensionSpecialEffectsEvent(Map<ResourceLocation, DimensionSpecialEffects> effects)

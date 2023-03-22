@@ -1,0 +1,12 @@
+--- RegisterShadersEvent.java
++++ RegisterShadersEvent.java
+@@ -33,4 +33,9 @@
+     private final List<Pair<ShaderInstance, Consumer<ShaderInstance>>> shaderList;
+ 
++    public RegisterShadersEvent() {
++        resourceManager = null;
++        shaderList = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterShadersEvent(ResourceManager resourceManager, List<Pair<ShaderInstance, Consumer<ShaderInstance>>> shaderList)

@@ -1,0 +1,11 @@
+--- RecipesUpdatedEvent.java
++++ RecipesUpdatedEvent.java
+@@ -25,4 +25,8 @@
+     private final RecipeManager recipeManager;
+ 
++    public RecipesUpdatedEvent() {
++        recipeManager = null;
++    }
++
+     @ApiStatus.Internal
+     public RecipesUpdatedEvent(RecipeManager recipeManager)

@@ -1,0 +1,13 @@
+--- NetworkEvent.java
++++ NetworkEvent.java
+@@ -33,4 +33,10 @@
+     private final int loginIndex;
+ 
++    private NetworkEvent() {
++        this.payload = null;
++        this.source = null;
++        this.loginIndex = -1;
++    }
++
+     private NetworkEvent(final ICustomPacket<?> payload, final Supplier<Context> source)
+     {

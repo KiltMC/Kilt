@@ -1,0 +1,11 @@
+--- RegisterTextureAtlasSpriteLoadersEvent.java
++++ RegisterTextureAtlasSpriteLoadersEvent.java
+@@ -31,4 +31,8 @@
+     private final Map<ResourceLocation, ITextureAtlasSpriteLoader> loaders;
+ 
++    public RegisterTextureAtlasSpriteLoadersEvent() {
++        loaders = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterTextureAtlasSpriteLoadersEvent(Map<ResourceLocation, ITextureAtlasSpriteLoader> loaders)

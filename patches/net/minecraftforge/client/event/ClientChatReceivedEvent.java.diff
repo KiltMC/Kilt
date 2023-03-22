@@ -1,0 +1,13 @@
+--- ClientChatReceivedEvent.java
++++ ClientChatReceivedEvent.java
+@@ -37,4 +37,10 @@
+     private final MessageSigner messageSigner;
+ 
++    public ClientChatReceivedEvent() {
++        boundChatType = null;
++        playerChatMessage = null;
++        messageSigner = null;
++    }
++
+     @ApiStatus.Internal
+     public ClientChatReceivedEvent(ChatType.Bound boundChatType, Component message, PlayerChatMessage playerChatMessage, MessageSigner messageSigner)

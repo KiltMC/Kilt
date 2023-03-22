@@ -1,0 +1,15 @@
+--- RenderLevelLastEvent.java
++++ RenderLevelLastEvent.java
+@@ -38,4 +38,12 @@
+     private final long startNanos;
+ 
++    public RenderLevelLastEvent() {
++        levelRenderer = null;
++        poseStack = null;
++        partialTick = 0F;
++        projectionMatrix = null;
++        startNanos = 0L;
++    }
++
+     @ApiStatus.Internal
+     public RenderLevelLastEvent(LevelRenderer levelRenderer, PoseStack poseStack, float partialTick, Matrix4f projectionMatrix, long startNanos)
