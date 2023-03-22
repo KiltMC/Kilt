@@ -20,8 +20,6 @@ import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.config.IConfigEvent
-import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -42,7 +40,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
-import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
@@ -192,7 +189,7 @@ class KiltLoader {
     // Let's do a trick to load the Forge built-in mod.
     private fun loadForgeBuiltinMod() {
         val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val toml = tomlParser.parse(net.minecraftforge.common.ForgeMod::class.java.getResource("/META-INF/mods.toml"))
+            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/mods.toml"))
             parseModsToml(toml, null, null).first()
         } else {
             val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
@@ -208,10 +205,52 @@ class KiltLoader {
 
         forgeMod.scanData = scanData
 
+        if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
+            forgeMod.jar.entries().asIterator().forEach {
+                if (it.name.endsWith(".class")) {
+                    val inputStream = forgeMod.jar.getInputStream(it)
+                    val visitor = ModClassVisitor()
+                    val classReader = ClassReader(inputStream)
+
+                    classReader.accept(visitor, 0)
+                    visitor.buildData(scanData.classes, scanData.annotations)
+                }
+            }
+        } else {
+            // Need to do this workaround to scan the Kilt JAR in dev.
+
+            val filesToScan = mutableListOf<File>()
+
+            val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
+            val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
+            val kotlinPath = File(path)
+            filesToScan.add(kotlinPath)
+
+            val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
+            val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
+            val forgeFile = File(forgePath)
+            filesToScan.add(forgeFile)
+
+            filesToScan.forEach { file ->
+                file.walk().forEach {
+                    if (it.name.endsWith(".class")) {
+                        val inputStream = it.inputStream()
+                        val visitor = ModClassVisitor()
+                        val classReader = ClassReader(inputStream)
+
+                        classReader.accept(visitor, 0)
+                        visitor.buildData(scanData.classes, scanData.annotations)
+                    }
+                }
+            }
+        }
+
         mods.add(forgeMod)
         addModToFabric(forgeMod)
 
-        forgeMod.modObject = ForgeBuiltinMod()
+        loadTransformers(forgeMod)
+        registerAnnotations(forgeMod, scanData)
+
         forgeMod.eventBus.post(FMLConstructModEvent(forgeMod, ModLoadingStage.CONSTRUCT))
     }
 
@@ -405,7 +444,6 @@ class KiltLoader {
     fun loadMods() {
         Kilt.logger.info("Starting initialization of Forge mods...")
 
-        val launcher = FabricLauncherBase.getLauncher()
         val exceptions = mutableListOf<Exception>()
 
         initForge()
@@ -437,62 +475,7 @@ class KiltLoader {
 
                     mods.add(mod)
 
-                    // Automatically subscribe events
-                    scanData.annotations
-                        .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
-                        .forEach {
-                            // it.annotationData["modid"] as String
-                            // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
-
-                            try {
-                                val busType = Mod.EventBusSubscriber.Bus.valueOf(
-                                    if (it.annotationData.contains("bus"))
-                                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value
-                                    else "FORGE"
-                                )
-
-                                val clazz = launcher.loadIntoTarget(it.clazz.className)
-                                val constructor = try {
-                                    clazz.getDeclaredConstructor()
-                                } catch (_: Exception) { null }
-                                constructor?.isAccessible = true // some people set this to private
-
-                                val instance = constructor?.newInstance()
-                                if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                                    if (instance != null)
-                                        mod.eventBus.register(instance) // scans non-static methods
-                                    mod.eventBus.register(clazz) // scans static methods
-                                } else {
-                                    if (instance != null)
-                                        MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
-                                    MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
-                                }
-
-                                Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                exceptions.add(e)
-                            }
-                        }
-
-                    // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
-                    // I hope.
-                    scanData.annotations
-                        .filter { it.annotationType == MOD_ANNOTATION }
-                        .forEach {
-                            // it.clazz.className - Class
-                            // it.annotationData["value"] as String - Mod ID
-
-                            try {
-                                val clazz = launcher.loadIntoTarget(it.clazz.className)
-                                ModLoadingContext.kiltActiveModId = mod.modInfo.mod.modId
-                                mod.modObject = clazz.getDeclaredConstructor().newInstance()
-                                ModLoadingContext.kiltActiveModId = null
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                exceptions.add(e)
-                            }
-                        }
+                    exceptions.addAll(registerAnnotations(mod, scanData))
                 } catch (e: Exception) {
                     throw e
                 }
@@ -517,11 +500,84 @@ class KiltLoader {
         }
     }
 
-    private fun loadTransformers(mod: ForgeMod) {
-        val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
+    private val launcher = FabricLauncherBase.getLauncher()
 
-        if (accessTransformer != null) {
-            AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
+    private fun registerAnnotations(mod: ForgeMod, scanData: ModFileScanData): List<Exception> {
+        val exceptions = mutableListOf<Exception>()
+
+        // Automatically subscribe events
+        scanData.annotations
+            .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
+            .forEach {
+                // it.annotationData["modid"] as String
+                // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
+
+                try {
+                    val busType = Mod.EventBusSubscriber.Bus.valueOf(
+                        if (it.annotationData.contains("bus"))
+                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value
+                        else "FORGE"
+                    )
+
+                    val clazz = launcher.loadIntoTarget(it.clazz.className)
+                    val constructor = try {
+                        clazz.getDeclaredConstructor()
+                    } catch (_: Exception) { null }
+                    constructor?.isAccessible = true // some people set this to private
+
+                    val instance = constructor?.newInstance()
+                    if (busType == Mod.EventBusSubscriber.Bus.MOD) {
+                        if (instance != null)
+                            mod.eventBus.register(instance) // scans non-static methods
+                        mod.eventBus.register(clazz) // scans static methods
+                    } else {
+                        if (instance != null)
+                            MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
+                        MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
+                    }
+
+                    Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    exceptions.add(e)
+                }
+            }
+
+        // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
+        // I hope.
+        scanData.annotations
+            .filter { it.annotationType == MOD_ANNOTATION }
+            .forEach {
+                // it.clazz.className - Class
+                // it.annotationData["value"] as String - Mod ID
+
+                try {
+                    val clazz = launcher.loadIntoTarget(it.clazz.className)
+                    ModLoadingContext.kiltActiveModId = mod.modInfo.mod.modId
+                    mod.modObject = clazz.getDeclaredConstructor().newInstance()
+                    ModLoadingContext.kiltActiveModId = null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    exceptions.add(e)
+                }
+            }
+
+        return exceptions
+    }
+
+    private fun loadTransformers(mod: ForgeMod) {
+        try {
+            val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
+
+            if (accessTransformer != null) {
+                AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
+            }
+        } catch (e: UninitializedPropertyAccessException) { // Forge special case
+            val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
+
+            if (accessTransformer != null) {
+                AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
+            }
         }
     }
 
