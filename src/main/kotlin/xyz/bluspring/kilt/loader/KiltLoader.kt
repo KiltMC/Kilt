@@ -31,7 +31,9 @@ import net.minecraftforge.registries.ForgeRegistries
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -185,35 +187,21 @@ class KiltLoader {
         }
     }
 
-    // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
-    // Let's do a trick to load the Forge built-in mod.
-    private fun loadForgeBuiltinMod() {
-        val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/mods.toml"))
-            parseModsToml(toml, null, null).first()
-        } else {
+    fun getForgeClassNodes(): List<ClassNode> {
+        val list = mutableListOf<ClassNode>()
+
+        if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
             val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
             val kiltJar = JarFile(kiltFile)
 
-            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
-
-            parseModsToml(toml, kiltFile, kiltJar).first()
-        }
-
-        val scanData = ModFileScanData()
-        scanData.addModFileInfo(ModFileInfo(forgeMod))
-
-        forgeMod.scanData = scanData
-
-        if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
-            forgeMod.jar.entries().asIterator().forEach {
+            kiltJar.entries().asIterator().forEach {
                 if (it.name.endsWith(".class")) {
-                    val inputStream = forgeMod.jar.getInputStream(it)
-                    val visitor = ModClassVisitor()
+                    val inputStream = kiltJar.getInputStream(it)
                     val classReader = ClassReader(inputStream)
+                    val classNode = ClassNode(Opcodes.ASM9)
+                    classReader.accept(classNode, 0)
 
-                    classReader.accept(visitor, 0)
-                    visitor.buildData(scanData.classes, scanData.annotations)
+                    list.add(classNode)
                 }
             }
         } else {
@@ -235,14 +223,44 @@ class KiltLoader {
                 file.walk().forEach {
                     if (it.name.endsWith(".class")) {
                         val inputStream = it.inputStream()
-                        val visitor = ModClassVisitor()
                         val classReader = ClassReader(inputStream)
+                        val classNode = ClassNode(Opcodes.ASM9)
+                        classReader.accept(classNode, 0)
 
-                        classReader.accept(visitor, 0)
-                        visitor.buildData(scanData.classes, scanData.annotations)
+                        list.add(classNode)
                     }
                 }
             }
+        }
+
+        return list
+    }
+
+    // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
+    // Let's do a trick to load the Forge built-in mod.
+    private fun loadForgeBuiltinMod() {
+        val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/mods.toml"))
+            parseModsToml(toml, null, null).first()
+        } else {
+            val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
+            val kiltJar = JarFile(kiltFile)
+
+            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
+
+            parseModsToml(toml, kiltFile, kiltJar).first()
+        }
+
+        val scanData = ModFileScanData()
+        scanData.addModFileInfo(ModFileInfo(forgeMod))
+
+        forgeMod.scanData = scanData
+
+        getForgeClassNodes().forEach {
+            val visitor = ModClassVisitor()
+            it.accept(visitor)
+
+            visitor.buildData(scanData.classes, scanData.annotations)
         }
 
         mods.add(forgeMod)

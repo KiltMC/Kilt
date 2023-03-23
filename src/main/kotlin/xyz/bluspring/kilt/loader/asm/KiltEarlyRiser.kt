@@ -5,12 +5,15 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 
 class KiltEarlyRiser : Runnable {
     private val namespace = FabricLauncherBase.getLauncher().targetNamespace
 
     override fun run() {
+        processForgeClasses()
+
         // EnchantmentCategory has an abstract method that doesn't exactly play nicely with enum extension.
         // So, we need to modify it to have a method body that works with the Forge API.
         run {
@@ -534,6 +537,17 @@ class KiltEarlyRiser : Runnable {
         }
 
         AccessTransformerLoader.runTransformers()
+    }
+
+    // Required as Forge runs itself through ASM to fix events and ObjectHolders and such using ModLauncher.
+    // So annoying.
+    private fun processForgeClasses() {
+        val classes = Kilt.loader.getForgeClassNodes()
+
+        classes.forEach {
+            CommonSuperFixer.fixClass(it)
+            ObjectHolderDefinalizer.processClass(it)
+        }
     }
 
     private fun namespaced(intermediary: String, mojmapped: String): String {

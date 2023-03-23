@@ -26,7 +26,7 @@ public class ShaderInstanceInject {
         return location.getNamespace() + ":" + "shaders/core/" + location.getPath() + ".json";
     }
 
-    @ModifyVariable(method = "getOrCreate", at = @At("STORE"), ordinal = 0, argsOnly = true)
+    @ModifyVariable(method = "getOrCreate", at = @At("STORE"), index = 0, ordinal = 0, argsOnly = true)
     private static String kilt$useResourceLocation(String value, ResourceProvider provider, Program.Type type, String string) {
         var location = ResourceLocation.tryParse(string);
 
