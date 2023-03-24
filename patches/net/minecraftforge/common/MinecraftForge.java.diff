@@ -1,0 +1,9 @@
+--- MinecraftForge.java
++++ MinecraftForge.java
+@@ -27,5 +27,5 @@
+      * EVENT_BUS for everything else
+      */
+-    public static final IEventBus EVENT_BUS = BusBuilder.builder().startShutdown().useModLauncher().build();
++    public static final IEventBus EVENT_BUS = BusBuilder.builder().startShutdown().build();
+ 
+     static final ForgeInternalHandler INTERNAL_HANDLER = new ForgeInternalHandler();
