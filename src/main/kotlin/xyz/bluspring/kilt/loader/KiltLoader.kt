@@ -37,6 +37,7 @@ import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.util.KiltHelper
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
@@ -187,55 +188,6 @@ class KiltLoader {
         }
     }
 
-    fun getForgeClassNodes(): List<ClassNode> {
-        val list = mutableListOf<ClassNode>()
-
-        if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
-            val kiltJar = JarFile(kiltFile)
-
-            kiltJar.entries().asIterator().forEach {
-                if (it.name.endsWith(".class")) {
-                    val inputStream = kiltJar.getInputStream(it)
-                    val classReader = ClassReader(inputStream)
-                    val classNode = ClassNode(Opcodes.ASM9)
-                    classReader.accept(classNode, 0)
-
-                    list.add(classNode)
-                }
-            }
-        } else {
-            // Need to do this workaround to scan the Kilt JAR in dev.
-
-            val filesToScan = mutableListOf<File>()
-
-            val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
-            val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
-            val kotlinPath = File(path)
-            filesToScan.add(kotlinPath)
-
-            val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
-            val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
-            val forgeFile = File(forgePath)
-            filesToScan.add(forgeFile)
-
-            filesToScan.forEach { file ->
-                file.walk().forEach {
-                    if (it.name.endsWith(".class")) {
-                        val inputStream = it.inputStream()
-                        val classReader = ClassReader(inputStream)
-                        val classNode = ClassNode(Opcodes.ASM9)
-                        classReader.accept(classNode, 0)
-
-                        list.add(classNode)
-                    }
-                }
-            }
-        }
-
-        return list
-    }
-
     // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
     // Let's do a trick to load the Forge built-in mod.
     private fun loadForgeBuiltinMod() {
@@ -256,7 +208,7 @@ class KiltLoader {
 
         forgeMod.scanData = scanData
 
-        getForgeClassNodes().forEach {
+        KiltHelper.getForgeClassNodes().forEach {
             val visitor = ModClassVisitor()
             it.accept(visitor)
 
@@ -609,10 +561,13 @@ class KiltLoader {
         return mods.firstOrNull { it.modInfo.mod.modId == id }
     }
 
-    private val statesProvider = ForgeStatesProvider()
+    private var statesProvider: ForgeStatesProvider? = null
 
     fun runPhaseExecutors(phase: ModLoadingPhase) {
-        val sortedStates = statesProvider.allStates.filter { it.phase() == phase }.sortedWith { first, second ->
+        if (statesProvider == null)
+            statesProvider = ForgeStatesProvider()
+
+        val sortedStates = statesProvider!!.allStates.filter { it.phase() == phase }.sortedWith { first, second ->
             if (first.previous() == second.name())
                 1
             else if (first.name() == second.previous())

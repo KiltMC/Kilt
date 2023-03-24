@@ -4,9 +4,9 @@ import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
+import xyz.bluspring.kilt.util.KiltHelper
 
 class KiltEarlyRiser : Runnable {
     private val namespace = FabricLauncherBase.getLauncher().targetNamespace
@@ -539,14 +539,21 @@ class KiltEarlyRiser : Runnable {
         AccessTransformerLoader.runTransformers()
     }
 
+    private val ignoredKeywords = listOf("kilt", "fml", "mixin")
+
     // Required as Forge runs itself through ASM to fix events and ObjectHolders and such using ModLauncher.
     // So annoying.
     private fun processForgeClasses() {
-        val classes = Kilt.loader.getForgeClassNodes()
+        val classes = KiltHelper.getForgeClassNodes()
 
-        classes.forEach {
-            CommonSuperFixer.fixClass(it)
-            ObjectHolderDefinalizer.processClass(it)
+        classes.forEach { classNode ->
+            if (ignoredKeywords.any { classNode.name.lowercase().contains(it) })
+                return@forEach
+
+            ClassTinkerers.addTransformation(classNode.name) {
+                CommonSuperFixer.fixClass(it)
+                ObjectHolderDefinalizer.processClass(it)
+            }
         }
     }
 
