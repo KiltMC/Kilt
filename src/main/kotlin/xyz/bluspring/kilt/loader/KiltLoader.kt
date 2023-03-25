@@ -218,7 +218,6 @@ class KiltLoader {
         mods.add(forgeMod)
         addModToFabric(forgeMod)
 
-        loadTransformers(forgeMod)
         registerAnnotations(forgeMod, scanData)
 
         forgeMod.eventBus.post(FMLConstructModEvent(forgeMod, ModLoadingStage.CONSTRUCT))
@@ -408,6 +407,9 @@ class KiltLoader {
             modLoadingQueue.forEach { mod ->
                 loadTransformers(mod)
             }
+
+            loadTransformers(null) // load Forge ATs
+            AccessTransformerLoader.runTransformers()
         }
     }
 
@@ -535,7 +537,17 @@ class KiltLoader {
         return exceptions
     }
 
-    private fun loadTransformers(mod: ForgeMod) {
+    private fun loadTransformers(mod: ForgeMod?) {
+        if (mod == null) {
+            val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
+
+            if (accessTransformer != null) {
+                AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
+            }
+
+            return
+        }
+
         try {
             val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
 

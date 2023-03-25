@@ -535,8 +535,6 @@ class KiltEarlyRiser : Runnable {
                 }
             }
         }
-
-        AccessTransformerLoader.runTransformers()
     }
 
     private val ignoredKeywords = listOf("kilt", "fml", "mixin")

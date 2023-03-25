@@ -14,10 +14,9 @@ import java.util.regex.Pattern
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
-    private const val debug = false
+    private const val debug = true
 
     private val whitespace = Pattern.compile("[ \t]+")
-    private val remapper = KiltRemapper.srgIntermediaryTree
 
     private val classTransformInfo = mutableMapOf<String, ClassTransformInfo>()
 
@@ -56,8 +55,7 @@ object AccessTransformerLoader {
 
             // class name
             val srgClassName = split[1]
-            val intermediaryClass = remapper.classes.firstOrNull { it.getName("searge") == srgClassName.replace(".", "/") }
-            val intermediaryClassName = intermediaryClass?.getName("intermediary") ?: srgClassName
+            val intermediaryClassName = KiltRemapper.classMappings[srgClassName.replace(".", "/")] ?: srgClassName
 
             // field / method
             if (split.size > 2 && !split[2].startsWith("#")) {
@@ -79,14 +77,11 @@ object AccessTransformerLoader {
                         }
                     }
 
-                    val intermediaryDescriptor = remapDescriptor(descriptor, "searge", "intermediary", remapper)
+                    val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
-                    val methodData = intermediaryClass?.methods?.firstOrNull {
-                        it.getName("searge") == name
-                                && it.getDescriptor("intermediary") == intermediaryDescriptor
-                    }
+                    val methodData = KiltRemapper.methodMappings[name]
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
-                    val pair = if (methodData == null) Pair(name, descriptor) else Pair(methodData.getName("intermediary"), methodData.getDescriptor("intermediary"))
+                    val pair = Pair(methodData?.first ?: name, methodData?.second ?: intermediaryDescriptor)
 
                     if (transformInfo.methods.contains(pair)) {
                         val methodTransformInfo = transformInfo.methods[pair]!!
@@ -109,8 +104,7 @@ object AccessTransformerLoader {
                 } else { // field
                     val name = split[2]
 
-                    val fieldData = intermediaryClass?.fields?.firstOrNull { it.getName("searge") == name }
-                    val fieldName = fieldData?.getName("intermediary") ?: name
+                    val fieldName = KiltRemapper.fieldMappings[name]?.first ?: name
 
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
 
@@ -154,11 +148,7 @@ object AccessTransformerLoader {
     }
 
     fun runTransformers() {
-        val remapper = FabricLoaderImpl.INSTANCE.mappingResolver
-
-        classTransformInfo.forEach { (className, classTransformInfo) ->
-            val mappedClassName = remapper.mapClassName("intermediary", className.replace("/", "."))
-
+        classTransformInfo.forEach { (mappedClassName, classTransformInfo) ->
             ClassTinkerers.addTransformation(mappedClassName) { classNode ->
                 println("access transforming class $mappedClassName")
 
@@ -183,13 +173,8 @@ object AccessTransformerLoader {
                     println("set class to final type ${classTransformInfo.final.name}")
                 }
 
-                val remappedClass = this.remapper.classes.firstOrNull { it.getName("intermediary") == className }
-
                 classTransformInfo.fields.forEach field@{ (fieldName, fieldTransformInfo) ->
-                    val intermediaryFieldDescriptor = remappedClass?.fields?.firstOrNull { it.getName("intermediary") == fieldName }?.getDescriptor("intermediary")
-                    val mappedFieldName = if (intermediaryFieldDescriptor != null)
-                        remapper.mapFieldName("intermediary", className.replace("/", "."), fieldName, intermediaryFieldDescriptor)
-                    else fieldName
+                    val mappedFieldName = KiltRemapper.fieldMappings[fieldName]?.first ?: fieldName
 
                     println("transforming field $mappedFieldName")
 
@@ -222,11 +207,8 @@ object AccessTransformerLoader {
                 }
 
                 classTransformInfo.methods.forEach method@{ (pair, methodTransformInfo) ->
-                    val name = pair.first
-                    val descriptor = pair.second
-
-                    val mappedMethodName = remapper.mapMethodName("intermediary", className.replace("/", "."), name, descriptor)
-                    val mappedDescriptor = remapDescriptor(descriptor, "intermediary", remapper)
+                    val mappedMethodName = pair.first
+                    val mappedDescriptor = pair.second
 
                     println("transforming method $mappedMethodName$mappedDescriptor")
 
@@ -259,63 +241,6 @@ object AccessTransformerLoader {
                 }
             }
         }
-    }
-
-    private fun remapDescriptor(descriptor: String, namespace: String, remapper: MappingResolver): String {
-        var newDescriptor = ""
-
-        var isInClass = false
-        var className = ""
-        descriptor.forEach {
-            if (it == ';' && isInClass) {
-                isInClass = false
-
-                newDescriptor += remapper.mapClassName(namespace, className.replace("/", ".")).replace(".", "/")
-                className = ""
-                newDescriptor += ';'
-
-                return@forEach
-            }
-
-            if (!isInClass)
-                newDescriptor += it
-            else
-                className += it
-
-            if (it == 'L' && !isInClass)
-                isInClass = true
-        }
-
-        return newDescriptor
-    }
-
-    private fun remapDescriptor(descriptor: String, from: String, to: String, tree: TinyTree): String {
-        var newDescriptor = ""
-
-        var isInClass = false
-        var className = ""
-        descriptor.forEach {
-            if (it == ';' && isInClass) {
-                isInClass = false
-
-                val classDef = tree.classes.firstOrNull { def -> def.getName(from) == className }
-                newDescriptor += classDef?.getName(to) ?: className
-                className = ""
-                newDescriptor += ';'
-
-                return@forEach
-            }
-
-            if (!isInClass)
-                newDescriptor += it
-            else
-                className += it
-
-            if (it == 'L' && !isInClass)
-                isInClass = true
-        }
-
-        return newDescriptor
     }
 
     private enum class AccessType(val flag: Int) {
