@@ -32,6 +32,7 @@
     "network.protocol.login.ClientboundCustomQueryPacketInject",
     "network.protocol.login.ServerboundCustomQueryPacketInject",
     "network.protocol.status.ServerStatusInject",
+    "resources.ResourceLocationInject",
     "server.MinecraftServerInject",
     "server.ReloadableServerResourcesInject",
     "server.level.ServerChunkCacheInject",

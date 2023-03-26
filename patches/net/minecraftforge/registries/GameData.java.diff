@@ -1,56 +1,60 @@
 --- GameData.java
 +++ GameData.java
-@@ -56,4 +56,7 @@
+@@ -56,4 +56,8 @@
  import org.jetbrains.annotations.ApiStatus;
  import org.jetbrains.annotations.Nullable;
 +import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 +import xyz.bluspring.kilt.injections.entity.SpawnPlacementsInjection;
++import xyz.bluspring.kilt.injections.resources.ResourceLocationInjection;
 +import xyz.bluspring.kilt.injections.world.level.levelgen.DebugLevelSourceInjection;
  
  import java.util.Collection;
-@@ -88,5 +91,5 @@
+@@ -88,5 +92,5 @@
      private static boolean hasInit = false;
      private static final boolean DISABLE_VANILLA_REGISTRIES = Boolean.parseBoolean(System.getProperty("forge.disableVanillaGameData", "false")); // Use for unit tests/debugging
 -    private static final BiConsumer<ResourceLocation, ForgeRegistry<?>> LOCK_VANILLA = (name, reg) -> reg.slaves.values().stream().filter(o -> o instanceof ILockableRegistry).forEach(o -> ((ILockableRegistry)o).lock());
 +    private static final BiConsumer<ResourceLocation, ForgeRegistry<?>> LOCK_VANILLA = (name, reg) -> reg.getSlaves().values().stream().filter(o -> o instanceof ILockableRegistry).forEach(o -> ((ILockableRegistry)o).lock());
  
      static {
-@@ -246,5 +249,5 @@
+@@ -246,5 +250,5 @@
      {
          LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
 -        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
 +        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistryInjection)r).unfreeze());
      }
  
-@@ -320,5 +323,5 @@
+@@ -320,7 +324,7 @@
          keySet.addAll(BuiltinRegistries.REGISTRY.keySet());
  
 -        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistry.getKnownRegistries());
 +        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
          ordered.retainAll(keySet);
-         ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
-@@ -339,5 +342,5 @@
+-        ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
++        ordered.addAll(keySet.stream().sorted((a, b) -> ((ResourceLocationInjection) a).compareNamespaced(b)).toList());
+ 
+         RuntimeException aggregate = new RuntimeException();
+@@ -339,5 +343,5 @@
                      forgeRegistry.unfreeze();
  
 -                ModLoader.get().postEventWithWrapInModOrder(registerEvent, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e)-> ModLoadingContext.get().setActiveContainer(null));
 +                ModLoader.get().kiltPostEventWrappingMods(registerEvent);
  
                  if (forgeRegistry != null)
-@@ -362,5 +365,5 @@
+@@ -362,5 +366,5 @@
          {
              ForgeHooks.modifyAttributes();
 -            SpawnPlacements.fireSpawnPlacementEvent();
 +            SpawnPlacementsInjection.fireSpawnPlacementEvent();
          }
      }
-@@ -470,5 +473,5 @@
+@@ -470,5 +474,5 @@
                  block.getLootTable();
              }
 -            DebugLevelSource.initValidStates();
 +            DebugLevelSourceInjection.initValidStates();
          }
  
-@@ -605,6 +608,6 @@
+@@ -605,6 +609,6 @@
              ForgeRegistry<T> toRegistry = to.getRegistry(registryName, from);
              toRegistry.sync(registryName, fromRegistry);
 -            if (freeze)
@@ -59,7 +63,7 @@
 +            //    toRegistry.isFrozen = true;
          }
      }
-@@ -622,5 +625,6 @@
+@@ -622,5 +626,6 @@
          snapshot = snapshot.entrySet().stream()
                  .sorted(Map.Entry.comparingByKey()) // FIXME Registries need dependency ordering, this makes sure blocks are done before items (for ItemCallbacks) but it's lazy as hell
 -                .collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
@@ -67,7 +71,7 @@
 +                //.collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
  
          if (isLocalWorld)
-@@ -666,6 +670,6 @@
+@@ -666,6 +671,6 @@
                  if (m.containsKey(dummy))
                  {
 -                    if (reg.markDummy(dummy, m.get(dummy)))
@@ -76,21 +80,21 @@
 +                    //    m.remove(dummy);
                  }
                  else if (isLocalWorld)
-@@ -679,5 +683,5 @@
+@@ -679,5 +684,5 @@
                      int id = reg.getID(dummy);
                      LOGGER.warn(REGISTRIES, "Registry {}: The ID {} @ {} is currently locally mapped - it will be replaced with a dummy for this session", dummy, key, id);
 -                    reg.markDummy(dummy, id);
 +                    //reg.markDummy(dummy, id);
                  }
              });
-@@ -755,5 +759,5 @@
+@@ -755,5 +760,5 @@
                      return;
                  ForgeRegistry<?> reg = STAGING.getRegistry(name);
 -                m.forEach((rl, id) -> reg.markDummy(rl, id));
 +                //m.forEach((rl, id) -> reg.markDummy(rl, id));
              });
  
-@@ -807,9 +811,9 @@
+@@ -807,9 +812,9 @@
              return; // We've already asked the user if they wish to continue. So if the reg isnt found just assume the user knows and accepted it.
          ForgeRegistry<T> _new = to.getRegistry(name, RegistryManager.ACTIVE);
 -        snap.aliases.forEach(_new::addAlias);
@@ -104,7 +108,7 @@
 +        //_new.loadIds(snap.ids, snap.overrides, missing, remaps, active, name);
      }
  
-@@ -830,5 +834,5 @@
+@@ -830,5 +835,5 @@
          Map<ResourceLocation, Integer> _new = Maps.newLinkedHashMap();
          frozen.getKeys().stream().filter(key -> !newRegistry.containsKey(key)).forEach(key -> _new.put(key, frozen.getID(key)));
 -        newRegistry.loadIds(_new, frozen.getOverrideOwners(), Maps.newLinkedHashMap(), remaps, frozen, name);
