@@ -10,7 +10,15 @@ object CommonSuperFixer {
         if (
             classNode.access and Opcodes.ACC_INTERFACE == 0
             && classNode.methods.none { it.name == "<init>" && (it.signature == "()V" || it.desc == "()V") }
-            && classNode.name.contains("Event") // this is stupid but it works.
+            &&
+            (
+                    classNode.visibleAnnotations.any { it.desc.contains("EventBusSubscriber") } ||
+                    classNode.methods.any {
+                        it.visibleAnnotations.any { a ->
+                            a.desc.contains("SubscribeEvent")
+                        }
+                    }
+            )
         ) {
             val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
             method.visitCode()
