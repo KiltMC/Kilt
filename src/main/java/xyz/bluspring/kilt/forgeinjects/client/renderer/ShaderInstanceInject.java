@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
+import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
 
 @Mixin(ShaderInstance.class)
 public class ShaderInstanceInject {
@@ -31,7 +32,7 @@ public class ShaderInstanceInject {
 
         @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/FileUtil;normalizeResourcePath(Ljava/lang/String;)Ljava/lang/String;"), method = "applyImport")
         public String kilt$getForgeShaderImports(String string, boolean bl, String string2) {
-            var location = ForgeHooksClient.getShaderImportLocation(val$relativePath, bl, string2);
+            var location = ForgeHooksClientWorkaround.getShaderImportLocation(val$relativePath, bl, string2);
             return location.toString();
         }
     }

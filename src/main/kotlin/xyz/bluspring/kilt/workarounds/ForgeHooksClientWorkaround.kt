@@ -1,15 +1,19 @@
 package xyz.bluspring.kilt.workarounds
 
 import com.mojang.datafixers.util.Either
+import net.minecraft.FileUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.texture.TextureAtlas
+import net.minecraft.client.resources.model.Material
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.inventory.tooltip.TooltipComponent
@@ -25,13 +29,13 @@ import java.util.function.Consumer
 import java.util.stream.Stream
 
 
-// this class pretty much has the entire ForgeHooksClient class ported to Kotlin
-// whenever it's needed, because for some reason ForgeHooksClient itself doesn't like to function here.
+// this class pretty much has the ForgeHooksClient class ported to Kotlin
+// whenever it's needed, because for some reason ForgeHooksClient itself doesn't actually function.
 object ForgeHooksClientWorkaround {
     private val guiLayers = Stack<Screen>()
 
     @JvmStatic
-    fun resizeGuiLayers(minecraft: Minecraft?, width: Int, height: Int) {
+    fun resizeGuiLayers(minecraft: Minecraft, width: Int, height: Int) {
         guiLayers.forEach(Consumer { screen: Screen ->
             screen.resize(
                 minecraft,
@@ -197,5 +201,23 @@ object ForgeHooksClientWorkaround {
 
         val stackFont = IClientItemExtensions.of(stack).getFont(stack, IClientItemExtensions.FontContext.TOOLTIP)
         return stackFont ?: fallbackFont
+    }
+
+    @JvmStatic
+    fun getShaderImportLocation(basePath: String, isRelative: Boolean, importPath: String): ResourceLocation {
+        val loc = ResourceLocation(importPath)
+        val normalized = FileUtil.normalizeResourcePath(
+            "${if (isRelative) basePath else "shaders/include/"}${loc.path}"
+        )
+
+        return ResourceLocation(loc.namespace, normalized)
+    }
+
+    @JvmField
+    var forgeStatusLine = ""
+
+    @JvmStatic
+    fun getBlockMaterial(loc: ResourceLocation): Material {
+        return Material(TextureAtlas.LOCATION_BLOCKS, loc)
     }
 }
