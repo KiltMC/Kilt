@@ -15,6 +15,7 @@ import java.util.regex.Pattern
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
     private const val debug = true
+    private var hasLoaded = false
 
     private val whitespace = Pattern.compile("[ \t]+")
 
@@ -148,6 +149,12 @@ object AccessTransformerLoader {
     }
 
     fun runTransformers() {
+        if (hasLoaded)
+            return
+
+        val startTime = System.currentTimeMillis()
+        logger.info("Running access transformers")
+
         classTransformInfo.forEach { (mappedClassName, classTransformInfo) ->
             ClassTinkerers.addTransformation(mappedClassName) { classNode ->
                 println("access transforming class $mappedClassName")
@@ -241,6 +248,9 @@ object AccessTransformerLoader {
                 }
             }
         }
+
+        logger.info("Finished loading access transformers (took ${System.currentTimeMillis() - startTime}ms)")
+        hasLoaded = true
     }
 
     private enum class AccessType(val flag: Int) {
