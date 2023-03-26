@@ -1,6 +1,15 @@
 --- GameData.java
 +++ GameData.java
-@@ -56,4 +56,8 @@
+@@ -14,5 +14,7 @@
+ import com.mojang.serialization.Codec;
+ import com.mojang.serialization.Lifecycle;
+-import java.util.LinkedHashSet;
++
++import java.util.*;
++
+ import net.minecraft.core.DefaultedRegistry;
+ import net.minecraft.core.IdMapper;
+@@ -56,14 +58,9 @@
  import org.jetbrains.annotations.ApiStatus;
  import org.jetbrains.annotations.Nullable;
 +import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
@@ -8,53 +17,180 @@
 +import xyz.bluspring.kilt.injections.resources.ResourceLocationInjection;
 +import xyz.bluspring.kilt.injections.world.level.levelgen.DebugLevelSourceInjection;
  
- import java.util.Collection;
-@@ -88,5 +92,5 @@
+-import java.util.Collection;
+-import java.util.Comparator;
+-import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.LinkedHashMap;
+-import java.util.List;
+-import java.util.Locale;
+-import java.util.Map;
+-import java.util.Set;
+ import java.util.function.BiConsumer;
+ import java.util.stream.Collectors;
+@@ -88,5 +85,5 @@
      private static boolean hasInit = false;
      private static final boolean DISABLE_VANILLA_REGISTRIES = Boolean.parseBoolean(System.getProperty("forge.disableVanillaGameData", "false")); // Use for unit tests/debugging
 -    private static final BiConsumer<ResourceLocation, ForgeRegistry<?>> LOCK_VANILLA = (name, reg) -> reg.slaves.values().stream().filter(o -> o instanceof ILockableRegistry).forEach(o -> ((ILockableRegistry)o).lock());
 +    private static final BiConsumer<ResourceLocation, ForgeRegistry<?>> LOCK_VANILLA = (name, reg) -> reg.getSlaves().values().stream().filter(o -> o instanceof ILockableRegistry).forEach(o -> ((ILockableRegistry)o).lock());
  
      static {
-@@ -246,5 +250,5 @@
+@@ -94,4 +91,7 @@
+     }
+ 
++    // Kilt: This is to workaround a problem where registries aren't ordered correctly.
++    private static List<IForgeRegistry<?>> kilt$registries;
++
+     public static void init()
+     {
+@@ -105,41 +105,47 @@
+         hasInit = true;
+ 
++        // Kilt: You would think this is unnecessary, but for some reason,
++        //       the JVM refuses to act like it's initialized when it's in
++        //       the static field above.
++        if (kilt$registries == null)
++            kilt$registries = new LinkedList<>();
++
+         // Game objects
+-        makeRegistry(BLOCKS, "air").addCallback(BlockCallbacks.INSTANCE).legacyName("blocks").vanillaHolder(Block::builtInRegistryHolder).create();
+-        makeRegistry(FLUIDS, "empty").vanillaHolder(Fluid::builtInRegistryHolder).create();
+-        makeRegistry(ITEMS, "air").addCallback(ItemCallbacks.INSTANCE).legacyName("items").vanillaHolder(Item::builtInRegistryHolder).create();
+-        makeRegistry(MOB_EFFECTS).legacyName("potions").create();
+-        makeRegistry(SOUND_EVENTS).legacyName("soundevents").create();
+-        makeRegistry(POTIONS, "empty").legacyName("potiontypes").create();
+-        makeRegistry(ENCHANTMENTS).legacyName("enchantments").create();
+-        makeRegistry(ENTITY_TYPES, "pig").legacyName("entities").vanillaHolder(EntityType::builtInRegistryHolder).create();
+-        makeRegistry(BLOCK_ENTITY_TYPES).disableSaving().legacyName("blockentities").create();
+-        makeRegistry(PARTICLE_TYPES).disableSaving().create();
+-        makeRegistry(MENU_TYPES).disableSaving().create();
+-        makeRegistry(PAINTING_VARIANTS, "kebab").create();
+-        makeRegistry(RECIPE_TYPES).disableSaving().disableSync().create();
+-        makeRegistry(RECIPE_SERIALIZERS).disableSaving().create();
+-        makeRegistry(ATTRIBUTES).onValidate(AttributeCallbacks.INSTANCE).disableSaving().disableSync().create();
+-        makeRegistry(STAT_TYPES).create();
+-        makeRegistry(COMMAND_ARGUMENT_TYPES).disableSaving().create();
++        kilt$registries.add(makeRegistry(BLOCKS, "air").addCallback(BlockCallbacks.INSTANCE).legacyName("blocks").vanillaHolder(Block::builtInRegistryHolder).create());
++        kilt$registries.add(makeRegistry(FLUIDS, "empty").vanillaHolder(Fluid::builtInRegistryHolder).create());
++        kilt$registries.add(makeRegistry(ITEMS, "air").addCallback(ItemCallbacks.INSTANCE).legacyName("items").vanillaHolder(Item::builtInRegistryHolder).create());
++        kilt$registries.add(makeRegistry(MOB_EFFECTS).legacyName("potions").create());
++        kilt$registries.add(makeRegistry(SOUND_EVENTS).legacyName("soundevents").create());
++        kilt$registries.add(makeRegistry(POTIONS, "empty").legacyName("potiontypes").create());
++        kilt$registries.add(makeRegistry(ENCHANTMENTS).legacyName("enchantments").create());
++        kilt$registries.add(makeRegistry(ENTITY_TYPES, "pig").legacyName("entities").vanillaHolder(EntityType::builtInRegistryHolder).create());
++        kilt$registries.add(makeRegistry(BLOCK_ENTITY_TYPES).disableSaving().legacyName("blockentities").create());
++        kilt$registries.add(makeRegistry(PARTICLE_TYPES).disableSaving().create());
++        kilt$registries.add(makeRegistry(MENU_TYPES).disableSaving().create());
++        kilt$registries.add(makeRegistry(PAINTING_VARIANTS, "kebab").create());
++        kilt$registries.add(makeRegistry(RECIPE_TYPES).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(RECIPE_SERIALIZERS).disableSaving().create());
++        kilt$registries.add(makeRegistry(ATTRIBUTES).onValidate(AttributeCallbacks.INSTANCE).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(STAT_TYPES).create());
++        kilt$registries.add(makeRegistry(COMMAND_ARGUMENT_TYPES).disableSaving().create());
+ 
+         // Villagers
+-        makeRegistry(VILLAGER_PROFESSIONS, "none").create();
+-        makeRegistry(POI_TYPES).addCallback(PointOfInterestTypeCallbacks.INSTANCE).disableSync().create();
+-        makeRegistry(MEMORY_MODULE_TYPES, "dummy").disableSync().create();
+-        makeRegistry(SENSOR_TYPES, "dummy").disableSaving().disableSync().create();
+-        makeRegistry(SCHEDULES).disableSaving().disableSync().create();
+-        makeRegistry(ACTIVITIES).disableSaving().disableSync().create();
++        kilt$registries.add(makeRegistry(VILLAGER_PROFESSIONS, "none").create());
++        kilt$registries.add(makeRegistry(POI_TYPES).addCallback(PointOfInterestTypeCallbacks.INSTANCE).disableSync().create());
++        kilt$registries.add(makeRegistry(MEMORY_MODULE_TYPES, "dummy").disableSync().create());
++        kilt$registries.add(makeRegistry(SENSOR_TYPES, "dummy").disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(SCHEDULES).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(ACTIVITIES).disableSaving().disableSync().create());
+ 
+         // Worldgen
+-        makeRegistry(WORLD_CARVERS).disableSaving().disableSync().create();
+-        makeRegistry(FEATURES).disableSaving().disableSync().create();
+-        makeRegistry(CHUNK_STATUS, "empty").disableSaving().disableSync().create();
+-        makeRegistry(BLOCK_STATE_PROVIDER_TYPES).disableSaving().disableSync().create();
+-        makeRegistry(FOLIAGE_PLACER_TYPES).disableSaving().disableSync().create();
+-        makeRegistry(TREE_DECORATOR_TYPES).disableSaving().disableSync().create();
++        kilt$registries.add(makeRegistry(WORLD_CARVERS).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(FEATURES).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(CHUNK_STATUS, "empty").disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(BLOCK_STATE_PROVIDER_TYPES).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(FOLIAGE_PLACER_TYPES).disableSaving().disableSync().create());
++        kilt$registries.add(makeRegistry(TREE_DECORATOR_TYPES).disableSaving().disableSync().create());
+ 
+         // Dynamic Worldgen
+-        makeRegistry(BIOMES).disableSync().create();
++        kilt$registries.add(makeRegistry(BIOMES).disableSync().create());
+     }
+ 
+@@ -246,5 +252,5 @@
      {
          LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
 -        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
 +        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistryInjection)r).unfreeze());
      }
  
-@@ -320,7 +324,7 @@
+@@ -316,18 +322,32 @@
+     public static void postRegisterEvents()
+     {
+-        Set<ResourceLocation> keySet = new HashSet<>(RegistryManager.ACTIVE.registries.keySet());
++        // Kilt: The logic here needs to be changed by a lot due to an issue where
++        //       the registries are unordered. Someone will probably figure something out
++        //       to make things more Forge-accurate.
++        var keySet = new ArrayList<>(kilt$registries.stream().map(IForgeRegistry::getRegistryName).toList());
++        keySet.addAll(RegistryManager.ACTIVE.registries.keySet());
+         keySet.addAll(RegistryManager.getVanillaRegistryKeys());
          keySet.addAll(BuiltinRegistries.REGISTRY.keySet());
  
 -        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistry.getKnownRegistries());
-+        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
-         ordered.retainAll(keySet);
+-        ordered.retainAll(keySet);
 -        ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
-+        ordered.addAll(keySet.stream().sorted((a, b) -> a.compareNamespaced(b)).toList());
++        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
++        keySet.forEach(ordered::remove);
++        //ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
  
++        keySet.addAll(ordered);
++
++        // Kilt: no double registering. i beg.
++        var registered = new LinkedList<ResourceLocation>();
++
          RuntimeException aggregate = new RuntimeException();
-@@ -339,5 +343,5 @@
+ 
+-        for (ResourceLocation rootRegistryName : ordered)
++        for (ResourceLocation rootRegistryName : keySet)
+         {
+             try
+             {
++                if (registered.contains(rootRegistryName))
++                    continue;
++
++                registered.add(rootRegistryName);
++
+                 ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(rootRegistryName);
+                 ForgeRegistry<?> forgeRegistry = RegistryManager.ACTIVE.getRegistry(rootRegistryName);
+@@ -339,8 +359,6 @@
                      forgeRegistry.unfreeze();
  
 -                ModLoader.get().postEventWithWrapInModOrder(registerEvent, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e)-> ModLoadingContext.get().setActiveContainer(null));
 +                ModLoader.get().kiltPostEventWrappingMods(registerEvent);
  
-                 if (forgeRegistry != null)
-@@ -362,5 +366,5 @@
+-                if (forgeRegistry != null)
+-                    forgeRegistry.freeze();
+                 LOGGER.debug(REGISTRIES, "Applying holder lookups: {}", registryKey.location());
+                 ObjectHolderRegistry.applyObjectHolders(registryKey.location()::equals);
+@@ -362,5 +380,5 @@
          {
              ForgeHooks.modifyAttributes();
 -            SpawnPlacements.fireSpawnPlacementEvent();
 +            SpawnPlacementsInjection.fireSpawnPlacementEvent();
          }
      }
-@@ -470,5 +474,5 @@
+@@ -470,5 +488,5 @@
                  block.getLootTable();
              }
 -            DebugLevelSource.initValidStates();
 +            DebugLevelSourceInjection.initValidStates();
          }
  
-@@ -605,6 +609,6 @@
+@@ -605,6 +623,6 @@
              ForgeRegistry<T> toRegistry = to.getRegistry(registryName, from);
              toRegistry.sync(registryName, fromRegistry);
 -            if (freeze)
@@ -63,7 +199,7 @@
 +            //    toRegistry.isFrozen = true;
          }
      }
-@@ -622,5 +626,6 @@
+@@ -622,5 +640,6 @@
          snapshot = snapshot.entrySet().stream()
                  .sorted(Map.Entry.comparingByKey()) // FIXME Registries need dependency ordering, this makes sure blocks are done before items (for ItemCallbacks) but it's lazy as hell
 -                .collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
@@ -71,7 +207,7 @@
 +                //.collect(Collectors.toMap(e -> RegistryManager.ACTIVE.updateLegacyName(e.getKey()), Map.Entry::getValue, (k1, k2) -> k1, LinkedHashMap::new));
  
          if (isLocalWorld)
-@@ -666,6 +671,6 @@
+@@ -666,6 +685,6 @@
                  if (m.containsKey(dummy))
                  {
 -                    if (reg.markDummy(dummy, m.get(dummy)))
@@ -80,21 +216,21 @@
 +                    //    m.remove(dummy);
                  }
                  else if (isLocalWorld)
-@@ -679,5 +684,5 @@
+@@ -679,5 +698,5 @@
                      int id = reg.getID(dummy);
                      LOGGER.warn(REGISTRIES, "Registry {}: The ID {} @ {} is currently locally mapped - it will be replaced with a dummy for this session", dummy, key, id);
 -                    reg.markDummy(dummy, id);
 +                    //reg.markDummy(dummy, id);
                  }
              });
-@@ -755,5 +760,5 @@
+@@ -755,5 +774,5 @@
                      return;
                  ForgeRegistry<?> reg = STAGING.getRegistry(name);
 -                m.forEach((rl, id) -> reg.markDummy(rl, id));
 +                //m.forEach((rl, id) -> reg.markDummy(rl, id));
              });
  
-@@ -807,9 +812,9 @@
+@@ -807,9 +826,9 @@
              return; // We've already asked the user if they wish to continue. So if the reg isnt found just assume the user knows and accepted it.
          ForgeRegistry<T> _new = to.getRegistry(name, RegistryManager.ACTIVE);
 -        snap.aliases.forEach(_new::addAlias);
@@ -108,7 +244,7 @@
 +        //_new.loadIds(snap.ids, snap.overrides, missing, remaps, active, name);
      }
  
-@@ -830,5 +835,5 @@
+@@ -830,5 +849,5 @@
          Map<ResourceLocation, Integer> _new = Maps.newLinkedHashMap();
          frozen.getKeys().stream().filter(key -> !newRegistry.containsKey(key)).forEach(key -> _new.put(key, frozen.getID(key)));
 -        newRegistry.loadIds(_new, frozen.getOverrideOwners(), Maps.newLinkedHashMap(), remaps, frozen, name);
