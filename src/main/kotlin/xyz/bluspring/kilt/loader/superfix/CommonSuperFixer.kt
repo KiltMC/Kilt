@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.superfix
 
+import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 
@@ -9,39 +10,42 @@ object CommonSuperFixer {
         if (
             classNode.access and Opcodes.ACC_INTERFACE == 0
             && classNode.methods.none { it.name == "<init>" && (it.signature == "()V" || it.desc == "()V") }
-            && classNode.name.endsWith("Event") // this is stupid, but it'll work.
+            && classNode.name.contains("Event") // this is stupid but it works.
         ) {
             val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
             method.visitCode()
+            val label0 = Label()
+
+            method.visitLabel(label0)
             method.visitVarInsn(Opcodes.ALOAD, 0)
             method.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName, "<init>", "()V", false)
 
             // init everything with null
             classNode.fields.forEach { field ->
                 if (field.access and Opcodes.ACC_FINAL != 0) {
+                    val label = Label()
+
+                    method.visitLabel(label)
+                    method.visitVarInsn(Opcodes.ALOAD, 0)
+
                     when (field.desc) {
                         "I" -> {
-                            method.visitVarInsn(Opcodes.ILOAD, 0)
                             method.visitInsn(Opcodes.ICONST_M1)
                         }
 
                         "F" -> {
-                            method.visitVarInsn(Opcodes.FLOAD, 0)
                             method.visitInsn(Opcodes.FCONST_0)
                         }
 
                         "D" -> {
-                            method.visitVarInsn(Opcodes.DLOAD, 0)
                             method.visitInsn(Opcodes.DCONST_0)
                         }
 
                         "J" -> {
-                            method.visitVarInsn(Opcodes.LLOAD, 0)
                             method.visitInsn(Opcodes.LCONST_0)
                         }
 
                         else -> {
-                            method.visitVarInsn(Opcodes.ALOAD, 0)
                             method.visitInsn(Opcodes.ACONST_NULL)
                         }
                     }
@@ -49,7 +53,14 @@ object CommonSuperFixer {
                 }
             }
 
+            method.visitLabel(Label())
             method.visitInsn(Opcodes.RETURN)
+
+            val lastLabel = Label()
+
+            method.visitLabel(lastLabel)
+            method.visitLocalVariable("this", "L${classNode.name};", null, label0, lastLabel, 0)
+
             method.visitMaxs(0, 0)
             method.visitEnd()
         }
