@@ -121,11 +121,32 @@
 +        kilt$registries.add(makeRegistry(BIOMES).disableSync().create());
      }
  
+@@ -236,5 +242,5 @@
+         {
+             reg.validateContent(name);
+-            reg.freeze();
++            //reg.freeze();
+         });
+         RegistryManager.VANILLA.registries.forEach(LOCK_VANILLA);
 @@ -246,5 +252,5 @@
      {
          LOGGER.debug(REGISTRIES, "Unfreezing vanilla registries");
 -        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).unfreeze());
 +        Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistryInjection)r).unfreeze());
+     }
+ 
+@@ -252,5 +258,5 @@
+     public static void freezeData()
+     {
+-        LOGGER.debug(REGISTRIES, "Freezing registries");
++        /*LOGGER.debug(REGISTRIES, "Freezing registries");
+         Registry.REGISTRY.stream().filter(r -> r instanceof MappedRegistry).forEach(r -> ((MappedRegistry<?>)r).freeze());
+ 
+@@ -273,5 +279,5 @@
+         fireRemapEvent(ImmutableMap.of(), true);
+ 
+-        LOGGER.debug(REGISTRIES, "All registries frozen");
++        LOGGER.debug(REGISTRIES, "All registries frozen");*/
      }
  
 @@ -316,18 +322,32 @@
