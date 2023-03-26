@@ -12,13 +12,13 @@ object CommonSuperFixer {
             && classNode.methods.none { it.name == "<init>" && (it.signature == "()V" || it.desc == "()V") }
             &&
             (
-                    classNode.visibleAnnotations.any { it.desc.contains("EventBusSubscriber") } ||
-                    classNode.methods.any {
-                        it.visibleAnnotations.any { a ->
+                    (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc.contains("EventBusSubscriber") }) ||
+                    (classNode.methods.any {
+                        it.visibleAnnotations != null && it.visibleAnnotations.any { a ->
                             a.desc.contains("SubscribeEvent")
                         }
                     }
-            )
+            ))
         ) {
             val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
             method.visitCode()
