@@ -4,6 +4,8 @@ import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
+import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 import xyz.bluspring.kilt.util.KiltHelper
@@ -535,6 +537,10 @@ class KiltEarlyRiser : Runnable {
                 }
             }
         }
+
+        Kilt.loader.preloadMods()
+        KiltMixinLoader.init(Kilt.loader.modLoadingQueue.stream().toList())
+        AccessTransformerLoader.runTransformers()
     }
 
     private val ignoredKeywords = listOf("kilt", "fml", "mixin")

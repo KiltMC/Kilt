@@ -33,10 +33,6 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        Kilt.Companion.getLoader().preloadMods();
-        KiltMixinLoader.INSTANCE.init(Kilt.Companion.getLoader().getModLoadingQueue$Kilt().stream().toList());
-        AccessTransformerLoader.INSTANCE.runTransformers();
-
         return null;
     }
 
