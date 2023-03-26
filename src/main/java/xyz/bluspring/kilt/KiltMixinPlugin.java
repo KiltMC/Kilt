@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader;
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     public List<String> getMixins() {
         Kilt.Companion.getLoader().preloadMods();
         KiltMixinLoader.INSTANCE.init(Kilt.Companion.getLoader().getModLoadingQueue$Kilt().stream().toList());
+        AccessTransformerLoader.INSTANCE.runTransformers();
 
         return null;
     }

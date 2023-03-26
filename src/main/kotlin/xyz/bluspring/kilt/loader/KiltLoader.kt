@@ -185,6 +185,12 @@ class KiltLoader {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
 
             remapMods()
+
+            modLoadingQueue.forEach { mod ->
+                loadTransformers(mod)
+            }
+
+            loadTransformers(null) // load Forge ATs
         }
     }
 
@@ -403,13 +409,6 @@ class KiltLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
-        } else {
-            modLoadingQueue.forEach { mod ->
-                loadTransformers(mod)
-            }
-
-            loadTransformers(null) // load Forge ATs
-            AccessTransformerLoader.runTransformers()
         }
     }
 
