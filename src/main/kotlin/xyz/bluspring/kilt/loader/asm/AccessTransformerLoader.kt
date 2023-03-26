@@ -153,7 +153,7 @@ object AccessTransformerLoader {
             return
 
         val startTime = System.currentTimeMillis()
-        logger.info("Running access transformers")
+        logger.info("Adding access transformers to mixin")
 
         classTransformInfo.forEach { (mappedClassName, classTransformInfo) ->
             ClassTinkerers.addTransformation(mappedClassName) { classNode ->

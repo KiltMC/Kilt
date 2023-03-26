@@ -541,6 +541,7 @@ class KiltLoader {
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
 
             if (accessTransformer != null) {
+                Kilt.logger.info("Found access transformer for Forge")
                 AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
             }
 
@@ -551,12 +552,14 @@ class KiltLoader {
             val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
 
             if (accessTransformer != null) {
+                Kilt.logger.info("Found access transformer for ${mod.modInfo.mod.modId}")
                 AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
             }
         } catch (e: UninitializedPropertyAccessException) { // Forge special case
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
 
             if (accessTransformer != null) {
+                Kilt.logger.info("Found access transformer for ${mod.modInfo.mod.modId}")
                 AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
             }
         }
