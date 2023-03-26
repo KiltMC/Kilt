@@ -30,7 +30,7 @@
 +        Set<ResourceLocation> ordered = new LinkedHashSet<>(MappedRegistryInjection.getKnownRegistries());
          ordered.retainAll(keySet);
 -        ordered.addAll(keySet.stream().sorted(ResourceLocation::compareNamespaced).toList());
-+        ordered.addAll(keySet.stream().sorted((a, b) -> ((ResourceLocationInjection) a).compareNamespaced(b)).toList());
++        ordered.addAll(keySet.stream().sorted((a, b) -> a.compareNamespaced(b)).toList());
  
          RuntimeException aggregate = new RuntimeException();
 @@ -339,5 +343,5 @@
