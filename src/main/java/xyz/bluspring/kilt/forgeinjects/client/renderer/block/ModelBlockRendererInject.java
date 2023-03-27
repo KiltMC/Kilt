@@ -25,7 +25,8 @@ import xyz.bluspring.kilt.injections.client.render.block.ModelBlockRendererInjec
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Mixin(ModelBlockRenderer.class)
+// higher priority to allow Sodium to function
+@Mixin(value = ModelBlockRenderer.class, priority = 1050)
 public abstract class ModelBlockRendererInject implements ModelBlockRendererInjection {
     @Shadow public abstract void tesselateWithAO(BlockAndTintGetter blockAndTintGetter, BakedModel bakedModel, BlockState blockState, BlockPos blockPos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean bl, RandomSource randomSource, long l, int i);
 
@@ -78,7 +79,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
         kilt$renderType.set(null);
     }
 
-    @Inject(at = @At("RETURN"), method = "renderModel")
+    @Inject(at = @At("RETURN"), method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/resources/model/BakedModel;FFFII)V")
     public void kilt$resetAtomicsAfterModelRender(PoseStack.Pose pose, VertexConsumer vertexConsumer, BlockState blockState, BakedModel bakedModel, float f, float g, float h, int i, int j, CallbackInfo ci) {
         kilt$modelData.set(ModelData.EMPTY);
         kilt$renderType.set(null);
