@@ -143,6 +143,8 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1")
     modRuntimeOnly ("maven.modrinth:starlight:1.1.1+1.19")
 
+    runtimeOnly ("org.joml:joml:1.10.4")
+
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 }
