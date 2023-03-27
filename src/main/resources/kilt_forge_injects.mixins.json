@@ -85,6 +85,8 @@
     "world.item.enchantment.EnchantmentCategoryInject",
     "world.item.enchantment.EnchantmentHelperInject",
     "world.item.enchantment.EnchantmentInject",
+    "world.level.BlockAndTintGetterInject",
+    "world.level.BlockGetterInject",
     "world.level.DataPackConfigInject",
     "world.level.ForcedChunksSavedDataInject",
     "world.level.LevelInject",
