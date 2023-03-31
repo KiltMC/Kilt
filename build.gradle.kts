@@ -157,6 +157,38 @@ val targetJavaVersion = "17"
 val forgeCommitHash = property("forge_commit_hash")
 
 tasks {
+    register("countPatchProgress") {
+        group = "kilt"
+        description = "Counts the total of patches in Forge, and checks how many Kilt ForgeInjects there are, to check how much is remaining."
+
+        doFirst {
+            // Scan Forge patches dir
+            var count = 0
+
+            fun readDir(file: File) {
+                val files = file.listFiles()!!
+
+                files.forEach {
+                    if (it.isDirectory) {
+                        readDir(it)
+                    } else {
+                        count++
+                    }
+                }
+            }
+
+            readDir(File("$buildDir/forge/patches"))
+
+            val forgePatchCount = count
+            count = 0
+
+            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            val kiltInjectCount = count
+
+            println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
+        }
+    }
+
     register("cloneForgeApi") {
         description = "Clones the Forge repository. It's best you use :getForgeApi."
         group = "kilt"
