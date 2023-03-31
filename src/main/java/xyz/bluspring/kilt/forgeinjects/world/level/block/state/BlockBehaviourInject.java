@@ -4,10 +4,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.level.block.state.BlockBehaviourPropertiesInjection;
 import xyz.bluspring.kilt.mixin.PropertiesAccessor;
 
@@ -15,6 +18,7 @@ import java.util.function.Supplier;
 
 @Mixin(BlockBehaviour.class)
 public class BlockBehaviourInject {
+    @Shadow @Nullable protected ResourceLocation drops;
     private Supplier<ResourceLocation> lootTableSupplier;
 
     @Inject(at = @At("TAIL"), method = "<init>")
@@ -33,8 +37,15 @@ public class BlockBehaviourInject {
         }
     }
 
+    @Inject(at = @At("HEAD"), method = "getLootTable", cancellable = true)
+    public void kilt$useLootTableSupplier(CallbackInfoReturnable<ResourceLocation> cir) {
+        if (this.drops == null) {
+            cir.setReturnValue(this.lootTableSupplier.get());
+        }
+    }
+
     @Mixin(BlockBehaviour.Properties.class)
-    private static class PropertiesInject implements BlockBehaviourPropertiesInjection {
+    public static class PropertiesInject implements BlockBehaviourPropertiesInjection {
         private Supplier<ResourceLocation> lootTableSupplier;
 
         @Override
