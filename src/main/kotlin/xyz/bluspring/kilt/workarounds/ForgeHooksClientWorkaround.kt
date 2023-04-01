@@ -7,6 +7,7 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.model.HumanoidModel
+import net.minecraft.client.model.Model
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.client.resources.model.Material
@@ -15,6 +16,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.RandomSource
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.world.item.ItemStack
@@ -24,6 +27,7 @@ import net.minecraftforge.client.extensions.IForgeBakedModel
 import net.minecraftforge.client.extensions.common.IClientItemExtensions
 import net.minecraftforge.client.model.data.ModelData
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.common.extensions.IForgeItem
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Stream
@@ -219,5 +223,16 @@ object ForgeHooksClientWorkaround {
     @JvmStatic
     fun getBlockMaterial(loc: ResourceLocation): Material {
         return Material(TextureAtlas.LOCATION_BLOCKS, loc)
+    }
+
+    @JvmStatic
+    fun getArmorModel(entity: LivingEntity, itemStack: ItemStack, slot: EquipmentSlot, default: HumanoidModel<*>): Model {
+        return IClientItemExtensions.of(itemStack).getGenericArmorModel(entity, itemStack, slot, default)
+    }
+
+    @JvmStatic
+    fun getArmorTexture(entity: Entity, armor: ItemStack, default: String, slot: EquipmentSlot, type: String?): String {
+        val result = (armor.item as IForgeItem).getArmorTexture(armor, entity, slot, type)
+        return result ?: default
     }
 }

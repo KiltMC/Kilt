@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @Mixin(RecipeProvider.class)
-public class RecipeProviderAccessor {
+public class RecipeProviderInject {
     private static final Map<Item, TagKey<Item>> replacements = new HashMap<>();
     private static final Set<ResourceLocation> excludes = new HashSet<>();
 
