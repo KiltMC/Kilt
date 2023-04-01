@@ -19,6 +19,7 @@ import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+
         registerFabricEvents()
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
 

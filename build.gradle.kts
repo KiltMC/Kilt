@@ -1,14 +1,27 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+import org.ajoberstar.grgit.Grgit
 
 plugins {
     kotlin("jvm")
     id ("fabric-loom") version "1.1-SNAPSHOT"
     id ("maven-publish")
+    id ("org.ajoberstar.grgit") version "5.0.0" apply false
+    id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
 }
 
 version = property("mod_version")!!
 group = property("maven_group")!!
 archivesName.set(property("archives_base_name")!! as String)
+
+sourceSets {
+    getByName("main") {
+        java.srcDir("src/main/java")
+        java.srcDir("src/main/kotlin")
+        java.srcDir("src/forge/java")
+
+        resources.srcDir("src/forge/resources")
+    }
+}
 
 loom {
     accessWidenerPath.set(file("src/main/resources/kilt.accesswidener"))
@@ -116,14 +129,21 @@ dependencies {
     implementation(include("cpw.mods:securejarhandler:2.1.4")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
     implementation(include("net.minecraftforge:unsafe:0.2.+")!!)
+    implementation(include("org.jline:jline-reader:3.12.+")!!)
+    implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
 
     // Runtime mods for testing
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0")
-    //modRuntimeOnly ("curse.maven:ferritecore-fabric-459857:4117902") // 5.0.3
+    modRuntimeOnly ("maven.modrinth:ferrite-core:5.0.3-fabric")
     modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3")
+    modRuntimeOnly ("maven.modrinth:sodium:mc1.19.2-0.4.4")
+    modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1")
+    modRuntimeOnly ("maven.modrinth:starlight:1.1.1+1.19")
+
+    runtimeOnly ("org.joml:joml:1.10.4")
 
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
@@ -134,8 +154,174 @@ configurations.all {
 }
 
 val targetJavaVersion = "17"
+val forgeCommitHash = property("forge_commit_hash")
 
 tasks {
+    register("countPatchProgress") {
+        group = "kilt"
+        description = "Counts the total of patches in Forge, and checks how many Kilt ForgeInjects there are, to check how much is remaining."
+
+        doFirst {
+            // Scan Forge patches dir
+            var count = 0
+
+            fun readDir(file: File) {
+                val files = file.listFiles()!!
+
+                files.forEach {
+                    if (it.isDirectory) {
+                        readDir(it)
+                    } else {
+                        count++
+                    }
+                }
+            }
+
+            readDir(File("$buildDir/forge/patches"))
+
+            val forgePatchCount = count
+            count = 0
+
+            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            val kiltInjectCount = count
+
+            println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
+        }
+    }
+
+    register("cloneForgeApi") {
+        description = "Clones the Forge repository. It's best you use :getForgeApi."
+        group = "kilt"
+
+        doFirst {
+            println("Cloning MinecraftForge repository to commit hash $forgeCommitHash..")
+            val forgeSrcDir = File("$buildDir/forge")
+
+            val grgit = if (!forgeSrcDir.exists())
+                Grgit.clone(mutableMapOf<String, Any?>(
+                    "uri" to "https://github.com/MinecraftForge/MinecraftForge.git",
+                    "dir" to forgeSrcDir
+                ))
+            else
+                Grgit.open(mutableMapOf<String, Any?>(
+                    "dir" to forgeSrcDir
+                ))
+
+            grgit.fetch()
+            grgit.checkout(mutableMapOf<String, Any?>(
+                "branch" to forgeCommitHash
+            ))
+
+            println(grgit.describe())
+        }
+    }
+
+    register("getForgeApi") {
+        dependsOn("cloneForgeApi")
+        finalizedBy("processPatches")
+        description = "Clones the Forge repository, and places the API code into the 'forge' source set."
+        group = "kilt"
+
+        doFirst {
+            println("Copying Forge API-specific files into Kilt source dir...")
+
+            val file = File("$projectDir/src/forge")
+            if (file.exists()) {
+                println("Found that Forge API already exists in a directory, replacing..")
+                file.deleteRecursively()
+            }
+        }
+    }
+
+    createPatches {
+        dependsOn("cloneForgeApi")
+        content = "$buildDir/forge/src/main/java"
+        modified = "$projectDir/src/forge/java"
+        destination = "$projectDir/patches"
+        group = "kilt"
+        doNotTrackState("The up-to-date patch track is entirely unreliable, and it's fast enough anyway to not have to bother about it.")
+
+        doFirst {
+            val patchesDir = File("$projectDir/patches")
+            if (patchesDir.exists()) {
+                println("Removing old patches before creating new patches...")
+                patchesDir.deleteRecursively()
+            }
+        }
+
+        doLast {
+            println("Removing empty patches...")
+
+            fun readDir(file: File): Boolean {
+                val files = file.listFiles()!!
+
+                if (files.isEmpty()) {
+                    file.delete()
+                    return true
+                }
+
+                var deletedCount = 0
+                files.forEach {
+                    if (it.isDirectory) {
+                        if (readDir(it))
+                            deletedCount++
+                    } else {
+                        if (it.readText().isBlank()) {
+                            it.delete()
+                            deletedCount++
+                        }
+                    }
+                }
+
+                if (deletedCount == files.size) {
+                    file.delete()
+                    return true
+                }
+                return false
+            }
+
+            readDir(File("$projectDir/patches"))
+            readDir(File("$projectDir/patches")) // run again to clear empty dirs
+        }
+    }
+
+    register<Copy>("copyForgeResources") {
+        group = "kilt"
+        from("$buildDir/forge/src/main/resources")
+        into("$projectDir/src/forge/resources")
+    }
+
+    processPatches {
+        content = "$buildDir/forge/src/main/java"
+        patches = "$projectDir/patches"
+        destination = "$projectDir/src/forge/java"
+        group = "kilt"
+
+        finalizedBy("copyForgeResources")
+
+        doLast {
+            println("Removing reimplemented Forge API sources...")
+
+            val reimplemented = listOf(
+                "net/minecraftforge/registries/DeferredRegister",
+                "net/minecraftforge/registries/ForgeRegistries",
+                "net/minecraftforge/registries/ForgeRegistry",
+                "net/minecraftforge/registries/ForgeRegistryTag",
+                "net/minecraftforge/registries/ForgeRegistryTagManager",
+                "net/minecraftforge/registries/IForgeRegistry",
+                "net/minecraftforge/registries/NewRegistryEvent",
+                "net/minecraftforge/registries/RegisterEvent",
+                "net/minecraftforge/registries/RegistryManager",
+                "net/minecraftforge/registries/RegistryObject",
+            )
+
+            reimplemented.forEach {
+                val file = File("$projectDir/src/forge/java/$it.java")
+                file.delete()
+            }
+        }
+    }
+
     processResources {
         inputs.property("version", project.version)
         filteringCharset = "UTF-8"
@@ -147,6 +333,7 @@ tasks {
 
     compileKotlin {
         kotlinOptions.jvmTarget = targetJavaVersion
+        dependsOn("processPatches")
     }
 
     jar {

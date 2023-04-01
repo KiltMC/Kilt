@@ -1,0 +1,15 @@
+--- VanillaInventoryCodeHooks.java
++++ VanillaInventoryCodeHooks.java
+@@ -23,4 +23,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.world.level.block.entity.HopperBlockEntityInjection;
+ 
+ import java.util.Optional;
+@@ -183,5 +184,5 @@
+                         if (source instanceof HopperBlockEntity)
+                         {
+-                            if (destinationHopper.getLastUpdateTime() >= ((HopperBlockEntity) source).getLastUpdateTime())
++                            if (((HopperBlockEntityInjection) destinationHopper).getLastUpdateTime() >= ((HopperBlockEntityInjection) source).getLastUpdateTime())
+                             {
+                                 k = 1;

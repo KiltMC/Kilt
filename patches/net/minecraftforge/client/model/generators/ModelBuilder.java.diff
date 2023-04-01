@@ -1,0 +1,61 @@
+--- ModelBuilder.java
++++ ModelBuilder.java
+@@ -36,4 +36,6 @@
+ import net.minecraftforge.common.data.ExistingFileHelper;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.render.block.model.BlockElementFaceInjection;
++import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformInjection;
+ 
+ /**
+@@ -237,5 +239,5 @@
+ 
+         if (this.guiLight != null) {
+-            root.addProperty("gui_light", this.guiLight.getSerializedName());
++            root.addProperty("gui_light", this.guiLight.name());
+         }
+ 
+@@ -251,5 +253,5 @@
+                 ItemTransform vec = e.getValue();
+                 if (vec.equals(ItemTransform.NO_TRANSFORM)) continue;
+-                var hasRightRotation = !vec.rightRotation.equals(ItemTransform.Deserializer.DEFAULT_ROTATION);
++                var hasRightRotation = !((ItemTransformInjection) vec).getRightRotation().equals(ItemTransform.Deserializer.DEFAULT_ROTATION);
+                 if (!vec.translation.equals(ItemTransform.Deserializer.DEFAULT_TRANSLATION)) {
+                     transform.add("translation", serializeVector3f(e.getValue().translation));
+@@ -262,7 +264,7 @@
+                 }
+                 if (hasRightRotation) {
+-                    transform.add("right_rotation", serializeVector3f(vec.rightRotation));
++                    transform.add("right_rotation", serializeVector3f(((ItemTransformInjection) vec).getRightRotation()));
+                 }
+-                display.add(e.getKey().getSerializeName(), transform);
++                display.add(e.getKey().name(), transform);
+             }
+             root.add("display", display);
+@@ -318,9 +320,9 @@
+                         faceObj.addProperty("tintindex", face.tintIndex);
+                     }
+-                    if (face.emissivity > 0) {
+-                        faceObj.addProperty("emissivity", face.emissivity);
++                    if (face.getEmissivity() > 0) {
++                        faceObj.addProperty("emissivity", face.getEmissivity());
+                     }
+-                    if (!face.hasAmbientOcclusion) {
+-                        faceObj.addProperty("ambientocclusion", face.hasAmbientOcclusion);
++                    if (!((BlockElementFaceInjection) face).hasAmbientOcclusion()) {
++                        faceObj.addProperty("ambientocclusion", ((BlockElementFaceInjection) face).hasAmbientOcclusion());
+                     }
+                     faces.add(dir.getSerializedName(), faceObj);
+@@ -603,5 +605,5 @@
+                     throw new IllegalStateException("A model face must have a texture");
+                 }
+-                return new BlockElementFace(cullface, tintindex, texture, new BlockFaceUV(uvs, rotation.rotation), emissivity, hasAmbientOcclusion);
++                return BlockElementFaceInjection.create(cullface, tintindex, texture, new BlockFaceUV(uvs, rotation.rotation), emissivity, hasAmbientOcclusion);
+             }
+ 
+@@ -734,5 +736,5 @@
+ 
+             ItemTransform build() {
+-                return new ItemTransform(rotation, translation, scale, rightRotation);
++                return ItemTransformInjection.create(rotation, translation, scale, rightRotation);
+             }
+ 

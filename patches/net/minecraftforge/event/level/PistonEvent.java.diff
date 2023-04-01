@@ -1,0 +1,24 @@
+--- PistonEvent.java
++++ PistonEvent.java
+@@ -22,4 +22,9 @@
+     private final PistonMoveType moveType;
+ 
++    public PistonEvent() {
++        direction = null;
++        moveType = null;
++    }
++
+     /**
+      * @param pos - The position of the piston
+@@ -75,4 +80,5 @@
+     public static class Post extends PistonEvent
+     {
++        public Post() {}
+ 
+         public Post(Level world, BlockPos pos, Direction direction, PistonMoveType moveType)
+@@ -89,4 +95,5 @@
+     public static class Pre extends PistonEvent
+     {
++        public Pre() {}
+ 
+         public Pre(Level world, BlockPos pos, Direction direction, PistonMoveType moveType)

@@ -1,0 +1,12 @@
+--- EntityJoinLevelEvent.java
++++ EntityJoinLevelEvent.java
+@@ -34,4 +34,9 @@
+     private final boolean loadedFromDisk;
+ 
++    public EntityJoinLevelEvent() {
++        level = null;
++        loadedFromDisk = false;
++    }
++
+     public EntityJoinLevelEvent(Entity entity, Level level)
+     {

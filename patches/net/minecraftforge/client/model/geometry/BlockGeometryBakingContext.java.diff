@@ -1,0 +1,36 @@
+--- BlockGeometryBakingContext.java
++++ BlockGeometryBakingContext.java
+@@ -8,4 +8,5 @@
+ import com.mojang.datafixers.util.Pair;
+ import com.mojang.math.Transformation;
++import io.github.fabricators_of_create.porting_lib.extensions.BlockModelExtensions;
+ import net.minecraft.client.renderer.block.model.BlockModel;
+ import net.minecraft.client.renderer.block.model.ItemOverrides;
+@@ -64,5 +65,5 @@
+     public IUnbakedGeometry<?> getCustomGeometry()
+     {
+-        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
++        return owner.parent != null && customGeometry == null ? (IUnbakedGeometry<?>) owner.parent.getGeometry().getCustomGeometry() : customGeometry;
+     }
+ 
+@@ -76,5 +77,5 @@
+     {
+         return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
+-                owner.parent.customData.isComponentVisible(part, fallback) :
++                owner.parent.getGeometry().isComponentVisible(part, fallback) :
+                 visibilityData.isVisible(part, fallback);
+     }
+@@ -121,5 +122,5 @@
+         if (rootTransform != null)
+             return rootTransform;
+-        return owner.parent != null ? owner.parent.customData.getRootTransform() : Transformation.identity();
++        return owner.parent != null ? owner.parent.getGeometry().getRootTransform() : Transformation.identity();
+     }
+ 
+@@ -135,5 +136,5 @@
+         if (renderTypeHint != null)
+             return renderTypeHint;
+-        return owner.parent != null ? owner.parent.customData.getRenderTypeHint() : null;
++        return owner.parent != null ? owner.parent.getGeometry().getRenderTypeHint() : null;
+     }
+ 

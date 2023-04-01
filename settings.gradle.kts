@@ -3,6 +3,7 @@ pluginManagement {
         maven("https://maven.fabricmc.net/") {
             name = "Fabric"
         }
+        maven("https://dl.bintray.com/brambolt/public")
         mavenCentral()
         gradlePluginPortal()
     }

@@ -12,7 +12,7 @@ import java.util.function.Supplier
 import java.util.stream.Stream
 import kotlin.streams.toList
 
-class ForgeRegistryTagManager<V> internal constructor(
+class ForgeRegistryTagManager<V : Any> internal constructor(
     private val forgeRegistry: ForgeRegistry<V>
 ) : ITagManager<V> {
     private val tags = mutableMapOf<TagKey<V>, ITag<V>>()
@@ -41,8 +41,9 @@ class ForgeRegistryTagManager<V> internal constructor(
         return tags.values.stream()
     }
 
-    override val tagNames: Stream<TagKey<V>>
-        get() = forgeRegistry.vanillaRegistry.tagNames
+    override fun getTagNames(): Stream<TagKey<V>> {
+        return forgeRegistry.vanillaRegistry.tagNames
+    }
 
     override fun createTagKey(location: ResourceLocation): TagKey<V> {
         return TagKey.create(forgeRegistry.registryKey, location)
@@ -60,7 +61,7 @@ class ForgeRegistryTagManager<V> internal constructor(
         }
     }
 
-    override fun iterator(): Iterator<ITag<V>> {
+    override fun iterator(): MutableIterator<ITag<V>> {
         return tags.values.iterator()
     }
 

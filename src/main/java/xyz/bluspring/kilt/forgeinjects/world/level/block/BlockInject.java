@@ -50,7 +50,7 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"), method = "popResource(Lnet/minecraft/world/level/Level;Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;)V")
     private static boolean kilt$checkRestoringBlockSnapshots(Level instance) {
         // TODO: how do i inject fields into stuff
-        return !instance.isClientSide; //&& !((IForgeLevel) instance).restoringBlockSnapshots;
+        return instance.isClientSide; //&& !((IForgeLevel) instance).restoringBlockSnapshots;
     }
 
     @Override

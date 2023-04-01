@@ -1,0 +1,13 @@
+--- EntityMountEvent.java
++++ EntityMountEvent.java
+@@ -35,4 +35,10 @@
+     private final boolean isMounting;
+ 
++    public EntityMountEvent() {
++        entityBeingMounted = entityMounting = null;
++        level = null;
++        isMounting = false;
++    }
++
+     public EntityMountEvent(Entity entityMounting, Entity entityBeingMounted, Level level, boolean isMounting)
+     {

@@ -1,0 +1,9 @@
+--- ITeleporter.java
++++ ITeleporter.java
+@@ -75,5 +75,5 @@
+     default boolean isVanilla()
+     {
+-        return this.getClass() == PortalForcer.class;
++        return true; // welp
+     }
+ 

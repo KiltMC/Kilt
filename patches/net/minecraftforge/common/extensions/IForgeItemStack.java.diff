@@ -1,0 +1,15 @@
+--- IForgeItemStack.java
++++ IForgeItemStack.java
+@@ -6,4 +6,5 @@
+ package net.minecraftforge.common.extensions;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.ItemStackExtensions;
+ import net.minecraft.core.Registry;
+ import net.minecraft.world.damagesource.DamageSource;
+@@ -42,5 +43,5 @@
+  * Extension added to ItemStack that bounces to ItemSack sensitive Item methods. Typically this is just for convince.
+  */
+-public interface IForgeItemStack extends ICapabilitySerializable<CompoundTag>
++public interface IForgeItemStack extends ICapabilitySerializable<CompoundTag>, ItemStackExtensions
+ {
+     // Helpers for accessing Item data

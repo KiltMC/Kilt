@@ -1,0 +1,9 @@
+--- ItemLayerModel.java
++++ ItemLayerModel.java
+@@ -98,5 +98,5 @@
+             if (emissiveLayers.contains(i)) QuadTransformers.settingMaxEmissivity().processInPlace(quads);
+             var renderTypeName = renderTypeNames.get(i);
+-            var renderTypes = renderTypeName != null ? context.getRenderType(renderTypeName) : null;
++            var renderTypes = renderTypeName != null ? RenderTypeGroup.getForge(context.getRenderType(renderTypeName)) : null;
+             builder.addQuads(renderTypes != null ? renderTypes : normalRenderTypes, quads);
+         }

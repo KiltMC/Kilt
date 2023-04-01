@@ -1,0 +1,27 @@
+--- QuadLighter.java
++++ QuadLighter.java
+@@ -14,4 +14,6 @@
+ import net.minecraft.world.level.BlockAndTintGetter;
+ import net.minecraft.world.level.block.state.BlockState;
++import net.minecraftforge.client.extensions.IForgeBlockAndTintGetter;
++import xyz.bluspring.kilt.injections.math.Vector3fInjection;
+ 
+ import java.util.Objects;
+@@ -95,7 +97,7 @@
+         if (normals[0][0] == 0 && normals[0][1] == 0 && normals[0][2] == 0)
+         {
+-            Vector3f a = new Vector3f(positions[0]);
+-            Vector3f ab = new Vector3f(positions[1]);
+-            Vector3f ac = new Vector3f(positions[2]);
++            Vector3f a = Vector3fInjection.of(positions[0]);
++            Vector3f ab = Vector3fInjection.of(positions[1]);
++            Vector3f ac = Vector3fInjection.of(positions[2]);
+             ac.sub(a);
+             ab.sub(a);
+@@ -122,5 +124,5 @@
+             };
+ 
+-            var shade = level.getShade(normals[i][0] / 127f, normals[i][1] / 127f, normals[i][2] / 127f, quad.isShade());
++            var shade = ((IForgeBlockAndTintGetter) level).getShade(normals[i][0] / 127f, normals[i][1] / 127f, normals[i][2] / 127f, quad.isShade());
+             brightness[i] = calculateBrightness(adjustedPosition) * shade;
+             int newLightmap = calculateLightmap(adjustedPosition, normal);

@@ -44,7 +44,7 @@ interface IForgeRegistry<V> : Iterable<V> {
     fun getDelegateOrThrow(value: V): Holder.Reference<V>
 
     fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T?
-    fun setSlaveMap(name: ResourceLocation, obj: Any)
+    fun setSlaveMap(name: ResourceLocation, obj: Any?)
 
     fun interface AddCallback<V> {
         fun onAdd(owner: IForgeRegistryInternal<V>, stage: RegistryManager, id: Int, key: ResourceKey<V>, obj: V, oldObj: V?)

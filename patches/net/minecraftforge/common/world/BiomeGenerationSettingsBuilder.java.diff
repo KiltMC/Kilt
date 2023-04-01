@@ -1,0 +1,18 @@
+--- BiomeGenerationSettingsBuilder.java
++++ BiomeGenerationSettingsBuilder.java
+@@ -12,4 +12,5 @@
+ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
++import xyz.bluspring.kilt.mixin.BiomeGenerationSettingsAccessor;
+ 
+ import java.util.ArrayList;
+@@ -21,7 +22,7 @@
+     public BiomeGenerationSettingsBuilder(BiomeGenerationSettings orig)
+     {
+-        orig.getCarvingStages().forEach(k -> {
++        ((BiomeGenerationSettingsAccessor) orig).getCarvers().forEach((k, a) -> {
+             carvers.put(k, new ArrayList<>());
+-            orig.getCarvers(k).forEach(v -> carvers.get(k).add(v));
++            a.forEach(v -> carvers.get(k).add(v));
+         });
+         orig.features().forEach(l -> {

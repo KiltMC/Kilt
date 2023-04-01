@@ -1,0 +1,31 @@
+--- Tags.java
++++ Tags.java
+@@ -20,4 +20,7 @@
+ import net.minecraft.world.level.material.Fluid;
+ import net.minecraftforge.registries.ForgeRegistries;
++import xyz.bluspring.kilt.injections.tags.BlockTagsInjection;
++import xyz.bluspring.kilt.injections.tags.FluidTagsInjection;
++import xyz.bluspring.kilt.injections.tags.ItemTagsInjection;
+ 
+ public class Tags
+@@ -180,5 +183,5 @@
+         private static TagKey<Block> tag(String name)
+         {
+-            return BlockTags.create(new ResourceLocation("forge", name));
++            return BlockTagsInjection.create(new ResourceLocation("forge", name));
+         }
+     }
+@@ -532,5 +535,5 @@
+         private static TagKey<Item> tag(String name)
+         {
+-            return ItemTags.create(new ResourceLocation("forge", name));
++            return ItemTagsInjection.create(new ResourceLocation("forge", name));
+         }
+     }
+@@ -551,5 +554,5 @@
+         private static TagKey<Fluid> tag(String name)
+         {
+-            return FluidTags.create(new ResourceLocation("forge", name));
++            return FluidTagsInjection.create(new ResourceLocation("forge", name));
+         }
+     }

@@ -1,0 +1,58 @@
+--- EntityRenderersEvent.java
++++ EntityRenderersEvent.java
+@@ -7,4 +7,5 @@
+ 
+ import com.google.common.collect.ImmutableMap;
++import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.model.EntityModel;
+@@ -38,4 +39,5 @@
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.workarounds.LayerDefinitionsWorkaround;
+ 
+ import java.util.Map;
+@@ -87,5 +89,5 @@
+         public void registerLayerDefinition(ModelLayerLocation layerLocation, Supplier<LayerDefinition> supplier)
+         {
+-            ForgeHooksClient.registerLayerDefinition(layerLocation, supplier);
++            LayerDefinitionsWorkaround.layerDefinitions.put(layerLocation, supplier);
+         }
+     }
+@@ -116,5 +118,5 @@
+         public <T extends Entity> void registerEntityRenderer(EntityType<? extends T> entityType, EntityRendererProvider<T> entityRendererProvider)
+         {
+-            EntityRenderers.register(entityType, entityRendererProvider);
++            EntityRendererRegistry.register(entityType, entityRendererProvider);
+         }
+ 
+@@ -144,6 +146,12 @@
+         private final Map<EntityType<?>, EntityRenderer<?>> renderers;
+         private final Map<String, EntityRenderer<? extends Player>> skinMap;
+-        private final EntityModelSet entityModels = Minecraft.getInstance().getEntityModels();
++        private final EntityModelSet entityModels;
+ 
++        public AddLayers() {
++            renderers = null;
++            skinMap = null;
++            entityModels = null;
++        }
++
+         @ApiStatus.Internal
+         public AddLayers(Map<EntityType<?>, EntityRenderer<?>> renderers, Map<String, EntityRenderer<? extends Player>> playerRenderers)
+@@ -151,4 +159,5 @@
+             this.renderers = renderers;
+             this.skinMap = playerRenderers;
++            entityModels = Minecraft.getInstance().getEntityModels();
+         }
+ 
+@@ -217,4 +226,9 @@
+         private final EntityModelSet entityModelSet;
+ 
++        public CreateSkullModels() {
++            builder = null;
++            entityModelSet = null;
++        }
++
+         @ApiStatus.Internal
+         public CreateSkullModels(ImmutableMap.Builder<Type, SkullModelBase> builder, EntityModelSet entityModelSet)

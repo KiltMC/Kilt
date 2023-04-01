@@ -1,0 +1,13 @@
+--- IForgeKeyMapping.java
++++ IForgeKeyMapping.java
+@@ -57,7 +57,8 @@
+     default boolean hasKeyModifierConflict(KeyMapping other)
+     {
+-        if (getKeyConflictContext().conflicts(other.getKeyConflictContext()) || other.getKeyConflictContext().conflicts(getKeyConflictContext()))
++        var forgeOther = (IForgeKeyMapping) other;
++        if (getKeyConflictContext().conflicts(forgeOther.getKeyConflictContext()) || forgeOther.getKeyConflictContext().conflicts(getKeyConflictContext()))
+         {
+-            if (getKeyModifier().matches(other.getKey()) || other.getKeyModifier().matches(getKey()))
++            if (getKeyModifier().matches(forgeOther.getKey()) || forgeOther.getKeyModifier().matches(getKey()))
+             {
+                 return true;

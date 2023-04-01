@@ -27,7 +27,6 @@ import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
-import java.util.Collection;
 import java.util.function.BiPredicate;
 
 @Mixin(Entity.class)

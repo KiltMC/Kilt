@@ -8,8 +8,8 @@ import net.minecraftforge.registries.tags.ITag
 import java.util.*
 import java.util.stream.Stream
 
-class ForgeRegistryTag<V> internal constructor(
-    override val key: TagKey<V>
+class ForgeRegistryTag<V : Any> internal constructor(
+    private val key: TagKey<V>
 ) : ITag<V> {
     private var contents: HolderSet.Named<V>? = null
 
@@ -35,14 +35,11 @@ class ForgeRegistryTag<V> internal constructor(
     override fun getRandomElement(random: RandomSource): Optional<V> {
         val randomElement = contents?.getRandomElement(random)
 
-        // apparently because V is nullable, this will become an error
-        // in future versions of Kotlin.
-        // but I'm not sure how else I'd do this.
-        return Optional.ofNullable(
-            if (randomElement?.isPresent == true)
-                randomElement.get().value()
-            else null
-        )
+        val value = if (randomElement?.isPresent == true)
+            randomElement.get().value()
+        else null
+
+        return Optional.ofNullable(value)
     }
 
     override fun isBound(): Boolean {
@@ -53,11 +50,15 @@ class ForgeRegistryTag<V> internal constructor(
         return contents?.contains(Holder.direct(value)) == true
     }
 
-    override fun iterator(): Iterator<V> {
+    override fun iterator(): MutableIterator<V> {
         return if (contents == null)
-            listOf<V>().iterator()
+            mutableListOf<V>().iterator()
         else
-            contents!!.map { it.value() }.iterator()
+            contents!!.map { it.value() }.toMutableList().iterator()
+    }
+
+    override fun getKey(): TagKey<V> {
+        return key
     }
 
     internal fun bind(holderSet: HolderSet.Named<V>?) {

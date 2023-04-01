@@ -1,0 +1,15 @@
+--- DynamicFluidContainerModel.java
++++ DynamicFluidContainerModel.java
+@@ -47,4 +47,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
+ 
+ import java.util.Collection;
+@@ -121,5 +122,5 @@
+ 
+         TextureAtlasSprite baseSprite = baseLocation != null ? spriteGetter.apply(baseLocation) : null;
+-        TextureAtlasSprite fluidSprite = fluid != Fluids.EMPTY ? spriteGetter.apply(ForgeHooksClient.getBlockMaterial(IClientFluidTypeExtensions.of(fluid).getStillTexture())) : null;
++        TextureAtlasSprite fluidSprite = fluid != Fluids.EMPTY ? spriteGetter.apply(ForgeHooksClientWorkaround.getBlockMaterial(IClientFluidTypeExtensions.of(fluid).getStillTexture())) : null;
+         TextureAtlasSprite coverSprite = (coverLocation != null && (!coverIsMask || baseLocation != null)) ? spriteGetter.apply(coverLocation) : null;
+ 

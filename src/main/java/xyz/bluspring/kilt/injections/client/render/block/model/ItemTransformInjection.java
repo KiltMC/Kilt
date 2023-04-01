@@ -11,6 +11,10 @@ public interface ItemTransformInjection {
         return itemTransform;
     }
 
+    default Vector3f getRightRotation() {
+        throw new IllegalStateException();
+    }
+
     default void setRightRotation(Vector3f rightRotation) {
         throw new IllegalStateException();
     }

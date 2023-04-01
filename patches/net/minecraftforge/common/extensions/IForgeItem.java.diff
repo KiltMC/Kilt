@@ -1,0 +1,25 @@
+--- IForgeItem.java
++++ IForgeItem.java
+@@ -14,4 +14,5 @@
+ import com.google.common.collect.Multimap;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.ItemExtensions;
+ import net.minecraft.world.damagesource.DamageSource;
+ import net.minecraft.world.entity.player.Inventory;
+@@ -46,7 +47,8 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.item.enchantment.EnchantmentHelperInjection;
+ 
+ // TODO systemic review of all extension functions. lots of unused -C
+-public interface IForgeItem
++public interface IForgeItem extends ItemExtensions, io.github.fabricators_of_create.porting_lib.extensions.tool.ItemExtensions
+ {
+     private Item self()
+@@ -536,5 +538,5 @@
+     default int getEnchantmentLevel(ItemStack stack, Enchantment enchantment)
+     {
+-        return EnchantmentHelper.getTagEnchantmentLevel(enchantment, stack);
++        return EnchantmentHelperInjection.getTagEnchantmentLevel(enchantment, stack);
+     }
+ 

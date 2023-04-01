@@ -1,0 +1,8 @@
+--- PermissionGatherEvent.java
++++ PermissionGatherEvent.java
+@@ -28,4 +28,5 @@
+ public class PermissionGatherEvent extends Event
+ {
++    public PermissionGatherEvent() {}
+ 
+     /**

@@ -1,0 +1,15 @@
+--- IForgeBakedModel.java
++++ IForgeBakedModel.java
+@@ -24,4 +24,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.render.ItemBlockRenderTypesInjection;
+ 
+ import java.util.List;
+@@ -84,5 +85,5 @@
+     default ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data)
+     {
+-        return ItemBlockRenderTypes.getRenderLayers(state);
++        return ItemBlockRenderTypesInjection.getRenderLayers(state);
+     }
+ 

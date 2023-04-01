@@ -1,0 +1,15 @@
+--- IClientFluidTypeExtensions.java
++++ IClientFluidTypeExtensions.java
+@@ -34,4 +34,5 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.render.ScreenEffectRendererInjection;
+ 
+ import java.util.Objects;
+@@ -174,5 +175,5 @@
+         ResourceLocation texture = this.getRenderOverlayTexture(mc);
+         if (texture != null)
+-            ScreenEffectRenderer.renderFluid(mc, poseStack, texture);
++            ScreenEffectRendererInjection.renderFluid(mc, poseStack, texture);
+     }
+ 

@@ -1,0 +1,22 @@
+--- IForgeMinecraft.java
++++ IForgeMinecraft.java
+@@ -9,4 +9,5 @@
+ import net.minecraft.client.gui.screens.Screen;
+ import net.minecraftforge.client.ForgeHooksClient;
++import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
+ 
+ import java.util.Locale;
+@@ -29,5 +30,5 @@
+     default void pushGuiLayer(Screen screen)
+     {
+-        ForgeHooksClient.pushGuiLayer(self(), screen);
++        ForgeHooksClientWorkaround.pushGuiLayer(self(), screen);
+     }
+ 
+@@ -37,5 +38,5 @@
+     default void popGuiLayer()
+     {
+-        ForgeHooksClient.popGuiLayer(self());
++        ForgeHooksClientWorkaround.popGuiLayer(self());
+     }
+ 

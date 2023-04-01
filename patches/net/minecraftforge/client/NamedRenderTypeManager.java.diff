@@ -1,0 +1,9 @@
+--- NamedRenderTypeManager.java
++++ NamedRenderTypeManager.java
+@@ -40,5 +40,5 @@
+         preRegisterVanillaRenderTypes(renderTypes);
+         var event = new RegisterNamedRenderTypesEvent(renderTypes);
+-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
++        ModLoader.get().kiltPostEventWrappingMods(event);
+         RENDER_TYPES = ImmutableMap.copyOf(renderTypes);
+     }

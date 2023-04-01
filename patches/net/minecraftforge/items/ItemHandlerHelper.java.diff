@@ -1,0 +1,16 @@
+--- ItemHandlerHelper.java
++++ ItemHandlerHelper.java
+@@ -42,5 +42,5 @@
+             return false;
+ 
+-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
++        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
+     }
+ 
+@@ -67,5 +67,5 @@
+             return false;
+ 
+-        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
++        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
+     }
+ 

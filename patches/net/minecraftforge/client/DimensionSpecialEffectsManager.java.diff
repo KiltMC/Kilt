@@ -1,0 +1,9 @@
+--- DimensionSpecialEffectsManager.java
++++ DimensionSpecialEffectsManager.java
+@@ -42,5 +42,5 @@
+         DEFAULT_EFFECTS = preRegisterVanillaEffects(effects);
+         var event = new RegisterDimensionSpecialEffectsEvent(effects);
+-        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
++        ModLoader.get().kiltPostEventWrappingMods(event);
+         EFFECTS = ImmutableMap.copyOf(effects);
+     }

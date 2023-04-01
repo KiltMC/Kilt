@@ -1,0 +1,11 @@
+--- EntityStruckByLightningEvent.java
++++ EntityStruckByLightningEvent.java
+@@ -31,4 +31,8 @@
+     private final LightningBolt lightning;
+ 
++    public EntityStruckByLightningEvent() {
++        lightning = null;
++    }
++
+     public EntityStruckByLightningEvent(Entity entity, LightningBolt lightning)
+     {

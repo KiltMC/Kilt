@@ -32,7 +32,12 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Shadow public abstract void setTag(@Nullable CompoundTag compoundTag);
 
-    private CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class);
+    private final CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class);
+
+    @Override
+    public CapabilityProviderWorkaround<ItemStack> getWorkaround() {
+        return workaround;
+    }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {

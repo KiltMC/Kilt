@@ -1,0 +1,14 @@
+--- IForgeLevel.java
++++ IForgeLevel.java
+@@ -9,8 +9,9 @@
+ import java.util.Collections;
+ 
++import io.github.fabricators_of_create.porting_lib.entity.PartEntity;
++import io.github.fabricators_of_create.porting_lib.extensions.LevelExtensions;
+ import net.minecraftforge.common.capabilities.ICapabilityProvider;
+-import net.minecraftforge.entity.PartEntity;
+ 
+-public interface IForgeLevel extends ICapabilityProvider
++public interface IForgeLevel extends ICapabilityProvider, LevelExtensions, io.github.fabricators_of_create.porting_lib.extensions.entity.LevelExtensions, io.github.fabricators_of_create.porting_lib.extensions.transfer.LevelExtensions
+ {
+     /**

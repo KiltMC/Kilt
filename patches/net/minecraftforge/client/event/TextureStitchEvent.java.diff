@@ -1,0 +1,27 @@
+--- TextureStitchEvent.java
++++ TextureStitchEvent.java
+@@ -29,4 +29,8 @@
+     private final TextureAtlas atlas;
+ 
++    public TextureStitchEvent() {
++        atlas = null;
++    }
++
+     @ApiStatus.Internal
+     public TextureStitchEvent(TextureAtlas atlas)
+@@ -56,4 +60,8 @@
+         private final Set<ResourceLocation> sprites;
+ 
++        public Pre() {
++            sprites = null;
++        }
++
+         @ApiStatus.Internal
+         public Pre(TextureAtlas map, Set<ResourceLocation> sprites)
+@@ -87,4 +95,6 @@
+     public static class Post extends TextureStitchEvent
+     {
++        public Post() {}
++
+         @ApiStatus.Internal
+         public Post(TextureAtlas map)

@@ -1,0 +1,37 @@
+--- TransformationHelper.java
++++ TransformationHelper.java
+@@ -20,4 +20,6 @@
+ import com.mojang.math.Vector4f;
+ import net.minecraftforge.client.model.generators.BlockModelBuilder.RootTransformBuilder.TransformOrigin;
++import xyz.bluspring.kilt.injections.math.Matrix4fInjection;
++import xyz.bluspring.kilt.injections.math.Vector3fInjection;
+ 
+ public final class TransformationHelper
+@@ -153,5 +155,5 @@
+             if (obj.has("translation"))
+             {
+-                translation = new Vector3f(parseFloatArray(obj.get("translation"), 3, "Translation"));
++                translation = Vector3fInjection.of(parseFloatArray(obj.get("translation"), 3, "Translation"));
+                 elements.remove("translation");
+             }
+@@ -182,5 +184,5 @@
+                 else
+                 {
+-                    scale = new Vector3f(parseFloatArray(obj.get("scale"), 3, "Scale"));
++                    scale = Vector3fInjection.of(parseFloatArray(obj.get("scale"), 3, "Scale"));
+                 }
+                 elements.remove("scale");
+@@ -221,5 +223,5 @@
+             if (originElement.isJsonArray())
+             {
+-                origin = new Vector3f(parseFloatArray(originElement, 3, "Origin"));
++                origin = Vector3fInjection.of(parseFloatArray(originElement, 3, "Origin"));
+             }
+             else if (originElement.isJsonPrimitive())
+@@ -263,5 +265,5 @@
+                 }
+             }
+-            return new Matrix4f(values);
++            return Matrix4fInjection.of(values);
+         }
+ 

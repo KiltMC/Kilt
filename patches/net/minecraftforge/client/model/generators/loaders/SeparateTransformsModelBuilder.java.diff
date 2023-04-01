@@ -1,0 +1,9 @@
+--- SeparateTransformsModelBuilder.java
++++ SeparateTransformsModelBuilder.java
+@@ -43,5 +43,5 @@
+         Preconditions.checkNotNull(perspective, "layer must not be null");
+         Preconditions.checkNotNull(modelBuilder, "modelBuilder must not be null");
+-        childModels.put(perspective.getSerializeName(), modelBuilder);
++        childModels.put(perspective.name(), modelBuilder);
+         return this;
+     }

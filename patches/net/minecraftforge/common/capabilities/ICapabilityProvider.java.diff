@@ -1,0 +1,11 @@
+--- ICapabilityProvider.java
++++ ICapabilityProvider.java
+@@ -24,5 +24,7 @@
+      * @return The requested an optional holding the requested capability.
+      */
+-    @NotNull <T> LazyOptional<T> getCapability(@NotNull final Capability<T> cap, final @Nullable Direction side);
++    default @NotNull <T> LazyOptional<T> getCapability(@NotNull final Capability<T> cap, final @Nullable Direction side) {
++        throw new IllegalStateException("should be overridden by mixin/mods");
++    }
+ 
+     /*

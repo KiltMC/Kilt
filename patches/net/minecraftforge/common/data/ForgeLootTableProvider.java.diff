@@ -1,0 +1,74 @@
+--- ForgeLootTableProvider.java
++++ ForgeLootTableProvider.java
+@@ -36,4 +36,5 @@
+ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
++import xyz.bluspring.kilt.mixin.*;
+ 
+ /**
+@@ -47,10 +48,10 @@
+ 
+     @Override
+-    protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
++    public void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
+         // do not validate against all registered loot tables
+     }
+ 
+     @Override
+-    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
++    public List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
+         return super.getTables().stream().map(pair -> {
+             // provides new consumer with filtering only changed loot tables and replacing condition item to condition tag
+@@ -68,5 +69,5 @@
+ 
+     private boolean findAndReplaceInLootTableBuilder(LootTable.Builder builder, Item from, ToolAction toolAction) {
+-        List<LootPool> lootPools = ObfuscationReflectionHelper.getPrivateValue(LootTable.Builder.class, builder, "f_7915" + "6_");
++        List<LootPool> lootPools = ((BuilderAccessor) builder).getPools();
+         boolean found = false;
+ 
+@@ -85,6 +86,6 @@
+ 
+     private boolean findAndReplaceInLootPool(LootPool lootPool, Item from, ToolAction toolAction) {
+-        LootPoolEntryContainer[] lootEntries = ObfuscationReflectionHelper.getPrivateValue(LootPool.class, lootPool, "f_7902" +"3_");
+-        LootItemCondition[] lootConditions = ObfuscationReflectionHelper.getPrivateValue(LootPool.class, lootPool, "f_7902" + "4_");
++        LootPoolEntryContainer[] lootEntries = lootPool.entries;
++        LootItemCondition[] lootConditions = lootPool.conditions;
+         boolean found = false;
+ 
+@@ -114,5 +115,5 @@
+                 found = true;
+             } else if (lootCondition instanceof InvertedLootItemCondition) {
+-                LootItemCondition invLootCondition = ObfuscationReflectionHelper.getPrivateValue(InvertedLootItemCondition.class, (InvertedLootItemCondition) lootCondition, "f_8168" + "1_");
++                LootItemCondition invLootCondition = ((InvertedLootItemConditionAccessor) lootCondition).getTerm();
+ 
+                 if (invLootCondition instanceof MatchTool && checkMatchTool((MatchTool) invLootCondition, from)) {
+@@ -129,5 +130,5 @@
+ 
+     private boolean findAndReplaceInParentedLootEntry(CompositeEntryBase entry, Item from, ToolAction toolAction) {
+-        LootPoolEntryContainer[] lootEntries = ObfuscationReflectionHelper.getPrivateValue(CompositeEntryBase.class, entry, "f_7942" + "8_");
++        LootPoolEntryContainer[] lootEntries = ((CompositeEntryBaseAccessor) entry).getChildren();
+         boolean found = false;
+ 
+@@ -146,5 +147,5 @@
+ 
+     private boolean findAndReplaceInLootEntry(LootPoolEntryContainer entry, Item from, ToolAction toolAction) {
+-        LootItemCondition[] lootConditions = ObfuscationReflectionHelper.getPrivateValue(LootPoolEntryContainer.class, entry, "f_7963" + "6_");
++        LootItemCondition[] lootConditions = ((LootPoolEntryContainerAccessor) entry).getConditions();
+         boolean found = false;
+ 
+@@ -166,5 +167,5 @@
+ 
+     private boolean findAndReplaceInAlternative(AlternativeLootItemCondition alternative, Item from, ToolAction toolAction) {
+-        LootItemCondition[] lootConditions = ObfuscationReflectionHelper.getPrivateValue(AlternativeLootItemCondition.class, alternative, "f_8146" + "8_");
++        LootItemCondition[] lootConditions = ((AlternativeLootItemConditionAccessor) alternative).getTerms();
+         boolean found = false;
+ 
+@@ -184,6 +185,6 @@
+ 
+     private boolean checkMatchTool(MatchTool lootCondition, Item expected) {
+-        ItemPredicate predicate = ObfuscationReflectionHelper.getPrivateValue(MatchTool.class, lootCondition, "f_8199" + "3_");
+-        Set<Item> items = ObfuscationReflectionHelper.getPrivateValue(ItemPredicate.class, predicate, "f_15142" + "7_");
++        ItemPredicate predicate = ((MatchToolAccessor) lootCondition).getPredicate();
++        Set<Item> items = ((ItemPredicateAccessor) predicate).getItems();
+         return items != null && items.contains(expected);
+     }

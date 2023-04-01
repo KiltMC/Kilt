@@ -262,6 +262,7 @@ object KiltRemapper {
             classReader.accept(classNode, 0)
 
             CommonSuperFixer.fixClass(classNode)
+            ObjectHolderDefinalizer.processClass(classNode)
 
             try {
                 val classWriter = CommonSuperClassWriter.createClassWriter(

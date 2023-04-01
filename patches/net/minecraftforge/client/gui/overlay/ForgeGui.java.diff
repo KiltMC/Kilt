@@ -1,0 +1,9 @@
+--- ForgeGui.java
++++ ForgeGui.java
+@@ -246,5 +246,5 @@
+ 
+     @Override
+-    protected void renderPortalOverlay(float partialTick)
++    public void renderPortalOverlay(float partialTick)
+     {
+         float f1 = Mth.lerp(partialTick, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime);

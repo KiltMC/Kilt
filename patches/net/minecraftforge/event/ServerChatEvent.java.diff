@@ -1,0 +1,27 @@
+--- ServerChatEvent.java
++++ ServerChatEvent.java
+@@ -46,4 +46,10 @@
+     private Component message;
+ 
++    public ServerChatEvent() {
++        player = null;
++        username = rawText = null;
++        canChangeMessage = false;
++    }
++
+     @ApiStatus.Internal
+     protected ServerChatEvent(ServerPlayer player, String rawText, Component message, boolean canChangeMessage)
+@@ -129,4 +135,6 @@
+     public static class Preview extends ServerChatEvent
+     {
++        public Preview() {}
++
+         @ApiStatus.Internal
+         public Preview(ServerPlayer player, String rawText, Component message)
+@@ -166,4 +174,6 @@
+     public static class Submitted extends ServerChatEvent
+     {
++        public Submitted() {}
++
+         @ApiStatus.Internal
+         public Submitted(ServerPlayer player, String rawText, Component message, boolean canChangeMessage)

@@ -1,0 +1,15 @@
+--- BrandingControl.java
++++ BrandingControl.java
+@@ -19,4 +19,5 @@
+ import net.minecraftforge.versions.forge.ForgeVersion;
+ import net.minecraftforge.versions.mcp.MCPVersion;
++import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
+ 
+ 
+@@ -55,5 +56,5 @@
+         if (overCopyrightBrandings == null) {
+             ImmutableList.Builder<String> brd = ImmutableList.builder();
+-            if (ForgeHooksClient.forgeStatusLine != null) brd.add(ForgeHooksClient.forgeStatusLine);
++            if (ForgeHooksClientWorkaround.forgeStatusLine != null) brd.add(ForgeHooksClientWorkaround.forgeStatusLine);
+             overCopyrightBrandings = brd.build();
+         }

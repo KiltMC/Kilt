@@ -11,4 +11,12 @@ public interface MappedRegistryInjection {
     static Set<ResourceLocation> getKnownRegistries() {
         return knownRegistries;
     }
+
+    default void markKnown() {
+        throw new IllegalStateException();
+    }
+
+    default void unfreeze() {
+        throw new IllegalStateException();
+    }
 }

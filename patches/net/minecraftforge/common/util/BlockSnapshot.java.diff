@@ -1,0 +1,11 @@
+--- BlockSnapshot.java
++++ BlockSnapshot.java
+@@ -57,4 +57,8 @@
+     }
+ 
++    public io.github.fabricators_of_create.porting_lib.util.BlockSnapshot kilt$getFabricEquivalent() {
++        return io.github.fabricators_of_create.porting_lib.util.BlockSnapshot.create(dim, Objects.requireNonNull(getLevel()), pos, flags);
++    }
++
+     public static BlockSnapshot create(ResourceKey<Level> dim, LevelAccessor world, BlockPos pos)
+     {

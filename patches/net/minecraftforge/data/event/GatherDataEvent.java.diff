@@ -1,0 +1,14 @@
+--- GatherDataEvent.java
++++ GatherDataEvent.java
+@@ -31,4 +31,11 @@
+     private final ModContainer modContainer;
+ 
++    public GatherDataEvent() {
++        this.modContainer = null;
++        this.existingFileHelper = null;
++        this.config = null;
++        this.dataGenerator = null;
++    }
++
+     public GatherDataEvent(final ModContainer mc, final DataGenerator dataGenerator, final DataGeneratorConfig dataGeneratorConfig, ExistingFileHelper existingFileHelper)
+     {

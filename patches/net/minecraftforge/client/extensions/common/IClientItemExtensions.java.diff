@@ -1,0 +1,31 @@
+--- IClientItemExtensions.java
++++ IClientItemExtensions.java
+@@ -27,4 +27,7 @@
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
++import xyz.bluspring.kilt.mixin.ItemRendererAccessor;
++import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
+ 
+ import java.util.function.Consumer;
+@@ -46,5 +49,5 @@
+     static IClientItemExtensions of(Item item)
+     {
+-        return item.getRenderPropertiesInternal() instanceof IClientItemExtensions e ? e : DEFAULT;
++        return ((RenderPropertiesInjection<Item>) item).getRenderPropertiesInternal() instanceof IClientItemExtensions e ? e : DEFAULT;
+     }
+ 
+@@ -130,5 +133,5 @@
+         if (replacement != original)
+         {
+-            ForgeHooksClient.copyModelProperties(original, replacement);
++            ForgeHooksClientWorkaround.copyModelProperties(original, replacement);
+             return replacement;
+         }
+@@ -161,5 +164,5 @@
+     default BlockEntityWithoutLevelRenderer getCustomRenderer()
+     {
+-        return Minecraft.getInstance().getItemRenderer().getBlockEntityRenderer();
++        return ((ItemRendererAccessor) Minecraft.getInstance().getItemRenderer()).getBlockEntityRenderer();
+     }
+ 

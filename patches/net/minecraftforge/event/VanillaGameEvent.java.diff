@@ -1,0 +1,14 @@
+--- VanillaGameEvent.java
++++ VanillaGameEvent.java
+@@ -32,4 +32,11 @@
+     private final GameEvent.Context context;
+ 
++    public VanillaGameEvent() {
++        level = null;
++        vanillaEvent = null;
++        position = null;
++        context = null;
++    }
++
+     public VanillaGameEvent(Level level, GameEvent vanillaEvent, Vec3 position, GameEvent.Context context)
+     {

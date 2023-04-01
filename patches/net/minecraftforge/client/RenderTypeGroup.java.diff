@@ -1,0 +1,14 @@
+--- RenderTypeGroup.java
++++ RenderTypeGroup.java
+@@ -16,5 +16,11 @@
+ public record RenderTypeGroup(RenderType block, RenderType entity, RenderType entityFabulous)
+ {
++    public io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup getFabric() {
++        return new io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup(block, entity, entityFabulous);
++    }
+     public static RenderTypeGroup EMPTY = new RenderTypeGroup(null, null, null);
++    public static RenderTypeGroup getForge(io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup forgeEquivalent) {
++        return new RenderTypeGroup(forgeEquivalent.block(), forgeEquivalent.entity(), forgeEquivalent.entityFabulous());
++    }
+ 
+     public RenderTypeGroup
