@@ -13,11 +13,11 @@ import java.util.function.Supplier;
 // allowing the ability to override the methods. Very handy.
 public interface CapabilityProviderInjection {
     default void gatherCapabilities() {
-        throw new IllegalStateException();
+        gatherCapabilities(() -> null);
     }
 
     default void gatherCapabilities(@Nullable ICapabilityProvider parent) {
-        throw new IllegalStateException();
+        gatherCapabilities(() -> parent);
     }
 
     default void gatherCapabilities(@Nullable Supplier<ICapabilityProvider> parent) {

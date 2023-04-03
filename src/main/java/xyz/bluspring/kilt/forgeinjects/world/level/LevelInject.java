@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.common.extensions.IForgeLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 @Mixin(Level.class)
 public abstract class LevelInject implements CapabilityProviderInjection, LevelCapabilityProviderImpl, IForgeLevel, LevelInjection {
@@ -91,5 +93,10 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
     @Override
     public ArrayList<BlockSnapshot> getCapturedBlockSnapshots() {
         return capturedBlockSnapshots;
+    }
+
+    @Override
+    public void gatherCapabilities(@Nullable Supplier<ICapabilityProvider> parent) {
+        workaround.invokeGatherCapabilities(parent);
     }
 }

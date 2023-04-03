@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -28,6 +29,7 @@ import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
 
 import java.util.function.BiPredicate;
+import java.util.function.Supplier;
 
 @Mixin(Entity.class)
 public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, EntityCapabilityProviderImpl, EntityExtensions {
@@ -159,5 +161,10 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         } else {
             return instance.addFreshEntity(entity);
         }
+    }
+
+    @Override
+    public void gatherCapabilities(@Nullable Supplier<ICapabilityProvider> parent) {
+        workaround.invokeGatherCapabilities(parent);
     }
 }
