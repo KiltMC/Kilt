@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.remap
 
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.ManifestUtil
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import org.apache.commons.codec.digest.DigestUtils
@@ -15,12 +16,16 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
 import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
 import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URL
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Function
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
+import java.util.jar.Manifest
 
 object KiltRemapper {
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
@@ -249,6 +254,35 @@ object KiltRemapper {
 
         for (entry in jar.entries()) {
             if (!entry.name.endsWith(".class")) {
+                if (entry.name.lowercase() == "manifest.mf") {
+                    // Modify the manifest to avoid hash checking, because if
+                    // hash checking occurs, the JAR will fail to load entirely.
+                    val manifest = Manifest(jar.getInputStream(entry))
+
+                    val hashes = mutableListOf<String>()
+                    manifest.entries.forEach { (name, attr) ->
+                        if (attr.entries.any { it.toString().startsWith("SHA-256-Digest") || it.toString().startsWith("SHA-1-Digest") }) {
+                            hashes.add(name)
+                        }
+                    }
+
+                    hashes.forEach {
+                        manifest.entries.remove(it)
+                    }
+
+                    val outputStream = ByteArrayOutputStream()
+                    manifest.write(outputStream)
+
+                    jarOutput.putNextEntry(entry)
+                    jarOutput.write(outputStream.toByteArray())
+                    jarOutput.closeEntry()
+
+                    continue
+                } else if (entry.name.lowercase().endsWith(".rsa") || entry.name.lowercase().endsWith(".sf")) {
+                    // ignore signed JARs
+                    continue
+                }
+
                 jarOutput.putNextEntry(entry)
                 jarOutput.write(jar.getInputStream(entry).readAllBytes())
                 jarOutput.closeEntry()
