@@ -288,7 +288,7 @@ class KiltEarlyRiser : Runnable {
                         val integerProperty = namespaced("net/minecraft/class_2758", "net/minecraft/world/level/block/state/properties/IntegerProperty")
                         initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stateDefinition, namespaced("method_11664", "any"), "()L$stateHolder;", false)
                         initializer.visitTypeInsn(Opcodes.CHECKCAST, blockState)
-                        initializer.visitFieldInsn(Opcodes.GETSTATIC, flowingFluid, namespaced("field_15900", "LEVEL"), "L$integerProperty;")
+                        initializer.visitFieldInsn(Opcodes.GETSTATIC, liquidBlock, namespaced("field_15900", "LEVEL"), "L$integerProperty;")
 
                         val property = namespaced("net/minecraft/class_2769", "net/minecraft/world/level/block/state/properties/Property")
                         initializer.visitInsn(Opcodes.ICONST_0)

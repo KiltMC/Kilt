@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
 class DeferredRegister<T : Any> private constructor(
-    private val fabricRegister: LazyRegistrar<T>
+    private val fabricRegister: LazyRegistrar<T>,
+    private val isOptional: Boolean
 ) {
     private val optionalTags = mutableMapOf<TagKey<T>, MutableSet<Supplier<T>>>()
     private val fabricRegisteredList = ConcurrentLinkedQueue<RegistryObject<*>>()
@@ -86,7 +87,7 @@ class DeferredRegister<T : Any> private constructor(
                 }
 
                 (it as RegistryObjectAccessor<T>).callSetValue(registryValue)
-                Registry.register(registry, it.id, it.get())
+                Registry.register(registry, it.id, registryValue)
             }
         }
     }
@@ -123,7 +124,7 @@ class DeferredRegister<T : Any> private constructor(
     }
 
     fun <I : T> register(name: String, sup: Supplier<out I>): RegistryObject<I> {
-        return RegistryObject(fabricRegister.register(name, sup))
+        return RegistryObject(fabricRegister.register(name, sup), this.isOptional)
     }
 
     // not used by any Forge mods, but is used internally by Kilt due to the existence
@@ -140,27 +141,27 @@ class DeferredRegister<T : Any> private constructor(
     companion object {
         @JvmStatic
         fun <B : Any> create(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
-            return DeferredRegister(LazyRegistrar.create(key, modid))
+            return DeferredRegister(LazyRegistrar.create(key, modid), false)
         }
 
         @JvmStatic
         fun <B : Any> create(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
-            return DeferredRegister(LazyRegistrar.create(registryName, modid))
+            return DeferredRegister(LazyRegistrar.create(registryName, modid), false)
         }
 
         @JvmStatic
         fun <B : Any> create(reg: IForgeRegistry<B>, modid: String): DeferredRegister<B> {
-            return DeferredRegister(LazyRegistrar.create(reg.registryKey, modid))
+            return DeferredRegister(LazyRegistrar.create(reg.registryKey, modid), false)
         }
 
         @JvmStatic
         fun <B : Any> createOptional(key: ResourceKey<out Registry<B>>, modid: String): DeferredRegister<B> {
-            return DeferredRegister(LazyRegistrar.create(key, modid))
+            return DeferredRegister(LazyRegistrar.create(key, modid), true)
         }
 
         @JvmStatic
         fun <B : Any> createOptional(registryName: ResourceLocation, modid: String): DeferredRegister<B> {
-            return DeferredRegister(LazyRegistrar.create(registryName, modid))
+            return DeferredRegister(LazyRegistrar.create(registryName, modid), true)
         }
     }
 }

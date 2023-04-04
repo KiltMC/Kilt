@@ -15,7 +15,8 @@ import java.util.stream.Stream
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject as FabricRegistryObject
 
 class RegistryObject<T> internal constructor(
-    internal val fabricRegistryObject: FabricRegistryObject<T>
+    internal val fabricRegistryObject: FabricRegistryObject<T>,
+    private val isOptional: Boolean = false
 ) : Supplier<T> {
     private var modId = "kilt"
 
@@ -75,7 +76,7 @@ class RegistryObject<T> internal constructor(
     }
 
     fun isPresent(): Boolean {
-        return fabricRegistryObject.isPresent && registry?.containsKey(id) == true
+        return fabricRegistryObject.isPresent
     }
 
     private val registry: Registry<T>?
