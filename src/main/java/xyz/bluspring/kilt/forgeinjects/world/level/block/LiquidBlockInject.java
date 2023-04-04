@@ -48,12 +48,12 @@ public class LiquidBlockInject implements LiquidBlockInjection {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/LiquidBlock;shouldSpreadLiquid(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"), method = "neighborChanged")
     public boolean kilt$useForgeNeighborsChanged(LiquidBlock instance, Level level, BlockPos blockPos, BlockState blockState) {
-        return FluidInteractionRegistry.canInteract(level, blockPos);
+        return !FluidInteractionRegistry.canInteract(level, blockPos);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/LiquidBlock;shouldSpreadLiquid(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"), method = "onPlace")
     public boolean kilt$useForgeOnPlace(LiquidBlock instance, Level level, BlockPos blockPos, BlockState blockState) {
-        return FluidInteractionRegistry.canInteract(level, blockPos);
+        return !FluidInteractionRegistry.canInteract(level, blockPos);
     }
 
     private Supplier<? extends Fluid> supplier;
