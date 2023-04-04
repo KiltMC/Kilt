@@ -11,14 +11,15 @@ object CommonSuperFixer {
             classNode.access and Opcodes.ACC_INTERFACE == 0
             && classNode.methods.none { it.name == "<init>" && (it.signature == "()V" || it.desc == "()V") }
             &&
-            (
+            ((
                     (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc.contains("EventBusSubscriber") }) ||
                     (classNode.methods.any {
                         it.visibleAnnotations != null && it.visibleAnnotations.any { a ->
                             a.desc.contains("SubscribeEvent")
                         }
                     }
-            ))
+                    // *sigh*
+            )) || classNode.name.endsWith("Event"))
         ) {
             val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
             method.visitCode()

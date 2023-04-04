@@ -73,7 +73,7 @@ class KiltAsmRemapper(
         return methodMappings[name]?.first ?: name
     }
 
-    override fun mapInnerClassName(name: String, ownerName: String, innerName: String): String {
+    override fun mapInnerClassName(name: String, ownerName: String?, innerName: String?): String {
         return remapClass(name)
     }
 
