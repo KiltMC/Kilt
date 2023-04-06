@@ -2,11 +2,9 @@ package xyz.bluspring.kilt.forgeinjects.server.network;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ServerboundCustomQueryPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import net.minecraftforge.network.NetworkHooks;
@@ -64,5 +62,8 @@ public abstract class ServerLoginPacketListenerImplInject {
         public ServerLoginPacketListenerImpl.State kilt$setStateToNegotiating() {
             return ServerLoginPacketListenerImpl.State.NEGOTIATING;
         }
+
+        // TODO: there's meant to be a thread group added here, but i don't know how to
+        //       redirect super calls, so hope this doesn't bite me in the ass.
     }
 }

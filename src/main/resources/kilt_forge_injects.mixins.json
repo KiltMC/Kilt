@@ -39,6 +39,7 @@
     "server.level.ServerLevelInject",
     "server.level.ServerPlayerInject",
     "server.network.MemoryServerHandshakePacketListenerImplInject",
+    "server.network.ServerConnectionListenerInject",
     "server.network.ServerGamePacketListenerImplInject",
     "server.network.ServerHandshakePacketListenerImplInject",
     "server.network.ServerLoginPacketListenerImplInject",
