@@ -47,6 +47,7 @@ public class ServerStatusInject implements ServerStatusInjection {
 
             if (ret == null) {
                 ret = ClientboundStatusResponsePacket.GSON.toJson(this);
+                this.json = ret;
             }
 
             mutex.release();
