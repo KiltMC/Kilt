@@ -1,0 +1,10 @@
+--- ConnectionType.java
++++ ConnectionType.java
+@@ -21,4 +21,7 @@
+     public static ConnectionType forVersionFlag(String vers)
+     {
++        // Kilt: vers can for some reason be null, so let's make sure that can't happen.
++        if (vers == null)
++            vers = "NONE";
+         return vers.startsWith(NetworkConstants.FMLNETMARKER) ? MODDED : VANILLA;
+     }
