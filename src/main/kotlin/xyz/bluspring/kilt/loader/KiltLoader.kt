@@ -15,6 +15,7 @@ import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
@@ -39,6 +40,7 @@ import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.KiltHelper
 import java.io.File
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -496,16 +498,19 @@ class KiltLoader {
                     } catch (_: Exception) { null }
                     constructor?.isAccessible = true // some people set this to private
 
-                    val instance = constructor?.newInstance()
+                    val initNonStatic = constructor != null && clazz.methods.any { m -> m.isAnnotationPresent(SubscribeEvent::class.java) && !Modifier.isStatic(m.modifiers) }
+
                     if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                        if (instance != null)
-                            mod.eventBus.register(instance) // scans non-static methods
+                        if (initNonStatic)
+                            mod.eventBus.register(constructor!!.newInstance()) // scans non-static methods
                         mod.eventBus.register(clazz) // scans static methods
                     } else {
-                        if (instance != null)
-                            MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
+                        if (initNonStatic)
+                            MinecraftForge.EVENT_BUS.register(constructor!!.newInstance()) // scans non-static methods
                         MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
                     }
+
+                    constructor?.isAccessible = false
 
                     Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
                 } catch (e: Exception) {
