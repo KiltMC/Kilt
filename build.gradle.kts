@@ -142,6 +142,7 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:sodium:mc1.19.2-0.4.4")
     modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1")
     modRuntimeOnly ("maven.modrinth:starlight:1.1.1+1.19")
+    modRuntimeOnly ("maven.modrinth:indium:1.0.9+mc1.19.2")
 
     runtimeOnly ("org.joml:joml:1.10.4")
 

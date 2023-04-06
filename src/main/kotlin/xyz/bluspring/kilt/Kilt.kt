@@ -3,6 +3,7 @@ package xyz.bluspring.kilt
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraftforge.client.ForgeHooksClient
@@ -12,6 +13,7 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
+import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltLoader
@@ -54,6 +56,23 @@ class Kilt : ModInitializer {
                 InteractionResult.SUCCESS
             else
                 InteractionResult.FAIL
+        }
+
+        ServerLifecycleEvents.SERVER_STARTING.register {
+            ServerLifecycleHooks.handleServerAboutToStart(it)
+            ServerLifecycleHooks.handleServerStarting(it)
+        }
+
+        ServerLifecycleEvents.SERVER_STARTED.register {
+            ServerLifecycleHooks.handleServerStarted(it)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            ServerLifecycleHooks.handleServerStopping(it)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPED.register {
+            ServerLifecycleHooks.handleServerStopped(it)
         }
     }
 

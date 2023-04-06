@@ -24,7 +24,7 @@ abstract class ModContainer(info: IModInfo) {
         get() = modLoadingStage
 
     fun <T : Record> getCustomExtension(point: Class<out IExtensionPoint<T>>): Optional<T> {
-        return Optional.ofNullable(extensionPoints.getOrDefault(point, Supplier { null }).get() as T)
+        return Optional.ofNullable(extensionPoints.getOrDefault(point, Supplier { null }).get() as T?)
     }
 
     fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {
