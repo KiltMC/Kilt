@@ -42,6 +42,7 @@
     "server.network.ServerGamePacketListenerImplInject",
     "server.network.ServerHandshakePacketListenerImplInject",
     "server.network.ServerLoginPacketListenerImplInject",
+    "server.network.ServerLoginPacketListenerImplInject$ThreadInject",
     "server.packs.PackResourcesInject",
     "server.packs.repository.PackRepositoryInject",
     "stats.RecipeBookSettingsInject",

@@ -1004,3 +1004,5 @@ transitive-accessible method net/minecraft/world/level/storage/LevelResource <in
 transitive-extendable method net/minecraft/world/level/storage/LevelResource <init> (Ljava/lang/String;)V # <init>
 transitive-accessible field net/minecraft/world/level/storage/loot/LootPool rolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider; # f_79028_
 transitive-accessible field net/minecraft/world/level/storage/loot/LootPool bonusRolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider; # f_79029_
+
+transitive-accessible class net/minecraft/server/network/ServerLoginPacketListenerImpl$State
