@@ -1,0 +1,9 @@
+--- NetworkInstance.java
++++ NetworkInstance.java
+@@ -37,5 +37,5 @@
+         this.clientAcceptedVersions = clientAcceptedVersions;
+         this.serverAcceptedVersions = serverAcceptedVersions;
+-        this.networkEventBus = BusBuilder.builder().setExceptionHandler(this::handleError).useModLauncher().build();
++        this.networkEventBus = BusBuilder.builder().setExceptionHandler(this::handleError).build();
+     }
+ 
