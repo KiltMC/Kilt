@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client.multiplayer;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
+import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraftforge.network.NetworkHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,5 +20,10 @@ public class ClientHandshakePacketListenerImplInject {
     public void kilt$checkCustomPayload(ClientboundCustomQueryPacket packet, CallbackInfo ci) {
         if (NetworkHooks.onCustomPayload(packet, this.connection))
             ci.cancel();
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;setProtocol(Lnet/minecraft/network/ConnectionProtocol;)V", shift = At.Shift.AFTER), method = "handleGameProfile")
+    public void kilt$handleForgeClientLoginSuccess(ClientboundGameProfilePacket clientboundGameProfilePacket, CallbackInfo ci) {
+        NetworkHooks.handleClientLoginSuccess(this.connection);
     }
 }
