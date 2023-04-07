@@ -58,11 +58,6 @@ class Kilt : ModInitializer {
                 InteractionResult.FAIL
         }
 
-        ServerLifecycleEvents.SERVER_STARTING.register {
-            ServerLifecycleHooks.handleServerAboutToStart(it)
-            ServerLifecycleHooks.handleServerStarting(it)
-        }
-
         ServerLifecycleEvents.SERVER_STARTED.register {
             ServerLifecycleHooks.handleServerStarted(it)
         }
