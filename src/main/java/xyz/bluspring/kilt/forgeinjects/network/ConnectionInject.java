@@ -54,18 +54,6 @@ public class ConnectionInject implements ConnectionInjection {
             activationHandler.accept((Connection) (Object) this);
     }
 
-    @Inject(at = @At("TAIL"), method = "connectToServer")
-    private static void kilt$setActivationHandlerGlobal(InetSocketAddress inetSocketAddress, boolean bl, CallbackInfoReturnable<Connection> cir) {
-        var connection = (ConnectionInjection) cir.getReturnValue();
-        connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
-    }
-
-    @Inject(at = @At("TAIL"), method = "connectToLocalServer")
-    private static void kilt$setActivationHandlerLocal(SocketAddress socketAddress, CallbackInfoReturnable<Connection> cir) {
-        var connection = (ConnectionInjection) cir.getReturnValue();
-        connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
-    }
-
     @Override
     public void setActivationHandler(@NotNull Consumer<Connection> handler) {
         activationHandler = handler;

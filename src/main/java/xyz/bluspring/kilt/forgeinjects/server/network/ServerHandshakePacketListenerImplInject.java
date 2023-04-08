@@ -14,10 +14,4 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerHandshakePacketListenerImpl.class)
 public class ServerHandshakePacketListenerImplInject {
     @Shadow @Final private Connection connection;
-
-    @Inject(at = @At("HEAD"), method = "handleIntention", cancellable = true)
-    public void kilt$handleForgeServerLogin(ClientIntentionPacket clientIntentionPacket, CallbackInfo ci) {
-        if (!ServerLifecycleHooks.handleServerLogin(clientIntentionPacket, this.connection))
-            ci.cancel();
-    }
 }
