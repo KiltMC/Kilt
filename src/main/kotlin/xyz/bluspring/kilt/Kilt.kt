@@ -111,7 +111,7 @@ class Kilt : ModInitializer {
                 HitResult.Type.ENTITY -> {
                     val result = ForgeHooks.onPlayerAttackTarget(minecraft.player, (hit as EntityHitResult).entity)
 
-                    if (!result)
+                    if (result)
                         InteractionResult.FAIL
                     else
                         InteractionResult.SUCCESS
