@@ -4,13 +4,13 @@ import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerR
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.minecraft.client.Minecraft
-import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.network.KiltNetworking
 
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
@@ -33,6 +33,8 @@ class KiltClient : ClientModInitializer {
         ItemTooltipCallback.EVENT.register { stack, flag, components ->
             MinecraftForge.EVENT_BUS.post(ItemTooltipEvent(stack, null, components, flag))
         }
+
+        KiltNetworking.initClientEvents()
     }
 
     companion object {

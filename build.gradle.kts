@@ -67,6 +67,10 @@ repositories {
         name = "Architectury"
     }
 
+    maven("https://maven.parchmentmc.org") {
+        name = "ParchmentMC"
+    }
+
     mavenCentral()
 
     flatDir {
@@ -96,7 +100,10 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft ("com.mojang:minecraft:${property("minecraft_version")}")
-    mappings (loom.officialMojangMappings())
+    mappings (loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-1.19.2:2022.11.27@zip")
+    })
     modImplementation ("net.fabricmc:fabric-loader:${property("loader_version")}")
 
     // Fabric API. This is technically optional, but you probably want it anyway.

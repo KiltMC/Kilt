@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.enchantment.EnchantmentHelper
-import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.living.LivingDropsEvent
@@ -17,6 +16,7 @@ import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.network.KiltNetworking
 import java.util.*
 
 class Kilt : ModInitializer {
@@ -67,8 +67,11 @@ class Kilt : ModInitializer {
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register {
+            ServerLifecycleHooks.expectServerStopped()
             ServerLifecycleHooks.handleServerStopped(it)
         }
+
+        KiltNetworking.initServerEvents()
     }
 
     companion object {

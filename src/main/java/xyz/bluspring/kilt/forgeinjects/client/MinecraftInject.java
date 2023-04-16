@@ -6,7 +6,9 @@ import net.minecraft.client.Timer;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.resources.ClientPackSource;
 import net.minecraft.client.searchtree.SearchRegistry;
+import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -15,6 +17,7 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.ClientTooltipComponentManager;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
+import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModLoader;
@@ -39,6 +42,8 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
     @Shadow private float pausePartialTick;
     @Shadow @Final private Timer timer;
     @Shadow @Final public ParticleEngine particleEngine;
+    @Shadow @Final private PackRepository resourcePackRepository;
+    @Shadow @Final private ClientPackSource clientPackSource;
     @Unique
     private float realPartialTick;
 
@@ -73,6 +78,11 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
         NamedRenderTypeManager.init();
         ColorResolverManager.init();
         ItemDecoratorHandler.init();
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V"), method = "<init>")
+    public void kilt$initializeClientModLoader(GameConfig gameConfig, CallbackInfo ci) {
+        ClientModLoader.begin((Minecraft) (Object) this, this.resourcePackRepository, this.resourceManager, this.clientPackSource);
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.BEFORE), method = "runTick")
