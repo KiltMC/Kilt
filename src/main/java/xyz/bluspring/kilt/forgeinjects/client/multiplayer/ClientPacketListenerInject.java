@@ -4,11 +4,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkHooks;
@@ -17,6 +20,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
@@ -52,5 +56,12 @@ public class ClientPacketListenerInject {
         if (!minecraft.isSameThread() && NetworkHooks.onCustomPayload(packet, this.connection)) {
             ci.cancel();
         }
+    }
+
+    @Redirect(method = "method_38542", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;getTag()Lnet/minecraft/nbt/CompoundTag;"))
+    public CompoundTag kilt$replaceWithDataPacketLoad(ClientboundBlockEntityDataPacket instance, ClientboundBlockEntityDataPacket unused, BlockEntity blockEntity) {
+        blockEntity.onDataPacket(this.connection, instance);
+
+        return null;
     }
 }

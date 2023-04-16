@@ -12,9 +12,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.ConnectionInjection;
 
 import java.net.InetSocketAddress;
@@ -41,6 +43,13 @@ public class ConnectionInject implements ConnectionInjection {
         return this.receiving;
     }
 
+    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/channel/Channel;remoteAddress()Ljava/net/SocketAddress;", shift = At.Shift.AFTER), method = "channelActive")
+    public void kilt$acceptActivationHandler(ChannelHandlerContext channelHandlerContext, CallbackInfo ci) {
+        if (activationHandler != null)
+            activationHandler.accept((Connection) (Object) this);
+    }
+
+
     @Redirect(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;"), method = "sendPacket")
     public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b) {
         this.channel.eventLoop().execute(() -> instance.setAutoRead(false));
@@ -48,10 +57,16 @@ public class ConnectionInject implements ConnectionInjection {
         return instance;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/channel/Channel;remoteAddress()Ljava/net/SocketAddress;", shift = At.Shift.AFTER), method = "channelActive")
-    public void kilt$acceptActivationHandler(ChannelHandlerContext channelHandlerContext, CallbackInfo ci) {
-        if (activationHandler != null)
-            activationHandler.accept((Connection) (Object) this);
+    @ModifyVariable(at = @At("STORE"), ordinal = 0, method = "connectToServer")
+    private static Connection kilt$registerClientLoginChannel(Connection connection) {
+        connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
+
+        return connection;
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;"), method = "connectToLocalServer", locals = LocalCapture.CAPTURE_FAILHARD)
+    private static void kilt$registerClientLoginChannelLocally(SocketAddress address, CallbackInfoReturnable<Connection> cir, Connection connection) {
+        connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
     }
 
     @Override

@@ -10,7 +10,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.network.KiltNetworking
 
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
@@ -33,8 +32,6 @@ class KiltClient : ClientModInitializer {
         ItemTooltipCallback.EVENT.register { stack, flag, components ->
             MinecraftForge.EVENT_BUS.post(ItemTooltipEvent(stack, null, components, flag))
         }
-
-        KiltNetworking.initClientEvents()
     }
 
     companion object {

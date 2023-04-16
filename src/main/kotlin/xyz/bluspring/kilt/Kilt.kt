@@ -1,11 +1,16 @@
 package xyz.bluspring.kilt
 
+import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.EntityHitResult
+import net.minecraft.world.phys.HitResult
+import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.living.LivingDropsEvent
@@ -16,11 +21,11 @@ import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltLoader
-import xyz.bluspring.kilt.network.KiltNetworking
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        MinecraftForge.EVENT_BUS.start()
 
         registerFabricEvents()
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
@@ -71,7 +76,62 @@ class Kilt : ModInitializer {
             ServerLifecycleHooks.handleServerStopped(it)
         }
 
-        KiltNetworking.initServerEvents()
+        InteractEvents.USE.register { minecraft, hit, hand ->
+            val player = minecraft.player
+
+            when (hit.type) {
+                HitResult.Type.BLOCK -> {
+                    val result = ForgeHooks.onRightClickBlock(player, hand, (hit as BlockHitResult).blockPos, hit)
+
+                    result.cancellationResult
+                }
+
+                HitResult.Type.MISS -> {
+                    ForgeHooks.onItemRightClick(player, hand)
+                }
+
+                HitResult.Type.ENTITY -> {
+                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand)
+                }
+
+                else -> throw IllegalStateException("this should be impossible.")
+            }
+        }
+
+        InteractEvents.ATTACK.register { minecraft, hit ->
+            val player = minecraft.player
+
+            when (hit.type) {
+                HitResult.Type.BLOCK -> {
+                    val result = ForgeHooks.onLeftClickBlock(player, (hit as BlockHitResult).blockPos, hit.direction)
+
+                    result.cancellationResult
+                }
+
+                HitResult.Type.ENTITY -> {
+                    val result = ForgeHooks.onPlayerAttackTarget(minecraft.player, (hit as EntityHitResult).entity)
+
+                    if (!result)
+                        InteractionResult.FAIL
+                    else
+                        InteractionResult.SUCCESS
+                }
+
+                HitResult.Type.MISS -> {
+                    ForgeHooks.onEmptyLeftClick(player)
+
+                    InteractionResult.PASS
+                }
+
+                else -> throw IllegalStateException("impossible")
+            }
+        }
+
+        InteractEvents.PICK.register { minecraft, hit ->
+            val player = minecraft.player
+
+            ForgeHooks.onPickBlock(hit, player, minecraft.level)
+        }
     }
 
     companion object {

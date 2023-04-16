@@ -70,6 +70,7 @@
     "world.food.FoodPropertiesBuilderInject",
     "world.food.FoodPropertiesInject",
     "world.inventory.AnvilMenuInject",
+    "world.inventory.MenuTypeInject",
     "world.inventory.RecipeBookTypeInject",
     "world.item.AxeItemInject",
     "world.item.BoneMealItemInject",
