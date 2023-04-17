@@ -52,7 +52,7 @@ public final class MixinExtensionHelper {
                     if (insnNode instanceof MethodInsnNode methodInsn) {
                         // super()/this()
                         if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(mixinClassName)) { // this()
+                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
                             } else { // super()
                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
