@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.extensions.IForgeItem;
@@ -16,9 +17,11 @@ import xyz.bluspring.kilt.injections.item.ItemPropertiesInjection;
 import java.util.function.Consumer;
 
 @Mixin(Item.class)
-public class ItemInject implements IForgeItem, ItemInjection, RenderPropertiesInjection {
+public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPropertiesInjection {
     private boolean canRepair;
     private Object renderProperties;
+
+    public ItemInject(ItemProperties properties) {}
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$setRepairability(Item.Properties properties, CallbackInfo ci) {
