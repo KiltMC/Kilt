@@ -35,7 +35,6 @@ public final class MixinExtensionHelper {
 
             // Remove private and protected access, and promote to public and static.
             fieldNode.access = fieldNode.access & ~Opcodes.ACC_PRIVATE & ~Opcodes.ACC_PROTECTED | Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
-            targetClass.fields.add(fieldNode);
         }
 
         for (MethodNode methodNode : classNode.methods) {
@@ -58,7 +57,6 @@ public final class MixinExtensionHelper {
             if (foundStaticAnnotation) {
                 // Remove private and protected access, and promote to public and static.
                 methodNode.access = methodNode.access & ~Opcodes.ACC_PRIVATE & ~Opcodes.ACC_PROTECTED | Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
-                targetClass.methods.add(methodNode);
             } else if (foundInitAnnotation) {
                 // Make sure the method is private and static.
                 methodNode.access = methodNode.access & ~Opcodes.ACC_PUBLIC & ~Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC;
@@ -80,12 +78,6 @@ public final class MixinExtensionHelper {
 
                             alreadyRun = true;
 
-                            // These are typically load instructions. These are required for this to even remotely function.
-                            for (int i = 0; i < nodesUntilInitializer - 1; i++) {
-                                var insn = methodNode.instructions.get(i);
-                                initializer.instructions.add(insn);
-                            }
-
                             if (methodInsn.name.equals("initSuper")) { // super()
                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", methodInsn.desc, false);
                             } else if (methodInsn.name.equals("initThis")) { // this()
@@ -101,6 +93,8 @@ public final class MixinExtensionHelper {
                         initializer.instructions.add(insnNode);
                     }
                 }
+
+                initializer.localVariables = methodNode.localVariables;
 
                 // We don't need the method's instructions anymore.
                 methodNode.instructions.clear();

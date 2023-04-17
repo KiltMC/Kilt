@@ -235,7 +235,7 @@ class KiltEarlyRiser : Runnable {
             }
 
             // LiquidBlock
-            run {
+            /*run {
                 val liquidBlock = namespaced("net/minecraft/class_2404", "net/minecraft/world/level/block/LiquidBlock")
                 val blockBehaviourProperties = namespaced("net/minecraft/class_4970\$class_2251", "net/minecraft/world/level/block/state/BlockBehaviour\$Properties")
                 val flowingFluid = namespaced("net/minecraft/class_3609", "net/minecraft/world/level/material/FlowingFluid")
@@ -318,7 +318,7 @@ class KiltEarlyRiser : Runnable {
                         initializer.visitEnd()
                     }
                 }
-            }
+            }*/
 
             // BucketItem
             run {
