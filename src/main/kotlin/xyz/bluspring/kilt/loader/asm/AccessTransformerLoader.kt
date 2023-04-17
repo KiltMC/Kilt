@@ -14,7 +14,7 @@ import java.util.regex.Pattern
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
-    private const val debug = true
+    private const val debug = false
     private var hasLoaded = false
 
     private val whitespace = Pattern.compile("[ \t]+")
