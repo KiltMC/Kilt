@@ -21,8 +21,6 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
     private boolean canRepair;
     private Object renderProperties;
 
-    public ItemInject(ItemProperties properties) {}
-
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$setRepairability(Item.Properties properties, CallbackInfo ci) {
         canRepair = ((ItemPropertiesInjection) properties).getCanRepair();
