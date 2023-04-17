@@ -266,12 +266,13 @@ class KiltEarlyRiser : Runnable {
                         initializer.visitVarInsn(Opcodes.ALOAD, 2)
                         initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, block, "<init>", "(L$blockBehaviourProperties;)V", false)
 
-                        // this.field = null;
+                        // this.fluid = null;
                         initializer.visitLabel(label1)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
                         initializer.visitInsn(Opcodes.ACONST_NULL)
                         initializer.visitFieldInsn(Opcodes.PUTFIELD, liquidBlock, namespaced("field_11279", "fluid"), "L$flowingFluid;")
 
+                        // this.stateCache = Lists.newArrayList();
                         initializer.visitLabel(label2)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
                         initializer.visitMethodInsn(Opcodes.INVOKESTATIC, "com/google/common/collect/Lists", "newArrayList", "()Ljava/util/ArrayList;", false)
