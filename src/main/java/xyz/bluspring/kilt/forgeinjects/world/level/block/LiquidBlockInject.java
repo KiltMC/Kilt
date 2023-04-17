@@ -98,8 +98,8 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
     }
 
     @CreateInitializer
-    public void kilt$addSupplierBasedInitializer(Supplier<? extends FlowingFluid> fluidSupplier, BlockBehaviour.Properties properties) {
-        MixinExtensionHelper.initSuper(properties);
+    public LiquidBlockInject(Supplier<? extends FlowingFluid> fluidSupplier, BlockBehaviour.Properties properties) {
+        super(properties);
 
         this.fluid = null;
         this.stateCache = Lists.newArrayList();
