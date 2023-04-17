@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.server.network;
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ServerboundCustomQueryPacket;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerLoginPacketListenerImpl.class)
+@Mixin(value = ServerLoginPacketListenerImpl.class, priority = 1050)
 public abstract class ServerLoginPacketListenerImplInject {
     @Shadow @Final public Connection connection;
 
