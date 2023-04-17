@@ -41,9 +41,8 @@ class Kilt : ModInitializer {
     }
 
     private fun registerFabricEvents() {
-        LivingEntityEvents.DROPS.register { entity, source, drops ->
-            val lootingLevel = EnchantmentHelper.getMobLooting(entity)
-            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, lootingLevel, true))
+        LivingEntityEvents.DROPS_WITH_LEVEL.register { entity, source, drops, level, recentlyHit ->
+            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->

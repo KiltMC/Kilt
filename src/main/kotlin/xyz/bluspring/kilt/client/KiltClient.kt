@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.minecraft.client.Minecraft
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
@@ -30,7 +31,7 @@ class KiltClient : ClientModInitializer {
         }
 
         ItemTooltipCallback.EVENT.register { stack, flag, components ->
-            MinecraftForge.EVENT_BUS.post(ItemTooltipEvent(stack, null, components, flag))
+            ForgeEventFactory.onItemTooltip(stack, null, components, flag)
         }
     }
 

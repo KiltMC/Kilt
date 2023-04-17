@@ -500,6 +500,7 @@ class KiltEarlyRiser : Runnable {
                 }
             }
 
+            // ShaderInstance
             run {
                 val shaderInstance = namespaced("net/minecraft/class_5944", "net/minecraft/client/renderer/ShaderInstance")
                 val resourceProvider = namespaced("net/minecraft/class_5912", "net/minecraft/server/packs/resources/ResourceProvider")
@@ -536,6 +537,38 @@ class KiltEarlyRiser : Runnable {
                     initializer.visitEnd()
                 }
             }
+
+            // BlockTags, ItemTags, FluidTags
+            /*run {
+                val resourceLocation = namespaced("net/minecraft/class_2960", "net/minecraft/resources/ResourceLocation")
+
+                val tags = listOf(
+                    namespaced("class_3481", "BlockTags"),
+                    namespaced("class_3486", "FluidTags"),
+                    namespaced("class_3489", "ItemTags"),
+                )
+
+                val pkg = namespaced("net/minecraft", "net/minecraft/tags")
+
+                tags.forEach { className ->
+                    val classPath = "$pkg/$className"
+
+                    ClassTinkerers.addTransformation(classPath) {
+                        val create = it.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "create", "($resourceLocation)L$classPath;", null, null)
+
+                        create.visitCode()
+
+                        val label0 = Label()
+                        val label1 = Label()
+                        val label2 = Label()
+
+                        create.visitLabel(label0)
+
+                        create.visitVarInsn(Opcodes.ALOAD, 1)
+                        create.visitMethodInsn(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/injections/tags/")
+                    }
+                }
+            }*/
         }
 
         Kilt.loader.preloadMods()
