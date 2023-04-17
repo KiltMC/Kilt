@@ -1,16 +1,15 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
+import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraftforge.fluids.FluidInteractionRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Final;
@@ -22,18 +21,23 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.LiquidBlockInjection;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Mixin(LiquidBlock.class)
-public class LiquidBlockInject implements LiquidBlockInjection {
+public abstract class LiquidBlockInject extends Block implements LiquidBlockInjection {
     @Shadow @Final @Mutable
     protected FlowingFluid fluid;
 
+    @Mutable
     @Shadow @Final private List<FluidState> stateCache;
+
+    public LiquidBlockInject(Properties properties) {
+        super(properties);
+    }
 
     @Override
     public FlowingFluid getFluid() {
@@ -86,5 +90,16 @@ public class LiquidBlockInject implements LiquidBlockInjection {
             this.stateCache.add(getFluid().getFlowing(8, true));
             fluidStateCacheInitialized = true;
         }
+    }
+
+    @CreateInitializer
+    public LiquidBlockInject(Supplier<? extends FlowingFluid> fluidSupplier, BlockBehaviour.Properties properties) {
+        super(properties);
+
+        this.fluid = null;
+        this.stateCache = Lists.newArrayList();
+        this.registerDefaultState(this.stateDefinition.any().setValue(FlowingFluid.LEVEL, 0));
+
+        this.supplier = fluidSupplier;
     }
 }

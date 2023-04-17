@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.entity.AttributeSupplierBuilderInjection;
+import xyz.bluspring.kilt.mixin.AttributeSupplierAccessor;
 import xyz.bluspring.kilt.mixin.AttributeSupplierBuilderAccessor;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(AttributeSupplier.Builder.class)
-public class AttributeSupplierBuilderInject implements AttributeSupplierBuilderInjection {
+public abstract class AttributeSupplierBuilderInject implements AttributeSupplierBuilderInjection {
     private List<AttributeSupplier.Builder> others = new ArrayList<>();
 
     @Shadow @Final private Map<Attribute, AttributeInstance> builder;
@@ -43,5 +45,14 @@ public class AttributeSupplierBuilderInject implements AttributeSupplierBuilderI
         }
 
         cir.setReturnValue(new AttributeSupplier(this.builder));
+    }
+
+    public AttributeSupplierBuilderInject() {}
+
+    @CreateInitializer
+    public AttributeSupplierBuilderInject(AttributeSupplier attributeMap) {
+        this();
+
+        this.builder.putAll(((AttributeSupplierAccessor) attributeMap).getInstances());
     }
 }

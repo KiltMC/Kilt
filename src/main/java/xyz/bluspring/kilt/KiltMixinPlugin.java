@@ -4,8 +4,7 @@ import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
-import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader;
-import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader;
+import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
 
 import java.util.List;
 import java.util.Set;
@@ -38,11 +37,10 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-
     }
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-
+        MixinExtensionHelper.apply(targetClassName, targetClass, mixinClassName, mixinInfo);
     }
 }

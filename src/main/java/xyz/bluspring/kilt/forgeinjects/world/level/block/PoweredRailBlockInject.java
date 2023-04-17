@@ -4,6 +4,7 @@ import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
 
 @Mixin(PoweredRailBlock.class)
@@ -27,5 +28,16 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
     @Override
     public void kilt$setActivator(boolean value) {
         isActivator = !value;
+    }
+
+    public PoweredRailBlockInject(Properties properties) {
+        super(false, properties);
+    }
+
+    @CreateInitializer
+    public PoweredRailBlockInject(Properties properties, boolean isPoweredRail) {
+        this(properties);
+
+        this.kilt$setActivator(isPoweredRail);
     }
 }

@@ -1,13 +1,16 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.MobBucketItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 import java.util.function.Supplier;
 
@@ -54,4 +57,7 @@ public class MobBucketItemInject {
     public EntityType<?> kilt$checkUsingForgeEntityType(MobBucketItem instance) {
         return getFishType();
     }
+
+    // A CreateInitializer could be added here, but because BucketItem is adding its own constructor,
+    // it can't be done feasibly.
 }
