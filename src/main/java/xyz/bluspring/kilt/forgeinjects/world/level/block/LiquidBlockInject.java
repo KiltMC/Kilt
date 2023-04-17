@@ -1,8 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
+import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -11,10 +10,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraftforge.fluids.FluidInteractionRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.compress.utils.Lists;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -25,11 +22,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
 import xyz.bluspring.kilt.injections.world.level.block.LiquidBlockInjection;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Mixin(LiquidBlock.class)

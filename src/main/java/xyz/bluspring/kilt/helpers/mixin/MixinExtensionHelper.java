@@ -12,6 +12,8 @@ public final class MixinExtensionHelper {
     @ApiStatus.Internal
     public static void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         var classNode = mixinInfo.getClassNode(0);
+        var slashedMixinClassName = mixinClassName.replaceAll("\\.", "/");
+        var slashedTargetClassName = targetClassName.replaceAll("\\.", "/");
 
         for (FieldNode fieldNode : classNode.fields) {
             if (Annotations.getVisible(fieldNode, CreateStatic.class) == null)
@@ -36,21 +38,32 @@ public final class MixinExtensionHelper {
                     if (insnNode instanceof MethodInsnNode methodInsn) {
                         // super()/this()
                         if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(mixinClassName)) { // super()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClassName, "<init>", methodInsn.desc, false);
-                            } else { // this()
+                            if (methodInsn.owner.equals(mixinClassName)) { // this()
+                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
+                            } else { // super()
                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
                             }
                         } else {
-                            if (methodInsn.owner.equals(mixinClassName)) {
-                                methodInsn.owner = targetClassName;
-                                initializer.instructions.add(methodInsn);
+                            if (methodInsn.owner.equals(slashedMixinClassName)) {
+                                methodInsn.owner = slashedTargetClassName;
                             }
+
+                            initializer.instructions.add(methodInsn);
                         }
                     } else {
-                        initializer.instructions.add(insnNode);
+                        if (insnNode instanceof FieldInsnNode fieldInsn) {
+                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                fieldInsn.owner = slashedTargetClassName;
+                            }
+
+                            initializer.instructions.add(fieldInsn);
+                        } else {
+                            initializer.instructions.add(insnNode);
+                        }
                     }
                 }
+
+                initializer.visitEnd();
 
                 initializer.localVariables = methodNode.localVariables;
 
