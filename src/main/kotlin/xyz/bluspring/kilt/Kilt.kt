@@ -45,6 +45,10 @@ class Kilt : ModInitializer {
             MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
+        LivingEntityEvents.TICK.register {
+            ForgeHooks.onLivingTick(it)
+        }
+
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
             ForgeEventFactory.onPlayerSleepInBed(player, Optional.of(pos))
         }
@@ -86,11 +90,11 @@ class Kilt : ModInitializer {
                 }
 
                 HitResult.Type.MISS -> {
-                    ForgeHooks.onItemRightClick(player, hand)
+                    ForgeHooks.onItemRightClick(player, hand) ?: InteractionResult.PASS
                 }
 
                 HitResult.Type.ENTITY -> {
-                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand)
+                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand) ?: InteractionResult.PASS
                 }
 
                 else -> throw IllegalStateException("this should be impossible.")
