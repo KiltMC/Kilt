@@ -499,14 +499,19 @@ class KiltLoader {
                     constructor?.isAccessible = true // some people set this to private
 
                     val initNonStatic = constructor != null && clazz.methods.any { m -> m.isAnnotationPresent(SubscribeEvent::class.java) && !Modifier.isStatic(m.modifiers) }
+                    val instance = try { // still needs to be initialized anyway for <clinit> to actually get triggered.
+                        constructor!!.newInstance()
+                    } catch (e: Exception) {
+                        null
+                    }
 
                     if (busType == Mod.EventBusSubscriber.Bus.MOD) {
                         if (initNonStatic)
-                            mod.eventBus.register(constructor!!.newInstance()) // scans non-static methods
+                            mod.eventBus.register(instance) // scans non-static methods
                         mod.eventBus.register(clazz) // scans static methods
                     } else {
                         if (initNonStatic)
-                            MinecraftForge.EVENT_BUS.register(constructor!!.newInstance()) // scans non-static methods
+                            MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
                         MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
                     }
 
