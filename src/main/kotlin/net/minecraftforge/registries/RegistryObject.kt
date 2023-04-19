@@ -19,6 +19,7 @@ class RegistryObject<T> internal constructor(
     private val isOptional: Boolean = false
 ) : Supplier<T> {
     private var modId = "kilt"
+    internal var value: Supplier<T>? = null
 
     private constructor(
         fabricRegistryObject: FabricRegistryObject<T>,
@@ -28,6 +29,9 @@ class RegistryObject<T> internal constructor(
     }
 
     override fun get(): T {
+        if (value != null)
+            return value!!.get()
+
         if (!isPresent())
             (fabricRegistryObject as RegistryObjectInjection).updateRef()
 
