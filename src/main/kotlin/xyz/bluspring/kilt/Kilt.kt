@@ -1,19 +1,26 @@
 package xyz.bluspring.kilt
 
+import dev.architectury.event.EventResult
+import dev.architectury.event.events.common.EntityEvent
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.Mob
 import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
+import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.living.LivingDropsEvent
+import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
@@ -134,6 +141,60 @@ class Kilt : ModInitializer {
             val player = minecraft.player
 
             ForgeHooks.onPickBlock(hit, player, minecraft.level)
+        }
+
+        EntityEvent.LIVING_CHECK_SPAWN.register { entity, level, x, y, z, spawnType, spawner ->
+            if (entity is Mob)
+                eventBusToArchitectury(ForgeEventFactory.canEntitySpawn(entity, level, x, y, z, spawner, spawnType))
+            else
+                EventResult.pass()
+        }
+
+        EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->
+            ForgeHooks.onEntityEnterSection(entity, ChunkPos.asLong(BlockPos(sectionX, sectionY, sectionZ)), ChunkPos.asLong(
+                BlockPos(prevX, prevY, prevZ)
+            ))
+        }
+
+        EntityEvent.ANIMAL_TAME.register { animal, player ->
+            if (ForgeEventFactory.onAnimalTame(animal, player))
+                EventResult.interruptDefault()
+            else
+                EventResult.pass()
+        }
+
+        EntityEvent.LIVING_DEATH.register { entity, source ->
+            if (ForgeHooks.onLivingDeath(entity, source))
+                EventResult.interruptDefault()
+            else
+                EventResult.pass()
+        }
+
+        EntityEvent.LIVING_HURT.register { entity, source, amount ->
+            val newAmount = ForgeHooks.onLivingHurt(entity, source, amount)
+
+            // TODO: set amount
+            if (newAmount != 0F) {
+                EventResult.interruptDefault()
+            } else {
+                EventResult.pass()
+            }
+        }
+
+        EntityEvent.ADD.register { entity, level ->
+            if (MinecraftForge.EVENT_BUS.post(EntityJoinLevelEvent(entity, level)))
+                EventResult.interruptDefault()
+            else
+                EventResult.pass()
+        }
+    }
+
+    private fun eventBusToArchitectury(result: Event.Result): EventResult {
+        return when (result) {
+            Event.Result.ALLOW -> EventResult.interruptTrue()
+            Event.Result.DEFAULT -> EventResult.pass()
+            Event.Result.DENY -> EventResult.interruptFalse()
+            else -> EventResult.pass()
         }
     }
 
