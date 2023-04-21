@@ -129,7 +129,7 @@ class DeferredRegister<T : Any> private constructor(
 
     // not used by any Forge mods, but is used internally by Kilt due to the existence
     // of Porting Lib.
-    fun <I : T> kiltRegister(name: String, sup: Supplier<I>): RegistryObject<I> {
+    fun <I : T> kiltRegister(name: String, sup: Supplier<I>?): RegistryObject<I> {
         val resourceLocation = ResourceLocation(fabricRegister.mod_id, name)
         val registryObject = RegistryObject<I>(FabricRegistryObject(resourceLocation, ResourceKey.create(fabricRegister.registryKey, resourceLocation)))
         registryObject.value = sup
