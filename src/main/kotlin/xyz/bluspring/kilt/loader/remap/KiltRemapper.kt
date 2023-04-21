@@ -299,16 +299,7 @@ object KiltRemapper {
             ObjectHolderDefinalizer.processClass(classNode)
 
             try {
-                val classWriter = CommonSuperClassWriter.createClassWriter(
-                    ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS,
-                    classNode,
-                    Function {
-                        val classEntry = jar.getJarEntry("${it.replace(".", "/")}.class")
-                        return@Function if (classEntry == null)
-                            null
-                        else
-                            jar.getInputStream(classEntry).readAllBytes()
-                    })
+                val classWriter = ClassWriter(0)
 
                 val visitor = ClassRemapper(classWriter, remapper)
                 classNode.accept(visitor)

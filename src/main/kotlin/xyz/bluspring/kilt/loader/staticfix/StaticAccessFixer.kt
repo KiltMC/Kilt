@@ -71,7 +71,7 @@ object StaticAccessFixer {
 
                     modifyClass(classNode)
 
-                    val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classNode, Function {
+                    val classWriter = CommonSuperClassWriter.createClassWriter(ClassWriter.COMPUTE_MAXS, classNode, Function {
                         val classEntry = mod.jar.getJarEntry("${it.replace(".", "/")}.class")
                         return@Function if (classEntry == null)
                             null
