@@ -98,7 +98,7 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
 
         this.fluid = null;
         this.stateCache = Lists.newArrayList();
-        this.registerDefaultState(this.stateDefinition.any().setValue(FlowingFluid.LEVEL, 0));
+        this.registerDefaultState(this.stateDefinition.any().setValue(LiquidBlock.LEVEL, 0));
 
         this.supplier = fluidSupplier;
     }
