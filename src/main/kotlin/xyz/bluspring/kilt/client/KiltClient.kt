@@ -65,7 +65,7 @@ class KiltClient : ClientModInitializer {
                 (screen as ScreenAccessor).children.add(it)
             })
 
-            if (!MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add.get(), screen::callRemoveWidget)))
+            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add.get(), screen::callRemoveWidget)))
                 EventResult.interruptFalse()
             else EventResult.pass()
         }
