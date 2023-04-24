@@ -492,31 +492,7 @@ class KiltLoader {
                         else "FORGE"
                     )
 
-                    val clazz = launcher.loadIntoTarget(it.clazz.className)
-                    val constructor = try {
-                        clazz.getDeclaredConstructor()
-                    } catch (_: Exception) { null }
-                    constructor?.isAccessible = true // some people set this to private
-
-                    val initNonStatic = constructor != null && clazz.methods.any { m -> m.isAnnotationPresent(SubscribeEvent::class.java) && !Modifier.isStatic(m.modifiers) }
-                    val instance = try { // still needs to be initialized anyway for <clinit> to actually get triggered.
-                        constructor!!.newInstance()
-                    } catch (e: Exception) {
-                        null
-                    }
-
-                    if (busType == Mod.EventBusSubscriber.Bus.MOD) {
-                        if (initNonStatic)
-                            mod.eventBus.register(instance) // scans non-static methods
-                        mod.eventBus.register(clazz) // scans static methods
-                    } else {
-                        if (initNonStatic)
-                            MinecraftForge.EVENT_BUS.register(instance) // scans non-static methods
-                        MinecraftForge.EVENT_BUS.register(clazz) // scans static methods
-                    }
-
-                    constructor?.isAccessible = false
-
+                    busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
                     Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modInfo.mod.modId} under bus ${busType.name}")
                 } catch (e: Exception) {
                     e.printStackTrace()
