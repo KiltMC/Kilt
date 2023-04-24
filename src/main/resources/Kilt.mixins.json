@@ -40,6 +40,7 @@
     "RecipeBookCategoriesAccessor",
     "RecipeBookSettingsAccessor",
     "RecipeBookTypeAccessor",
+    "ScreenAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",
     "TagAppenderAccessor",
