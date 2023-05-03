@@ -3,7 +3,7 @@ import org.ajoberstar.grgit.Grgit
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.1-SNAPSHOT"
+    id ("fabric-loom") version "1.2-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
     id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
