@@ -295,7 +295,6 @@ object KiltRemapper {
             val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
-            CommonSuperFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
 
             try {
