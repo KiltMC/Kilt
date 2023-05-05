@@ -91,7 +91,8 @@ class KiltClient : ClientModInitializer {
         }
 
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
+            if (screen != null)
+                MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
         }
     }
 
