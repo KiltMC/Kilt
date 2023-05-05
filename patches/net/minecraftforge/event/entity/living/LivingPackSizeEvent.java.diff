@@ -1,9 +1,0 @@
---- LivingPackSizeEvent.java
-+++ LivingPackSizeEvent.java
-@@ -12,4 +12,6 @@
- public class LivingPackSizeEvent extends LivingEvent
- {
-+    public LivingPackSizeEvent() {}
-+
-     private int maxPackSize;
-     

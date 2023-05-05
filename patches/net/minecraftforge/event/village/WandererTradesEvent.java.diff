@@ -1,9 +1,0 @@
---- WandererTradesEvent.java
-+++ WandererTradesEvent.java
-@@ -26,4 +26,6 @@
-     protected List<ItemListing> rare;
- 
-+    public WandererTradesEvent() {}
-+
-     public WandererTradesEvent(List<ItemListing> generic, List<ItemListing> rare)
-     {

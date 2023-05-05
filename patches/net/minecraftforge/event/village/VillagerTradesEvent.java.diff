@@ -1,9 +1,0 @@
---- VillagerTradesEvent.java
-+++ VillagerTradesEvent.java
-@@ -33,4 +33,6 @@
-     protected VillagerProfession type;
- 
-+    public VillagerTradesEvent() {}
-+
-     public VillagerTradesEvent(Int2ObjectMap<List<ItemListing>> trades, VillagerProfession type)
-     {

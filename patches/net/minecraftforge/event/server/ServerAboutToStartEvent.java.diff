@@ -1,8 +1,0 @@
---- ServerAboutToStartEvent.java
-+++ ServerAboutToStartEvent.java
-@@ -17,4 +17,5 @@
-  */
- public class ServerAboutToStartEvent extends ServerLifecycleEvent {
-+    public ServerAboutToStartEvent() {}
- 
-     public ServerAboutToStartEvent(MinecraftServer server)
