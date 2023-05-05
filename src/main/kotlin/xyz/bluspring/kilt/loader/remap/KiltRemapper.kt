@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -289,6 +290,7 @@ object KiltRemapper {
             val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
+            EventClassVisibilityFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
 
             try {
