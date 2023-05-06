@@ -1,0 +1,34 @@
+--- EntityRenderersEvent.java
++++ EntityRenderersEvent.java
+@@ -7,4 +7,5 @@
+ 
+ import com.google.common.collect.ImmutableMap;
++import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.model.EntityModel;
+@@ -30,5 +31,4 @@
+ import net.minecraft.world.level.block.entity.BlockEntity;
+ import net.minecraft.world.level.block.entity.BlockEntityType;
+-import net.minecraftforge.client.ForgeHooksClient;
+ import net.minecraftforge.eventbus.api.Cancelable;
+ import net.minecraftforge.eventbus.api.Event;
+@@ -38,4 +38,5 @@
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.workarounds.LayerDefinitionsWorkaround;
+ 
+ import java.util.Map;
+@@ -87,5 +88,5 @@
+         public void registerLayerDefinition(ModelLayerLocation layerLocation, Supplier<LayerDefinition> supplier)
+         {
+-            ForgeHooksClient.registerLayerDefinition(layerLocation, supplier);
++            LayerDefinitionsWorkaround.layerDefinitions.put(layerLocation, supplier);
+         }
+     }
+@@ -116,5 +117,5 @@
+         public <T extends Entity> void registerEntityRenderer(EntityType<? extends T> entityType, EntityRendererProvider<T> entityRendererProvider)
+         {
+-            EntityRenderers.register(entityType, entityRendererProvider);
++            EntityRendererRegistry.register(entityType, entityRendererProvider);
+         }
+ 

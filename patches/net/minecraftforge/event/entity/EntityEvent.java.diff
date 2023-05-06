@@ -1,0 +1,15 @@
+--- EntityEvent.java
++++ EntityEvent.java
+@@ -13,4 +13,5 @@
+ import net.minecraftforge.eventbus.api.Cancelable;
+ import net.minecraftforge.eventbus.api.Event;
++import xyz.bluspring.kilt.mixin.EntityAccessor;
+ 
+ /**
+@@ -178,5 +179,5 @@
+             if (updateEyeHeight)
+             {
+-                this.newEyeHeight = this.getEntity().getEyeHeightAccess(this.getPose(), this.newSize);
++                this.newEyeHeight = ((EntityAccessor) this.getEntity()).callGetEyeHeight(this.getPose(), this.newSize);
+             }
+         }
