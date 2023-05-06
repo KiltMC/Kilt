@@ -19,7 +19,7 @@ object CommonSuperFixer {
                         }
                     }
                     // *sigh*
-            )) || classNode.name.endsWith("Event"))
+            )) || classNode.name.endsWith("Event") || classNode.superName.endsWith("Event"))
         ) {
             val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
             method.visitCode()
