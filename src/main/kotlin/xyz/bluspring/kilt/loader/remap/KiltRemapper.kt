@@ -297,6 +297,7 @@ object KiltRemapper {
             classReader.accept(classNode, 0)
 
             EventClassVisibilityFixer.fixClass(classNode)
+            CommonSuperFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
 
             try {
