@@ -372,6 +372,66 @@ tasks {
             // retrieving dependencies.
         }
     }
+
+    register("setupDevEnvironment") {
+        dependsOn("getForgeApi")
+        group = "kilt"
+
+        doLast {
+            val configDir = File("$projectDir/run/config")
+            if (!configDir.exists())
+                configDir.mkdirs()
+
+            val loaderDepsFile = File(configDir, "fabric_loader_dependencies.json")
+
+            if (!loaderDepsFile.exists())
+                loaderDepsFile.createNewFile()
+
+            loaderDepsFile.writeText("{\n" +
+                    "  \"version\": 1,\n" +
+                    "  \"overrides\": {\n" +
+                    "    \"forgeconfigapiport\": {\n" +
+                    "      \"-depends\": {\n" +
+                    "        \"com_electronwill_night-config_core\": \"\",\n" +
+                    "        \"com_electronwill_night-config_toml\": \"\"\n" +
+                    "      }\n" +
+                    "    },\n" +
+                    "    \"kilt\": {\n" +
+                    "      \"-depends\": {\n" +
+                    "        \"com_electronwill_night-config_core\": \"\",\n" +
+                    "        \"com_electronwill_night-config_toml\": \"\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}")
+
+            val ferriteMixinPropsFile = File(configDir, "ferritecore.mixin.properties")
+
+            if (!ferriteMixinPropsFile.exists())
+                ferriteMixinPropsFile.createNewFile()
+
+            ferriteMixinPropsFile.writeText("# Replace the blockstate neighbor table\n" +
+                    "replaceNeighborLookup = true\n" +
+                    "# Do not store the properties of a state explicitly and read themfrom the replace neighbor table instead. Requires replaceNeighborLookup to be enabled\n" +
+                    "replacePropertyMap = true\n" +
+                    "# Cache the predicate instances used in multipart models\n" +
+                    "cacheMultipartPredicates = true\n" +
+                    "# Avoid creation of new strings when creating ModelResourceLocations\n" +
+                    "modelResourceLocations = false\n" + // this is the most important part
+                    "# Do not create a new MultipartBakedModel instance for each block state using the same multipartmodel. Requires cacheMultipartPredicates to be enabled\n" +
+                    "multipartDeduplication = true\n" +
+                    "# Deduplicate cached data for blockstates, most importantly collision and render shapes\n" +
+                    "blockstateCacheDeduplication = true\n" +
+                    "# Deduplicate vertex data of baked quads in the basic model implementations\n" +
+                    "bakedQuadDeduplication = true\n" +
+                    "# Replace objects used to detect multi-threaded access to chunks by a much smaller field. This option is disabled by default due to very rare and very hard-to-reproduce crashes, use at your own risk!\n" +
+                    "useSmallThreadingDetector = false\n" +
+                    "# Use a slightly more compact, but also slightly slower representation for block states\n" +
+                    "compactFastMap = false\n" +
+                    "# Populate the neighbor table used by vanilla. Enabling this slightly increases memory usage, but can help with issues in the rare case where mods access it directly.\n" +
+                    "populateNeighborTable = false\n")
+        }
+    }
 }
 
 java {
