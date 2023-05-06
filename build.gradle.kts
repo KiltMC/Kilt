@@ -1,5 +1,9 @@
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import org.ajoberstar.grgit.Grgit
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
 
 plugins {
     kotlin("jvm")
@@ -347,7 +351,7 @@ tasks {
 
     jar {
         from("LICENSE") {
-            rename { "${it}_$archivesName" }
+            rename { "${it}_${archiveBaseName.get()}" }
         }
     }
 
@@ -430,6 +434,90 @@ tasks {
                     "compactFastMap = false\n" +
                     "# Populate the neighbor table used by vanilla. Enabling this slightly increases memory usage, but can help with issues in the rare case where mods access it directly.\n" +
                     "populateNeighborTable = false\n")
+        }
+    }
+
+    remapJar {
+        val originalName = archiveBaseName.get()
+        archiveBaseName.set("temp_$originalName")
+
+        doLast {
+            println("Modifying Kilt's refmap to add enum extension mixins' missing fields...")
+
+            val file = archiveFile.get().asFile
+            val jar = JarFile(file)
+
+            // Adds $VALUES to the mixin refmaps manually.
+            // I hope to god this is a temporary solution.
+
+            val refmap = jar.getJarEntry("Kilt-refmap.json")
+            val json = JsonParser.parseString(String(jar.getInputStream(refmap).readAllBytes())).asJsonObject
+
+            val mappings = json.getAsJsonObject("mappings")
+            val namedIntermediaryMappingData = json.getAsJsonObject("data").getAsJsonObject("named:intermediary")
+
+            val pkg = "xyz/bluspring/kilt/mixin"
+            val enumExtenderAccessors = mapOf(
+                "ArmPoseAccessor" to "field_3404:[Lnet/minecraft/class_572\$class_573;",
+                "BlockPathTypesAccessor" to "field_24:[Lnet/minecraft/class_7;",
+                "EnchantmentCategoryAccessor" to "field_9077:[Lnet/minecraft/class_1886;",
+                "GrassColorModifierAccessor" to "field_26432:[Lnet/minecraft/class_4763\$class_5486;",
+                "MobCategoryAccessor" to "field_6301:[Lnet/minecraft/class_1311;",
+                "RaiderTypeAccessor" to "field_16632:[Lnet/minecraft/class_3765\$class_3766;",
+                "RarityAccessor" to "field_8905:[Lnet/minecraft/class_1814;",
+                "RecipeBookCategoriesAccessor" to "field_1805:[Lnet/minecraft/class_314;",
+                "RecipeBookTypeAccessor" to "field_25767:[Lnet/minecraft/class_5421;",
+                "TransformTypeAccessor" to "field_4314:[Lnet/minecraft/class_809\$class_811",
+                "TypeAccessor" to "field_6319:[Lnet/minecraft/class_1317\$class_1319"
+            )
+
+            enumExtenderAccessors.forEach { (className, fieldMapping) ->
+                val fullName = "$pkg/$className"
+
+                val mappingObj = if (!mappings.has(fullName))
+                    JsonObject()
+                else
+                    mappings.getAsJsonObject(fullName)
+
+                val dataObj = if (!namedIntermediaryMappingData.has(fullName))
+                    JsonObject()
+                else
+                    namedIntermediaryMappingData.getAsJsonObject(fullName)
+
+                mappingObj.addProperty("\$VALUES", fieldMapping)
+                dataObj.addProperty("\$VALUES", fieldMapping)
+
+                mappings.add(fullName, mappingObj)
+                namedIntermediaryMappingData.add(fullName, dataObj)
+            }
+
+            json.add("mappings", mappings)
+
+            val data = JsonObject()
+            data.add("named:intermediary", namedIntermediaryMappingData)
+
+            json.add("data", data)
+
+            val outputFile = File(file.parentFile, file.name.replace("temp_", ""))
+            val output = JarOutputStream(outputFile.outputStream())
+
+            for (entry in jar.entries()) {
+                if (entry.name == "Kilt-refmap.json") {
+                    output.putNextEntry(entry)
+                    output.write(json.toString().toByteArray())
+                    output.closeEntry()
+
+                    continue
+                }
+
+                output.putNextEntry(entry)
+                output.write(jar.getInputStream(entry).readAllBytes())
+                output.closeEntry()
+            }
+
+            output.close()
+
+            file.delete()
         }
     }
 }
