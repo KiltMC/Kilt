@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.loader.remap
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.ManifestUtil
 import net.fabricmc.mapping.tree.TinyMappingFactory
@@ -282,6 +284,58 @@ object KiltRemapper {
                     continue
                 } else if (entry.name.lowercase().endsWith(".rsa") || entry.name.lowercase().endsWith(".sf")) {
                     // ignore signed JARs
+                    continue
+                } else if (entry.name.lowercase().endsWith("refmap.json")) {
+                    val refmapData = JsonParser.parseString(String(jar.getInputStream(entry).readAllBytes())).asJsonObject
+
+                    val refmapMappings = refmapData.getAsJsonObject("mappings")
+                    val newMappings = JsonObject()
+
+                    refmapMappings.keySet().forEach { className ->
+                        val mapped = refmapMappings.getAsJsonObject(className)
+                        val properMapped = JsonObject()
+
+                        mapped.entrySet().forEach { (name, element) ->
+                            val srgMappedString = element.asString
+                            val srgClass = srgMappedString.replaceAfter(";", "")
+                            val intermediaryClass = remapDescriptor(srgClass)
+
+                            if (srgMappedString.contains(":")) {
+                                // field
+
+                                val split = srgMappedString.split(":")
+                                val srgField = split[0].removePrefix("L$srgClass;")
+                                val srgDesc = split[1]
+
+                                val intermediaryField = fieldMappings[srgField]?.first ?: srgField
+                                val intermediaryDesc = remapDescriptor(srgDesc)
+
+                                properMapped.addProperty(name, "$intermediaryClass$intermediaryField:$intermediaryDesc")
+                            } else {
+                                // method
+
+                                val srgMethod = srgMappedString.replaceAfter("(", "").removeSuffix("(").removePrefix(srgClass)
+                                val srgDesc = srgMappedString.replaceBefore("(", "")
+
+                                val intermediaryMethod = methodMappings[srgMethod]?.first ?: srgMethod
+                                val intermediaryDesc = remapDescriptor(srgDesc)
+
+                                properMapped.addProperty(name, "$intermediaryClass$intermediaryMethod$intermediaryDesc")
+                            }
+                        }
+
+                        newMappings.add(className, properMapped)
+                    }
+
+                    refmapData.add("mappings", newMappings)
+                    refmapData.add("data", JsonObject().apply {
+                        this.add("named:intermediary", newMappings)
+                    })
+
+                    jarOutput.putNextEntry(entry)
+                    jarOutput.write(refmapData.toString().toByteArray())
+                    jarOutput.closeEntry()
+
                     continue
                 }
 
