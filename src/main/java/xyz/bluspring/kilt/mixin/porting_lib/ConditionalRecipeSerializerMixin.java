@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ConditionalRecipeSerializerMixin {
     private static final AtomicBoolean kilt$useForgeConditions = new AtomicBoolean(false);
 
-    @Redirect(at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/util/GsonHelper;getAsJsonArray(Lcom/google/gson/JsonObject;Ljava/lang/String;)Lcom/google/gson/JsonArray;"), method = "fromJson", remap = false)
+    @Redirect(at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/util/GsonHelper;getAsJsonArray(Lcom/google/gson/JsonObject;Ljava/lang/String;)Lcom/google/gson/JsonArray;"), method = "fromJson", remap = true)
     public JsonArray kilt$processForgeAndFabricConditions(JsonObject jsonObject, String string) {
         // Process Forge conditions instead
         if (!jsonObject.has(string)) {
