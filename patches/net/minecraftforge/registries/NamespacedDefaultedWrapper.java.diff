@@ -16,3 +16,14 @@
 +        ((MappedRegistryInjection) this).markKnown();
          this.elementsLifecycle = this.elementsLifecycle.add(lifecycle);
  
+@@ -233,5 +234,9 @@
+         public void onAdd(IForgeRegistryInternal<V> owner, RegistryManager stage, int id, ResourceKey<V> key, V value, V oldValue)
+         {
+-            owner.getSlaveMap(ID, NamespacedDefaultedWrapper.class).holders.onAdded(stage, id, key, value, oldValue);
++            var slaveMap = owner.getSlaveMap(ID, NamespacedDefaultedWrapper.class);
++            if (slaveMap == null)
++                return;
++
++            slaveMap.holders.onAdded(stage, id, key, value, oldValue);
+         }
+     }

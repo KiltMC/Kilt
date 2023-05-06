@@ -17,6 +17,10 @@ class RegisterEvent internal constructor(
 ) : Event(), IModBusEvent {
     constructor() : this(EMPTY, null, null)
 
+    fun getForgeRegistry(): IForgeRegistry<*>? {
+        return forgeRegistry
+    }
+
     fun <T : Any> register(registryKey: ResourceKey<out Registry<*>>, name: ResourceLocation, valueSupplier: Supplier<T>) {
         if (this.registryKey == registryKey) {
             if (forgeRegistry != null)

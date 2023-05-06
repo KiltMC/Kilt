@@ -34,6 +34,7 @@
     "MinecraftServerAccessor",
     "MobCategoryAccessor",
     "MobSpawnSettingsAccessor",
+    "PoiTypesAccessor",
     "PropertiesAccessor",
     "RaiderTypeAccessor",
     "RarityAccessor",

@@ -16,11 +16,17 @@ import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagKey
+import net.minecraft.world.entity.ai.village.poi.PoiType
+import net.minecraft.world.entity.ai.village.poi.PoiTypes
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraftforge.registries.tags.ITagManager
 import org.apache.logging.log4j.Marker
 import org.apache.logging.log4j.MarkerManager
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.MappedRegistryAccessor
+import xyz.bluspring.kilt.mixin.PoiTypesAccessor
 import java.util.*
 import java.util.function.Supplier
 import kotlin.Comparator
@@ -32,10 +38,8 @@ class ForgeRegistry<V : Any> internal constructor (
 ) : IForgeRegistryInternal<V> {
     val min = builder.minId
     val max = builder.maxId
-    val create = builder.create.apply {
-        this?.onCreate(this@ForgeRegistry, stage)
-    }
-    val add = builder.add
+    val create = builder.create
+    val add: IForgeRegistry.AddCallback<V>?
     val clear = builder.clear
     val validate = builder.validate
     val bake = builder.bake
@@ -44,6 +48,13 @@ class ForgeRegistry<V : Any> internal constructor (
     val allowOverrides = builder.allowOverrides
     val isModifiable = builder.allowModifications
     val hasWrapper = builder.hasWrapper
+
+    init {
+        if (this.create != null)
+            this.create.onCreate(this@ForgeRegistry, stage)
+
+        this.add = builder.add
+    }
 
     override val registryKey: ResourceKey<Registry<V>> = ResourceKey.createRegistryKey(registryName)
     val fabricRegistry = LazyRegistrar.create<V>(registryName, Kilt.MOD_ID)
@@ -89,7 +100,14 @@ class ForgeRegistry<V : Any> internal constructor (
     }
 
     override fun getKey(value: V): ResourceLocation? {
-        return vanillaRegistry.getKey(value)
+        val vanillaKey = vanillaRegistry.getKey(value)
+
+        if (vanillaKey !== null)
+            return vanillaKey
+
+        val fabricKey = fabricRegistry.entries.firstOrNull { it.isPresent && it.get() == value }
+
+        return fabricKey?.id
     }
 
     override fun containsValue(value: V): Boolean {
@@ -377,8 +395,78 @@ class ForgeRegistry<V : Any> internal constructor (
     @get:JvmName("getSlaves")
     internal var slaves = mutableMapOf<ResourceLocation, Any?>()
 
+    private class KiltPoiTypeMap : MutableMap<BlockState, PoiType> {
+        override val entries: MutableSet<MutableMap.MutableEntry<BlockState, PoiType>>
+            get() {
+                val map = PoiTypesAccessor.getTypeByState()
+
+                return map.entries.associate { it.key to it.value.value() }.toMutableMap().entries
+            }
+        override val keys: MutableSet<BlockState>
+            get() = PoiTypesAccessor.getTypeByState().keys
+
+        override val size: Int
+            get() = PoiTypesAccessor.getTypeByState().size
+
+        override val values: MutableCollection<PoiType>
+            get() = PoiTypesAccessor.getTypeByState().values.map { it.value() }.toMutableList()
+
+        override fun clear() {
+            PoiTypesAccessor.getTypeByState().clear()
+        }
+
+        override fun isEmpty(): Boolean {
+            return PoiTypesAccessor.getTypeByState().isEmpty()
+        }
+
+        override fun remove(key: BlockState): PoiType? {
+            return PoiTypesAccessor.getTypeByState().remove(key)?.value()
+        }
+
+        override fun putAll(from: Map<out BlockState, PoiType>) {
+            from.forEach { (key, value) ->
+                PoiTypesAccessor.getTypeByState()[key] = Holder.direct(value)
+            }
+        }
+
+        override fun put(key: BlockState, value: PoiType): PoiType? {
+            val old = PoiTypesAccessor.getTypeByState()[key]
+            PoiTypesAccessor.getTypeByState()[key] = Holder.direct(value)
+
+            return old?.value()
+        }
+
+        override fun get(key: BlockState): PoiType? {
+            return PoiTypesAccessor.getTypeByState()[key]?.value()
+        }
+
+        override fun containsValue(value: PoiType): Boolean {
+            return PoiTypesAccessor.getTypeByState().any { it.value.value() == value }
+        }
+
+        override fun containsKey(key: BlockState): Boolean {
+            return PoiTypesAccessor.getTypeByState().containsKey(key)
+        }
+    }
+
     override fun <T> getSlaveMap(slaveMapName: ResourceLocation, type: Class<T>): T? {
-        return slaves[slaveMapName] as T?
+        return when (slaveMapName) {
+            GameData.BLOCK_TO_ITEM -> {
+                Item.BY_BLOCK as T
+            }
+
+            GameData.BLOCKSTATE_TO_POINT_OF_INTEREST_TYPE -> {
+                KiltPoiTypeMap() as T
+            }
+
+            GameData.BLOCKSTATE_TO_ID -> {
+                Block.BLOCK_STATE_REGISTRY as T
+            }
+
+            else -> {
+                slaves[slaveMapName] as T?
+            }
+        }
     }
 
     override fun setSlaveMap(name: ResourceLocation, obj: Any?) {
