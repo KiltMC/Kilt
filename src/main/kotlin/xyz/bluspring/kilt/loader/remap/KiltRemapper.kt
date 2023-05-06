@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.remap
 
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.ManifestUtil
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import org.apache.commons.codec.digest.DigestUtils
@@ -14,9 +15,14 @@ import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
+import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
+import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URL
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Function
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream

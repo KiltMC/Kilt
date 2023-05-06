@@ -7,6 +7,7 @@ import org.objectweb.asm.Opcodes
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
+import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 import xyz.bluspring.kilt.util.KiltHelper
 
 class KiltEarlyRiser : Runnable {
@@ -215,6 +216,7 @@ class KiltEarlyRiser : Runnable {
                 return@forEach
 
             ClassTinkerers.addTransformation(classNode.name) {
+                CommonSuperFixer.fixClass(it)
                 ObjectHolderDefinalizer.processClass(it)
             }
         }
