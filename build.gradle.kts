@@ -118,8 +118,8 @@ dependencies {
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
-    implementation(include("com.github.LlamaLad7:MixinExtras:0.2.0-beta.6")!!)
-    annotationProcessor ("com.github.LlamaLad7:MixinExtras:0.2.0-beta.6")
+    implementation(include("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")!!)
+    annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
     modImplementation(include("com.github.Chocohead:Fabric-ASM:v2.3")!!)
     modImplementation(include("io.github.tropheusj:serialization-hooks:0.3.26")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:2.3.0")!!)

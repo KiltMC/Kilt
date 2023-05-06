@@ -91,7 +91,8 @@ object KiltRemapper {
             logger.info("No cached mapping file found, this may take a while to load!")
             srgIntermediaryTree.classes.forEach { srgClass ->
                 val intermediaryClass =
-                    mappings.classes.first { it.getName("intermediary") == srgClass.getName("intermediary") }
+                    mappings.classes.firstOrNull { it.getName("intermediary") == srgClass.getName("intermediary") }
+                        ?: return@forEach
 
                 classMappings[srgClass.getName("searge")] = intermediaryClass.getName(namespace)
 
