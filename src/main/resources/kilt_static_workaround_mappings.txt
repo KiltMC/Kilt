@@ -118,3 +118,6 @@ c net/minecraft/world/item/CreativeModeTab xyz/bluspring/kilt/injections/world/i
     m getGroupCountSafe ()I
 c net/minecraft/world/level/NaturalSpawner xyz/bluspring/kilt/injections/world/level/NaturalSpawnerInjection
     m canSpawnAtType (Lnet/minecraft/world/entity/SpawnPlacements$Type;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/EntityType;)Z
+c net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate xyz/bluspring/kilt/injections/world/level/levelgen/structure/templatesystem/StructureTemplateInjection
+	m transformedVec3d (Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;
+	m processEntityInfos (Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/List;)Ljava/util/List;

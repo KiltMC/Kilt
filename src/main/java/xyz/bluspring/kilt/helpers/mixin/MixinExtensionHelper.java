@@ -84,6 +84,43 @@ public final class MixinExtensionHelper {
                 // We don't need the method's instructions anymore.
                 methodNode.instructions.clear();
                 targetClass.methods.add(initializer);
+            } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
+                var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
+
+                if (originalMethods.isEmpty()) {
+                    throw new IllegalStateException("Could not find method " + methodNode.name + methodNode.desc + " in class " + targetClass.name);
+                }
+
+                var originalMethod = originalMethods.get(0);
+                targetClass.methods.remove(originalMethod);
+
+                var node = new MethodNode(originalMethod.access & ~Opcodes.ACC_ABSTRACT, originalMethod.name, originalMethod.desc, originalMethod.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                node.visitCode();
+
+                for (AbstractInsnNode insnNode : methodNode.instructions) {
+                    if (insnNode instanceof MethodInsnNode methodInsn) {
+                        if (methodInsn.owner.equals(slashedMixinClassName)) {
+                            methodInsn.owner = slashedTargetClassName;
+                        }
+
+                        node.instructions.add(methodInsn);
+                    } else {
+                        if (insnNode instanceof FieldInsnNode fieldInsn) {
+                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                fieldInsn.owner = slashedTargetClassName;
+                            }
+
+                            node.instructions.add(fieldInsn);
+                        } else {
+                            node.instructions.add(insnNode);
+                        }
+                    }
+                }
+
+                node.visitEnd();
+                node.localVariables = methodNode.localVariables;
+
+                targetClass.methods.add(node);
             }
         }
 

@@ -120,6 +120,8 @@
     "world.level.chunk.LevelChunkInject",
     "world.level.levelgen.DebugLevelSourceInject",
     "world.level.levelgen.structure.StructureInject",
+    "world.level.levelgen.structure.templatesystem.StructureProcessorInject",
+    "world.level.levelgen.structure.templatesystem.StructureTemplateInject",
     "world.level.material.FluidInject",
     "world.level.material.FluidStateInject",
     "world.level.pathfinder.BlockPathTypesInject",
