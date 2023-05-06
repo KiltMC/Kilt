@@ -1,0 +1,13 @@
+--- CriticalHitEvent.java
++++ CriticalHitEvent.java
+@@ -32,4 +32,10 @@
+     private final Entity target;
+     private final boolean vanillaCritical;
++
++    public CriticalHitEvent() {
++        oldDamageModifier = -1F;
++        target = null;
++        vanillaCritical = false;
++    }
+     
+     public CriticalHitEvent(Player player, Entity target, float damageModifier, boolean vanillaCritical)

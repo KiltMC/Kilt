@@ -1,0 +1,11 @@
+--- ScreenshotEvent.java
++++ ScreenshotEvent.java
+@@ -40,4 +40,8 @@
+     private Component resultMessage = null;
+ 
++    public ScreenshotEvent() {
++        image = null;
++    }
++
+     @ApiStatus.Internal
+     public ScreenshotEvent(NativeImage image, File screenshotFile)

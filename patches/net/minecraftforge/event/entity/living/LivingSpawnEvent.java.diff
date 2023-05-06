@@ -1,0 +1,39 @@
+--- LivingSpawnEvent.java
++++ LivingSpawnEvent.java
+@@ -26,4 +26,10 @@
+ public class LivingSpawnEvent extends LivingEvent
+ {
++    public LivingSpawnEvent() {
++        level = null;
++        mob = null;
++        x = y = z = 0D;
++    }
++
+     private final LevelAccessor level;
+     private final Mob mob;
+@@ -101,4 +107,9 @@
+         private final MobSpawnType spawnReason;
+ 
++        public CheckSpawn() {
++            spawner = null;
++            spawnReason = null;
++        }
++
+         public CheckSpawn(Mob mob, LevelAccessor level, double x, double y, double z, @Nullable BaseSpawner spawner, MobSpawnType spawnReason)
+         {
+@@ -141,4 +152,9 @@
+         private final MobSpawnType spawnReason;
+ 
++        public SpecialSpawn() {
++            spawner = null;
++            spawnReason = null;
++        }
++
+         public SpecialSpawn(Mob entity, LevelAccessor level, double x, double y, double z, @Nullable BaseSpawner spawner, MobSpawnType spawnReason)
+         {
+@@ -179,4 +195,5 @@
+     public static class AllowDespawn extends LivingSpawnEvent
+     {
++        public AllowDespawn() {}
+         public AllowDespawn(Mob mob)
+         {

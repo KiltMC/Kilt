@@ -1,0 +1,13 @@
+--- AnimalTameEvent.java
++++ AnimalTameEvent.java
+@@ -25,4 +25,10 @@
+     private final Player tamer;
+ 
++    public AnimalTameEvent() {
++        super(null);
++        animal = null;
++        tamer = null;
++    }
++
+     public AnimalTameEvent(Animal animal, Player tamer)
+     {

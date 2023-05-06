@@ -1,0 +1,13 @@
+--- ArrowLooseEvent.java
++++ ArrowLooseEvent.java
+@@ -39,4 +39,10 @@
+     private int charge;
+ 
++    public ArrowLooseEvent() {
++        bow = null;
++        level = null;
++        hasAmmo = false;
++    }
++
+     public ArrowLooseEvent(Player player, @NotNull ItemStack bow, Level level, int charge, boolean hasAmmo)
+     {

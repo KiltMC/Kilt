@@ -1,0 +1,13 @@
+--- ModMismatchEvent.java
++++ ModMismatchEvent.java
+@@ -59,4 +59,10 @@
+     private final HashMap<String, ModContainer> resolved;
+ 
++    public ModMismatchEvent() {
++        levelDirectory = null;
++        versionDifferences = null;
++        resolved = null;
++    }
++
+     @ApiStatus.Internal
+     public ModMismatchEvent(@Nullable LevelStorageSource.LevelDirectory levelDirectory, Map<String, ArtifactVersion> previousVersions, Map<String, ArtifactVersion> missingVersions)

@@ -1,0 +1,9 @@
+--- PlaySoundSourceEvent.java
++++ PlaySoundSourceEvent.java
+@@ -29,4 +29,6 @@
+ public class PlaySoundSourceEvent extends SoundSourceEvent
+ {
++    public PlaySoundSourceEvent() {}
++
+     @ApiStatus.Internal
+     public PlaySoundSourceEvent(SoundEngine engine, SoundInstance sound, Channel channel)

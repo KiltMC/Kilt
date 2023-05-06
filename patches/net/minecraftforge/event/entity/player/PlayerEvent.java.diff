@@ -1,0 +1,186 @@
+--- PlayerEvent.java
++++ PlayerEvent.java
+@@ -39,4 +39,8 @@
+     private final Player player;
+ 
++    public PlayerEvent() {
++        player = null;
++    }
++
+     public PlayerEvent(Player player)
+     {
+@@ -72,4 +76,8 @@
+         private boolean success;
+ 
++        public HarvestCheck() {
++            state = null;
++        }
++
+         public HarvestCheck(Player player, BlockState state, boolean success)
+         {
+@@ -87,5 +95,5 @@
+      * BreakSpeed is fired when a player attempts to harvest a block.<br>
+      * This event is fired whenever a player attempts to harvest a block in
+-     * {@link Player#getDigSpeed(BlockState, BlockPos)}.<br>
++     * .<br>
+      * <br>
+      * This event is fired via the {@link ForgeEventFactory#getBreakSpeed(Player, BlockState, float, BlockPos)}.<br>
+@@ -112,4 +120,10 @@
+         private final Optional<BlockPos> pos; // Y position of -1 notes unknown location
+ 
++        public BreakSpeed() {
++            state = null;
++            originalSpeed = 0F;
++            pos = Optional.empty();
++        }
++
+         public BreakSpeed(Player player, BlockState state, float original, @Nullable BlockPos pos)
+         {
+@@ -132,5 +146,5 @@
+      * NameFormat is fired when a player's display name is retrieved.<br>
+      * This event is fired whenever a player's name is retrieved in
+-     * {@link Player#getDisplayName()} or {@link Player#refreshDisplayName()}.<br>
++     * {@link Player#getDisplayName()} or .<br>
+      * <br>
+      * This event is fired via the {@link ForgeEventFactory#getPlayerDisplayName(Player, Component)}.<br>
+@@ -150,4 +164,8 @@
+         private Component displayname;
+ 
++        public NameFormat() {
++            username = null;
++        }
++
+         public NameFormat(Player player, Component username)
+         {
+@@ -176,5 +194,5 @@
+      * TabListNameFormat is fired when a player's display name for the tablist is retrieved.<br>
+      * This event is fired whenever a player's display name for the tablist is retrieved in
+-     * {@link ServerPlayer#getTabListDisplayName()} or {@link ServerPlayer#refreshTabListName()}.<br>
++     * {@link ServerPlayer#getTabListDisplayName()} or .<br>
+      * <br>
+      * This event is fired via the {@link ForgeEventFactory#getPlayerTabListDisplayName(Player)}.<br>
+@@ -193,4 +211,6 @@
+         private Component displayName;
+ 
++        public TabListNameFormat() {}
++
+         public TabListNameFormat(Player player)
+         {
+@@ -219,4 +239,9 @@
+         private final boolean wasDeath;
+ 
++        public Clone() {
++            original = null;
++            wasDeath = false;
++        }
++
+         public Clone(Player _new, Player oldPlayer, boolean wasDeath)
+         {
+@@ -252,4 +277,8 @@
+         private final Entity target;
+ 
++        public StartTracking() {
++            target = null;
++        }
++
+         public StartTracking(Player player, Entity target)
+         {
+@@ -275,4 +304,8 @@
+         private final Entity target;
+ 
++        public StopTracking() {
++            target = null;
++        }
++
+         public StopTracking(Player player, Entity target)
+         {
+@@ -300,4 +333,9 @@
+         private final String playerUUID;
+ 
++        public LoadFromFile() {
++            playerDirectory = null;
++            playerUUID = null;
++        }
++
+         public LoadFromFile(Player player, File originDirectory, String playerUUID)
+         {
+@@ -352,4 +390,9 @@
+         private final String playerUUID;
+ 
++        public SaveToFile() {
++            playerDirectory = null;
++            playerUUID = null;
++        }
++
+         public SaveToFile(Player player, File originDirectory, String playerUUID)
+         {
+@@ -397,4 +440,10 @@
+          */
+         private final ItemStack stack;
++
++        public ItemPickupEvent() {
++            originalEntity = null;
++            stack = null;
++        }
++
+         public ItemPickupEvent(Player player, ItemEntity entPickedUp, ItemStack stack)
+         {
+@@ -417,4 +466,10 @@
+         private final ItemStack crafting;
+         private final Container craftMatrix;
++
++        public ItemCraftedEvent() {
++            crafting = ItemStack.EMPTY;
++            craftMatrix = null;
++        }
++
+         public ItemCraftedEvent(Player player, @NotNull ItemStack crafting, Container craftMatrix)
+         {
+@@ -439,4 +494,9 @@
+         @NotNull
+         private final ItemStack smelting;
++
++        public ItemSmeltedEvent() {
++            smelting = ItemStack.EMPTY;
++        }
++
+         public ItemSmeltedEvent(Player player, @NotNull ItemStack crafting)
+         {
+@@ -453,4 +513,5 @@
+ 
+     public static class PlayerLoggedInEvent extends PlayerEvent {
++        public PlayerLoggedInEvent() {}
+         public PlayerLoggedInEvent(Player player)
+         {
+@@ -460,4 +521,5 @@
+ 
+     public static class PlayerLoggedOutEvent extends PlayerEvent {
++        public PlayerLoggedOutEvent() {}
+         public PlayerLoggedOutEvent(Player player)
+         {
+@@ -469,4 +531,7 @@
+         private final boolean endConquered;
+ 
++        public PlayerRespawnEvent() {
++            endConquered = false;
++        }
+         public PlayerRespawnEvent(Player player, boolean endConquered)
+         {
+@@ -490,4 +555,8 @@
+         private final ResourceKey<Level> fromDim;
+         private final ResourceKey<Level> toDim;
++
++        public PlayerChangedDimensionEvent() {
++            fromDim = toDim = null;
++        }
+         public PlayerChangedDimensionEvent(Player player, ResourceKey<Level> fromDim, ResourceKey<Level> toDim)
+         {
+@@ -518,4 +587,8 @@
+         private GameType newGameMode;
+ 
++        public PlayerChangeGameModeEvent() {
++            currentGameMode = null;
++        }
++
+         public PlayerChangeGameModeEvent(Player player, GameType currentGameMode, GameType newGameMode)
+         {

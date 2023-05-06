@@ -6,7 +6,16 @@
 +import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
  import net.minecraft.client.KeyMapping;
  import net.minecraft.client.Options;
-@@ -39,5 +40,5 @@
+@@ -28,4 +29,8 @@
+     private final Options options;
+ 
++    public RegisterKeyMappingsEvent() {
++        options = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterKeyMappingsEvent(Options options)
+@@ -39,5 +44,5 @@
      public void register(KeyMapping key)
      {
 -        options.keyMappings = ArrayUtils.add(options.keyMappings, key);

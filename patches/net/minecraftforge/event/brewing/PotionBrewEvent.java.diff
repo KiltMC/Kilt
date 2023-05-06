@@ -1,0 +1,22 @@
+--- PotionBrewEvent.java
++++ PotionBrewEvent.java
+@@ -17,4 +17,7 @@
+     private NonNullList<ItemStack> stacks;
+ 
++    public PotionBrewEvent() {
++    }
++
+     protected PotionBrewEvent(NonNullList<ItemStack> stacks)
+     {
+@@ -62,4 +65,5 @@
+     public static class Pre extends PotionBrewEvent
+     {
++        public Pre() {}
+         public Pre(NonNullList<ItemStack> stacks)
+         {
+@@ -83,4 +87,5 @@
+     public static class Post extends PotionBrewEvent
+     {
++        public Post() {}
+         public Post(NonNullList<ItemStack> stacks)
+         {

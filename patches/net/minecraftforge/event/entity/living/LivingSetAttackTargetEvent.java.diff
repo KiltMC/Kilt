@@ -1,0 +1,12 @@
+--- LivingSetAttackTargetEvent.java
++++ LivingSetAttackTargetEvent.java
+@@ -36,4 +36,9 @@
+ public class LivingSetAttackTargetEvent extends LivingEvent
+ {
++    public LivingSetAttackTargetEvent() {
++        targetType = null;
++        originalTarget = null;
++    }
++
+     private final ILivingTargetType targetType;
+     private final LivingEntity originalTarget;

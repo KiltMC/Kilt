@@ -1,0 +1,14 @@
+--- VillageSiegeEvent.java
++++ VillageSiegeEvent.java
+@@ -32,4 +32,11 @@
+     private final Vec3 attemptedSpawnPos;
+ 
++    public VillageSiegeEvent() {
++        siege = null;
++        level = null;
++        player = null;
++        attemptedSpawnPos = null;
++    }
++
+     public VillageSiegeEvent(VillageSiege siege, Level level, Player player, Vec3 attemptedSpawnPos)
+     {

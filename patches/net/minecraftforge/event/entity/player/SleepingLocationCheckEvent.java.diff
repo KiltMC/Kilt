@@ -1,0 +1,11 @@
+--- SleepingLocationCheckEvent.java
++++ SleepingLocationCheckEvent.java
+@@ -30,4 +30,8 @@
+     private final BlockPos sleepingLocation;
+ 
++    public SleepingLocationCheckEvent() {
++        sleepingLocation = null;
++    }
++
+     public SleepingLocationCheckEvent(LivingEntity player, BlockPos sleepingLocation)
+     {

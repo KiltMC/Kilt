@@ -1,0 +1,11 @@
+--- ToastAddEvent.java
++++ ToastAddEvent.java
+@@ -27,4 +27,8 @@
+     private final Toast toast;
+ 
++    public ToastAddEvent() {
++        toast = null;
++    }
++
+     public ToastAddEvent(Toast toast)
+     {

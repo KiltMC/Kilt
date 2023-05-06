@@ -1,0 +1,13 @@
+--- LivingDestroyBlockEvent.java
++++ LivingDestroyBlockEvent.java
+@@ -28,4 +28,10 @@
+ public class LivingDestroyBlockEvent extends LivingEvent
+ {
++    public LivingDestroyBlockEvent() {
++        super(null);
++        pos = null;
++        state = null;
++    }
++
+     private final BlockPos pos;
+     private final BlockState state;

@@ -1,0 +1,46 @@
+--- ViewportEvent.java
++++ ViewportEvent.java
+@@ -37,4 +37,10 @@
+     private final double partialTick;
+ 
++    public ViewportEvent() {
++        renderer = null;
++        camera = null;
++        partialTick = 0D;
++    }
++
+     @ApiStatus.Internal
+     public ViewportEvent(GameRenderer renderer, Camera camera, double partialTick)
+@@ -87,4 +93,9 @@
+         private FogShape fogShape;
+ 
++        public RenderFog() {
++            type = null;
++            mode = null;
++        }
++
+         @ApiStatus.Internal
+         public RenderFog(FogMode mode, FogType type, Camera camera, float partialTicks, float nearPlaneDistance, float farPlaneDistance, FogShape fogShape)
+@@ -205,4 +216,6 @@
+         private float blue;
+ 
++        public ComputeFogColor() {}
++
+         @ApiStatus.Internal
+         public ComputeFogColor(Camera camera, float partialTicks, float red, float green, float blue)
+@@ -284,4 +297,6 @@
+         private float roll;
+ 
++        public ComputeCameraAngles() {}
++
+         @ApiStatus.Internal
+         public ComputeCameraAngles(GameRenderer renderer, Camera camera, double renderPartialTicks, float yaw, float pitch, float roll)
+@@ -364,4 +379,8 @@
+         private double fov;
+ 
++        public ComputeFov() {
++            usedConfiguredFov = false;
++        }
++
+         @ApiStatus.Internal
+         public ComputeFov(GameRenderer renderer, Camera camera, double renderPartialTicks, double fov, boolean usedConfiguredFov)

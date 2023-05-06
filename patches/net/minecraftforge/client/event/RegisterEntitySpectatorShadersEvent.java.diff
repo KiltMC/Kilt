@@ -1,0 +1,11 @@
+--- RegisterEntitySpectatorShadersEvent.java
++++ RegisterEntitySpectatorShadersEvent.java
+@@ -30,4 +30,8 @@
+     private final Map<EntityType<?>, ResourceLocation> shaders;
+ 
++    public RegisterEntitySpectatorShadersEvent() {
++        shaders = null;
++    }
++
+     @ApiStatus.Internal
+     public RegisterEntitySpectatorShadersEvent(Map<EntityType<?>, ResourceLocation> shaders)

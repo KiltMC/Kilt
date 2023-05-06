@@ -1,0 +1,13 @@
+--- LivingChangeTargetEvent.java
++++ LivingChangeTargetEvent.java
+@@ -40,4 +40,10 @@
+     private final LivingEntity originalTarget;
+     private LivingEntity newTarget;
++
++    public LivingChangeTargetEvent() {
++        super(null);
++        targetType = null;
++        originalTarget = null;
++    }
+     
+     public LivingChangeTargetEvent(LivingEntity entity, LivingEntity originalTarget, ILivingTargetType targetType)

@@ -1,0 +1,12 @@
+--- OnDatapackSyncEvent.java
++++ OnDatapackSyncEvent.java
+@@ -22,4 +22,9 @@
+     private final ServerPlayer player;
+ 
++    public OnDatapackSyncEvent() {
++        player = null;
++        playerList = null;
++    }
++
+     public OnDatapackSyncEvent(PlayerList playerList, @Nullable ServerPlayer player)
+     {

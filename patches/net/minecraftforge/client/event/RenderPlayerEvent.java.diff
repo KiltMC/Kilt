@@ -1,0 +1,29 @@
+--- RenderPlayerEvent.java
++++ RenderPlayerEvent.java
+@@ -33,4 +33,12 @@
+     private final int packedLight;
+ 
++    public RenderPlayerEvent() {
++        renderer = null;
++        packedLight = 0;
++        partialTick = 0F;
++        poseStack = null;
++        multiBufferSource = null;
++    }
++
+     @ApiStatus.Internal
+     protected RenderPlayerEvent(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
+@@ -100,4 +108,6 @@
+     public static class Pre extends RenderPlayerEvent
+     {
++        public Pre() {}
++
+         @ApiStatus.Internal
+         public Pre(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)
+@@ -117,4 +127,6 @@
+     public static class Post extends RenderPlayerEvent
+     {
++        public Post() {}
++
+         @ApiStatus.Internal
+         public Post(Player player, PlayerRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight)

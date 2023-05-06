@@ -1,0 +1,10 @@
+--- ItemExpireEvent.java
++++ ItemExpireEvent.java
+@@ -21,4 +21,7 @@
+     private int extraLife;
+ 
++    public ItemExpireEvent() {
++    }
++
+     /**
+      * Creates a new event for an expiring EntityItem.

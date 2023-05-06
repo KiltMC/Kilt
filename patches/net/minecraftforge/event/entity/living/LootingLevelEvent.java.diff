@@ -1,0 +1,10 @@
+--- LootingLevelEvent.java
++++ LootingLevelEvent.java
+@@ -12,4 +12,7 @@
+ 
+ public class LootingLevelEvent extends LivingEvent {
++    public LootingLevelEvent() {
++        damageSource = null;
++    }
+ 
+     @Nullable

@@ -331,7 +331,6 @@ tasks {
     }
 
     processResources {
-        dependsOn("copyForgeResources")
         inputs.property("version", project.version)
         filteringCharset = "UTF-8"
 
