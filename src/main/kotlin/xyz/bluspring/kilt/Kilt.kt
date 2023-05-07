@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt
 
+import com.google.gson.GsonBuilder
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
@@ -203,5 +204,6 @@ class Kilt : ModInitializer {
 
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
         val loader: KiltLoader = KiltLoader()
+        val gson = GsonBuilder().setPrettyPrinting().create()
     }
 }

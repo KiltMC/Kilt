@@ -1,3 +1,4 @@
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
@@ -504,7 +505,7 @@ tasks {
             for (entry in jar.entries()) {
                 if (entry.name == "Kilt-refmap.json") {
                     output.putNextEntry(entry)
-                    output.write(json.toString().toByteArray())
+                    output.write(GsonBuilder().setPrettyPrinting().create().toJson(json).toByteArray())
                     output.closeEntry()
 
                     continue

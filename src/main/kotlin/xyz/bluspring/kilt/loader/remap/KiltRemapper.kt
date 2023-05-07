@@ -13,6 +13,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
@@ -333,7 +334,7 @@ object KiltRemapper {
                     })
 
                     jarOutput.putNextEntry(entry)
-                    jarOutput.write(refmapData.toString().toByteArray())
+                    jarOutput.write(Kilt.gson.toJson(refmapData).toByteArray())
                     jarOutput.closeEntry()
 
                     continue
