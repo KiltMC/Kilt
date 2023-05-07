@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -33,6 +34,7 @@ public abstract class ScreenInject {
 
     @Shadow public abstract void renderTooltip(PoseStack poseStack, List<? extends FormattedCharSequence> tooltips, int mouseX, int mouseY);
 
+    @Shadow @org.jetbrains.annotations.Nullable protected Minecraft minecraft;
     private Font tooltipFont = null;
     private ItemStack tooltipStack = ItemStack.EMPTY;
 
@@ -101,5 +103,9 @@ public abstract class ScreenInject {
         this.tooltipFont = font;
         this.renderTooltip(poseStack, lines, x, y);
         this.tooltipFont = null;
+    }
+
+    public Minecraft getMinecraft() {
+        return this.minecraft;
     }
 }

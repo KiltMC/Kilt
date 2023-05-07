@@ -298,7 +298,10 @@ object KiltRemapper {
 
                         mapped.entrySet().forEach { (name, element) ->
                             val srgMappedString = element.asString
-                            val srgClass = srgMappedString.replaceAfter(";", "")
+                            val srgClass = if (srgMappedString.startsWith("L"))
+                                srgMappedString.replaceAfter(";", "")
+                            else
+                                ""
                             val intermediaryClass = remapDescriptor(srgClass)
 
                             if (srgMappedString.contains(":")) {
