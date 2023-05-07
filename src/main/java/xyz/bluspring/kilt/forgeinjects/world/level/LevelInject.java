@@ -44,7 +44,7 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
 
     @Shadow public abstract BlockState getBlockState(BlockPos blockPos);
 
-    private final CapabilityProviderWorkaround<Level> workaround = new CapabilityProviderWorkaround<>(Level.class);
+    private final CapabilityProviderWorkaround<Level> workaround = new CapabilityProviderWorkaround<>(Level.class, (Level) (Object) this);
 
     public CapabilityProviderWorkaround<Level> getWorkaround() {
         return workaround;

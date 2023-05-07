@@ -1,0 +1,16 @@
+--- CapabilityProvider.java
++++ CapabilityProvider.java
+@@ -76,5 +76,5 @@
+     @SuppressWarnings("unchecked")
+     @NotNull
+-    B getProvider()
++    public B getProvider()
+     {
+         return (B)this;
+@@ -222,5 +222,5 @@
+         @Override
+         @NotNull
+-        B getProvider()
++        public B getProvider()
+         {
+             return owner;

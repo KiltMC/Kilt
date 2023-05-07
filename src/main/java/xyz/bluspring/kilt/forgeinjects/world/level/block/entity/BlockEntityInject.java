@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 
 @Mixin(BlockEntity.class)
 public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, BlockEntityCapabilityProviderImpl {
-    private CapabilityProviderWorkaround<BlockEntity> workaround = new CapabilityProviderWorkaround<>(BlockEntity.class);
+    private CapabilityProviderWorkaround<BlockEntity> workaround = new CapabilityProviderWorkaround<>(BlockEntity.class, (BlockEntity) (Object) this);
 
     @Override
     public CapabilityProviderWorkaround<BlockEntity> getWorkaround() {

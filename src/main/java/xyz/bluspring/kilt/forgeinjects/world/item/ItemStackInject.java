@@ -32,7 +32,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Shadow public abstract void setTag(@Nullable CompoundTag compoundTag);
 
-    private final CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class);
+    private final CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class, (ItemStack) (Object) this);
 
     @Override
     public CapabilityProviderWorkaround<ItemStack> getWorkaround() {
