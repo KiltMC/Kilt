@@ -9,6 +9,7 @@ object CommonSuperFixer {
         // Let's make sure it doesn't already exist
         if (
             classNode.access and Opcodes.ACC_INTERFACE == 0
+            && ((classNode.outerClass != null && classNode.access and Opcodes.ACC_STATIC != 0) || classNode.outerClass == null)
             && classNode.methods.none { it.name == "<init>" && (it.signature == "()V" || it.desc == "()V") }
             &&
             ((
