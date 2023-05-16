@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
+import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
@@ -11,7 +12,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Mob
-import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
@@ -85,6 +85,14 @@ class Kilt : ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register {
             ServerLifecycleHooks.expectServerStopped()
             ServerLifecycleHooks.handleServerStopped(it)
+        }
+
+        ExplosionEvents.START.register { level, explosion ->
+            ForgeEventFactory.onExplosionStart(level, explosion)
+        }
+
+        ExplosionEvents.DETONATE.register { level, explosion, entities, diameter ->
+            ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter)
         }
 
         InteractEvents.USE.register { minecraft, hit, hand ->
