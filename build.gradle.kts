@@ -135,7 +135,6 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.6.5")
 
     // Forge stuff
-    implementation(include("net.minecraftforge:eventbus:6.0.4")!!)
     implementation(include("net.minecraftforge:forgespi:6.0.2")!!)
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
     implementation(include("cpw.mods:securejarhandler:2.1.4")!!)
