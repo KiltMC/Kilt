@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementTab;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -62,7 +63,7 @@ public abstract class AdvancementsScreenInject extends Screen {
     }
 
     @WrapWithCondition(method = "renderWindow", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/advancements/AdvancementTab;drawIcon(IILnet/minecraft/client/renderer/entity/ItemRenderer;)V"))
-    public boolean kilt$drawIconIfInPage(AdvancementTab instance, int x, int y, boolean isSelected) {
+    public boolean kilt$drawIconIfInPage(AdvancementTab instance, int x, int y, ItemRenderer itemRenderer) {
         return ((AdvancementTabInjection) instance).getPage() == tabPage;
     }
 
