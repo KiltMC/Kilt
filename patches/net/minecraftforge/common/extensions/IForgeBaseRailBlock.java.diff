@@ -1,0 +1,15 @@
+--- IForgeBaseRailBlock.java
++++ IForgeBaseRailBlock.java
+@@ -6,4 +6,5 @@
+ package net.minecraftforge.common.extensions;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.BaseRailBlockExtensions;
+ import net.minecraft.world.entity.vehicle.MinecartFurnace;
+ import net.minecraft.world.level.block.state.BlockState;
+@@ -15,5 +16,5 @@
+ import org.jetbrains.annotations.Nullable;
+ 
+-public interface IForgeBaseRailBlock
++public interface IForgeBaseRailBlock extends BaseRailBlockExtensions
+ {
+ 

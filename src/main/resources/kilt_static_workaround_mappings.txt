@@ -48,8 +48,6 @@ c net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/in
 c net/minecraft/core/MappedRegistry xyz/bluspring/kilt/injections/core/MappedRegistryInjection
     f knownRegistries Ljava/util/Set;
     m getKnownRegistries ()Ljava/util/Set;
-c net/minecraft/world/entity/vehicle/AbstractMinecart xyz/bluspring/kilt/injections/entity/AbstractMinecartInjection
-    m registerCollisionHandler (Lnet/minecraftforge/common/IMinecartCollisionHandler;)V
 c net/minecraft/world/entity/MobCategory xyz/bluspring/kilt/injections/entity/MobCategoryInjection
     f BY_NAME Ljava/util/Map;
     m byName (Ljava/lang/String;)Lnet/minecraft/world/entity/MobCategory;

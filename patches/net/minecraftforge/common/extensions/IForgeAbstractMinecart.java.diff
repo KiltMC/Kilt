@@ -1,0 +1,15 @@
+--- IForgeAbstractMinecart.java
++++ IForgeAbstractMinecart.java
+@@ -6,4 +6,5 @@
+ package net.minecraftforge.common.extensions;
+ 
++import io.github.fabricators_of_create.porting_lib.extensions.AbstractMinecartExtensions;
+ import net.minecraft.world.entity.vehicle.AbstractMinecart;
+ import net.minecraft.tags.BlockTags;
+@@ -11,5 +12,5 @@
+ import net.minecraft.util.Mth;
+ 
+-public interface IForgeAbstractMinecart
++public interface IForgeAbstractMinecart extends AbstractMinecartExtensions
+ {
+     public static float DEFAULT_MAX_SPEED_AIR_LATERAL = 0.4f;
