@@ -1006,3 +1006,5 @@ transitive-accessible field net/minecraft/world/level/storage/loot/LootPool roll
 transitive-accessible field net/minecraft/world/level/storage/loot/LootPool bonusRolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider; # f_79029_
 
 transitive-accessible class net/minecraft/server/network/ServerLoginPacketListenerImpl$State
+
+accessible class net/minecraft/client/gui/screens/advancements/AdvancementTabType

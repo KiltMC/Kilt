@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.client
 
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
-import dev.architectury.event.events.client.ClientScreenInputEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
 import net.fabricmc.api.ClientModInitializer
@@ -11,18 +10,15 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Widget
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
-import net.minecraft.world.item.ItemStack
+import net.minecraftforge.client.event.ContainerScreenEvent
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent
-import net.minecraftforge.client.event.RenderTooltipEvent
 import net.minecraftforge.client.event.ScreenEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.ScreenAccessor
-import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
@@ -75,13 +71,13 @@ class KiltClient : ClientModInitializer {
             add.set(null)
         }
 
-        ClientGuiEvent.RENDER_CONTAINER_BACKGROUND.register { screen, poseStack, _, _, _ ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.BackgroundRendered(screen, poseStack))
+        ClientGuiEvent.RENDER_CONTAINER_BACKGROUND.register { screen, poseStack, x, y, _ ->
+            MinecraftForge.EVENT_BUS.post(ContainerScreenEvent.Render.Background(screen, poseStack, x, y))
         }
 
-        /*ClientGuiEvent.RENDER_CONTAINER_FOREGROUND.register { screen, poseStack, _, _, _ ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.BackgroundRendered(screen, poseStack))
-        }*/
+        ClientGuiEvent.RENDER_CONTAINER_FOREGROUND.register { screen, poseStack, x, y, _ ->
+            MinecraftForge.EVENT_BUS.post(ContainerScreenEvent.Render.Foreground(screen, poseStack, x, y))
+        }
 
         ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
             if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
