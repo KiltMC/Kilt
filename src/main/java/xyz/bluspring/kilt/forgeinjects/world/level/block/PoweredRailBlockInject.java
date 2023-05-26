@@ -7,19 +7,26 @@ import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
 
 @Mixin(PoweredRailBlock.class)
 public abstract class PoweredRailBlockInject extends BaseRailBlock implements PoweredRailBlockInjection {
+    @Shadow public abstract Property<RailShape> getShapeProperty();
+
+    @Shadow @Final public static BooleanProperty POWERED;
     private boolean isActivator = false;
 
     protected PoweredRailBlockInject(boolean bl, Properties properties) {
@@ -83,8 +90,10 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
         return getShapeProperty();
     }
 
-    @ModifyArgs(method = "createBlockStateDefinition", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/StateDefinition$Builder;add([Lnet/minecraft/world/level/block/state/properties/Property;)Lnet/minecraft/world/level/block/state/StateDefinition$Builder;"))
-    public void kilt$useForgeShapeForDefinition(Args args) {
-        args.set(0, getShapeProperty());
+    @Inject(method = "createBlockStateDefinition", at = @At("HEAD"), cancellable = true)
+    public void kilt$useForgeShapeForDefinition(StateDefinition.Builder<Block, BlockState> builder, CallbackInfo ci) {
+        builder.add(getShapeProperty(), POWERED, WATERLOGGED);
+
+        ci.cancel();
     }
 }
