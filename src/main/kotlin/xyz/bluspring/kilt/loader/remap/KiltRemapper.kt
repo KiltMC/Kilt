@@ -319,7 +319,7 @@ object KiltRemapper {
                                 // field
 
                                 val split = srgMappedString.split(":")
-                                val srgField = split[0].removePrefix("L$srgClass;")
+                                val srgField = split[0].removePrefix(srgClass)
                                 val srgDesc = split[1]
 
                                 val intermediaryField = fieldMappings[srgField]?.first ?: srgField
