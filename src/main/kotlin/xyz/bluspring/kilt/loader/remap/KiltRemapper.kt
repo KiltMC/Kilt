@@ -27,6 +27,11 @@ import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 
 object KiltRemapper {
+    // Keeps track of the remapper changes, so every time I update the remapper,
+    // it remaps all the mods following the remapper changes.
+    // this can update by like 12 versions in 1 update, so don't worry too much about it.
+    const val REMAPPER_VERSION = 15
+
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
@@ -38,6 +43,9 @@ object KiltRemapper {
 
     // Mainly for debugging, used to test unobfuscated mods and ensure that Kilt is running as intended.
     private val disableRemaps = System.getProperty("kilt.noRemap")?.lowercase() == "true"
+
+    // Generates local mappings file, you can use this if you're having trouble with the local ones.
+    private val generateLocalMappingCache = System.getProperty("kilt.genLocalMapping")?.lowercase() == "true"
 
     // SRG class -> Intermediary/Named class
     val classMappings = mutableMapOf<String, String>()
@@ -63,14 +71,14 @@ object KiltRemapper {
         logger.info("Loading mappings from Searge to $namespace...")
 
         val localMappingCache = KiltRemapper::class.java.getResource("/mapping_${KiltLoader.SUPPORTED_FORGE_SPEC_VERSION}_$namespace.txt")
-        if (localMappingCache != null && !mappingCacheFile.exists()) {
+        if (localMappingCache != null && !mappingCacheFile.exists() && !generateLocalMappingCache) {
             logger.info("Loading locally cached mapping file")
 
             mappingCacheFile.createNewFile()
             mappingCacheFile.writeBytes(localMappingCache.readBytes())
         }
 
-        if (mappingCacheFile.exists()) {
+        if (mappingCacheFile.exists() && !generateLocalMappingCache) {
             logger.info("Found cached mapping file")
 
             val lines = mappingCacheFile.readLines()
@@ -249,7 +257,7 @@ object KiltRemapper {
         val exceptions = mutableListOf<Exception>()
 
         val hash = DigestUtils.md5Hex(file.inputStream())
-        val modifiedJarFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_$hash.jar")
+        val modifiedJarFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_${REMAPPER_VERSION}_$hash.jar")
 
         if (modifiedJarFile.exists() && !forceRemap) {
             mod.remappedModFile = modifiedJarFile

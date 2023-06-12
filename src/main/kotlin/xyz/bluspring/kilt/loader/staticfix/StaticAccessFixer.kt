@@ -4,24 +4,15 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.InsnList
-import org.objectweb.asm.tree.InsnNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.TypeInsnNode
+import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.function.Function
 import java.util.jar.JarEntry
-import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
-import java.util.regex.Pattern
 
 object StaticAccessFixer {
     private val logger = Kilt.logger
@@ -43,7 +34,7 @@ object StaticAccessFixer {
             logger.info("Modifying ${mod.modInfo.mod.displayName}...")
 
             val hash = DigestUtils.md5Hex(mod.remappedModFile.inputStream())
-            val modifiedJarFile = File(dir, "${mod.modInfo.mod.modId}_modified_$hash.jar")
+            val modifiedJarFile = File(dir, "${mod.modInfo.mod.modId}_${KiltRemapper.REMAPPER_VERSION}_modified_$hash.jar")
 
             if (modifiedJarFile.exists()) {
                 mod.remappedModFile = modifiedJarFile
