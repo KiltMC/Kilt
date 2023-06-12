@@ -3,22 +3,16 @@ package xyz.bluspring.kilt;
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
-import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
-import xyz.bluspring.kilt.mixin.EnchantmentCategoryAccessor;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -95,6 +89,12 @@ public class TestingMoreShit {
 
         public boolean wow(Item item) {
             return ((EnchantmentCategoryInjection) (Object) this).getDelegate() != null && ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
+        }
+    }
+
+    public static class HowManyShitsDoINeedToTest extends Event {
+        public HowManyShitsDoINeedToTest() {
+            super();
         }
     }
 }

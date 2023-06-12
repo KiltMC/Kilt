@@ -22,7 +22,7 @@ object CommonSuperFixer {
                     // *sigh*
             )) || classNode.name.endsWith("Event") || classNode.superName.endsWith("Event"))
         ) {
-            val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null)
+            val method = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null)
             method.visitCode()
             val label0 = Label()
 
@@ -63,14 +63,18 @@ object CommonSuperFixer {
                 }
             }
 
-            method.visitLabel(Label())
+            val label1 = Label()
+            method.visitLabel(label1)
             method.visitInsn(Opcodes.RETURN)
 
             val lastLabel = Label()
-
             method.visitLabel(lastLabel)
             method.visitLocalVariable("this", "L${classNode.name};", null, label0, lastLabel, 0)
 
+            // i know you're thinking "why aren't you calculating this, it's fairly obvious here"
+            // apparently, when i change these values, it breaks a completely unrelated class in SecurityCraft
+            // with an error that is completely unrelated to the CSF.
+            // i am so confused.
             method.visitMaxs(0, 0)
             method.visitEnd()
         }
