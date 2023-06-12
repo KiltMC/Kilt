@@ -175,6 +175,7 @@
     "client.renderer.ScreenEffectRendererInject",
     "client.renderer.ShaderInstanceInject",
     "client.renderer.SheetsInject",
+    "client.renderer.block.BlockRenderDispatcherInject",
     "client.renderer.block.ModelBlockRendererInject",
     "client.renderer.block.model.BakedQuadInject",
     "client.renderer.block.model.BlockElementFaceInject",
