@@ -16,8 +16,8 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
+import xyz.bluspring.kilt.loader.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
-import xyz.bluspring.kilt.loader.superfix.CommonSuperFixer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -30,7 +30,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 23
+    const val REMAPPER_VERSION = 29
 
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
@@ -367,7 +367,7 @@ object KiltRemapper {
             classReader.accept(classNode, 0)
 
             EventClassVisibilityFixer.fixClass(classNode)
-            //CommonSuperFixer.fixClass(classNode)
+            EventEmptyInitializerFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
 
             try {

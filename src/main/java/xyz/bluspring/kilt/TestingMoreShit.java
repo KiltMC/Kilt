@@ -94,7 +94,18 @@ public class TestingMoreShit {
 
     public static class HowManyShitsDoINeedToTest extends Event {
         public HowManyShitsDoINeedToTest() {
+            this(false);
+        }
+        public HowManyShitsDoINeedToTest(boolean a) {
             super();
         }
+    }
+
+    public static class FuckingHell {
+        public FuckingHell() {}
+    }
+
+    public class DoISeriouslyNeedToTestThisToo {
+        public DoISeriouslyNeedToTestThisToo() {}
     }
 }
