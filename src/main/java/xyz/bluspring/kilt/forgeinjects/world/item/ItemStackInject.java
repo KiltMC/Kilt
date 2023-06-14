@@ -151,7 +151,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     }
 
     private void forgeInit() {
-        if (ForgeRegistries.ITEMS.getDelegate(this.getItem()).isPresent()) {
+        if (this.item != null && ForgeRegistries.ITEMS.getDelegate(this.getItem()).isPresent()) {
             this.gatherCapabilities(() -> this.item.initCapabilities((ItemStack) (Object) this, this.capNBT));
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
