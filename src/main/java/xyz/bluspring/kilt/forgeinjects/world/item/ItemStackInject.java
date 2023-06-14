@@ -11,7 +11,6 @@ import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeItemStack;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -151,7 +150,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     }
 
     private void forgeInit() {
-        if (this.item != null && ForgeRegistries.ITEMS.getDelegate(this.getItem()).isPresent()) {
+        if (this.item != null) {
             this.gatherCapabilities(() -> this.item.initCapabilities((ItemStack) (Object) this, this.capNBT));
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
