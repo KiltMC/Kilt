@@ -4,17 +4,21 @@ import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
+import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Widget
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.client.event.ContainerScreenEvent
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent
 import net.minecraftforge.client.event.ScreenEvent
+import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
+import net.minecraftforge.fml.ModLoader
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
@@ -89,6 +93,19 @@ class KiltClient : ClientModInitializer {
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
             if (screen != null)
                 MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
+        }
+
+        TextureStitchCallback.PRE.register { atlas, consumer ->
+            val map = mutableSetOf<ResourceLocation>()
+            ModLoader.get().postEvent(TextureStitchEvent.Pre(atlas, map))
+
+            map.forEach {
+                consumer.accept(it)
+            }
+        }
+
+        TextureStitchCallback.POST.register { atlas ->
+            ModLoader.get().postEvent(TextureStitchEvent.Post(atlas))
         }
     }
 

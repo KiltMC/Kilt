@@ -190,6 +190,7 @@
     "client.renderer.entity.layers.HumanoidArmorLayerInject",
     "client.renderer.texture.TextureAtlasInject",
     "client.resources.model.BakedModelInject",
+    "client.resources.model.ModelManagerInject",
     "client.resources.model.SimpleBakedModelInject",
     "client.resources.model.SimpleBakedModelInject$BuilderInject",
     "client.server.IntegratedServerInject"
