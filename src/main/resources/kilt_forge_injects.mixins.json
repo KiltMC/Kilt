@@ -172,6 +172,7 @@
     "client.multiplayer.ServerDataInject",
     "client.player.LocalPlayerInject",
     "client.renderer.ItemBlockRenderTypesInject",
+    "client.renderer.LevelRendererInject",
     "client.renderer.RenderTypeInject",
     "client.renderer.ScreenEffectRendererInject",
     "client.renderer.ShaderInstanceInject",

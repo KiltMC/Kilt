@@ -8,11 +8,16 @@ import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerR
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Widget
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.EntityHitResult
+import net.minecraft.world.phys.HitResult
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager
@@ -22,6 +27,7 @@ import net.minecraftforge.fml.ModLoader
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
@@ -142,6 +148,45 @@ class KiltClient : ClientModInitializer {
         TextureStitchCallback.POST.register { atlas ->
             ModLoader.get().postEvent(TextureStitchEvent.Post(atlas))
         }
+
+        WorldRenderEvents.AFTER_ENTITIES.register {
+            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, it)
+        }
+
+        WorldRenderEvents.AFTER_TRANSLUCENT.register {
+            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS, it)
+        }
+
+        WorldRenderEvents.AFTER_SETUP.register {
+            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_SKY, it)
+        }
+
+        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register { context, hitResult ->
+            if (hitResult == null)
+                return@register false
+
+            when (hitResult.type) {
+                HitResult.Type.BLOCK -> {
+                    if (hitResult !is BlockHitResult)
+                        return@register false
+
+                    return@register !MinecraftForge.EVENT_BUS.post(RenderHighlightEvent.Block(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
+                }
+
+                HitResult.Type.ENTITY -> {
+                    if (hitResult !is EntityHitResult)
+                        return@register false
+
+                    return@register !MinecraftForge.EVENT_BUS.post(RenderHighlightEvent.Entity(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
+                }
+
+                else -> return@register false
+            }
+        }
+    }
+
+    private fun postRenderLevelStage(stage: RenderLevelStageEvent.Stage, context: WorldRenderContext) {
+        MinecraftForge.EVENT_BUS.post(RenderLevelStageEvent(stage, context.worldRenderer(), context.matrixStack(), context.projectionMatrix(), (context.worldRenderer() as LevelRendererAccessor).ticks, context.tickDelta(), context.camera(), context.frustum()))
     }
 
     companion object {
