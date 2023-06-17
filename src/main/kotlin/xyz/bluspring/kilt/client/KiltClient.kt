@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.client
 
+import com.mojang.blaze3d.systems.RenderSystem
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
@@ -12,10 +13,9 @@ import net.minecraft.client.gui.components.Widget
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.resources.ResourceLocation
-import net.minecraftforge.client.event.ContainerScreenEvent
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent
-import net.minecraftforge.client.event.ScreenEvent
-import net.minecraftforge.client.event.TextureStitchEvent
+import net.minecraftforge.client.event.*
+import net.minecraftforge.client.gui.overlay.ForgeGui
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
@@ -38,6 +38,8 @@ class KiltClient : ClientModInitializer {
     }
 
     private fun registerFabricEvents() {
+        val mc = Minecraft.getInstance()
+
         ParticleManagerRegistrationCallback.EVENT.register {
             // i would call ForgeHooksClient.onRegisterParticleProviders,
             // but that doesn't work. i don't know why. but it just doesn't.
@@ -88,6 +90,39 @@ class KiltClient : ClientModInitializer {
                 EventResult.interruptFalse()
             else
                 EventResult.pass()
+        }
+
+        // Have the Forge GUI sitting here, because one of the methods depends on it.
+        // we're not using it properly though.
+        val forgeGui = ForgeGui(mc)
+        val window = mc.window
+
+        ClientGuiEvent.RENDER_HUD.register { poseStack, delta ->
+            val overlays = GuiOverlayManager.getOverlays()
+
+            if (overlays.isEmpty())
+                return@register
+
+            forgeGui.screenWidth = window.screenWidth
+            forgeGui.screenHeight = window.screenHeight
+            forgeGui.random.setSeed(forgeGui.tickCount * 312871L)
+
+            overlays.forEach { entry ->
+                try {
+                    val overlay = entry.overlay
+                    if (MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Pre(window, poseStack, delta, entry)))
+                        return@forEach
+
+                    overlay.render(forgeGui, poseStack, delta, forgeGui.screenWidth, forgeGui.screenHeight)
+
+                    MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Post(window, poseStack, delta, entry))
+                } catch (e: Exception) {
+                    Kilt.logger.error("Failed to render overlay ${entry.id}")
+                    e.printStackTrace()
+                }
+            }
+
+            RenderSystem.setShaderColor(1F, 1F, 1F, 1F)
         }
 
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->

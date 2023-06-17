@@ -1,9 +1,19 @@
 --- GuiOverlayManager.java
 +++ GuiOverlayManager.java
-@@ -54,5 +54,5 @@
-         preRegisterVanillaOverlays(overlays, orderedOverlays);
+@@ -52,7 +52,7 @@
+         var overlays = new HashMap<ResourceLocation, IGuiOverlay>();
+         var orderedOverlays = new ArrayList<ResourceLocation>();
+-        preRegisterVanillaOverlays(overlays, orderedOverlays);
++        //preRegisterVanillaOverlays(overlays, orderedOverlays); // Kilt: we're not using this
          var event = new RegisterGuiOverlaysEvent(overlays, orderedOverlays);
 -        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
 +        ModLoader.get().kiltPostEventWrappingMods(event);
          OVERLAYS = orderedOverlays.stream()
                  .map(id -> new NamedGuiOverlay(id, overlays.get(id)))
+@@ -60,5 +60,5 @@
+         OVERLAYS_BY_NAME = OVERLAYS.stream()
+                 .collect(ImmutableMap.toImmutableMap(NamedGuiOverlay::id, Function.identity()));
+-        assignVanillaOverlayTypes();
++        //assignVanillaOverlayTypes(); // Kilt: we're not using this
+     }
+ 
