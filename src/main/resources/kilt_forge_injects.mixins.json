@@ -145,6 +145,7 @@
     "client.KeyMappingInject",
     "client.MinecraftInject",
     "client.RecipeBookCategoriesInject",
+    "client.ScreenshotInject",
     "client.color.block.BlockColorsInject",
     "client.color.item.ItemColorsInject",
     "client.gui.components.AbstractSelectionListInject",
