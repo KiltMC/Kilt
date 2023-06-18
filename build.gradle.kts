@@ -48,9 +48,6 @@ repositories {
 
     maven("https://maven.cafeteria.dev/releases/") {
         name = "Cafeteria Dev"
-        content {
-            includeGroup("dev.cafeteria")
-        }
     }
 
     maven("https://maven.jamieswhiteshirt.com/libs-release") {
