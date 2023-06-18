@@ -104,7 +104,7 @@ dependencies {
     minecraft ("com.mojang:minecraft:${property("minecraft_version")}")
     mappings (loom.layered {
         officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-1.19.2:2022.11.27@zip")
+        parchment("org.parchmentmc.data:parchment-${property("parchment_version")}:${property("parchment_release")}@zip")
     })
     modImplementation ("net.fabricmc:fabric-loader:${property("loader_version")}")
 
@@ -116,7 +116,7 @@ dependencies {
 
     // we require Indium due to us using Fabric Rendering API stuff.
     // let's tell the users that too.
-    modImplementation(include("me.luligabi:NoIndium:1.1.0+1.19")!!)
+    modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}")!!)
 
     // Forge Reimplementations
     val portingLibs = listOf("accessors", "attributes", "base", "common", "constants", "entity", "extensions", "model_generators", "model_loader", "models", "networking", "obj_loader", "tags", "transfer", "lazy_registration", "fake_players")
@@ -124,11 +124,11 @@ dependencies {
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
-    implementation(include("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")!!)
-    annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.6")
-    modImplementation(include("com.github.Chocohead:Fabric-ASM:v2.3")!!)
-    modImplementation(include("io.github.tropheusj:serialization-hooks:0.3.26")!!)
-    modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:2.3.0")!!)
+    implementation(include("com.github.llamalad7.mixinextras:mixinextras-fabric:${property("mixinextras_version")}")!!)
+    annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${property("mixinextras_version")}")
+    modImplementation(include("com.github.Chocohead:Fabric-ASM:${property("fabric_asm_version")}")!!)
+    modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
+    modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("net.minecraftforge:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // required by Forge Config API Port
@@ -136,10 +136,10 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.6.5")
 
     // Forge stuff
-    implementation(include("net.minecraftforge:eventbus:6.0.4")!!)
-    implementation(include("net.minecraftforge:forgespi:6.0.2")!!)
+    implementation(include("net.minecraftforge:eventbus:${property("eventbus_version")}")!!)
+    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}")!!)
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
-    implementation(include("cpw.mods:securejarhandler:2.1.4")!!)
+    implementation(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
     implementation(include("net.minecraftforge:unsafe:0.2.+")!!)
     implementation(include("org.jline:jline-reader:3.12.+")!!)
