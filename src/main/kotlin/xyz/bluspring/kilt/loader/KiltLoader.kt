@@ -13,9 +13,7 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
-import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.ModLoadingPhase
@@ -32,21 +30,17 @@ import net.minecraftforge.registries.ForgeRegistries
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.KiltHelper
 import java.io.File
-import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
 import kotlin.system.exitProcess
-import net.minecraftforge.common.ForgeMod as ForgeBuiltinMod
 
 class KiltLoader {
     val mods = mutableListOf<ForgeMod>()
@@ -601,32 +595,6 @@ class KiltLoader {
         ForgeRegistries.init()
     }
 
-    companion object {
-        // These constants are to be updated each time we change versions
-        val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
-        val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.2")
-
-        private val MOD_ANNOTATION = Type.getType(Mod::class.java)
-        private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(Mod.EventBusSubscriber::class.java)
-
-        val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
-            if (!this.exists())
-                this.mkdirs()
-        }
-        private val extractedModsDir = File(kiltCacheDir, "extractedMods").apply {
-            if (!this.exists())
-                this.mkdirs()
-        }
-
-        private fun isSideValid(side: ForgeModInfo.ModDependency.ModSide): Boolean {
-            if (side == ForgeModInfo.ModDependency.ModSide.BOTH)
-                return true
-
-            return (FabricLoader.getInstance().environmentType == EnvType.CLIENT && side == ForgeModInfo.ModDependency.ModSide.CLIENT)
-                    || (FabricLoader.getInstance().environmentType == EnvType.SERVER && side == ForgeModInfo.ModDependency.ModSide.SERVER)
-        }
-    }
-
     private open class ModLoadingState(val dependency: ForgeModInfo.ModDependency)
 
     private class IncompatibleDependencyLoadingState(
@@ -651,6 +619,32 @@ class KiltLoader {
     ) : ModLoadingState(dependency) {
         override fun toString(): String {
             return "Loaded perfectly fine actually, how do you do?"
+        }
+    }
+
+    companion object {
+        // These constants are to be updated each time we change versions
+        val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
+        val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.14")
+
+        private val MOD_ANNOTATION = Type.getType(Mod::class.java)
+        private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(Mod.EventBusSubscriber::class.java)
+
+        val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
+            if (!this.exists())
+                this.mkdirs()
+        }
+        private val extractedModsDir = File(kiltCacheDir, "extractedMods").apply {
+            if (!this.exists())
+                this.mkdirs()
+        }
+
+        private fun isSideValid(side: ForgeModInfo.ModDependency.ModSide): Boolean {
+            if (side == ForgeModInfo.ModDependency.ModSide.BOTH)
+                return true
+
+            return (FabricLoader.getInstance().environmentType == EnvType.CLIENT && side == ForgeModInfo.ModDependency.ModSide.CLIENT)
+                    || (FabricLoader.getInstance().environmentType == EnvType.SERVER && side == ForgeModInfo.ModDependency.ModSide.SERVER)
         }
     }
 }
