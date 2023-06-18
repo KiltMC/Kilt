@@ -1,8 +1,8 @@
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import org.ajoberstar.grgit.Grgit
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 
@@ -116,6 +116,10 @@ dependencies {
 
     // Just because I like Kotlin more than Java
     modImplementation ("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
+
+    // we require Indium due to us using Fabric Rendering API stuff.
+    // let's tell the users that too.
+    modImplementation(include("me.luligabi:NoIndium:1.1.0+1.19")!!)
 
     // Forge Reimplementations
     val portingLibs = listOf("accessors", "attributes", "base", "common", "constants", "entity", "extensions", "model_generators", "model_loader", "models", "networking", "obj_loader", "tags", "transfer", "lazy_registration", "fake_players")

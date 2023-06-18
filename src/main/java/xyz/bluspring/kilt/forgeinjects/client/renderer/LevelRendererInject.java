@@ -16,7 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LevelRenderer.class)
+// lower priority to allow for Sodium to overwrite the method
+@Mixin(value = LevelRenderer.class, priority = 970)
 public class LevelRendererInject {
     @Shadow private int ticks;
 
@@ -26,6 +27,7 @@ public class LevelRendererInject {
 
     @Shadow @Final private Minecraft minecraft;
 
+    // FIXME: this stops working due to Sodium overwriting this method, need to use a different spot to inject for Sodium.
     @Inject(method = "renderChunkLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;clearRenderState()V", shift = At.Shift.BEFORE))
     public void kilt$dispatchRenderEventBasedOnType(RenderType renderType, PoseStack poseStack, double camX, double camY, double camZ, Matrix4f projectionMatrix, CallbackInfo ci) {
         var stage = RenderLevelStageEvent.Stage.fromRenderType(renderType);
