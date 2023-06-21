@@ -116,7 +116,9 @@ dependencies {
 
     // we require Indium due to us using Fabric Rendering API stuff.
     // let's tell the users that too.
-    modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}")!!)
+    modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}") {
+        exclude("net.fabricmc", "fabric-loader")
+    })
 
     // Forge Reimplementations
     val portingLibs = listOf("accessors", "attributes", "base", "common", "constants", "entity", "extensions", "model_generators", "model_loader", "models", "networking", "obj_loader", "tags", "transfer", "lazy_registration", "fake_players")
@@ -149,13 +151,27 @@ dependencies {
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
 
     // Runtime mods for testing
-    modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0")
-    modRuntimeOnly ("maven.modrinth:ferrite-core:5.0.3-fabric")
-    modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3")
-    modRuntimeOnly ("maven.modrinth:sodium:mc1.19.2-0.4.4")
-    modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1")
-    modRuntimeOnly ("maven.modrinth:starlight:1.1.1+1.19")
-    modRuntimeOnly ("maven.modrinth:indium:1.0.9+mc1.19.2")
+    modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:ferrite-core:5.0.3-fabric") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:sodium:mc1.19.2-0.4.4") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:starlight:1.1.1+1.19") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
+    modRuntimeOnly ("maven.modrinth:indium:1.0.9+mc1.19.2") {
+        exclude("net.fabricmc", "fabric-loader")
+    }
 
     runtimeOnly ("org.joml:joml:1.10.4")
 
