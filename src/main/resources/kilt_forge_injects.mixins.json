@@ -86,6 +86,7 @@
     "world.item.BoneMealItemInject",
     "world.item.BucketItemInject",
     "world.item.CreativeModeTabInject",
+    "world.item.DispensibleContainerItemInject",
     "world.item.DyeColorInject",
     "world.item.FishingRodItemInject",
     "world.item.ItemInject",
