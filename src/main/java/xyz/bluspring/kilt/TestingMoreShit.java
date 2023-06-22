@@ -3,6 +3,7 @@ package xyz.bluspring.kilt;
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -107,5 +108,11 @@ public class TestingMoreShit {
 
     public class DoISeriouslyNeedToTestThisToo {
         public DoISeriouslyNeedToTestThisToo() {}
+    }
+
+    public interface TestingThis {
+        default ItemTransforms testThis() {
+            return ItemTransforms.NO_TRANSFORMS;
+        }
     }
 }

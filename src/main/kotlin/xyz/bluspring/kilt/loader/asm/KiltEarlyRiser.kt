@@ -116,6 +116,44 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
+        // i haven't created a way to replace the abstracted methods yet, so this will do.
+        run {
+            val bakedModel = namespaced("net.minecraft.class_1087", "net.minecraft.client.resources.model.BakedModel")
+
+            ClassTinkerers.addTransformation(bakedModel) { classNode ->
+                run {
+                    val getTransformsName = namespaced("method_4709", "getTransforms")
+
+                    classNode.methods.removeIf { it.name == getTransformsName }
+
+                    val itemTransforms = namespaced("net/minecraft/class_809", "net/minecraft/client/renderer/block/model/ItemTransforms")
+                    val noTransforms = namespaced("field_4301", "NO_TRANSFORMS")
+
+                    // this method should look like this
+                    /*
+                    default ItemTransforms getTransforms() {
+                        return ItemTransforms.NO_TRANSFORMS;
+                    }
+                     */
+
+                    val getTransform = classNode.visitMethod(Opcodes.ACC_PUBLIC, getTransformsName, "()L$itemTransforms;", null, null)
+                    getTransform.visitCode()
+
+                    val label0 = Label()
+                    val label1 = Label()
+
+                    getTransform.visitLabel(label0)
+                    getTransform.visitFieldInsn(Opcodes.GETSTATIC, itemTransforms, noTransforms, "L$itemTransforms;")
+                    getTransform.visitInsn(Opcodes.ARETURN)
+
+                    getTransform.visitLabel(label1)
+                    getTransform.visitLocalVariable("this", "L${bakedModel.replace(".", "/")};", null, label0, label1, 0)
+                    getTransform.visitMaxs(1, 1)
+                    getTransform.visitEnd()
+                }
+            }
+        }
+
         // We need to add some new initializers because thanks Forge.
         // I probably should've done this from the beginning, honestly.
 
