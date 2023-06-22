@@ -1,6 +1,6 @@
 --- UnbakedGeometryHelper.java
 +++ UnbakedGeometryHelper.java
-@@ -96,7 +96,7 @@
+@@ -98,7 +96,7 @@
      public static BakedModel bake(BlockModel blockModel, ModelBakery modelBakery, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d)
      {
 -        IUnbakedGeometry<?> customModel = blockModel.customData.getCustomGeometry();
@@ -10,7 +10,7 @@
 +            return customModel.bake(blockModel.getGeometry(), modelBakery, spriteGetter, modelState, blockModel.getOverrides(modelBakery, owner, spriteGetter), modelLocation);
  
          // Handle vanilla item models here, since vanilla has a shortcut for them
-@@ -123,5 +123,5 @@
+@@ -125,5 +123,5 @@
  
          var elementsModel = new ElementsModel(blockModel.getElements());
 -        return elementsModel.bake(blockModel.customData, modelBakery, spriteGetter, modelState, blockModel.getOverrides(modelBakery, owner, spriteGetter), modelLocation);
