@@ -101,13 +101,14 @@ class KiltClient : ClientModInitializer {
         // Have the Forge GUI sitting here, because one of the methods depends on it.
         // we're not using it properly though.
         val forgeGui = ForgeGui(mc)
-        val window = mc.window
 
         ClientGuiEvent.RENDER_HUD.register { poseStack, delta ->
             val overlays = GuiOverlayManager.getOverlays()
 
             if (overlays.isEmpty())
                 return@register
+
+            val window = mc.window
 
             forgeGui.screenWidth = window.screenWidth
             forgeGui.screenHeight = window.screenHeight
