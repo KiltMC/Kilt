@@ -160,7 +160,7 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:lazydfu:0.1.3") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modRuntimeOnly ("maven.modrinth:sodium:mc1.19.2-0.4.4") {
+    modImplementation ("maven.modrinth:sodium:mc1.19.2-0.4.4") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1") {

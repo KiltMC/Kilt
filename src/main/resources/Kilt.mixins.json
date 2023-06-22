@@ -52,7 +52,8 @@
     "WoodTypeAccessor",
     "porting_lib.ConditionalRecipeSerializerMixin",
     "porting_lib.RegistryObjectAccessor",
-    "porting_lib.RegistryObjectMixin"
+    "porting_lib.RegistryObjectMixin",
+    "sodium.SodiumWorldRendererMixin"
   ],
   "client": [
     "DebugScreenOverlayMixin"
