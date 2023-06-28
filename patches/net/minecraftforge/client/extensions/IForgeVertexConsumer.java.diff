@@ -1,12 +1,22 @@
 --- IForgeVertexConsumer.java
 +++ IForgeVertexConsumer.java
-@@ -13,4 +13,5 @@
+@@ -11,6 +11,8 @@
+ import com.mojang.math.Matrix3f;
+ import com.mojang.math.Vector3f;
++import io.github.fabricators_of_create.porting_lib.extensions.VertexConsumerExtension;
  import net.minecraft.client.renderer.block.model.BakedQuad;
  import net.minecraftforge.client.model.IQuadTransformer;
 +import xyz.bluspring.kilt.injections.blaze3d.vertex.VertexConsumerInjection;
  
  import java.nio.ByteBuffer;
-@@ -41,5 +42,5 @@
+@@ -19,5 +21,5 @@
+  * Extension interface for {@link VertexConsumer}.
+  */
+-public interface IForgeVertexConsumer
++public interface IForgeVertexConsumer extends VertexConsumerExtension
+ {
+     private VertexConsumer self()
+@@ -41,5 +43,5 @@
      default void putBulkData(PoseStack.Pose pose, BakedQuad bakedQuad, float red, float green, float blue, float alpha, int packedLight, int packedOverlay, boolean readExistingColor)
      {
 -        self().putBulkData(pose, bakedQuad, new float[] { 1.0F, 1.0F, 1.0F, 1.0F }, red, green, blue, alpha, new int[] { packedLight, packedLight, packedLight, packedLight }, packedOverlay, readExistingColor);

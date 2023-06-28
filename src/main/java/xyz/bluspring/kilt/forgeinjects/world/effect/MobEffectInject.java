@@ -4,8 +4,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
+import net.minecraftforge.common.extensions.IForgeMobEffect;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
 
 @Mixin(MobEffect.class)
-public class MobEffectInject implements RenderPropertiesInjection<IClientMobEffectExtensions> {
+public class MobEffectInject implements RenderPropertiesInjection<IClientMobEffectExtensions>, IForgeMobEffect {
     @Unique
     private Object renderProperties;
 

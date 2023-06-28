@@ -6,28 +6,28 @@
 +import io.github.fabricators_of_create.porting_lib.extensions.BlockModelExtensions;
  import net.minecraft.client.renderer.block.model.BlockModel;
  import net.minecraft.client.renderer.block.model.ItemOverrides;
-@@ -65,5 +65,5 @@
+@@ -65,5 +66,5 @@
      public IUnbakedGeometry<?> getCustomGeometry()
      {
 -        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
 +        return owner.parent != null && customGeometry == null ? (IUnbakedGeometry<?>) owner.parent.getGeometry().getCustomGeometry() : customGeometry;
      }
  
-@@ -77,5 +77,5 @@
+@@ -77,5 +78,5 @@
      {
          return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
 -                owner.parent.customData.isComponentVisible(part, fallback) :
 +                owner.parent.getGeometry().isComponentVisible(part, fallback) :
                  visibilityData.isVisible(part, fallback);
      }
-@@ -122,5 +122,5 @@
+@@ -122,5 +123,5 @@
          if (rootTransform != null)
              return rootTransform;
 -        return owner.parent != null ? owner.parent.customData.getRootTransform() : Transformation.identity();
 +        return owner.parent != null ? owner.parent.getGeometry().getRootTransform() : Transformation.identity();
      }
  
-@@ -136,5 +136,5 @@
+@@ -136,5 +137,5 @@
          if (renderTypeHint != null)
              return renderTypeHint;
 -        return owner.parent != null ? owner.parent.customData.getRenderTypeHint() : null;

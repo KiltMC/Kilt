@@ -21,14 +21,14 @@
 +                    scale = Vector3fInjection.of(parseFloatArray(obj.get("scale"), 3, "Scale"));
                  }
                  elements.remove("scale");
-@@ -214,5 +223,5 @@
+@@ -214,5 +216,5 @@
              if (originElement.isJsonArray())
              {
 -                origin = new Vector3f(parseFloatArray(originElement, 3, "Origin"));
 +                origin = Vector3fInjection.of(parseFloatArray(originElement, 3, "Origin"));
              }
              else if (originElement.isJsonPrimitive())
-@@ -256,5 +265,5 @@
+@@ -256,5 +258,5 @@
                  }
              }
 -            return new Matrix4f(values);

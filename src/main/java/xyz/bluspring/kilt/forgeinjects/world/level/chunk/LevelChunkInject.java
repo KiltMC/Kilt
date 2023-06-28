@@ -5,6 +5,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.common.extensions.IForgeLevelChunk;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ChunkAccessInjection;
 
 @Mixin(LevelChunk.class)
-public abstract class LevelChunkInject implements ChunkAccessInjection {
+public abstract class LevelChunkInject implements ChunkAccessInjection, IForgeLevelChunk {
     @Shadow public abstract Level getLevel();
 
     @Nullable

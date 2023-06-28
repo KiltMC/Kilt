@@ -1,6 +1,6 @@
 --- ClientChatReceivedEvent.java
 +++ ClientChatReceivedEvent.java
-@@ -38,4 +37,10 @@
+@@ -38,4 +38,10 @@
      private final MessageSigner messageSigner;
  
 +    public ClientChatReceivedEvent() {
