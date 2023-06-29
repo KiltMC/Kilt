@@ -8,7 +8,8 @@
     "BluSpring"
   ],
   "contact": {
-    "repo": "https://github.com/BluSpring/Kilt"
+    "repo": "https://github.com/KiltMC/Kilt",
+    "issues": "https://github.com/KiltMC/Kilt/issues"
   },
   "license": "LGPL-3.0",
   "icon": "assets/kilt/icon.png",
