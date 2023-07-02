@@ -225,7 +225,26 @@ class KiltLoader {
         forgeMod.eventBus.post(FMLConstructModEvent(forgeMod, ModLoadingStage.CONSTRUCT))
     }
 
-    private fun preloadJarMod(modFile: File, jarFile: ZipFile): Map<String, Exception> {
+    // This is used specifically for JiJ'd mods that don't store mods.toml files.
+    // LOOKING AT YOU, REGISTRATE.
+    private fun createCustomMod(modFile: File): ForgeMod {
+        return ForgeMod(
+            ForgeModInfo(
+                mod = ForgeModInfo.ModMetadata(
+                    "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
+                    DefaultArtifactVersion("0.0.0"),
+                    "(Kilt JiJ) ${modFile.nameWithoutExtension}",
+                    dependencies = listOf(),
+                    description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway."
+                )
+            ),
+            modFile = modFile,
+            modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml"))),
+            isJIJ = true
+        )
+    }
+
+    private fun preloadJarMod(modFile: File, jarFile: ZipFile, isJIJ: Boolean = false): Map<String, Exception> {
         // Do NOT load Fabric mods.
         // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
         // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
@@ -240,7 +259,15 @@ class KiltLoader {
         Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
 
         try {
-            val modsToml = jarFile.getEntry("META-INF/mods.toml") ?: return mapOf()
+            val modsToml = jarFile.getEntry("META-INF/mods.toml")
+
+            if (isJIJ && modsToml == null) {
+                val mod = createCustomMod(modFile)
+                modLoadingQueue.add(mod)
+
+                Kilt.logger.info("Loaded JiJ'd mod ${modFile.nameWithoutExtension}.")
+                return mapOf()
+            }
 
             // Check for Forge's method of include.
             // Doing it this way is probably faster than scanning the entire JAR.
@@ -264,7 +291,7 @@ class KiltLoader {
                         file.writeBytes(jarFile.getInputStream(entry).readAllBytes())
                     }
 
-                    preloadJarMod(file, ZipFile(file))
+                    preloadJarMod(file, ZipFile(file), true)
                 }
             }
 

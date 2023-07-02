@@ -3,8 +3,6 @@ package xyz.bluspring.kilt.loader
 import cpw.mods.jarhandling.SecureJar
 import net.fabricmc.loader.api.Version
 import net.fabricmc.loader.api.metadata.*
-import net.fabricmc.loader.api.metadata.version.VersionInterval
-import net.fabricmc.loader.api.metadata.version.VersionPredicate
 import net.fabricmc.loader.impl.discovery.ModCandidate
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata
 import net.minecraftforge.eventbus.EventBusErrorMessage
@@ -19,15 +17,13 @@ import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ForgeFeature
-import net.minecraftforge.forgespi.locating.IModFile
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
-import java.util.Optional
+import java.util.*
 import java.util.function.Supplier
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -35,7 +31,8 @@ import java.util.jar.Manifest
 class ForgeMod(
     val modInfo: ForgeModInfo,
     val modFile: File?,
-    val modConfig: IConfigurable
+    val modConfig: IConfigurable,
+    val isJIJ: Boolean = false
 ) {
     val forgeSpi = ForgeSpiModInfo(this)
     val eventBus: IEventBus = BusBuilder.builder().apply {
@@ -354,6 +351,7 @@ class ForgeMod(
         }
 
         override fun getProvides(): MutableCollection<String> {
+            // TODO: List all JiJ'd mods with this
             return mutableListOf()
         }
 

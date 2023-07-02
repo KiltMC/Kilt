@@ -1,0 +1,19 @@
+modLoader="javafml"
+loaderVersion="[24,]"
+issueTrackerURL=""
+logoFile=""
+license=""
+
+[[mods]]
+modId="unknown"
+# We use the global forge version
+version="0.0.0"
+updateJSONURL=""
+displayName="Unknown Kilt Mod Jar"
+credits=""
+authors=""
+description='''
+This is a jar that has been JiJ'd by a Forge mod, but doesn't provide any mods.toml for metadata.
+This also should *not* be visible whatsoever to the end user, so if you are seeing this description,
+please report it to https://github.com/KiltMC/Kilt/issues
+'''
