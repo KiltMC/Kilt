@@ -52,6 +52,8 @@ object EventEmptyInitializerFixer {
                     "D" -> initMethod.visitInsn(Opcodes.DCONST_0) // double
                     "J" -> initMethod.visitInsn(Opcodes.LCONST_0) // long
                     "Z" -> initMethod.visitInsn(Opcodes.ICONST_0) // boolean
+                    "S" -> initMethod.visitInsn(Opcodes.ICONST_0) // short
+                    "B" -> initMethod.visitInsn(Opcodes.ICONST_0) // byte
 
                     else -> initMethod.visitInsn(Opcodes.ACONST_NULL)
                 }
