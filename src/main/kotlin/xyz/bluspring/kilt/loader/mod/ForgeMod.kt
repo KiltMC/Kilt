@@ -16,6 +16,7 @@ import net.minecraftforge.forgespi.locating.ForgeFeature
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import java.io.File
 import java.net.URL
@@ -24,6 +25,7 @@ import java.util.*
 import java.util.function.Supplier
 import java.util.jar.JarFile
 import java.util.jar.Manifest
+import kotlin.io.path.toPath
 
 class ForgeMod(
     private val modId: String,
@@ -69,6 +71,8 @@ class ForgeMod(
         get() = mutableListOf<Path>().apply {
             if (this@ForgeMod::remappedModFile.isInitialized)
                 this.add(this@ForgeMod.remappedModFile.toPath())
+            else
+                this.add(this@ForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
         }
 
     fun getSecureJar(): Supplier<SecureJar> {
