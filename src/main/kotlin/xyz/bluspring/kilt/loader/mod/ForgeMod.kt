@@ -79,6 +79,12 @@ class ForgeMod(
         }
     }
 
+    init {
+        this.dependencies.forEach {
+            it.owner = this
+        }
+    }
+
     // Forge SPI reimpls
     override fun getOwningFile(): IModFileInfo {
         return ModFileInfo(this)
@@ -132,8 +138,8 @@ class ForgeMod(
         return false
     }
 
-    override fun getConfig(): IConfigurable? {
-        return null
+    override fun getConfig(): IConfigurable {
+        return modConfig
     }
 
     // Event Bus
