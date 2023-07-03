@@ -20,11 +20,11 @@ class KiltFabricModContainer(private val mod: ForgeMod) : ModContainerImpl(Fabri
     }
 
     override fun getContainingMod(): Optional<net.fabricmc.loader.api.ModContainer> {
-        return Optional.empty()
+        return Optional.ofNullable(mod.parent?.container?.fabricModContainer)
     }
 
     override fun getContainedMods(): MutableCollection<net.fabricmc.loader.api.ModContainer> {
-        return mutableListOf()
+        return mod.nestedMods.map { it.container.fabricModContainer }.toMutableList()
     }
 
     override fun getPath(file: String): Path? {

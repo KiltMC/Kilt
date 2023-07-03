@@ -54,6 +54,7 @@ class ForgeMod(
     lateinit var scanData: ModFileScanData
     lateinit var modObject: Any
 
+    var parent: ForgeMod? = null
     var manifest: Manifest? = null
 
     val jar: JarFile

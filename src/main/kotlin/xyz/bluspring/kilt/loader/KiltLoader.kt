@@ -412,6 +412,10 @@ class KiltLoader {
             )
             mod.manifest = manifest
 
+            nestedMods.forEach {
+                it.parent = mod
+            }
+
             forgeMods.add(mod)
         }
 
