@@ -7,8 +7,8 @@ import net.minecraftforge.forgespi.language.IModLanguageProvider
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import net.minecraftforge.forgespi.locating.IModProvider
-import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltModProvider
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.nio.file.Path
 import java.util.function.Supplier
 

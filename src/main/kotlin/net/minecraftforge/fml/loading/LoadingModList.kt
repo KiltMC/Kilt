@@ -7,6 +7,6 @@ class LoadingModList {
     fun getModFileById(modid: String): ModFileInfo? {
         val kiltMod = Kilt.loader.getMod(modid) ?: return null
 
-        return kiltMod.forgeSpi.owningFile as ModFileInfo
+        return kiltMod.owningFile as ModFileInfo
     }
 }

@@ -7,8 +7,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import org.apache.commons.codec.digest.DigestUtils
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltModContainer
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 
@@ -19,7 +19,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
     val activeContainer: ModContainer = KiltModContainer(mod)
     val activeNamespace: String
         get() {
-            return mod.modInfo.mod.modId
+            return mod.modId
         }
 
     fun extension(): FMLJavaModLoadingContext {
@@ -33,12 +33,12 @@ class ModLoadingContext(private val mod: ForgeMod) {
     // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise
     // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
-        val modId = mod.modInfo.mod.modId
+        val modId = mod.modId
         net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec, fileName)
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
-        val modId = mod.modInfo.mod.modId
+        val modId = mod.modId
         net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec)
     }
 
@@ -56,7 +56,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
         val activeContainer: ModContainer
             get() {
                 if (kiltActiveModId != null)
-                    return Kilt.loader.mods.first { it.modInfo.mod.modId == kiltActiveModId }.container
+                    return Kilt.loader.mods.first { it.modId == kiltActiveModId }.container
 
                 val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                 val source = stackWalker.callerClass

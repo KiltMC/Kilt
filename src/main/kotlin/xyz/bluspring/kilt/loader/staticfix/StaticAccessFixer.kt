@@ -6,7 +6,7 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.superfix.CommonSuperClassWriter
 import java.io.File
@@ -31,10 +31,10 @@ object StaticAccessFixer {
             if (mod.modFile == null)
                 return@forEach
 
-            logger.info("Modifying ${mod.modInfo.mod.displayName}...")
+            logger.info("Modifying ${mod.displayName}...")
 
             val hash = DigestUtils.md5Hex(mod.remappedModFile.inputStream())
-            val modifiedJarFile = File(dir, "${mod.modInfo.mod.modId}_${KiltRemapper.REMAPPER_VERSION}_modified_$hash.jar")
+            val modifiedJarFile = File(dir, "${mod.modId}_${KiltRemapper.REMAPPER_VERSION}_modified_$hash.jar")
 
             if (modifiedJarFile.exists()) {
                 mod.remappedModFile = modifiedJarFile
@@ -75,7 +75,7 @@ object StaticAccessFixer {
                     jarOutput.write(classWriter.toByteArray())
                     jarOutput.closeEntry()
                 } catch (e: Exception) {
-                    logger.warn("An exception occurred whilst modifying ${entry.name} in ${mod.modInfo.mod.displayName}, but it should be fine to ignore.")
+                    logger.warn("An exception occurred whilst modifying ${entry.name} in ${mod.displayName}, but it should be fine to ignore.")
                     e.printStackTrace()
 
                     // Don't bother with it, let's just throw it back in and move on.
@@ -88,7 +88,7 @@ object StaticAccessFixer {
             jarOutput.close()
             mod.remappedModFile = modifiedJarFile
 
-            logger.info("Successfully modified ${mod.modInfo.mod.displayName} (${modifiedJarFile.name})!")
+            logger.info("Successfully modified ${mod.displayName} (${modifiedJarFile.name})!")
         }
     }
 

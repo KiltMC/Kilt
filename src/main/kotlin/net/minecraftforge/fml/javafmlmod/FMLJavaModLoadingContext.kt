@@ -2,7 +2,7 @@ package net.minecraftforge.fml.javafmlmod
 
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.ModLoadingContext
-import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 
 class FMLJavaModLoadingContext(private val mod: ForgeMod) {
     val modEventBus: IEventBus

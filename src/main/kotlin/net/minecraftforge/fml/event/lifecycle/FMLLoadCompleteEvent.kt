@@ -1,7 +1,7 @@
 package net.minecraftforge.fml.event.lifecycle
 
 import net.minecraftforge.fml.ModLoadingStage
-import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 
 class FMLLoadCompleteEvent(mod: ForgeMod?, stage: ModLoadingStage?) : ParallelDispatchEvent(mod, stage) {
     constructor() : this(null, null)
