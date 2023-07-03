@@ -13,10 +13,10 @@ import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.ForgeMod
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.fixers.EventEmptyInitializerFixer
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -219,9 +219,9 @@ object KiltRemapper {
         // We need to sort it in a way where dependencies are remapped before everyone else,
         // so the mods can remap correctly.
         modRemapQueue.sortWith { a, b ->
-            if (a.modInfo.mod.dependencies.any { it.modId == b.modInfo.mod.modId })
+            if (a.dependencies.any { it.modId == b.modId })
                 1
-            else if (b.modInfo.mod.dependencies.any { it.modId == a.modInfo.mod.modId })
+            else if (b.dependencies.any { it.modId == a.modId })
                 -1
             else 0
         }
@@ -234,7 +234,7 @@ object KiltRemapper {
 
             try {
                 exceptions.addAll(remapMod(mod.modFile, mod))
-                logger.info("Remapped ${mod.modInfo.mod.displayName} (${mod.modInfo.mod.modId})")
+                logger.info("Remapped ${mod.displayName} (${mod.modId})")
             } catch (e: Exception) {
                 exceptions.add(e)
                 e.printStackTrace()
@@ -257,7 +257,7 @@ object KiltRemapper {
         val exceptions = mutableListOf<Exception>()
 
         val hash = DigestUtils.md5Hex(file.inputStream())
-        val modifiedJarFile = File(remappedModsDir, "${mod.modInfo.mod.modId}_${REMAPPER_VERSION}_$hash.jar")
+        val modifiedJarFile = File(remappedModsDir, "${mod.modId}_${REMAPPER_VERSION}_$hash.jar")
 
         if (modifiedJarFile.exists() && !forceRemap) {
             mod.remappedModFile = modifiedJarFile

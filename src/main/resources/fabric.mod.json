@@ -97,5 +97,8 @@
       "net/minecraft/class_1937": ["xyz/bluspring/kilt/injections/CapabilityProviderInjection", "xyz/bluspring/kilt/injections/capabilities/LevelCapabilityProviderImpl"]
     }
   },
+  "breaks": {
+    "quilt-loader": "*"
+  },
   "accessWidener": "kilt.accesswidener"
 }

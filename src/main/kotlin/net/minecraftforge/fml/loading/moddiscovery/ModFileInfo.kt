@@ -4,11 +4,9 @@ import net.minecraftforge.forgespi.language.IConfigurable
 import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
-import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 
 open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
-    private val kiltModInfo = kiltMod.modInfo
-
     override fun getMods(): MutableList<IModInfo> {
         return mutableListOf(ModInfo(kiltMod))
     }
@@ -18,7 +16,7 @@ open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
     }
 
     override fun showAsResourcePack(): Boolean {
-        return kiltModInfo.showAsResourcePack
+        return kiltMod.showAsResourcePack
     }
 
     override fun getFileProperties(): MutableMap<String, Any> {
@@ -26,15 +24,15 @@ open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
     }
 
     override fun getLicense(): String {
-        return kiltModInfo.license
+        return kiltMod.license
     }
 
     override fun moduleName(): String {
-        return kiltModInfo.mod.displayName
+        return kiltMod.displayName
     }
 
     override fun versionString(): String {
-        return kiltModInfo.mod.version.toString()
+        return kiltMod.version.toString()
     }
 
     override fun usesServices(): MutableList<String> {

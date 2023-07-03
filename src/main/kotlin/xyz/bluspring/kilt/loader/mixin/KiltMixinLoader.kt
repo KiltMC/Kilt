@@ -4,10 +4,9 @@ import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.slf4j.LoggerFactory
 import org.spongepowered.asm.mixin.FabricUtil
-import org.spongepowered.asm.mixin.MixinEnvironment
 import org.spongepowered.asm.mixin.Mixins
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.ForgeMod
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import kotlin.io.path.toPath
 
 object KiltMixinLoader {
