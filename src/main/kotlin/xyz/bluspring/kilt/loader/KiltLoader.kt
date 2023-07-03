@@ -612,6 +612,7 @@ class KiltLoader {
 
     internal fun addModToFabric(mod: ForgeMod) {
         modProvider.addModToLoader(mod)
+        Kilt.logger.info("Injected mod ${mod.modId} into ${modProvider.name}")
     }
 
     // We need to initialize all early Forge-related things immediately,

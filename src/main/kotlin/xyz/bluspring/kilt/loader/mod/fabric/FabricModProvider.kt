@@ -11,6 +11,8 @@ import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 // However, as far as I can tell, loader plugins might be needed in order for Quilt to be supported.
 // So for right now, Quilt is not supported.
 class FabricModProvider : LoaderModProvider {
+    override val name: String = "Fabric Loader"
+
     private val candidates = mutableMapOf<ForgeMod, ModCandidate>()
     private val loaderMetadatas = mutableMapOf<ForgeMod, LoaderModMetadata>()
 
