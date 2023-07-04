@@ -156,6 +156,7 @@
     "client.ScreenshotInject",
     "client.color.block.BlockColorsInject",
     "client.color.item.ItemColorsInject",
+    "client.gui.GuiInject",
     "client.gui.components.AbstractSelectionListInject",
     "client.gui.components.AbstractWidgetInject",
     "client.gui.components.BossHealthOverlayInject",

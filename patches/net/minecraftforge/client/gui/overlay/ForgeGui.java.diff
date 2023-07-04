@@ -1,5 +1,12 @@
 --- ForgeGui.java
 +++ ForgeGui.java
+@@ -188,5 +188,5 @@
+     }
+ 
+-    void renderHelmet(float partialTick, PoseStack poseStack)
++    public void renderHelmet(float partialTick, PoseStack poseStack)
+     {
+         ItemStack itemstack = this.minecraft.player.getInventory().getArmor(3);
 @@ -246,5 +246,5 @@
  
      @Override
