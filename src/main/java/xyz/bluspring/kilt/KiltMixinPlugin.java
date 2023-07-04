@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 public class KiltMixinPlugin implements IMixinConfigPlugin {
+    private static final String MIXIN_PACKAGE_ROOT = "xyz.bluspring.kilt.mixin.";
+
     @Override
     public void onLoad(String mixinPackage) {
         MixinExtrasBootstrap.init();
@@ -22,6 +25,16 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        if (!mixinClassName.startsWith(MIXIN_PACKAGE_ROOT)) {
+            return false;
+        }
+
+        var mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length());
+
+        if (mixin.startsWith("sodium.")) {
+            return FabricLoader.getInstance().isModLoaded("sodium");
+        }
+
         return true;
     }
 
