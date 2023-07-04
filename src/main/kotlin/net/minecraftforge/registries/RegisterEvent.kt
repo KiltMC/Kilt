@@ -3,10 +3,10 @@ package net.minecraftforge.registries
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.level.block.Block
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.event.IModBusEvent
+import net.minecraftforge.registries.RegisterEvent.RegisterHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -15,6 +15,9 @@ class RegisterEvent internal constructor(
     val forgeRegistry: ForgeRegistry<*>?,
     val vanillaRegistry: Registry<*>?
 ) : Event(), IModBusEvent {
+    private val queuedConsumers = mutableListOf<Consumer<RegisterHelper<out Any>>>()
+    private var hasRanConsumers = false
+
     constructor() : this(EMPTY, null, null)
 
     fun getForgeRegistry(): IForgeRegistry<*>? {
@@ -37,8 +40,20 @@ class RegisterEvent internal constructor(
 
     fun <T : Any> register(registryKey: ResourceKey<out Registry<*>>, consumer: Consumer<RegisterHelper<T>>) {
         if (this.registryKey == registryKey) {
-            consumer.accept(RegisterHelper { name, value -> register(registryKey, name) { value } })
+            if (hasRanConsumers)
+                consumer.accept(RegisterHelper { name, value -> register(registryKey, name) { value } })
+            else
+                queuedConsumers.add(consumer as Consumer<RegisterHelper<out Any>>)
         }
+    }
+
+    fun kiltRunQueuedConsumers(registryKey: ResourceKey<out Registry<*>>) {
+        queuedConsumers.forEach {
+            it.accept(RegisterHelper { name, value -> register(registryKey, name) { value } })
+        }
+        queuedConsumers.clear()
+
+        hasRanConsumers = true
     }
 
     fun interface RegisterHelper<T> {

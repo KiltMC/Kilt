@@ -1,7 +1,6 @@
 package net.minecraftforge.registries
 
 import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar
-import io.github.fabricators_of_create.porting_lib.util.RegistryObject as FabricRegistryObject
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -9,11 +8,12 @@ import net.minecraft.tags.TagKey
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import org.apache.logging.log4j.LogManager
+import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import xyz.bluspring.kilt.mixin.LazyRegistrarAccessor
 import xyz.bluspring.kilt.mixin.porting_lib.RegistryObjectAccessor
-import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject as FabricRegistryObject
 
 class DeferredRegister<T : Any> private constructor(
     private val fabricRegister: LazyRegistrar<T>,
@@ -69,6 +69,8 @@ class DeferredRegister<T : Any> private constructor(
             while (register.fabricRegisteredList.isNotEmpty()) {
                 (register.fabricRegisteredList.remove().fabricRegistryObject as RegistryObjectInjection).updateRef()
             }
+
+            event.kiltRunQueuedConsumers(event.registryKey)
         }
 
         private fun <T : Any> register(fabricRegistry: LazyRegistrar<T>) {
