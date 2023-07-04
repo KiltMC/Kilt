@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier
 object EventEmptyInitializerFixer {
     fun fixClass(classNode: ClassNode) {
         // let's just run a fixer for everything. i can't be bothered at this point.
-        if (Modifier.isInterface(classNode.access))
+        if (Modifier.isInterface(classNode.access) || classNode.access and Opcodes.ACC_ENUM != 0)
             return
 
         // let's just kindly ignore these..
