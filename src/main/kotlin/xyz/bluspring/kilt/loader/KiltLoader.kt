@@ -516,6 +516,11 @@ class KiltLoader {
                 // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                 try {
+                    val modId = it.annotationData["modid"] as String
+
+                    if (modId != mod.modId)
+                        return@forEach
+
                     val busType = Mod.EventBusSubscriber.Bus.valueOf(
                         if (it.annotationData.contains("bus"))
                             (it.annotationData["bus"] as ModAnnotation.EnumHolder).value
@@ -523,7 +528,7 @@ class KiltLoader {
                     )
 
                     busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
-                    Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID ${mod.modId} under bus ${busType.name}")
+                    Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Exception) {
                     e.printStackTrace()
                     exceptions.add(e)
@@ -539,9 +544,18 @@ class KiltLoader {
                 // it.annotationData["value"] as String - Mod ID
 
                 try {
+                    val modId = it.annotationData["value"] as String
+
+                    if (modId != mod.modId)
+                        return@forEach
+
                     val clazz = launcher.loadIntoTarget(it.clazz.className)
-                    ModLoadingContext.kiltActiveModId = mod.modId
+
+                    ModLoadingContext.kiltActiveModId = modId
+
                     mod.modObject = clazz.getDeclaredConstructor().newInstance()
+                    Kilt.logger.info("Initialized new instance of mod $modId.")
+
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Exception) {
                     e.printStackTrace()
