@@ -4,7 +4,7 @@
   * @see IGeometryBakingContext
   */
 -public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>>
-+public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>> extends io.github.fabricators_of_create.porting_lib.model.geometry.IUnbakedGeometry<T>
++public interface IUnbakedGeometry<T extends io.github.fabricators_of_create.porting_lib.model.geometry.IUnbakedGeometry<T>> extends io.github.fabricators_of_create.porting_lib.model.geometry.IUnbakedGeometry<T>
  {
 +    @Override
 +    default BakedModel bake(io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {

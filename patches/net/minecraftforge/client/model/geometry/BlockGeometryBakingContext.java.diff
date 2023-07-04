@@ -6,31 +6,209 @@
 +import io.github.fabricators_of_create.porting_lib.extensions.BlockModelExtensions;
  import net.minecraft.client.renderer.block.model.BlockModel;
  import net.minecraft.client.renderer.block.model.ItemOverrides;
-@@ -65,5 +66,5 @@
+@@ -20,4 +21,5 @@
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.Nullable;
++import xyz.bluspring.kilt.workarounds.UnbakedGeometryWrapper;
+ 
+ import java.util.Collection;
+@@ -35,13 +37,7 @@
+ public class BlockGeometryBakingContext implements IGeometryBakingContext
+ {
++    private final io.github.fabricators_of_create.porting_lib.model.geometry.BlockGeometryBakingContext deferred;
+     public final BlockModel owner;
+-    public final VisibilityData visibilityData = new VisibilityData();
+-    @Nullable
+-    private IUnbakedGeometry<?> customGeometry;
+-    @Nullable
+-    private Transformation rootTransform;
+-    @Nullable
+-    private ResourceLocation renderTypeHint;
+-    private boolean gui3d = true;
++    public final VisibilityData visibilityData;
+ 
+     @ApiStatus.Internal
+@@ -49,4 +45,6 @@
+     {
+         this.owner = owner;
++        this.deferred = owner.getGeometry();
++        this.visibilityData = new VisibilityData(deferred.visibilityData);
+     }
+ 
+@@ -54,10 +52,10 @@
+     public String getModelName()
+     {
+-        return owner.name;
++        return deferred.getModelName();
+     }
+ 
+     public boolean hasCustomGeometry()
+     {
+-        return getCustomGeometry() != null;
++        return deferred.hasCustomGeometry();
+     }
+ 
+@@ -65,10 +63,14 @@
      public IUnbakedGeometry<?> getCustomGeometry()
      {
 -        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
-+        return owner.parent != null && customGeometry == null ? (IUnbakedGeometry<?>) owner.parent.getGeometry().getCustomGeometry() : customGeometry;
++        var geometry = deferred.getCustomGeometry();
++        if (geometry == null)
++            return null;
++
++        return new UnbakedGeometryWrapper<>(geometry);
      }
  
-@@ -77,5 +78,5 @@
+     public void setCustomGeometry(IUnbakedGeometry<?> geometry)
      {
-         return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
+-        this.customGeometry = geometry;
++        deferred.setCustomGeometry(geometry);
+     }
+ 
+@@ -76,7 +78,5 @@
+     public boolean isComponentVisible(String part, boolean fallback)
+     {
+-        return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
 -                owner.parent.customData.isComponentVisible(part, fallback) :
-+                owner.parent.getGeometry().isComponentVisible(part, fallback) :
-                 visibilityData.isVisible(part, fallback);
+-                visibilityData.isVisible(part, fallback);
++        return deferred.isComponentVisible(part, fallback);
      }
-@@ -122,5 +123,5 @@
-         if (rootTransform != null)
-             return rootTransform;
+ 
+@@ -84,5 +84,5 @@
+     public boolean hasMaterial(String name)
+     {
+-        return owner.hasTexture(name);
++        return deferred.hasMaterial(name);
+     }
+ 
+@@ -90,5 +90,5 @@
+     public Material getMaterial(String name)
+     {
+-        return owner.getMaterial(name);
++        return deferred.getMaterial(name);
+     }
+ 
+@@ -96,5 +96,5 @@
+     public boolean isGui3d()
+     {
+-        return gui3d;
++        return deferred.isGui3d();
+     }
+ 
+@@ -102,5 +102,5 @@
+     public boolean useBlockLight()
+     {
+-        return owner.getGuiLight().lightLikeBlock();
++        return deferred.useBlockLight();
+     }
+ 
+@@ -108,5 +108,5 @@
+     public boolean useAmbientOcclusion()
+     {
+-        return owner.hasAmbientOcclusion();
++        return deferred.useAmbientOcclusion();
+     }
+ 
+@@ -114,5 +114,5 @@
+     public ItemTransforms getTransforms()
+     {
+-        return owner.getTransforms();
++        return deferred.getTransforms();
+     }
+ 
+@@ -120,12 +120,10 @@
+     public Transformation getRootTransform()
+     {
+-        if (rootTransform != null)
+-            return rootTransform;
 -        return owner.parent != null ? owner.parent.customData.getRootTransform() : Transformation.identity();
-+        return owner.parent != null ? owner.parent.getGeometry().getRootTransform() : Transformation.identity();
++        return deferred.getRootTransform();
      }
  
-@@ -136,5 +137,5 @@
-         if (renderTypeHint != null)
-             return renderTypeHint;
+     public void setRootTransform(Transformation rootTransform)
+     {
+-        this.rootTransform = rootTransform;
++        deferred.setRootTransform(rootTransform);
+     }
+ 
+@@ -134,66 +132,57 @@
+     public ResourceLocation getRenderTypeHint()
+     {
+-        if (renderTypeHint != null)
+-            return renderTypeHint;
 -        return owner.parent != null ? owner.parent.customData.getRenderTypeHint() : null;
-+        return owner.parent != null ? owner.parent.getGeometry().getRenderTypeHint() : null;
++        return deferred.getRenderTypeHint();
      }
  
+     public void setRenderTypeHint(ResourceLocation renderTypeHint)
+     {
+-        this.renderTypeHint = renderTypeHint;
++        deferred.setRenderTypeHint(renderTypeHint);
+     }
+ 
+     public void setGui3d(boolean gui3d)
+     {
+-        this.gui3d = gui3d;
+     }
+ 
+     public void copyFrom(BlockGeometryBakingContext other)
+     {
+-        this.customGeometry = other.customGeometry;
+-        this.rootTransform = other.rootTransform;
+-        this.visibilityData.copyFrom(other.visibilityData);
+-        this.renderTypeHint = other.renderTypeHint;
+-        this.gui3d = other.gui3d;
++        this.deferred.copyFrom(other.deferred);
+     }
+ 
+     public Collection<Material> getTextureDependencies(Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+     {
+-        IUnbakedGeometry<?> geometry = getCustomGeometry();
+-        return geometry == null ? Collections.emptySet() :
+-                geometry.getMaterials(this, modelGetter, missingTextureErrors);
++        return deferred.getTextureDependencies(modelGetter, missingTextureErrors);
+     }
+ 
+     public BakedModel bake(ModelBakery bakery, Function<Material, TextureAtlasSprite> bakedTextureGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
+     {
+-        IUnbakedGeometry<?> geometry = getCustomGeometry();
+-        if (geometry == null)
+-            throw new IllegalStateException("Can not use custom baking without custom geometry");
+-        return geometry.bake(this, bakery, bakedTextureGetter, modelTransform, overrides, modelLocation);
++        return deferred.bake(bakery, bakedTextureGetter, modelTransform, overrides, modelLocation);
+     }
+ 
+     public static class VisibilityData
+     {
+-        private final Map<String, Boolean> data = new HashMap<>();
++        private final io.github.fabricators_of_create.porting_lib.model.geometry.BlockGeometryBakingContext.VisibilityData deferred;
+ 
++        public VisibilityData(io.github.fabricators_of_create.porting_lib.model.geometry.BlockGeometryBakingContext.VisibilityData deferred) {
++            this.deferred = deferred;
++        }
++
+         public boolean hasCustomVisibility(String part)
+         {
+-            return data.containsKey(part);
++            return deferred.hasCustomVisibility(part);
+         }
+ 
+         public boolean isVisible(String part, boolean fallback)
+         {
+-            return data.getOrDefault(part, fallback);
++            return deferred.isVisible(part, fallback);
+         }
+ 
+         public void setVisibilityState(String partName, boolean type)
+         {
+-            data.put(partName, type);
++            deferred.setVisibilityState(partName, type);
+         }
+ 
+         public void copyFrom(VisibilityData visibilityData)
+         {
+-            data.clear();
+-            data.putAll(visibilityData.data);
++            this.deferred.copyFrom(visibilityData.deferred);
+         }
+     }
