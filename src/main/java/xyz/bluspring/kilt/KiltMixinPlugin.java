@@ -26,7 +26,7 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (!mixinClassName.startsWith(MIXIN_PACKAGE_ROOT)) {
-            return false;
+            return true;
         }
 
         var mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length());
