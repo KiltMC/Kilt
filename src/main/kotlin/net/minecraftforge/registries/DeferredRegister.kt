@@ -54,6 +54,15 @@ class DeferredRegister<T : Any> private constructor(
     }
 
     class EventDispatcher(private val register: DeferredRegister<*>) {
+        companion object {
+            private val registeredRegistries = mutableListOf<EventDispatcher>()
+        }
+
+        init {
+            registeredRegistries.add(this)
+        }
+
+        private var totalRunTimes = 0
         private val logger = LogManager.getLogger("Kilt Registry")
 
         @SubscribeEvent
@@ -70,7 +79,8 @@ class DeferredRegister<T : Any> private constructor(
                 (register.fabricRegisteredList.remove().fabricRegistryObject as RegistryObjectInjection).updateRef()
             }
 
-            event.kiltRunQueuedConsumers(event.registryKey)
+            if (totalRunTimes++ >= registeredRegistries.filter { it.register.registryKey == register.registryKey }.size)
+                event.kiltRunQueuedConsumers(event.registryKey)
         }
 
         private fun <T : Any> register(fabricRegistry: LazyRegistrar<T>) {
