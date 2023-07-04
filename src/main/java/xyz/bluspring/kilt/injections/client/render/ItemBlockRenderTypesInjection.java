@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.injections.client.render;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -28,12 +29,12 @@ public interface ItemBlockRenderTypesInjection {
         });
     });
     // why does this feel utterly pointless
-    Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
+    /*Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
         it.defaultReturnValue(RenderType.solid());
         ItemBlockRenderTypes.TYPE_BY_FLUID.forEach((key, value) -> {
                 it.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(key), value);
         });
-    });
+    });*/
 
     static ChunkRenderTypeSet getRenderLayers(BlockState state) {
         if (state.getBlock() instanceof LeavesBlock) {
@@ -54,13 +55,15 @@ public interface ItemBlockRenderTypesInjection {
     static void setRenderLayer(Block block, ChunkRenderTypeSet layers) {
         checkClientLoading();
         ItemBlockRenderTypes.TYPE_BY_BLOCK.put(block, layers.asList().get(0));
+        BlockRenderLayerMap.INSTANCE.putBlock(block, layers.asList().get(0));
         BLOCK_RENDER_TYPES.put(ForgeRegistries.BLOCKS.getDelegateOrThrow(block), layers);
     }
 
     static void setRenderLayer(Fluid fluid, RenderType type) {
         checkClientLoading();
         ItemBlockRenderTypes.TYPE_BY_FLUID.put(fluid, type);
-        FLUID_RENDER_TYPES.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid), type);
+        BlockRenderLayerMap.INSTANCE.putFluid(fluid, type);
+        //FLUID_RENDER_TYPES.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid), type);
     }
 
     static void checkClientLoading() {
