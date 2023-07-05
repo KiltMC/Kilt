@@ -74,8 +74,8 @@ body:
           Messages like "Exit code 0" from your launcher are not what you're looking for. If your launcher does not
           provide a button to view the most recent crash report, check your game's `crash-reports` folder for the most recent
           crash report file. If you did not manage to find any, send the `latest.log` file from your game's `logs` folder.
-      validations:
-        required: true
+    validations:
+      required: true
   - type: textarea
     id: additional
     attributes:
