@@ -54,14 +54,12 @@ public interface ItemBlockRenderTypesInjection {
 
     static void setRenderLayer(Block block, ChunkRenderTypeSet layers) {
         checkClientLoading();
-        ItemBlockRenderTypes.TYPE_BY_BLOCK.put(block, layers.asList().get(0));
         BlockRenderLayerMap.INSTANCE.putBlock(block, layers.asList().get(0));
         BLOCK_RENDER_TYPES.put(ForgeRegistries.BLOCKS.getDelegateOrThrow(block), layers);
     }
 
     static void setRenderLayer(Fluid fluid, RenderType type) {
         checkClientLoading();
-        ItemBlockRenderTypes.TYPE_BY_FLUID.put(fluid, type);
         BlockRenderLayerMap.INSTANCE.putFluid(fluid, type);
         //FLUID_RENDER_TYPES.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid), type);
     }
