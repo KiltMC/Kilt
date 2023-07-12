@@ -65,9 +65,13 @@ class KiltAsmRemapper(
     )
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
-        val mapped = methodMappings[name]?.first
+        val mappedPair = methodMappings[name] ?: return name
+        val mapped = mappedPair.first
 
-        if (mapped != null && (!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
+        if (KiltRemapper.remapDescriptor(descriptor) != mappedPair.second)
+            return name
+
+        if ((!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
             // Ignore these owner types specifically, because they are confirmed to be safe.
             if (ownerWhitelist.any { owner.startsWith(it) })
                 return name
