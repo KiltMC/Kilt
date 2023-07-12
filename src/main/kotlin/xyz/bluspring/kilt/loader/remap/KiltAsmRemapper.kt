@@ -45,7 +45,12 @@ class KiltAsmRemapper(
     }
 
     override fun mapFieldName(owner: String, name: String, descriptor: String): String {
-        return fieldMappings[name]?.first ?: name
+        val mappedPair = fieldMappings[name] ?: return name
+
+        if (KiltRemapper.remapDescriptor(descriptor) != mappedPair.second)
+            return name
+
+        return mappedPair.first
     }
 
     override fun mapRecordComponentName(owner: String, name: String, descriptor: String): String {
@@ -68,7 +73,7 @@ class KiltAsmRemapper(
         val mappedPair = methodMappings[name] ?: return name
         val mapped = mappedPair.first
 
-        if (KiltRemapper.remapDescriptor(descriptor) != mappedPair.second)
+        if (KiltRemapper.remapDescriptor(descriptor).replaceAfter(")", "") != mappedPair.second.replaceAfter(")", ""))
             return name
 
         if ((!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
@@ -88,7 +93,7 @@ class KiltAsmRemapper(
             return name
         }
 
-        return mapped ?: name
+        return mapped
     }
 
     override fun mapMethodDesc(methodDescriptor: String): String {
