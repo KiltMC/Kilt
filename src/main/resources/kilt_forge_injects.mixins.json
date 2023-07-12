@@ -54,6 +54,8 @@
     "server.network.ServerLoginPacketListenerImplInject$ThreadInject",
     "server.packs.PackResourcesInject",
     "server.packs.repository.PackRepositoryInject",
+    "server.packs.resources.ReloadableResourceManagerInject",
+    "server.packs.resources.SimpleJsonResourceReloadListenerInject",
     "stats.RecipeBookSettingsInject",
     "tags.BlockTagsInject",
     "tags.FluidTagsInject",
