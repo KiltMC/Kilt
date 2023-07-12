@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.remap
 
-import net.fabricmc.mapping.tree.TinyTree
 import org.objectweb.asm.commons.Remapper
 import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
@@ -9,6 +8,9 @@ class KiltAsmRemapper(
     private val fieldMappings: Map<String, Pair<String, String>>,
     private val methodMappings: Map<String, Pair<String, String>>
 ) : Remapper() {
+    // Pair of owner and name + descriptor
+    val possibleFailures = mutableListOf<Pair<String, String>>()
+
     private fun remapClass(name: String): String {
         return KiltRemapper.remapClass(name)
     }
@@ -50,8 +52,39 @@ class KiltAsmRemapper(
         return mapFieldName(owner, name, descriptor)
     }
 
+    private val ownerWhitelist = listOf(
+        "xyz/bluspring/kilt/loader/",
+        "java/",
+        "kotlin/",
+        "org/jetbrains/",
+        "javax/",
+        "kotlinx/",
+        "net/minecraftforge/fml/",
+        "io/netty/",
+        "org/apache/"
+    )
+
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
-        return methodMappings[name]?.first ?: name
+        val mapped = methodMappings[name]?.first
+
+        if (mapped != null && (!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
+            // Ignore these owner types specifically, because they are confirmed to be safe.
+            if (ownerWhitelist.any { owner.startsWith(it) })
+                return name
+
+            // Because of the way the remapper works, it remaps every name sharing the same f_num_ and m_num_ names
+            // without checking the owners, because it functions under the assumption that every intermediate name
+            // is of the same mapped name. However, that assumption fails when it reaches a non-intermediate name,
+            // because Intermediary generates intermediate names for almost everything, while TSRG does not.
+            // As a result, that assumption fails, and *will* end up remapping names that are completely unrelated.
+            // This error never occurs in development, but will occur in production environments.
+            // Therefore, this information needs to be stored in the mod in order to make sure the run process goes
+            // as smoothly as possible.
+            possibleFailures.add(Pair(owner, "$name:$descriptor"))
+            return name
+        }
+
+        return mapped ?: name
     }
 
     override fun mapMethodDesc(methodDescriptor: String): String {

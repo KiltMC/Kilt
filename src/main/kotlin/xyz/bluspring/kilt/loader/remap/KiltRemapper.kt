@@ -268,6 +268,8 @@ object KiltRemapper {
         val output = modifiedJarFile.outputStream()
         val jarOutput = JarOutputStream(output)
 
+        val potentialFailures = mutableSetOf<Pair<String, String>>()
+
         for (entry in jar.entries()) {
             if (!entry.name.endsWith(".class")) {
                 if (entry.name.lowercase() == "manifest.mf") {
@@ -376,6 +378,9 @@ object KiltRemapper {
                 val visitor = ClassRemapper(classWriter, remapper)
                 classNode.accept(visitor)
 
+                potentialFailures.addAll(remapper.possibleFailures)
+                remapper.possibleFailures.clear()
+
                 jarOutput.putNextEntry(JarEntry(entry.name))
                 jarOutput.write(classWriter.toByteArray())
                 jarOutput.closeEntry()
@@ -385,6 +390,13 @@ object KiltRemapper {
 
                 exceptions.add(e)
             }
+        }
+
+        if (potentialFailures.isNotEmpty()) {
+            jarOutput.putNextEntry(JarEntry("kilt_possible_failed_mappings.txt"))
+            jarOutput.write(potentialFailures.joinToString(",") { "${it.first}>${it.second}" }
+                .toByteArray(Charsets.UTF_8))
+            jarOutput.closeEntry()
         }
 
         jarOutput.close()
