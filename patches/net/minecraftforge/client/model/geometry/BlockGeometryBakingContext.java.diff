@@ -28,14 +28,17 @@
 +    public final VisibilityData visibilityData;
  
      @ApiStatus.Internal
-@@ -49,4 +45,6 @@
+@@ -49,4 +45,9 @@
      {
          this.owner = owner;
 +        this.deferred = owner.getGeometry();
-+        this.visibilityData = new VisibilityData(deferred.visibilityData);
++        if (this.deferred != null)
++            this.visibilityData = new VisibilityData(deferred.visibilityData);
++        else
++            this.visibilityData = new VisibilityData(new io.github.fabricators_of_create.porting_lib.model.geometry.BlockGeometryBakingContext.VisibilityData());
      }
  
-@@ -54,10 +52,10 @@
+@@ -54,10 +55,10 @@
      public String getModelName()
      {
 -        return owner.name;
@@ -48,7 +51,7 @@
 +        return deferred.hasCustomGeometry();
      }
  
-@@ -65,10 +63,14 @@
+@@ -65,10 +66,14 @@
      public IUnbakedGeometry<?> getCustomGeometry()
      {
 -        return owner.parent != null && customGeometry == null ? owner.parent.customData.getCustomGeometry() : customGeometry;
@@ -65,7 +68,7 @@
 +        deferred.setCustomGeometry(geometry);
      }
  
-@@ -76,7 +78,5 @@
+@@ -76,7 +81,5 @@
      public boolean isComponentVisible(String part, boolean fallback)
      {
 -        return owner.parent != null && !visibilityData.hasCustomVisibility(part) ?
@@ -74,49 +77,49 @@
 +        return deferred.isComponentVisible(part, fallback);
      }
  
-@@ -84,5 +84,5 @@
+@@ -84,5 +87,5 @@
      public boolean hasMaterial(String name)
      {
 -        return owner.hasTexture(name);
 +        return deferred.hasMaterial(name);
      }
  
-@@ -90,5 +90,5 @@
+@@ -90,5 +93,5 @@
      public Material getMaterial(String name)
      {
 -        return owner.getMaterial(name);
 +        return deferred.getMaterial(name);
      }
  
-@@ -96,5 +96,5 @@
+@@ -96,5 +99,5 @@
      public boolean isGui3d()
      {
 -        return gui3d;
 +        return deferred.isGui3d();
      }
  
-@@ -102,5 +102,5 @@
+@@ -102,5 +105,5 @@
      public boolean useBlockLight()
      {
 -        return owner.getGuiLight().lightLikeBlock();
 +        return deferred.useBlockLight();
      }
  
-@@ -108,5 +108,5 @@
+@@ -108,5 +111,5 @@
      public boolean useAmbientOcclusion()
      {
 -        return owner.hasAmbientOcclusion();
 +        return deferred.useAmbientOcclusion();
      }
  
-@@ -114,5 +114,5 @@
+@@ -114,5 +117,5 @@
      public ItemTransforms getTransforms()
      {
 -        return owner.getTransforms();
 +        return deferred.getTransforms();
      }
  
-@@ -120,12 +120,10 @@
+@@ -120,12 +123,10 @@
      public Transformation getRootTransform()
      {
 -        if (rootTransform != null)
@@ -131,7 +134,7 @@
 +        deferred.setRootTransform(rootTransform);
      }
  
-@@ -134,66 +132,57 @@
+@@ -134,66 +135,57 @@
      public ResourceLocation getRenderTypeHint()
      {
 -        if (renderTypeHint != null)
