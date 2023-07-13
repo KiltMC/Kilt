@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.remap
 
+import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.commons.Remapper
 import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
@@ -73,13 +74,32 @@ class KiltAsmRemapper(
         val mappedPair = methodMappings[name] ?: return name
         val mapped = mappedPair.first
 
-        if (KiltRemapper.remapDescriptor(descriptor).replaceAfter(")", "") != mappedPair.second.replaceAfter(")", ""))
+        val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
+        val remappedDescriptorNoEnd = remappedDescriptor.replaceAfter(")", "")
+
+        if (remappedDescriptorNoEnd != mappedPair.second.replaceAfter(")", ""))
             return name
 
         if ((!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
             // Ignore these owner types specifically, because they are confirmed to be safe.
             if (ownerWhitelist.any { owner.startsWith(it) })
                 return name
+
+            // Try to see if these mappings can be used to help
+            val srgClassTree = KiltRemapper.srgIntermediaryTree.classes.firstOrNull { it.getName("searge") == owner }
+
+            if (srgClassTree != null) {
+                val matchingMethod = srgClassTree.methods.firstOrNull { it.getName("searge") == name && it.getDescriptor("intermediary").replaceAfter(")", "") == remappedDescriptorNoEnd }
+
+                if (matchingMethod != null) {
+                    val intermediaryName = matchingMethod.getName("intermediary")
+
+                    return if (KiltRemapper.useNamed)
+                        FabricLoader.getInstance().mappingResolver.mapMethodName("intermediary", srgClassTree.getName("intermediary"), intermediaryName, KiltRemapper.remapDescriptor(descriptor, toIntermediary = true))
+                    else
+                        intermediaryName
+                }
+            }
 
             // Because of the way the remapper works, it remaps every name sharing the same f_num_ and m_num_ names
             // without checking the owners, because it functions under the assumption that every intermediate name

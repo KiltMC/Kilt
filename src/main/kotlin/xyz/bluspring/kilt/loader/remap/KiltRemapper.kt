@@ -30,7 +30,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 34
+    const val REMAPPER_VERSION = 35
 
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
@@ -405,8 +405,12 @@ object KiltRemapper {
         return exceptions
     }
 
-    fun remapClass(name: String): String {
+    fun remapClass(name: String, toIntermediary: Boolean = false): String {
         val workaround = kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
+
+        if (toIntermediary) {
+            return workaround ?: srgIntermediaryTree.classes.firstOrNull { it.getName("searge") == name }?.getName("intermediary") ?: name
+        }
 
         return workaround ?: classMappings[name] ?: name
     }
@@ -415,7 +419,7 @@ object KiltRemapper {
         return classMappings.entries.firstOrNull { it.value == name }?.key ?: name
     }
 
-    fun remapDescriptor(descriptor: String, reverse: Boolean = false): String {
+    fun remapDescriptor(descriptor: String, reverse: Boolean = false, toIntermediary: Boolean = false): String {
         var formedString = ""
 
         var incompleteString = ""
@@ -434,7 +438,7 @@ object KiltRemapper {
 
                     val name = incompleteString.removePrefix("L").removeSuffix(";")
                     formedString += if (!reverse)
-                        remapClass(name)
+                        remapClass(name, toIntermediary)
                     else
                         unmapClass(name)
 
