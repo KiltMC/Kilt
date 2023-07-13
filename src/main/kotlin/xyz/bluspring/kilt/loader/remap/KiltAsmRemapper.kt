@@ -77,8 +77,13 @@ class KiltAsmRemapper(
         val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
         val remappedDescriptorNoEnd = remappedDescriptor.replaceAfter(")", "")
 
-        if (remappedDescriptorNoEnd != mappedPair.second.replaceAfter(")", ""))
+        if (remappedDescriptorNoEnd != mappedPair.second.replaceAfter(")", "")) {
+            // just throw it over if it's SRG-mapped.
+            if ((name.startsWith("m_") || name.startsWith("f_")) && name.endsWith("_"))
+                return mapped
+
             return name
+        }
 
         if ((!name.startsWith("m_") && !name.startsWith("f_")) && !name.endsWith("_")) {
             // Ignore these owner types specifically, because they are confirmed to be safe.
