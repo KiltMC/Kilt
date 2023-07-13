@@ -74,14 +74,14 @@ class KiltAsmRemapper(
         val mappedPair = methodMappings[name] ?: return name
         val mapped = mappedPair.first
 
+        // just throw it over if it's SRG-mapped.
+        if ((name.startsWith("m_") || name.startsWith("f_")) && name.endsWith("_"))
+            return mapped
+
         val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
         val remappedDescriptorNoEnd = remappedDescriptor.replaceAfter(")", "")
 
         if (remappedDescriptorNoEnd != mappedPair.second.replaceAfter(")", "")) {
-            // just throw it over if it's SRG-mapped.
-            if ((name.startsWith("m_") || name.startsWith("f_")) && name.endsWith("_"))
-                return mapped
-
             return name
         }
 
