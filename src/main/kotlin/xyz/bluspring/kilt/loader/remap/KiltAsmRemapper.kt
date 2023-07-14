@@ -71,6 +71,14 @@ class KiltAsmRemapper(
     )
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
+        if (name.startsWith("f_") && name.endsWith("_")) {
+            val fieldMappedPair = fieldMappings[name]
+
+            if (fieldMappedPair != null) {
+                return fieldMappedPair.first
+            }
+        }
+
         val mappedPair = methodMappings[name] ?: return name
         val mapped = mappedPair.first
 
