@@ -30,6 +30,8 @@ public class ChunkRenderDispatcherInject {
 
     @Mixin(targets = {"net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk$RebuildTask"})
     public static class RebuildTaskInject {
+        // TODO: This doesn't work in Sodium
+
         protected Map<BlockPos, ModelData> modelData;
         private ChunkRenderDispatcher.RenderChunk renderChunk;
 

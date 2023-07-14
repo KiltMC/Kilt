@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraftforge.client.ColorResolverManager;
+import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.client.model.lighting.QuadLighter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -30,6 +31,8 @@ import java.util.function.Supplier;
 
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelInject extends Level {
+    private final ModelDataManager modelDataManager = new ModelDataManager((ClientLevel) (Object) this);
+
     @Shadow public abstract DimensionSpecialEffects effects();
 
     protected ClientLevelInject(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l, int i) {
@@ -69,5 +72,9 @@ public abstract class ClientLevelInject extends Level {
             return constantAmbientLight ? 0.9F : 1F;
 
         return QuadLighter.calculateShade(normalX, normalY, normalZ, constantAmbientLight);
+    }
+
+    public ModelDataManager getModelDataManager() {
+        return modelDataManager;
     }
 }
