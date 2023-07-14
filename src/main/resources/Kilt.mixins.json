@@ -42,6 +42,7 @@
     "RecipeBookCategoriesAccessor",
     "RecipeBookSettingsAccessor",
     "RecipeBookTypeAccessor",
+    "RenderChunkAccessor",
     "ScreenAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",
