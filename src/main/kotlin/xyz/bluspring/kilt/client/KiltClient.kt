@@ -5,6 +5,7 @@ import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
+import io.github.fabricators_of_create.porting_lib.event.client.RegisterGeometryLoadersCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
@@ -183,6 +184,10 @@ class KiltClient : ClientModInitializer {
 
                 else -> return@register false
             }
+        }
+
+        RegisterGeometryLoadersCallback.EVENT.register { map ->
+            ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
         }
     }
 

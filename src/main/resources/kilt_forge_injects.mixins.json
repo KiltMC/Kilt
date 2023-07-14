@@ -110,6 +110,7 @@
     "world.item.crafting.RecipeTypeInject",
     "world.item.crafting.ShapedRecipeInject",
     "world.item.crafting.ShapelessRecipeInject",
+    "world.item.crafting.SimpleCookingSerializerInject",
     "world.item.enchantment.EnchantmentCategoryInject",
     "world.item.enchantment.EnchantmentHelperInject",
     "world.item.enchantment.EnchantmentInject",

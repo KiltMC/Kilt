@@ -1,0 +1,9 @@
+--- IGeometryLoader.java
++++ IGeometryLoader.java
+@@ -22,5 +22,5 @@
+  * @see RegisterClientReloadListenersEvent
+  */
+-public interface IGeometryLoader<T extends IUnbakedGeometry<T>>
++public interface IGeometryLoader<T extends IUnbakedGeometry<T>> extends io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryLoader<T>
+ {
+     T read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) throws JsonParseException;

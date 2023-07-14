@@ -1,0 +1,29 @@
+--- CompositeModel.java
++++ CompositeModel.java
+@@ -290,4 +290,8 @@
+             }
+ 
++            private void addLayer(io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup renderTypes, List<BakedQuad> quads) {
++                this.addLayer(RenderTypeGroup.getForge(renderTypes), quads);
++            }
++
+             private void flushQuads(RenderTypeGroup renderTypes)
+             {
+@@ -316,4 +320,8 @@
+             }
+ 
++            public Builder addQuads(io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup renderTypes, BakedQuad... quadsToAdd) {
++                return addQuads(RenderTypeGroup.getForge(renderTypes), quadsToAdd);
++            }
++
+             public Builder addQuads(RenderTypeGroup renderTypes, Collection<BakedQuad> quadsToAdd)
+             {
+@@ -323,4 +331,8 @@
+             }
+ 
++            public Builder addQuads(io.github.fabricators_of_create.porting_lib.client.RenderTypeGroup renderTypes, Collection<BakedQuad> quadsToAdd) {
++                return addQuads(RenderTypeGroup.getForge(renderTypes), quadsToAdd);
++            }
++
+             public BakedModel build()
+             {

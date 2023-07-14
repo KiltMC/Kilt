@@ -1,9 +1,40 @@
 --- GeometryLoaderManager.java
 +++ GeometryLoaderManager.java
-@@ -51,5 +51,5 @@
-         loaders.put(new ResourceLocation("minecraft:elements"), ElementsModel.Loader.INSTANCE_DEPRECATED); // TODO: Deprecated. To be removed in 1.20
-         var event = new ModelEvent.RegisterGeometryLoaders(loaders);
+@@ -25,6 +25,4 @@
+ public final class GeometryLoaderManager
+ {
+-    private static ImmutableMap<ResourceLocation, IGeometryLoader<?>> LOADERS;
+-    private static String LOADER_LIST;
+ 
+     /**
+@@ -34,5 +32,5 @@
+     public static IGeometryLoader<?> get(ResourceLocation name)
+     {
+-        return LOADERS.get(name);
++        return (IGeometryLoader<?>) io.github.fabricators_of_create.porting_lib.model.geometry.GeometryLoaderManager.get(name);
+     }
+ 
+@@ -42,5 +40,5 @@
+     public static String getLoaderList()
+     {
+-        return LOADER_LIST;
++        return io.github.fabricators_of_create.porting_lib.model.geometry.GeometryLoaderManager.getLoaderList();
+     }
+ 
+@@ -48,10 +46,10 @@
+     public static void init()
+     {
+-        var loaders = new HashMap<ResourceLocation, IGeometryLoader<?>>();
+-        loaders.put(new ResourceLocation("minecraft:elements"), ElementsModel.Loader.INSTANCE_DEPRECATED); // TODO: Deprecated. To be removed in 1.20
+-        var event = new ModelEvent.RegisterGeometryLoaders(loaders);
 -        ModLoader.get().postEventWithWrapInModOrder(event, (mc, e) -> ModLoadingContext.get().setActiveContainer(mc), (mc, e) -> ModLoadingContext.get().setActiveContainer(null));
-+        ModLoader.get().kiltPostEventWrappingMods(event);
-         LOADERS = ImmutableMap.copyOf(loaders);
-         LOADER_LIST = loaders.keySet().stream().map(ResourceLocation::toString).collect(Collectors.joining(", "));
+-        LOADERS = ImmutableMap.copyOf(loaders);
+-        LOADER_LIST = loaders.keySet().stream().map(ResourceLocation::toString).collect(Collectors.joining(", "));
++        // Kilt: Replaced by Porting Lib
++
++        //var loaders = new HashMap<ResourceLocation, IGeometryLoader<?>>();
++        //loaders.put(new ResourceLocation("minecraft:elements"), ElementsModel.Loader.INSTANCE_DEPRECATED); // TODO: Deprecated. To be removed in 1.20
++        //var event = new ModelEvent.RegisterGeometryLoaders(loaders);
++        //ModLoader.get().kiltPostEventWrappingMods(event);
+     }
+ 

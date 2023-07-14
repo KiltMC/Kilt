@@ -20,12 +20,18 @@
 +
          @ApiStatus.Internal
          public RegisterAdditional(Set<ResourceLocation> models)
-@@ -121,4 +131,8 @@
-         private final Map<ResourceLocation, IGeometryLoader<?>> loaders;
+@@ -119,8 +129,12 @@
+     public static class RegisterGeometryLoaders extends ModelEvent implements IModBusEvent
+     {
+-        private final Map<ResourceLocation, IGeometryLoader<?>> loaders;
++        private final Map<ResourceLocation, io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryLoader<?>> loaders;
  
 +        public RegisterGeometryLoaders() {
 +            loaders = null;
 +        }
 +
          @ApiStatus.Internal
-         public RegisterGeometryLoaders(Map<ResourceLocation, IGeometryLoader<?>> loaders)
+-        public RegisterGeometryLoaders(Map<ResourceLocation, IGeometryLoader<?>> loaders)
++        public RegisterGeometryLoaders(Map<ResourceLocation, io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryLoader<?>> loaders)
+         {
+             this.loaders = loaders;

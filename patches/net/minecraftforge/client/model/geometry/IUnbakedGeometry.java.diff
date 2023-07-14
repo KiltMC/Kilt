@@ -1,6 +1,15 @@
 --- IUnbakedGeometry.java
 +++ IUnbakedGeometry.java
-@@ -28,6 +28,16 @@
+@@ -15,6 +15,8 @@
+ import net.minecraft.client.resources.model.UnbakedModel;
+ import net.minecraft.resources.ResourceLocation;
++import xyz.bluspring.kilt.workarounds.GeometryBakingContextWrapper;
+ 
+ import java.util.Collection;
++import java.util.List;
+ import java.util.Set;
+ import java.util.function.Function;
+@@ -28,6 +30,16 @@
   * @see IGeometryBakingContext
   */
 -public interface IUnbakedGeometry<T extends IUnbakedGeometry<T>>
@@ -8,12 +17,12 @@
  {
 +    @Override
 +    default BakedModel bake(io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-+        return bake((IGeometryBakingContext) context, bakery, spriteGetter, modelState, overrides, modelLocation);
++        return bake(new GeometryBakingContextWrapper(context), bakery, spriteGetter, modelState, overrides, modelLocation);
 +    }
 +
 +    @Override
 +    default Collection<Material> getMaterials(io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
-+        return getMaterials((IGeometryBakingContext) context, modelGetter, missingTextureErrors);
++        return getMaterials(new GeometryBakingContextWrapper(context), modelGetter, missingTextureErrors);
 +    }
 +
      BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation);
