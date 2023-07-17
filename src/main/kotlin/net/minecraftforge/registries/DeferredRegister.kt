@@ -56,6 +56,7 @@ class DeferredRegister<T : Any> private constructor(
     class EventDispatcher(private val register: DeferredRegister<*>) {
         companion object {
             private val registeredRegistries = mutableListOf<EventDispatcher>()
+            private val queuedConsumerEvents = mutableMapOf<ResourceKey<*>, MutableList<RegisterEvent>>()
         }
 
         init {
@@ -79,8 +80,22 @@ class DeferredRegister<T : Any> private constructor(
                 (register.fabricRegisteredList.remove().fabricRegistryObject as RegistryObjectInjection).updateRef()
             }
 
-            if (totalRunTimes++ >= registeredRegistries.filter { it.register.registryKey == register.registryKey }.size)
+            // The consumers need to all be run after *all* registration events have finished.
+            // Otherwise, mods like Mekanism will crash.
+            if (++totalRunTimes >= registeredRegistries.filter { it.register.registryKey == register.registryKey }.size) {
                 event.kiltRunQueuedConsumers(event.registryKey)
+
+                queuedConsumerEvents[event.registryKey]?.forEach {
+                    it.kiltRunQueuedConsumers(it.registryKey)
+                }
+
+                queuedConsumerEvents[event.registryKey]?.clear()
+            } else {
+                if (!queuedConsumerEvents.contains(event.registryKey))
+                    queuedConsumerEvents[event.registryKey] = mutableListOf()
+
+                queuedConsumerEvents[event.registryKey]!!.add(event)
+            }
         }
 
         private fun <T : Any> register(fabricRegistry: LazyRegistrar<T>) {
