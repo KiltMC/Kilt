@@ -8,6 +8,7 @@ import net.minecraft.tags.TagKey
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import org.apache.logging.log4j.LogManager
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.injections.porting_lib.RegistryObjectInjection
 import xyz.bluspring.kilt.mixin.LazyRegistrarAccessor
 import xyz.bluspring.kilt.mixin.porting_lib.RegistryObjectAccessor
@@ -55,15 +56,9 @@ class DeferredRegister<T : Any> private constructor(
 
     class EventDispatcher(private val register: DeferredRegister<*>) {
         companion object {
-            private val registeredRegistries = mutableListOf<EventDispatcher>()
             private val queuedConsumerEvents = mutableMapOf<ResourceKey<*>, MutableList<RegisterEvent>>()
         }
 
-        init {
-            registeredRegistries.add(this)
-        }
-
-        private var totalRunTimes = 0
         private val logger = LogManager.getLogger("Kilt Registry")
 
         @SubscribeEvent
@@ -80,17 +75,32 @@ class DeferredRegister<T : Any> private constructor(
                 (register.fabricRegisteredList.remove().fabricRegistryObject as RegistryObjectInjection).updateRef()
             }
 
-            // The consumers need to all be run after *all* registration events have finished.
-            // Otherwise, mods like Mekanism will crash.
-            if (++totalRunTimes >= registeredRegistries.filter { it.register.registryKey == register.registryKey }.size) {
+            // This is probably singlehandedly one of the dumbest problems I'm having.
+            try {
                 event.kiltRunQueuedConsumers(event.registryKey)
 
-                queuedConsumerEvents[event.registryKey]?.forEach {
-                    it.kiltRunQueuedConsumers(it.registryKey)
-                }
+                if (queuedConsumerEvents.contains(event.registryKey)) {
+                    val events = queuedConsumerEvents[event.registryKey]!!
+                    val remove = mutableListOf<RegisterEvent>()
 
-                queuedConsumerEvents[event.registryKey]?.clear()
-            } else {
+                    events.forEach {
+                        try {
+                            it.kiltRunQueuedConsumers(it.registryKey)
+                            remove.add(it)
+                        } catch (e: Exception) {
+                            Kilt.logger.error("Failed running consumers again for ${event.registryKey} ${event.forgeRegistry?.fabricRegistry?.modId}")
+                            Kilt.logger.error("This may be attempted again, so don't report this until you know definitively that it is broken.")
+                            e.printStackTrace()
+                        }
+                    }
+
+                    events.removeAll(remove)
+                }
+            } catch (e: Exception) {
+                Kilt.logger.error("Failed to run consumers for ${event.registryKey} ${event.forgeRegistry?.fabricRegistry?.modId}")
+                Kilt.logger.error("Going to attempt running the consumers after the next. If this still fails, please report it.")
+                e.printStackTrace()
+
                 if (!queuedConsumerEvents.contains(event.registryKey))
                     queuedConsumerEvents[event.registryKey] = mutableListOf()
 
