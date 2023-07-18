@@ -57,7 +57,8 @@
     "sodium.SodiumWorldRendererMixin"
   ],
   "client": [
-    "DebugScreenOverlayMixin"
+    "DebugScreenOverlayMixin",
+    "fabric_api.FluidRenderHandlerRegistryImplMixin"
   ],
   "injectors": {
     "defaultRequire": 1

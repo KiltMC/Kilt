@@ -11,6 +11,7 @@
     "advancements.AdvancementRewardsInject",
     "advancements.critereon.ItemPredicateInject",
     "client.renderer.ShaderInstanceInject$ShaderInstanceSyntheticMixin",
+    "client.renderer.block.LiquidBlockRendererInject",
     "commands.CommandSourceStackInject",
     "commands.synchronization.ArgumentTypeInfosInject",
     "core.HolderInject",

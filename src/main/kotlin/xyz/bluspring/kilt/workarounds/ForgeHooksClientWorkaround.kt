@@ -10,7 +10,9 @@ import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.model.Model
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.texture.TextureAtlas
+import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.resources.model.Material
+import net.minecraft.core.BlockPos
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
@@ -21,13 +23,19 @@ import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.material.Fluid
+import net.minecraft.world.level.material.FluidState
 import net.minecraftforge.client.event.RenderTooltipEvent.GatherComponents
 import net.minecraftforge.client.extensions.IForgeBakedModel
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions
 import net.minecraftforge.client.extensions.common.IClientItemExtensions
 import net.minecraftforge.client.model.data.ModelData
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.extensions.IForgeItem
+import net.minecraftforge.fml.ModLoader.Companion.isLoadingStateValid
+import net.minecraftforge.registries.ForgeRegistries
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Stream
@@ -234,5 +242,41 @@ object ForgeHooksClientWorkaround {
     fun getArmorTexture(entity: Entity, armor: ItemStack, default: String, slot: EquipmentSlot, type: String?): String {
         val result = (armor.item as IForgeItem).getArmorTexture(armor, entity, slot, type)
         return result ?: default
+    }
+
+    @JvmStatic
+    fun getFluidSprites(
+        level: BlockAndTintGetter?,
+        pos: BlockPos?,
+        fluidStateIn: FluidState?
+    ): Array<TextureAtlasSprite?> {
+        val props = IClientFluidTypeExtensions.of(fluidStateIn)
+        val overlayTexture = props.getOverlayTexture(fluidStateIn, level, pos)
+        return arrayOf(
+            Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
+                .apply(props.getStillTexture(fluidStateIn, level, pos)),
+            Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
+                .apply(props.getFlowingTexture(fluidStateIn, level, pos)),
+            // what the FUCK
+            if (overlayTexture?.equals(null) != false)
+                null
+            else
+                Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(overlayTexture)
+        )
+    }
+
+    @JvmStatic
+    fun gatherFluidTextures(textures: MutableSet<Material?>) {
+        if (!isLoadingStateValid()) return
+        ForgeRegistries.FLUIDS!!.values.stream()
+            .flatMap(this::getFluidMaterials)
+            .forEach { e -> textures.add(e) }
+    }
+
+    @JvmStatic
+    fun getFluidMaterials(fluid: Fluid?): Stream<Material> {
+        return IClientFluidTypeExtensions.of(fluid).textures
+            .filter(Objects::nonNull)
+            .map(this::getBlockMaterial)
     }
 }
