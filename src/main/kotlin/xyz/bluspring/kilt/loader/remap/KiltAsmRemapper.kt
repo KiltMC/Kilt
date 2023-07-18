@@ -153,6 +153,6 @@ class KiltAsmRemapper(
     }
 
     override fun mapInvokeDynamicMethodName(name: String, descriptor: String): String {
-        return methodMappings[name]?.first ?: name
+        return mapMethodName("UNKNOWN_NAME_OH_GOD_PLEASE_DONT_REMAP_THIS", name, descriptor)
     }
 }
