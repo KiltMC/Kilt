@@ -4,12 +4,17 @@ import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.InsnList
+import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.util.KiltHelper
+import java.lang.reflect.Modifier
 
 class KiltEarlyRiser : Runnable {
     private val namespace = FabricLauncherBase.getLauncher().targetNamespace
@@ -161,27 +166,6 @@ class KiltEarlyRiser : Runnable {
         // but some are still made here because it's a bit harder to implement super() calls
         // for a class that also has its own mixin-created initializer.
         run {
-            /*
-            c net/minecraft/client/renderer/block/model/ItemTransform xyz/bluspring/kilt/injections/client/render/block/model/ItemTransformInjection
-                s <init> (Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;)V
-                i <init> (Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;Lcom/mojang/math/Vector3f;)V
-            c net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder xyz/bluspring/kilt/injections/entity/AttributeSupplierBuilderInjection
-                s <init> ()V
-                i <init> (Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier;)V
-            c net/minecraft/world/level/block/LiquidBlock xyz/bluspring/kilt/injections/world/level/block/LiquidBlockInjection
-                s <init> (Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
-                i <init> (Ljava/util/function/Supplier;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
-            c net/minecraft/world/item/BucketItem xyz/bluspring/kilt/injections/item/BucketItemInjection
-                s <init> (Lnet/minecraft/world/level/material/Fluid;Lnet/minecraft/world/item/Item$Properties;)V
-                i <init> (Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V
-            c net/minecraft/world/item/CreativeModeTab xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection
-                s <init> (ILjava/lang/String;)V
-                i <init> (Ljava/lang/String;)V
-            c net/minecraft/world/level/block/PoweredRailBlock xyz/bluspring/kilt/injections/world/level/block/PoweredRailBlockInjection
-                s <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
-                i <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Z)V
-             */
-
             // MobBucketItem
             run {
                 val mobBucketItem = namespaced("net/minecraft/class_1785", "net/minecraft/world/item/MobBucketItem")
@@ -233,6 +217,51 @@ class KiltEarlyRiser : Runnable {
 
                         initializer.visitMaxs(0, 0)
                         initializer.visitEnd()
+                    }
+                }
+            }
+        }
+
+        // BucketItem and LiquidBlock require special treatment as there is currently a weird issue
+        // where @Inject doesn't actually properly allow for injecting into multiple targets.
+        // TODO: Remove this when that bug is fixed
+        run {
+            run {
+                val flowingFluid = namespaced("net/minecraft/class_3609", "net/minecraft/world/level/material/FlowingFluid")
+                val liquidBlock = namespaced("net/minecraft/class_2404", "net/minecraft/world/level/block/LiquidBlock")
+
+                ClassTinkerers.addTransformation(liquidBlock) {
+                    it.methods.forEach { methodNode ->
+                        if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
+                            return@forEach
+
+                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == namespaced("field_11279", "fluid") })
+                            return@forEach
+
+                        methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
+                            this.add(VarInsnNode(Opcodes.ALOAD, 0))
+                            this.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, liquidBlock, "getFluid", "()L$flowingFluid;"))
+                        })
+                    }
+                }
+            }
+
+            run {
+                val fluid = namespaced("net/minecraft/class_3611", "net/minecraft/world/level/material/Fluid")
+                val bucketItem = namespaced("net/minecraft/class_2404", "net/minecraft/world/item/BucketItem")
+
+                ClassTinkerers.addTransformation(bucketItem) {
+                    it.methods.forEach { methodNode ->
+                        if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
+                            return@forEach
+
+                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == namespaced("field_7905", "content") })
+                            return@forEach
+
+                        methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
+                            this.add(VarInsnNode(Opcodes.ALOAD, 0))
+                            this.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, bucketItem, "getFluid", "()L$fluid;"))
+                        })
                     }
                 }
             }
