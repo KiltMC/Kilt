@@ -30,7 +30,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 37
+    const val REMAPPER_VERSION = 38
 
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
@@ -394,7 +394,7 @@ object KiltRemapper {
 
         if (potentialFailures.isNotEmpty()) {
             jarOutput.putNextEntry(JarEntry("kilt_possible_failed_mappings.txt"))
-            jarOutput.write(potentialFailures.joinToString(",") { "${it.first}>${it.second}" }
+            jarOutput.write(potentialFailures.joinToString("\n") { "${it.first}>${it.second}" }
                 .toByteArray(Charsets.UTF_8))
             jarOutput.closeEntry()
         }
