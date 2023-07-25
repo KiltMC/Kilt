@@ -28,4 +28,6 @@ public abstract class ItemTransformInject implements ItemTransformInjection {
 
         this.setRightRotation(rightRotation);
     }
+
+
 }
