@@ -29,7 +29,7 @@ public abstract class ModelBakeryInject implements ModelBakeryInjection {
 
     @Shadow @Nullable private AtlasSet atlasSet;
     @Unique
-    private final AtomicReference<Function<Material, TextureAtlasSprite>> sprites = new AtomicReference<>(this.atlasSet::getSprite);
+    private final AtomicReference<Function<Material, TextureAtlasSprite>> sprites = new AtomicReference<>();
 
     @Inject(method = "uploadTextures", at = @At("TAIL"))
     public void kilt$resetGetSprite(TextureManager resourceManager, ProfilerFiller profiler, CallbackInfoReturnable<AtlasSet> cir) {
