@@ -3,6 +3,7 @@ package xyz.bluspring.kilt
 import com.google.gson.GsonBuilder
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
+import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
@@ -29,6 +30,7 @@ import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import java.util.*
 
 class Kilt : ModInitializer {
@@ -195,6 +197,30 @@ class Kilt : ModInitializer {
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
+        }
+
+        ServerLevelTick.SERVER_PRE.register {
+            ForgeEventFactory.onPreServerTick((it as MinecraftServerAccessor)::callHaveTime, it)
+        }
+
+        ServerLevelTick.SERVER_POST.register {
+            ForgeEventFactory.onPostServerTick((it as MinecraftServerAccessor)::callHaveTime, it)
+        }
+
+        ServerLevelTick.SERVER_LEVEL_PRE.register {
+            ForgeEventFactory.onPreLevelTick(it, (it.server as MinecraftServerAccessor)::callHaveTime)
+        }
+
+        ServerLevelTick.SERVER_LEVEL_POST.register {
+            ForgeEventFactory.onPostLevelTick(it, (it.server as MinecraftServerAccessor)::callHaveTime)
+        }
+
+        ServerLevelTick.PLAYER_PRE.register {
+            ForgeEventFactory.onPlayerPreTick(it)
+        }
+
+        ServerLevelTick.PLAYER_POST.register {
+            ForgeEventFactory.onPlayerPostTick(it)
         }
     }
 

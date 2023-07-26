@@ -25,4 +25,6 @@ public class MinecraftServerInject implements MinecraftServerInjection {
     private static Thread kilt$setThreadGroup(Runnable target, String name) {
         return new Thread(SidedThreadGroups.SERVER, target, name);
     }
+
+    // Tick Events implemented via Architectury
 }
