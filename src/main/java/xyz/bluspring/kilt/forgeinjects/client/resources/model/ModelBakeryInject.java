@@ -49,6 +49,13 @@ public abstract class ModelBakeryInject implements ModelBakeryInjection {
         return atlasSet;
     }
 
+    @Inject(method = "bake", at = @At("HEAD"))
+    public void kilt$checkIfSpritesAreEmpty(ResourceLocation location, ModelState transform, CallbackInfoReturnable<BakedModel> cir) {
+        if (this.sprites.get() == null) {
+            this.sprites.set(this.atlasSet::getSprite);
+        }
+    }
+
     @ModifyArgs(method = "bake", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;generateBlockModel(Ljava/util/function/Function;Lnet/minecraft/client/renderer/block/model/BlockModel;)Lnet/minecraft/client/renderer/block/model/BlockModel;"))
     public void kilt$useForgeSpritesForBlockModel(Args args) {
         args.set(0, this.sprites.get());
