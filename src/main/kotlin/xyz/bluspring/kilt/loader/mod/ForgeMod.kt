@@ -67,6 +67,10 @@ class ForgeMod(
                 JarFile(modFile)
         }
 
+    fun isRemapped(): Boolean {
+        return this@ForgeMod::remappedModFile.isInitialized
+    }
+
     val paths: MutableList<Path>
         get() = mutableListOf<Path>().apply {
             if (this@ForgeMod::remappedModFile.isInitialized)

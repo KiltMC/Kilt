@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.remap
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kotlinx.coroutines.*
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
@@ -30,7 +31,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 38
+    const val REMAPPER_VERSION = 100
 
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
@@ -61,135 +62,6 @@ object KiltRemapper {
 
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
-    private val mappingCacheFile = File(KiltLoader.kiltCacheDir, "mapping_${KiltLoader.SUPPORTED_FORGE_SPEC_VERSION}_$namespace.txt")
-    private val remapper: KiltAsmRemapper
-
-    init {
-        val mappings = FabricLauncherBase.getLauncher().mappingConfiguration.mappings
-
-        val start = System.currentTimeMillis()
-        logger.info("Loading mappings from Searge to $namespace...")
-
-        val localMappingCache = KiltRemapper::class.java.getResource("/mapping_${KiltLoader.SUPPORTED_FORGE_SPEC_VERSION}_$namespace.txt")
-        if (localMappingCache != null && !mappingCacheFile.exists() && !generateLocalMappingCache) {
-            logger.info("Loading locally cached mapping file")
-
-            mappingCacheFile.createNewFile()
-            mappingCacheFile.writeBytes(localMappingCache.readBytes())
-        }
-
-        if (mappingCacheFile.exists() && !generateLocalMappingCache) {
-            logger.info("Found cached mapping file")
-
-            val lines = mappingCacheFile.readLines()
-            // Classes
-            lines[0].split(",").forEach {
-                val split = it.split(">")
-                classMappings[split[0]] = split[1]
-            }
-
-            // Fields
-            lines[1].split(",").forEach {
-                val split = it.split(">")
-                val descSplit = split[1].split("&")
-                fieldMappings[split[0]] = Pair(descSplit[0], descSplit[1])
-            }
-
-            // Methods
-            lines[2].split(",").forEach {
-                val split = it.split(">")
-                val descSplit = split[1].split("&")
-                methodMappings[split[0]] = Pair(descSplit[0], descSplit[1])
-            }
-        } else {
-            logger.info("No cached mapping file found, this may take a while to load!")
-            srgIntermediaryTree.classes.forEach { srgClass ->
-                val intermediaryClass =
-                    mappings.classes.firstOrNull { it.getName("intermediary") == srgClass.getName("intermediary") }
-                        ?: return@forEach
-
-                classMappings[srgClass.getName("searge")] = intermediaryClass.getName(namespace)
-
-                srgClass.fields.forEach field@{ srgField ->
-                    val srgName = srgField.getName("searge")
-
-                    if (fieldMappings.contains(srgName))
-                        return@field
-
-                    val intermediaryField =
-                        intermediaryClass.fields.firstOrNull { it.getName("intermediary") == srgField.getName("intermediary") }
-
-                    if (namespace == "intermediary" || intermediaryField == null) {
-                        fieldMappings[srgName] =
-                            Pair(srgField.getName("intermediary"), srgField.getDescriptor("intermediary"))
-
-                        if (srgField.getDescriptor("searge").startsWith("("))
-                            methodMappings[srgName] = fieldMappings[srgName]!!
-
-                        return@field
-                    }
-
-                    fieldMappings[srgName] = Pair(
-                        intermediaryField.getName(namespace), intermediaryField.getDescriptor(
-                            namespace
-                        )
-                    )
-
-                    if (srgField.getDescriptor("searge").startsWith("("))
-                        methodMappings[srgName] = fieldMappings[srgName]!!
-                }
-
-                srgClass.methods.forEach method@{ srgMethod ->
-                    val name = srgMethod.getName("searge")
-
-                    // let's not map something that already exists.
-                    if (methodMappings.contains(name))
-                        return@method
-
-                    // need to use a different way of getting the method, because SRG stores method members in literally everyone
-                    val intermediaryClass2 = mappings.classes.firstOrNull {
-                        it.methods.any { m ->
-                            m.getName("intermediary") == srgMethod.getName("intermediary") && m.getDescriptor("intermediary") == srgMethod.getDescriptor(
-                                "intermediary"
-                            )
-                        }
-                    }
-
-                    if (namespace == "intermediary" || intermediaryClass2 == null) {
-                        methodMappings[name] =
-                            Pair(srgMethod.getName("intermediary"), srgMethod.getDescriptor("intermediary"))
-                        return@method
-                    }
-
-                    val intermediaryMethod = intermediaryClass2.methods.first {
-                        it.getName("intermediary") == srgMethod.getName("intermediary") && it.getDescriptor("intermediary") == srgMethod.getDescriptor(
-                            "intermediary"
-                        )
-                    }
-
-                    methodMappings[name] = Pair(
-                        intermediaryMethod.getName(
-                            namespace
-                        ), intermediaryMethod.getDescriptor(namespace)
-                    )
-                }
-            }
-
-            mappingCacheFile.createNewFile()
-            val writer = mappingCacheFile.writer()
-            writer.write(classMappings.map { "${it.key}>${it.value}" }.joinToString(","))
-            writer.write("\n")
-            writer.write(fieldMappings.map { "${it.key}>${it.value.first}&${it.value.second}" }.joinToString(","))
-            writer.write("\n")
-            writer.write(methodMappings.map { "${it.key}>${it.value.first}&${it.value.second}" }.joinToString(","))
-            writer.close()
-        }
-
-        logger.info("Finished loading mappings! (took ${System.currentTimeMillis() - start}ms)")
-
-        remapper = KiltAsmRemapper(fieldMappings, methodMappings)
-    }
-
     private lateinit var remappedModsDir: File
 
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
@@ -216,29 +88,57 @@ object KiltRemapper {
             addAll(modLoadingQueue)
         }
 
-        // We need to sort it in a way where dependencies are remapped before everyone else,
-        // so the mods can remap correctly.
-        modRemapQueue.sortWith { a, b ->
-            if (a.dependencies.any { it.modId == b.modId })
-                1
-            else if (b.dependencies.any { it.modId == a.modId })
-                -1
-            else 0
-        }
-
         logger.info("Remapping Forge mods...")
 
-        modRemapQueue.forEach { mod ->
-            if (mod.modFile == null)
-                return@forEach
+        // Trying to see if we can multi-thread remapping, so it can be much faster.
+        runBlocking {
+            val modRemappingCoroutines = mutableMapOf<ForgeMod, Deferred<ForgeMod>>()
 
-            try {
-                exceptions.addAll(remapMod(mod.modFile, mod))
-                logger.info("Remapped ${mod.displayName} (${mod.modId})")
-            } catch (e: Exception) {
-                exceptions.add(e)
-                e.printStackTrace()
+            modRemapQueue.forEach { mod ->
+                if (mod.modFile == null)
+                    return@forEach
+
+                if (mod.isRemapped())
+                    return@forEach
+
+                modRemappingCoroutines[mod] = (async {
+                    if (mod.isRemapped())
+                        return@async mod
+
+                    mod.dependencies.forEach dep@{
+                        val dep = modRemapQueue.firstOrNull { m -> m.modId == it.modId } ?: return@dep
+
+                        if (!dep.isRemapped()) {
+                            if (!modRemappingCoroutines.contains(dep))
+                                throw IllegalStateException("How did ${dep.modId} not get added to the mod remapping coroutines?")
+
+                            modRemappingCoroutines[dep]!!.await()
+                        }
+                    }
+
+                    try {
+                        val startTime = System.currentTimeMillis()
+                        logger.info("Remapping ${mod.displayName} (${mod.modId})")
+
+                        exceptions.addAll(remapMod(mod.modFile, mod))
+
+                        logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${System.currentTimeMillis() - startTime}ms]")
+                    } catch (e: Exception) {
+                        exceptions.add(e)
+                        e.printStackTrace()
+                    }
+
+                    mod
+                })
             }
+
+            val modPriorityRemapping = modRemappingCoroutines.toMutableMap()
+
+            modRemappingCoroutines.keys.forEach { m ->
+                modPriorityRemapping
+            }
+
+            awaitAll(*modRemappingCoroutines.values.toTypedArray())
         }
 
         logger.info("Finished remapping mods!")
@@ -267,8 +167,6 @@ object KiltRemapper {
         val jar = JarFile(file)
         val output = modifiedJarFile.outputStream()
         val jarOutput = JarOutputStream(output)
-
-        val potentialFailures = mutableSetOf<Pair<String, String>>()
 
         for (entry in jar.entries()) {
             if (!entry.name.endsWith(".class")) {
@@ -375,11 +273,7 @@ object KiltRemapper {
             try {
                 val classWriter = ClassWriter(0)
 
-                val visitor = ClassRemapper(classWriter, remapper)
-                classNode.accept(visitor)
-
-                potentialFailures.addAll(remapper.possibleFailures)
-                remapper.possibleFailures.clear()
+                // TODO: throw remapper logo here
 
                 jarOutput.putNextEntry(JarEntry(entry.name))
                 jarOutput.write(classWriter.toByteArray())
@@ -391,14 +285,6 @@ object KiltRemapper {
                 exceptions.add(e)
             }
         }
-
-        if (potentialFailures.isNotEmpty()) {
-            jarOutput.putNextEntry(JarEntry("kilt_possible_failed_mappings.txt"))
-            jarOutput.write(potentialFailures.joinToString("\n") { "${it.first}>${it.second}" }
-                .toByteArray(Charsets.UTF_8))
-            jarOutput.closeEntry()
-        }
-
         jarOutput.close()
         mod.remappedModFile = modifiedJarFile
 
