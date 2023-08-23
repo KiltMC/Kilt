@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.levelgen.structure.templatesystem;
 
-import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -24,6 +23,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(StructureTemplate.class)
 public abstract class StructureTemplateInject implements StructureTemplateInjection {
+    @CreateStatic
+    private static Vec3 transformedVec3d(StructurePlaceSettings placementIn, Vec3 pos) {
+        return StructureTemplateInjection.transformedVec3d(placementIn, pos);
+    }
+
+    @CreateStatic
+    private static List<StructureTemplate.StructureEntityInfo> processEntityInfos(@Nullable StructureTemplate template, LevelAccessor level, BlockPos blockPos, StructurePlaceSettings structurePlaceSettings, List<StructureTemplate.StructureEntityInfo> structureEntityInfoList) {
+        return StructureTemplateInjection.processEntityInfos(template, level, blockPos, structurePlaceSettings, structureEntityInfoList);
+    }
+
     private static final AtomicReference<StructureTemplate> kilt$template = new AtomicReference<>(null);
 
     @Shadow

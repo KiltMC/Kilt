@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.stats.RecipeBookSettingsInjection;
 
 import java.util.HashMap;
@@ -15,6 +16,16 @@ import java.util.Map;
 
 @Mixin(RecipeBookSettings.class)
 public class RecipeBookSettingsInject implements RecipeBookSettingsInjection {
+    @CreateStatic
+    private static void addTagsForType(RecipeBookType type, String openTag, String filteringTag) {
+        RecipeBookSettingsInjection.addTagsForType(type, openTag, filteringTag);
+    }
+
+    @CreateStatic
+    private static Map<RecipeBookType, Pair<String, String>> getTagFields() {
+        return TAG_FIELDS;
+    }
+
     @Shadow private static Map<RecipeBookType, Pair<String, String>> TAG_FIELDS;
 
     // there was, in fact, a better way.

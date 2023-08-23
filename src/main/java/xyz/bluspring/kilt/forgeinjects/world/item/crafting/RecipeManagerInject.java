@@ -15,12 +15,18 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.item.crafting.RecipeManagerInjection;
 
 import java.util.Map;
 
 @Mixin(RecipeManager.class)
 public class RecipeManagerInject implements RecipeManagerInjection {
+    @CreateStatic
+    private static Recipe<?> fromJson(ResourceLocation location, JsonObject json, ICondition.IContext context) {
+        return RecipeManagerInjection.fromJson(location, json, context);
+    }
+
     @Shadow @Final private static Logger LOGGER;
     private ICondition.IContext context = ICondition.IContext.EMPTY;
 

@@ -15,9 +15,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.advancements.critereon.ItemPredicateInjection;
 
 import java.util.Map;
+import java.util.function.Function;
 
 @Mixin(ItemPredicate.class)
 public class ItemPredicateInject implements ItemPredicateInjection {
@@ -35,5 +37,18 @@ public class ItemPredicateInject implements ItemPredicateInjection {
             } else
                 throw new JsonSyntaxException("There is no ItemPredicate of type " + resourceLocation);
         }
+    }
+
+    @CreateStatic
+    private static final Map<ResourceLocation, Function<JsonObject, ItemPredicate>> customPredicates = ItemPredicateInjection.customPredicates;
+
+    @CreateStatic
+    private static void register(ResourceLocation name, Function<JsonObject, ItemPredicate> deserializer) {
+        ItemPredicateInjection.customPredicates.put(name, deserializer);
+    }
+
+    @CreateStatic
+    private static Map<ResourceLocation, Function<JsonObject, ItemPredicate>> getPredicates() {
+        return ItemPredicateInjection.customPredicates;
     }
 }

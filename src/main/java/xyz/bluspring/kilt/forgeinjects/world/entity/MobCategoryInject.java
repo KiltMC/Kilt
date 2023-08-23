@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.entity.MobCategoryInjection;
 
 import java.util.Arrays;
@@ -35,5 +35,18 @@ public abstract class MobCategoryInject implements MobCategoryInjection, IExtens
     @Override
     public void init() {
         BY_NAME.put(this.getName(), (MobCategory) (Object) this);
+    }
+
+    @CreateStatic
+    private static final Map<String, MobCategory> BY_NAME = MobCategoryInjection.BY_NAME;
+
+    @CreateStatic
+    private static MobCategory byName(String name) {
+        return MobCategoryInjection.byName(name);
+    }
+
+    @CreateStatic
+    private static MobCategory create(String name, String id, int maxNumberOfCreatureIn, boolean isPeacefulCreatureIn, boolean isAnimalIn, int despawnDistance) {
+        return MobCategoryInjection.create(name, id, maxNumberOfCreatureIn, isPeacefulCreatureIn, isAnimalIn, despawnDistance);
     }
 }

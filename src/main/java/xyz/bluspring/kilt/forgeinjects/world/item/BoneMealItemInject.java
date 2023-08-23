@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -17,6 +18,10 @@ import xyz.bluspring.kilt.injections.item.BoneMealItemInjection;
 
 @Mixin(BoneMealItem.class)
 public class BoneMealItemInject implements BoneMealItemInjection {
+    private static boolean applyBonemeal(ItemStack stack, Level level, BlockPos pos, Player player) {
+        return BoneMealItemInjection.applyBonemeal(stack, level, pos, player);
+    }
+
     // Due to how Forge handles bone meal apply events, we need to replicate it here.
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getBlock()Lnet/minecraft/world/level/block/Block;", ordinal = 0, shift = At.Shift.BEFORE), method = "growCrop", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     private static void kilt$postBoneMealApplyEvent(ItemStack itemStack, Level level, BlockPos blockPos, CallbackInfoReturnable<Boolean> cir, BlockState blockState) {

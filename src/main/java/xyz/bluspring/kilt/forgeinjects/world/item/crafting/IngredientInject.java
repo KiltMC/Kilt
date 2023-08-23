@@ -18,13 +18,27 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 @Mixin(Ingredient.class)
 public class IngredientInject implements IngredientInjection {
+    private static final AtomicInteger INVALIDATION_COUNTER = IngredientInjection.INVALIDATION_COUNTER;
+
+    @CreateStatic
+    private static void invalidateAll() {
+        IngredientInjection.invalidateAll();
+    }
+
+    @CreateStatic
+    private static Ingredient merge(Collection<Ingredient> parts) {
+        return IngredientInjection.merge(parts);
+    }
+
     @Shadow @Nullable public ItemStack[] itemStacks;
     @Shadow @Nullable public IntList stackingIds;
     private int invalidationCounter;

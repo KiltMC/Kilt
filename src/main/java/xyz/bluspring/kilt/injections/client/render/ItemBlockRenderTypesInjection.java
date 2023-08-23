@@ -29,12 +29,12 @@ public interface ItemBlockRenderTypesInjection {
         });
     });
     // why does this feel utterly pointless
-    /*Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
+    Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
         it.defaultReturnValue(RenderType.solid());
         ItemBlockRenderTypes.TYPE_BY_FLUID.forEach((key, value) -> {
                 it.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(key), value);
         });
-    });*/
+    });*
 
     static ChunkRenderTypeSet getRenderLayers(BlockState state) {
         if (state.getBlock() instanceof LeavesBlock) {
@@ -61,7 +61,7 @@ public interface ItemBlockRenderTypesInjection {
     static void setRenderLayer(Fluid fluid, RenderType type) {
         checkClientLoading();
         BlockRenderLayerMap.INSTANCE.putFluid(fluid, type);
-        //FLUID_RENDER_TYPES.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid), type);
+        FLUID_RENDER_TYPES.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid), type);
     }
 
     static void checkClientLoading() {

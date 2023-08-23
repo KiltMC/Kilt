@@ -3,10 +3,16 @@ package xyz.bluspring.kilt.forgeinjects.world.level.pathfinder;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraftforge.common.IExtensibleEnum;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.level.pathfinder.BlockPathTypesInjection;
 
 @Mixin(BlockPathTypes.class)
 public class BlockPathTypesInject implements BlockPathTypesInjection, IExtensibleEnum {
+    @CreateStatic
+    private static BlockPathTypes create(String name, float malus) {
+        return BlockPathTypesInjection.create(name, malus);
+    }
+
     @Override
     public BlockPathTypes getDanger() {
         var type = ((BlockPathTypes) (Object) this);

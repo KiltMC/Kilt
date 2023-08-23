@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.entity.PlayerInjection;
 
 import javax.annotation.Nullable;
@@ -21,6 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(Player.class)
 public abstract class PlayerInject extends LivingEntity implements IForgePlayer, PlayerInjection {
+    @CreateStatic
+    private static final String PERSISTED_NBT_TAG = PlayerInjection.PERSISTED_NBT_TAG;
+
     @Shadow public abstract float getDestroySpeed(BlockState state);
 
     protected PlayerInject(EntityType<? extends LivingEntity> entityType, Level level) {
