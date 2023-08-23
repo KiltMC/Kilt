@@ -2,7 +2,10 @@ package xyz.bluspring.kilt.loader.remap
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
@@ -10,15 +13,12 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
-import xyz.bluspring.kilt.loader.staticfix.StaticAccessFixer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -147,8 +147,6 @@ object KiltRemapper {
             logger.error("Ran into some errors, we're not going to continue with the repairing process.")
             return exceptions
         }
-
-        StaticAccessFixer.fixMods(modLoadingQueue, remappedModsDir)
 
         return exceptions
     }
