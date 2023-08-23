@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
-import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.FieldInsnNode
@@ -17,27 +17,28 @@ import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
 class KiltEarlyRiser : Runnable {
-    private val namespace = FabricLauncherBase.getLauncher().targetNamespace
-
     override fun run() {
         processForgeClasses()
+
+        val mappingResolver = FabricLoader.getInstance().mappingResolver
+        val namespace = "intermediary"
 
         // EnchantmentCategory has an abstract method that doesn't exactly play nicely with enum extension.
         // So, we need to modify it to have a method body that works with the Forge API.
         run {
-            // The remapper wouldn't fucking remap, might as well do it manually - Kilt isn't supposed to run
-            // in other mod devs' environments anyway.
-            val enchantmentCategory = namespaced("net.minecraft.class_1886", "net.minecraft.world.item.enchantment.EnchantmentCategory")
+            val enchCategoryIm = "net.minecraft.class_1886"
+            val itemIm = "net.minecraft.class_1792"
+            val enchantmentCategory = mappingResolver.mapClassName(namespace, enchCategoryIm)
 
             ClassTinkerers.addTransformation(enchantmentCategory) { classNode ->
                 classNode.access = Opcodes.ACC_PUBLIC or Opcodes.ACC_ENUM
 
                 run {
-                    val canEnchantName = namespaced("method_8177", "canEnchant")
+                    val canEnchantName = mappingResolver.mapMethodName(namespace, enchCategoryIm, "method_8177", "(L${itemIm.replace(".", "/")};)Z")
                     // remove it first
                     classNode.methods.removeIf { it.name == canEnchantName }
 
-                    val item = namespaced("net.minecraft.class_1792", "net.minecraft.world.item.Item")
+                    val item = mappingResolver.mapClassName(namespace, itemIm)
                     val enchCategoryInjection = "xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentCategoryInjection"
 
                     // This method should become:
@@ -123,16 +124,18 @@ class KiltEarlyRiser : Runnable {
 
         // i haven't created a way to replace the abstracted methods yet, so this will do.
         run {
-            val bakedModel = namespaced("net.minecraft.class_1087", "net.minecraft.client.resources.model.BakedModel")
+            val bakedModelIm = "net.minecraft.class_1087"
+            val itemTransformsIm = "net.minecraft.class_809"
+            val bakedModel = mappingResolver.mapClassName(namespace, bakedModelIm)
 
             ClassTinkerers.addTransformation(bakedModel) { classNode ->
                 run {
-                    val getTransformsName = namespaced("method_4709", "getTransforms")
+                    val getTransformsName = mappingResolver.mapMethodName(namespace, bakedModelIm, "method_4709", "()L${itemTransformsIm.replace(".", "/")};")
 
                     classNode.methods.removeIf { it.name == getTransformsName }
 
-                    val itemTransforms = namespaced("net/minecraft/class_809", "net/minecraft/client/renderer/block/model/ItemTransforms")
-                    val noTransforms = namespaced("field_4301", "NO_TRANSFORMS")
+                    val itemTransforms = mappingResolver.mapClassName(namespace, itemTransformsIm).replace(".", "/")
+                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "NO_TRANSFORMS", "L${itemTransformsIm.replace(".", "/")};")
 
                     // this method should look like this
                     /*
@@ -168,9 +171,9 @@ class KiltEarlyRiser : Runnable {
         run {
             // MobBucketItem
             run {
-                val mobBucketItem = namespaced("net/minecraft/class_1785", "net/minecraft/world/item/MobBucketItem")
-                val bucketItem = namespaced("net/minecraft/class_1755", "net/minecraft/world/item/BucketItem")
-                val itemProperties = namespaced("net/minecraft/class_1792\$class_1793", "net/minecraft/world/item/Item\$Properties")
+                val mobBucketItem = mappingResolver.mapClassName(namespace, "net.minecraft.class_1785").replace(".", "/")
+                val bucketItem = mappingResolver.mapClassName(namespace, "net.minecraft.class_1755").replace(".", "/")
+                val itemProperties = mappingResolver.mapClassName(namespace, "net.minecraft.class_1792\$class_1793").replace(".", "/")
 
                 ClassTinkerers.addTransformation(mobBucketItem) {
                     // <init>(java.util.function.Supplier<? extends EntityType<?>> entitySupplier, java.util.function.Supplier<? extends Fluid> fluidSupplier, java.util.function.Supplier<? extends SoundEvent> soundSupplier, Item.Properties properties)V
@@ -227,15 +230,17 @@ class KiltEarlyRiser : Runnable {
         // TODO: Remove this when that bug is fixed
         run {
             run {
-                val flowingFluid = namespaced("net/minecraft/class_3609", "net/minecraft/world/level/material/FlowingFluid")
-                val liquidBlock = namespaced("net/minecraft/class_2404", "net/minecraft/world/level/block/LiquidBlock")
+                val flowingFluidIm = "net.minecraft.class_3609"
+                val liquidBlockIm = "net.minecraft.class_2404"
+                val flowingFluid = mappingResolver.mapClassName(namespace, flowingFluidIm).replace(".", "/")
+                val liquidBlock = mappingResolver.mapClassName(namespace, liquidBlockIm).replace(".", "/")
 
                 ClassTinkerers.addTransformation(liquidBlock) {
                     it.methods.forEach { methodNode ->
                         if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
                             return@forEach
 
-                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == namespaced("field_11279", "fluid") })
+                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == mappingResolver.mapFieldName(namespace, liquidBlockIm, "field_11279", "L${flowingFluidIm.replace(".", "/")};") })
                             return@forEach
 
                         methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
@@ -247,15 +252,17 @@ class KiltEarlyRiser : Runnable {
             }
 
             run {
-                val fluid = namespaced("net/minecraft/class_3611", "net/minecraft/world/level/material/Fluid")
-                val bucketItem = namespaced("net/minecraft/class_2404", "net/minecraft/world/item/BucketItem")
+                val fluidIm = "net.minecraft.class_3611"
+                val bucketItemIm = "net.minecraft.class_2404"
+                val fluid = mappingResolver.mapClassName(namespace, fluidIm)
+                val bucketItem = mappingResolver.mapClassName(namespace, bucketItemIm)
 
                 ClassTinkerers.addTransformation(bucketItem) {
                     it.methods.forEach { methodNode ->
                         if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
                             return@forEach
 
-                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == namespaced("field_7905", "content") })
+                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == mappingResolver.mapFieldName(namespace, bucketItemIm, "field_7905", "L${fluidIm.replace(".", "/")};") })
                             return@forEach
 
                         methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
@@ -289,12 +296,5 @@ class KiltEarlyRiser : Runnable {
                 ObjectHolderDefinalizer.processClass(it)
             }
         }
-    }
-
-    private fun namespaced(intermediary: String, mojmapped: String): String {
-        return if (namespace == "intermediary")
-            intermediary
-        else
-            mojmapped
     }
 }
