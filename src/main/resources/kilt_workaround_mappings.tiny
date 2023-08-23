@@ -4,3 +4,4 @@ c	net/minecraftforge/common/IPlantable	io/github/fabricators_of_create/porting_l
 c	net/minecraftforge/common/PlantType	io/github/fabricators_of_create/porting_lib/util/PlantType
 c	net/minecraftforge/fml/config/ModConfig	xyz/bluspring/kilt/remaps/fml/config/ModConfigRemap
 c	net/minecraftforge/client/RenderTypeGroup	io/github/fabricators_of_create/porting_lib/client/RenderTypeGroup
+c	net/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier$ColorModifier	xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection$ColorModifier
