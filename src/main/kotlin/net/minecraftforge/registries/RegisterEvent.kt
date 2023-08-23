@@ -56,6 +56,7 @@ class RegisterEvent internal constructor(
         hasRanConsumers = true
     }
 
+    @FunctionalInterface
     fun interface RegisterHelper<T> {
         fun register(name: String, value: T) {
             register(ResourceLocation(ModLoadingContext.get().activeNamespace, name), value)
