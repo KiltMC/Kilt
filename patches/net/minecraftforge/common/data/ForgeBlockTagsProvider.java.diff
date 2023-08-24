@@ -1,26 +1,30 @@
 --- ForgeBlockTagsProvider.java
 +++ ForgeBlockTagsProvider.java
-@@ -6,4 +6,5 @@
+@@ -6,6 +6,7 @@
  package net.minecraftforge.common.data;
  
 +import net.minecraft.core.Registry;
  import net.minecraft.data.DataGenerator;
- import net.minecraft.data.tags.BlockTagsProvider;
+-import net.minecraft.data.tags.BlockTagsProvider;
++import net.minecraft.data.tags.TagsProvider;
+ import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.tags.BlockTags;
 @@ -16,4 +17,5 @@
  import net.minecraftforge.common.Tags;
  import net.minecraftforge.registries.ForgeRegistries;
-+import xyz.bluspring.kilt.remaps.data.tags.TagsProviderRemap;
++import xyz.bluspring.kilt.injections.data.tags.TagsProviderInjection;
  
  import java.util.Locale;
-@@ -22,9 +24,9 @@
+@@ -22,9 +24,10 @@
  import static net.minecraftforge.common.Tags.Blocks.*;
  
 -public final class ForgeBlockTagsProvider extends BlockTagsProvider
-+public final class ForgeBlockTagsProvider extends TagsProviderRemap<Block>
++public final class ForgeBlockTagsProvider extends TagsProvider<Block> implements TagsProviderInjection
  {
      public ForgeBlockTagsProvider(DataGenerator gen, ExistingFileHelper existingFileHelper)
      {
 -        super(gen, "forge", existingFileHelper);
-+        super(gen, Registry.BLOCK, "forge", existingFileHelper);
++        super(gen, Registry.BLOCK);
++        this.kilt$addConstructorArgs("forge", existingFileHelper);
      }
  

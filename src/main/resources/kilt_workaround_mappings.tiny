@@ -1,5 +1,4 @@
 tiny	2	0	forge	kilt
-c	net/minecraft/data/tags/TagsProvider	xyz/bluspring/kilt/remaps/data/tags/TagsProviderRemap
 c	net/minecraftforge/common/IPlantable	io/github/fabricators_of_create/porting_lib/util/IPlantable
 c	net/minecraftforge/common/PlantType	io/github/fabricators_of_create/porting_lib/util/PlantType
 c	net/minecraftforge/fml/config/ModConfig	xyz/bluspring/kilt/remaps/fml/config/ModConfigRemap

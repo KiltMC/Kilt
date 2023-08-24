@@ -34,7 +34,7 @@ public interface ItemBlockRenderTypesInjection {
         ItemBlockRenderTypes.TYPE_BY_FLUID.forEach((key, value) -> {
                 it.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(key), value);
         });
-    });*
+    });
 
     static ChunkRenderTypeSet getRenderLayers(BlockState state) {
         if (state.getBlock() instanceof LeavesBlock) {
