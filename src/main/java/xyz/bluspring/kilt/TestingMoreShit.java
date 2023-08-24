@@ -12,6 +12,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 
@@ -29,9 +30,9 @@ public class TestingMoreShit {
 
     private static DeferredRegister<Block> BLOCKS2;
 
-    private ForgeRegistry<Block> block;
+    private IForgeRegistry<Block> block;
 
-    public TestingMoreShit(ForgeRegistry<Block> registry) {
+    public TestingMoreShit(IForgeRegistry<Block> registry) {
         block = registry;
     }
 

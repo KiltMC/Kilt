@@ -11,8 +11,13 @@ import java.util.jar.JarFile
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
+    private val cachedForgeClassNodes = getForgeClassNodesInternal()
 
     fun getForgeClassNodes(): List<ClassNode> {
+        return cachedForgeClassNodes
+    }
+
+    private fun getForgeClassNodesInternal(): List<ClassNode> {
         val list = mutableListOf<ClassNode>()
 
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {

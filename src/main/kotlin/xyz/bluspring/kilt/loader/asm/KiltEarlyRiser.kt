@@ -9,10 +9,10 @@ import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.fixers.EventClassVisibilityFixer
-import xyz.bluspring.kilt.loader.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
+import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
+import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 

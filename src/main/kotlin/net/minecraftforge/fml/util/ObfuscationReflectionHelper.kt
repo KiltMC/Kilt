@@ -7,9 +7,9 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 object ObfuscationReflectionHelper {
     private val srgIntermediaryTree = KiltRemapper.srgIntermediaryTree
     private val srgMappedFields =
-        srgIntermediaryTree.classes.flatMap { it.fields }.associateBy { it.getName("srg") }
+        srgIntermediaryTree.classes.flatMap { it.fields }.associateBy { it.getName("searge") }
     private val srgMappedMethods =
-        srgIntermediaryTree.classes.flatMap { it.methods }.associateBy { it.getName("srg") }
+        srgIntermediaryTree.classes.flatMap { it.methods }.associateBy { it.getName("searge") }
     private val mappingEnvironment = FabricLoaderImpl.INSTANCE
 
     @JvmStatic

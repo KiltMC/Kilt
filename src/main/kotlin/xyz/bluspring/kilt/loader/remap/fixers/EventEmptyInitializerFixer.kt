@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.fixers
+package xyz.bluspring.kilt.loader.remap.fixers
 
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -28,6 +28,7 @@ object EventEmptyInitializerFixer {
         if (classNode.methods.any { m -> m.name == "<init>" && m.desc == "(L${classNode.outerClass};)V" })
             return
 
+        var stackSize = 1
         val initMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_SYNTHETIC, "<init>", if (!isStatic) "(L${classNode.outerClass};)V" else "()V", null, null)
         val firstInitMethod = classNode.methods.firstOrNull { it.name == "<init>" }
 
@@ -47,7 +48,9 @@ object EventEmptyInitializerFixer {
             val methodType = Type.getMethodType(firstInitMethod.desc)
             methodType.argumentTypes.forEach { arg ->
                 when (arg.descriptor) {
-                    "I" -> initMethod.visitInsn(Opcodes.ICONST_0) // int
+                    "I" -> {
+                        initMethod.visitInsn(Opcodes.ICONST_0)
+                    } // int
                     "F" -> initMethod.visitInsn(Opcodes.FCONST_0) // float
                     "D" -> initMethod.visitInsn(Opcodes.DCONST_0) // double
                     "J" -> initMethod.visitInsn(Opcodes.LCONST_0) // long
@@ -56,6 +59,12 @@ object EventEmptyInitializerFixer {
                     "B" -> initMethod.visitInsn(Opcodes.ICONST_0) // byte
 
                     else -> initMethod.visitInsn(Opcodes.ACONST_NULL)
+                }
+
+                stackSize += when (arg.descriptor) {
+                    "D", "J" -> 2
+
+                    else -> 1
                 }
             }
 
@@ -72,9 +81,9 @@ object EventEmptyInitializerFixer {
         initMethod.visitLocalVariable("this", "L${classNode.name};", null, label0, label1, 0)
         if (!isStatic) {
             initMethod.visitLocalVariable("this$0", "L${classNode.outerClass};", null, label0, label1, 0)
-            initMethod.visitMaxs(1, 2)
+            initMethod.visitMaxs(stackSize, 2)
         } else {
-            initMethod.visitMaxs(1, 1)
+            initMethod.visitMaxs(stackSize, 1)
         }
         initMethod.visitEnd()
     }

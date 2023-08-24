@@ -1,10 +1,7 @@
 package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
-import net.fabricmc.loader.api.MappingResolver
-import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.mapping.tree.TinyTree
-import org.apache.commons.lang3.BitField
+import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -20,6 +17,8 @@ object AccessTransformerLoader {
     private val whitespace = Pattern.compile("[ \t]+")
 
     private val classTransformInfo = mutableMapOf<String, ClassTransformInfo>()
+    private val mc = KiltRemapper.mcRemapper
+    private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
     private fun println(info: String) {
         if (debug)
@@ -56,7 +55,7 @@ object AccessTransformerLoader {
 
             // class name
             val srgClassName = split[1]
-            val intermediaryClassName = KiltRemapper.classMappings[srgClassName.replace(".", "/")] ?: srgClassName
+            val intermediaryClassName = KiltRemapper.remapClass(srgClassName.replace(".", "/"))
 
             // field / method
             if (split.size > 2 && !split[2].startsWith("#")) {
@@ -78,11 +77,12 @@ object AccessTransformerLoader {
                         }
                     }
 
-                    val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor)
+                    val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor, toIntermediary = true)
+                    val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
-                    val methodData = KiltRemapper.methodMappings[name]
+                    val methodName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), mc.mapFieldName(srgClassName, name, descriptor), intermediaryDescriptor)
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
-                    val pair = Pair(methodData?.first ?: name, methodData?.second ?: intermediaryDescriptor)
+                    val pair = Pair(methodName, mappedDescriptor)
 
                     if (transformInfo.methods.contains(pair)) {
                         val methodTransformInfo = transformInfo.methods[pair]!!
@@ -105,7 +105,8 @@ object AccessTransformerLoader {
                 } else { // field
                     val name = split[2]
 
-                    val fieldName = KiltRemapper.fieldMappings[name]?.first ?: name
+                    val fieldInfo = KiltRemapper.srgIntermediaryTree.classes.firstOrNull { it.getName("searge") == srgClassName }?.fields?.firstOrNull { it.getName("searge") == name } ?: continue
+                    val fieldName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), mc.mapFieldName(srgClassName, name, fieldInfo.getDescriptor("searge")), fieldInfo.getDescriptor("intermediary"))
 
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
 
@@ -181,7 +182,7 @@ object AccessTransformerLoader {
                 }
 
                 classTransformInfo.fields.forEach field@{ (fieldName, fieldTransformInfo) ->
-                    val mappedFieldName = KiltRemapper.fieldMappings[fieldName]?.first ?: fieldName
+                    val mappedFieldName = fieldName
 
                     println("transforming field $mappedFieldName")
 

@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.fixers
+package xyz.bluspring.kilt.loader.remap.fixers
 
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode

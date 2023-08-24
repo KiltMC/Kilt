@@ -191,7 +191,17 @@ class KiltLoader {
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
 
-            remapMods()
+            try {
+                remapMods()
+            } catch (e: Exception) {
+                FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {
+                    val tab = it.addTab("Kilt Error")
+
+                    it.tabs.removeIf { t -> t != tab }
+                }, true)
+
+                exitProcess(1)
+            }
 
             modLoadingQueue.forEach { mod ->
                 loadTransformers(mod)
