@@ -11,7 +11,7 @@
     "repo": "https://github.com/KiltMC/Kilt",
     "issues": "https://github.com/KiltMC/Kilt/issues"
   },
-  "license": "LGPL-3.0",
+  "license": "LGPL-2.1-only",
   "icon": "assets/kilt/icon.png",
   "environment": "*",
   "entrypoints": {

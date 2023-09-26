@@ -155,6 +155,7 @@
     "blaze3d.platform.GlStateManagerInject",
     "blaze3d.vertex.PoseStackInject",
     "blaze3d.vertex.VertexConsumerInject",
+    "client.CameraInject",
     "client.ClientRecipeBookInject",
     "client.KeyMappingInject",
     "client.MinecraftInject",

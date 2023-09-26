@@ -14,10 +14,9 @@ plugins {
     id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
 }
 
-val buildNumber = System.getenv("GITHUB_RUN_NUMBER")
-val patch = buildNumber ?: "99999"
+val commitHash = System.getenv("GITHUB_SHA")
 
-version = "${property("mod_version")}.$patch+mc${property("minecraft_version")}"
+version = "${property("mod_version")}+mc${property("minecraft_version")}+build.${commitHash.subSequence(0, 6)}"
 group = property("maven_group")!!
 archivesName.set(property("archives_base_name")!! as String)
 
