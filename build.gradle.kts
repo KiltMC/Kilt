@@ -14,9 +14,7 @@ plugins {
     id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
 }
 
-val commitHash = System.getenv("GITHUB_SHA")
-
-version = "${property("mod_version")}+mc${property("minecraft_version")}+build.${commitHash.subSequence(0, 6)}"
+version = "${property("mod_version")}+mc${property("minecraft_version")}${getVersionMetadata()}"
 group = property("maven_group")!!
 archivesName.set(property("archives_base_name")!! as String)
 
@@ -323,13 +321,19 @@ tasks {
         into("$projectDir/src/forge/resources")
     }
 
+    register<Copy>("copyForgeGeneratedResources") {
+        group = "kilt"
+        from("$buildDir/forge/src/generated/resources")
+        into("$projectDir/src/forge/resources")
+    }
+
     processPatches {
         content = "$buildDir/forge/src/main/java"
         patches = "$projectDir/patches"
         destination = "$projectDir/src/forge/java"
         group = "kilt"
 
-        finalizedBy("copyForgeResources")
+        finalizedBy("copyForgeResources", "copyForgeGeneratedResources")
 
         doLast {
             println("Removing reimplemented Forge API sources...")
@@ -355,7 +359,7 @@ tasks {
     }
 
     processResources {
-        dependsOn("copyForgeResources")
+        dependsOn("copyForgeResources", "copyForgeGeneratedResources")
         inputs.property("version", project.version)
         filteringCharset = "UTF-8"
 
@@ -551,4 +555,14 @@ java {
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
+}
+
+fun getVersionMetadata(): String {
+    val grgit = Grgit.open(mutableMapOf<String, Any?>(
+        "dir" to File("$projectDir")
+    ))
+    val commitHash =
+        System.getenv("GITHUB_SHA") ?: (grgit.head().abbreviatedId + if (!grgit.status().isClean) "-dirty" else "")
+
+    return "+build.${commitHash.subSequence(0, 6)}"
 }
