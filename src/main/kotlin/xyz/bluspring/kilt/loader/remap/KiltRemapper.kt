@@ -378,6 +378,11 @@ object KiltRemapper {
 
             if (sidedJar != null)
                 return sidedJar.toFile()
+
+            val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")
+
+            if (inputGameJar is Path)
+                return inputGameJar.toFile()
         } else {
             // TODO: is there a better way of doing this?
             val possibleMcGameJar = FabricLauncherBase.getLauncher().classPath.firstOrNull { path ->
