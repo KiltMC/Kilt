@@ -418,7 +418,9 @@ class KiltLoader {
                     },
                 modFile = modFile,
                 modConfig = mainConfig,
-                nestedMods = nestedMods
+                nestedMods = nestedMods,
+                // TODO: make logo file square
+                logoFile = metadata.getConfigElement<String>("logoFile").orElse("")
             )
             mod.manifest = manifest
 
