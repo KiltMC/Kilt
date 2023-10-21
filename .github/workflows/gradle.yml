@@ -35,6 +35,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: Kilt Alpha Build
-        # Filter built files to disregard -sources and -dev, and leave only the minecraft-compatible jars.
-        path: build/libs/Kilt-[0-9]+.[0-9]+.[0-9]+\+mc.([0-9](.)?)+\+build.[a-f0-9]{6}.jar
+        name: Kilt Build JARs
+        path: build/libs/Kilt-*.jar
