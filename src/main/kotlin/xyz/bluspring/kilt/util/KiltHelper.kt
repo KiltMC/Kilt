@@ -7,7 +7,9 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
+import java.nio.file.Path
 import java.util.jar.JarFile
+import kotlin.io.path.toPath
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
@@ -15,6 +17,26 @@ object KiltHelper {
 
     fun getForgeClassNodes(): List<ClassNode> {
         return cachedForgeClassNodes
+    }
+
+    fun getKiltPaths(): List<Path> {
+        return if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
+            listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
+        } else {
+            val filesToScan = mutableListOf<File>()
+
+            val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
+            val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
+            val kotlinPath = File(path)
+            filesToScan.add(kotlinPath)
+
+            val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
+            val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
+            val forgeFile = File(forgePath)
+            filesToScan.add(forgeFile)
+
+            filesToScan.map { it.toPath() }
+        }
     }
 
     private fun getForgeClassNodesInternal(): List<ClassNode> {

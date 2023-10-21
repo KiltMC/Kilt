@@ -27,6 +27,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
+import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -48,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 105
+    const val REMAPPER_VERSION = 106
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -134,8 +135,7 @@ object KiltRemapper {
                         logger.info("Remapping ${mod.displayName} (${mod.modId})")
 
                         exceptions.addAll(remapMod(mod.modFile, mod,
-                            // Get all the mod dependencies
-                            recursiveListDependencies(mod, modLoadingQueue)
+                            modRemapQueue
                         ))
 
                         logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${System.currentTimeMillis() - startTime}ms]")
@@ -161,24 +161,7 @@ object KiltRemapper {
         return exceptions
     }
 
-    private fun recursiveListDependencies(mod: ForgeMod, modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>): MutableList<ForgeMod> {
-        val list = mutableListOf<ForgeMod>()
-
-        list.addAll(mod.dependencies.mapNotNull {
-            modLoadingQueue.firstOrNull { a -> a.modId == it.modId }
-        })
-
-        val a = mutableListOf<ForgeMod>()
-        list.forEach {
-            a.addAll(recursiveListDependencies(it, modLoadingQueue))
-        }
-
-        list.addAll(a)
-
-        return list
-    }
-
-    private fun remapMod(file: File, mod: ForgeMod, dependencies: List<ForgeMod>): List<Exception> {
+    private fun remapMod(file: File, mod: ForgeMod, forgeModsList: List<ForgeMod>): List<Exception> {
         val exceptions = mutableListOf<Exception>()
 
         val hash = DigestUtils.md5Hex(file.inputStream())
@@ -197,8 +180,15 @@ object KiltRemapper {
         val classProvider = ClassProvider.builder().apply {
             this.addLibrary(srgGamePath)
 
-            dependencies.forEach {
-                this.addLibrary(it.modFile?.toPath())
+            // List down Forge paths
+            for (path in KiltHelper.getKiltPaths()) {
+                this.addLibrary(path)
+            }
+
+            // Add all Forge mods to the library path, because dependencies don't have to be specified
+            // in order to use mods lmao
+            for (forgeMod in forgeModsList) {
+                this.addLibrary(forgeMod.modFile?.toPath())
             }
 
             this.addLibrary(mod.modFile?.toPath())
