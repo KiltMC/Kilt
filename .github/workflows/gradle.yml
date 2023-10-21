@@ -37,4 +37,4 @@ jobs:
       with:
         name: Kilt Alpha Build
         # Filter built files to disregard -sources and -dev, and leave only the minecraft-compatible jars.
-        path: build/libs/Kilt-*[0-9].jar
+        path: build/libs/Kilt-[0-9]+.[0-9]+.[0-9]+\+mc.([0-9](.)?)+\+build.[a-f0-9]{6}.jar.jar
