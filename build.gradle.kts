@@ -97,6 +97,10 @@ repositories {
     maven("https://maven.terraformersmc.com/") {
         name = "TerraformersMC"
     }
+
+    maven("https://maven.su5ed.dev/releases") {
+        name = "Su5ed"
+    }
 }
 
 dependencies {
@@ -149,6 +153,9 @@ dependencies {
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
+
+    // Use Sinytra Connector's fork of ForgeAutoRenamingTool
+    implementation(include("dev.su5ed.sinytra:ForgeAutoRenamingTool:${property("forgerenamer_version")}")!!)
 
     // Runtime mods for testing
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0") {

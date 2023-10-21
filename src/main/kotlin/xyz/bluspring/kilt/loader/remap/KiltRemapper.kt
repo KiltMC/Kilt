@@ -11,20 +11,22 @@ import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
 import net.fabricmc.mapping.tree.TinyMappingFactory
-import net.fabricmc.mapping.tree.TinyTree
-import net.fabricmc.mapping.util.AsmRemapperFactory
+import net.minecraftforge.fart.api.ClassProvider
+import net.minecraftforge.fart.internal.EnhancedClassRemapper
+import net.minecraftforge.fart.internal.EnhancedRemapper
+import net.minecraftforge.fart.internal.RenamingTransformer
+import net.minecraftforge.srgutils.IMappingFile
 import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
-import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -33,22 +35,35 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Consumer
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
+import java.util.stream.Collectors
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.toPath
 
 object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 103
+    const val REMAPPER_VERSION = 104
+
+    val logConsumer = Consumer<String> {
+        logger.debug(it)
+    }
 
     private val logger = LoggerFactory.getLogger("Kilt Remapper")
+
+    private val launcher = FabricLauncherBase.getLauncher()
+    internal val useNamed = launcher.targetNamespace != "intermediary"
+
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
-    val srgIntermediaryTree: TinyTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.bufferedReader())
+    val srgIntermediaryMapping = IMappingFile.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!)
+        .rename(DevMappingRenamer())
+    val intermediarySrgMapping = srgIntermediaryMapping.reverse()
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
 
     // Mainly for debugging, so already-remapped Forge mods will be remapped again.
@@ -57,13 +72,6 @@ object KiltRemapper {
     // Mainly for debugging, used to test unobfuscated mods and ensure that Kilt is running as intended.
     private val disableRemaps = System.getProperty("kilt.noRemap")?.lowercase() == "true"
 
-    // Generates local mappings file, you can use this if you're having trouble with the local ones.
-    private val generateLocalMappingCache = System.getProperty("kilt.genLocalMapping")?.lowercase() == "true"
-
-    private val launcher = FabricLauncherBase.getLauncher()
-    internal val useNamed = launcher.targetNamespace != "intermediary"
-
-    val mcRemapper = AsmRemapperFactory(srgIntermediaryTree).getRemapper("searge", "intermediary")
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
@@ -186,9 +194,19 @@ object KiltRemapper {
         val jarOutput = JarOutputStream(output)
 
         // Use the regular mod file
-        val remapper = KiltAsmRemapper(dependencies.map { JarFile(it.modFile) }.toMutableList().apply {
-            this.add(JarFile(mod.modFile))
-        })
+        val classProvider = ClassProvider.builder().apply {
+            this.addLibrary(srgGamePath)
+
+            dependencies.forEach {
+                this.addLibrary(it.modFile?.toPath())
+            }
+
+            this.addLibrary(mod.modFile?.toPath())
+        }.build()
+
+        val remapper = EnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
+
+        val entriesToMap = mutableListOf<Pair<JarEntry, ClassNode>>()
 
         for (entry in jar.entries()) {
             if (!entry.name.endsWith(".class")) {
@@ -256,12 +274,8 @@ object KiltRemapper {
 
                                 val intermediaryDesc = remapDescriptor(srgDesc)
                                 val intermediaryField = mappingResolver.mapFieldName("intermediary",
-                                    intermediaryClass.replace("/", "."),
-                                    srgIntermediaryTree.classes.firstOrNull {
-                                        it.getName("searge") == srgClass
-                                    }?.fields?.firstOrNull {
-                                        it.getName("searge") == srgField
-                                    }?.getName("intermediary") ?: srgField,
+                                    intermediaryClass.replace("/", ".").removePrefix("L").removeSuffix(";"),
+                                    remapper.mapFieldName(srgClass.removePrefix("L").removeSuffix(";"), srgField, srgDesc) ?: srgField,
                                     intermediaryDesc
                                 )
 
@@ -274,12 +288,8 @@ object KiltRemapper {
 
                                 val intermediaryDesc = remapDescriptor(srgDesc)
                                 val intermediaryMethod = mappingResolver.mapMethodName("intermediary",
-                                    intermediaryClass.replace("/", "."),
-                                    srgIntermediaryTree.classes.firstOrNull {
-                                        it.getName("searge") == srgClass
-                                    }?.methods?.firstOrNull {
-                                        it.getName("searge") == srgMethod
-                                    }?.getName("intermediary") ?: srgMethod,
+                                    intermediaryClass.replace("/", ".").removePrefix("L").removeSuffix(";"),
+                                    remapper.mapMethodName(srgClass.removePrefix("L").removeSuffix(";"), srgMethod, srgDesc) ?: srgMethod,
                                     intermediaryDesc
                                 )
 
@@ -318,22 +328,27 @@ object KiltRemapper {
             EventEmptyInitializerFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
 
+            entriesToMap.add(JarEntry(entry.name) to classNode)
+        }
+
+        for ((entry, classNode) in entriesToMap) {
             try {
                 val classWriter = ClassWriter(0)
 
-                val visitor = ClassRemapper(classWriter, remapper)
+                val visitor = EnhancedClassRemapper(classWriter, remapper, RenamingTransformer(remapper, false))
                 classNode.accept(visitor)
 
-                jarOutput.putNextEntry(JarEntry(entry.name))
+                jarOutput.putNextEntry(entry)
                 jarOutput.write(classWriter.toByteArray())
                 jarOutput.closeEntry()
             } catch (e: Exception) {
-                logger.error("Failed to remap class ${classNode.name}!")
+                logger.error("Failed to remap class ${entry.name}!")
                 e.printStackTrace()
 
                 exceptions.add(e)
             }
         }
+
         jarOutput.close()
         mod.remappedModFile = modifiedJarFile
 
@@ -344,8 +359,7 @@ object KiltRemapper {
         val workaround = if (!ignoreWorkaround)
             kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
         else null
-        val intermediary = mcRemapper.map(name)
-
+        val intermediary = srgIntermediaryMapping.remapClass(name.replace(".", "/"))
         if (toIntermediary) {
             return workaround ?: intermediary ?: name
         }
@@ -357,57 +371,23 @@ object KiltRemapper {
 
     fun unmapClass(name: String): String {
         val intermediary = mappingResolver.unmapClassName("intermediary", name.replace("/", "."))
-        return srgIntermediaryTree.classes.firstOrNull { it.getName("intermediary") == intermediary }?.getName("searge") ?: name
+        return intermediarySrgMapping.remapClass(intermediary)
     }
 
-    val gameJar = getMCGameJar()
+    val gameFile = getMCGameFile()
+    val srgGamePath = remapMinecraft()
 
-    fun getKiltClassNode(className: String): ClassNode? {
-        if (!className.startsWith("net/minecraftforge/") && !className.startsWith("xyz/bluspring/kilt/"))
-            return null
-
-        KiltHelper.getForgeClassNodes().forEach {
-            if (it.name == className)
-                return it
-        }
-
-        return null
-    }
-
-    fun getGameClassNode(className: String): ClassNode? {
-        if (gameJar == null)
-            return null
-
-        if (className.startsWith("net/minecraftforge/") || className.startsWith("xyz/bluspring/kilt/"))
-            return getKiltClassNode(className)
-
-        if (!className.startsWith("com/mojang/") && !className.startsWith("net/minecraft/"))
-            return null
-
-        val entry = gameJar.getJarEntry("$className.class")
-
-        if (entry != null) {
-            val classReader = ClassReader(gameJar.getInputStream(entry))
-            val classNode = ClassNode(Opcodes.ASM9)
-            classReader.accept(classNode, 0)
-
-            return classNode
-        }
-
-        return null
-    }
-
-    private fun getMCGameJar(): JarFile? {
+    private fun getMCGameFile(): File? {
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
             val commonJar = GameProviderHelper.getCommonGameJar()
 
             if (commonJar != null)
-                return JarFile(commonJar.toFile())
+                return commonJar.toFile()
 
             val sidedJar = GameProviderHelper.getEnvGameJar(FabricLoader.getInstance().environmentType)
 
             if (sidedJar != null)
-                return JarFile(sidedJar.toFile())
+                return sidedJar.toFile()
         } else {
             // TODO: is there a better way of doing this?
             val possibleMcGameJar = FabricLauncherBase.getLauncher().classPath.firstOrNull { path ->
@@ -415,15 +395,17 @@ object KiltRemapper {
                 str.contains("net") && str.contains("minecraft") && str.contains("-loom.mappings.") && str.contains("minecraft-merged-")
             } ?: return null
 
-            return JarFile(possibleMcGameJar.toFile())
+            return possibleMcGameJar.toFile()
         }
-
         return null
     }
 
-    private fun getMCGameClassPath(): Array<out Path> {
+    private fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
-            arrayOf(FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path)
+            arrayOf(
+                FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
+                Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            )
         else
             mutableListOf<Path>().apply {
                 val remapClasspathFile = System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE)
@@ -436,8 +418,67 @@ object KiltRemapper {
                     .map { first ->
                         Paths.get(first)
                     }
-                    .toList())
+                    .collect(Collectors.toList()))
+
+                this.add(Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
             }.toTypedArray()
+    }
+
+    private fun remapMinecraft(): Path {
+        val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString}-srg.jar")
+
+        if (srgFile.exists())
+            return srgFile.toPath()
+
+        if (gameFile == null) {
+            throw IllegalStateException("Minecraft JAR was not found!")
+        }
+
+        logger.info("Creating SRG-mapped Minecraft JAR for remapping Forge mods...")
+        val startTime = System.currentTimeMillis()
+
+        val classProvider = ClassProvider.builder().apply {
+            this.addLibrary(gameFile.toPath())
+            for (path in getGameClassPath()) {
+                this.addLibrary(path)
+            }
+        }.build()
+        val srgRemapper = EnhancedRemapper(classProvider, intermediarySrgMapping, logConsumer)
+
+        val gameJar = JarFile(gameFile)
+        srgFile.createNewFile()
+        val outputJar = JarOutputStream(srgFile.outputStream())
+
+        for (entry in gameJar.entries()) {
+            if (entry.name.endsWith(".class")) {
+                val classReader = ClassReader(gameJar.getInputStream(entry))
+
+                val classNode = ClassNode(Opcodes.ASM9)
+                classReader.accept(classNode, 0)
+
+                val classWriter = ClassWriter(0)
+
+                val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
+                classNode.accept(visitor)
+
+                // We need to remap to the SRG name, otherwise the remapper completely fails in production environments.
+                val srgName = intermediarySrgMapping.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
+
+                outputJar.putNextEntry(JarEntry("$srgName.class"))
+                outputJar.write(classWriter.toByteArray())
+                outputJar.closeEntry()
+            } else {
+                outputJar.putNextEntry(entry)
+                outputJar.write(gameJar.getInputStream(entry).readAllBytes())
+                outputJar.closeEntry()
+            }
+        }
+
+        outputJar.close()
+
+        logger.info("Remapped Minecraft from Intermediary to SRG. (took ${System.currentTimeMillis() - startTime} ms)")
+
+        return srgFile.toPath()
     }
 
     fun remapDescriptor(descriptor: String, reverse: Boolean = false, toIntermediary: Boolean = false): String {

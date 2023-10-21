@@ -17,7 +17,6 @@ object AccessTransformerLoader {
     private val whitespace = Pattern.compile("[ \t]+")
 
     private val classTransformInfo = mutableMapOf<String, ClassTransformInfo>()
-    private val mc = KiltRemapper.mcRemapper
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
     private fun println(info: String) {
@@ -54,8 +53,8 @@ object AccessTransformerLoader {
             else Final.DEFAULT
 
             // class name
-            val srgClassName = split[1]
-            val intermediaryClassName = KiltRemapper.remapClass(srgClassName.replace(".", "/"))
+            val srgClassName = split[1].replace(".", "/")
+            val intermediaryClassName = KiltRemapper.remapClass(srgClassName)
 
             // field / method
             if (split.size > 2 && !split[2].startsWith("#")) {
@@ -80,7 +79,7 @@ object AccessTransformerLoader {
                     val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor, toIntermediary = true)
                     val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
-                    val methodName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), mc.mapFieldName(srgClassName, name, descriptor), intermediaryDescriptor)
+                    val methodName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: name, intermediaryDescriptor)
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
                     val pair = Pair(methodName, mappedDescriptor)
 
@@ -105,8 +104,8 @@ object AccessTransformerLoader {
                 } else { // field
                     val name = split[2]
 
-                    val fieldInfo = KiltRemapper.srgIntermediaryTree.classes.firstOrNull { it.getName("searge") == srgClassName }?.fields?.firstOrNull { it.getName("searge") == name } ?: continue
-                    val fieldName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), mc.mapFieldName(srgClassName, name, fieldInfo.getDescriptor("searge")), fieldInfo.getDescriptor("intermediary"))
+                    val fieldInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.fields?.firstOrNull { it.original == name } ?: continue
+                    val fieldName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: name, fieldInfo.mappedDescriptor)
 
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
 
