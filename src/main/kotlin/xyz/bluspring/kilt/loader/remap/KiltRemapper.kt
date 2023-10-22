@@ -163,6 +163,8 @@ object KiltRemapper {
         return exceptions
     }
 
+    private val nameMappingCache = mutableMapOf<String, String>()
+
     private fun remapMod(file: File, mod: ForgeMod, forgeModsList: List<ForgeMod>): List<Exception> {
         val exceptions = mutableListOf<Exception>()
 
@@ -197,7 +199,6 @@ object KiltRemapper {
         }.build()
 
         val remapper = EnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
-
         val entriesToMap = mutableListOf<Pair<JarEntry, ClassNode>>()
 
         for (entry in jar.entries()) {
@@ -255,7 +256,7 @@ object KiltRemapper {
                                 srgMappedString.replaceAfter(";", "")
                             else
                                 ""
-                            val intermediaryClass = remapDescriptor(srgClass)
+                            val intermediaryClass = if (srgClass.isNotBlank()) remapDescriptor(srgClass) else ""
 
                             if (srgMappedString.contains(":")) {
                                 // field
@@ -265,11 +266,46 @@ object KiltRemapper {
                                 val srgDesc = split[1]
 
                                 val intermediaryDesc = remapDescriptor(srgDesc)
-                                val intermediaryField = mappingResolver.mapFieldName("intermediary",
-                                    intermediaryClass.replace("/", ".").removePrefix("L").removeSuffix(";"),
-                                    remapper.mapFieldName(srgClass.removePrefix("L").removeSuffix(";"), srgField, srgDesc) ?: srgField,
-                                    intermediaryDesc
-                                )
+
+                                val intermediaryField = "".run {
+                                    if (srgClass.isNotBlank()) {
+                                        // Remap SRG to Intermediary, then to whatever the current FabricMC environment
+                                        // is using.
+                                        mappingResolver.mapFieldName(
+                                            "intermediary",
+                                            intermediaryClass
+                                                .replace("/", ".")
+                                                .removePrefix("L").removeSuffix(";"),
+                                            remapper.mapFieldName(
+                                                srgClass.removePrefix("L").removeSuffix(";"),
+                                                srgField,
+                                                srgDesc
+                                            ) ?: srgField,
+                                            intermediaryDesc
+                                        )
+                                    } else {
+                                        // If the refmap is missing an owner class, try to figure it out
+                                        if (srgField.startsWith("f_") && srgField.endsWith("_"))
+                                            srgField // short-circuit if it doesn't look like a field
+                                        else {
+                                            if (nameMappingCache.contains(srgField))
+                                                nameMappingCache[srgField]!!
+                                            else {
+                                                val possibleClass = srgIntermediaryMapping.classes.firstOrNull { it.getField(srgField) != null } ?: return@run srgField
+
+                                                mappingResolver.mapFieldName(
+                                                    "intermediary",
+                                                    possibleClass.mapped.replace("/", "."),
+                                                    possibleClass.remapField(srgField),
+                                                    intermediaryDesc
+                                                ).apply {
+                                                    // Cache the field we found, so we don't have to go through this again
+                                                    nameMappingCache[srgField] = this
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
 
                                 properMapped.addProperty(name, "$intermediaryClass$intermediaryField:$intermediaryDesc")
                             } else {
@@ -279,11 +315,45 @@ object KiltRemapper {
                                 val srgDesc = srgMappedString.replaceBefore("(", "")
 
                                 val intermediaryDesc = remapDescriptor(srgDesc)
-                                val intermediaryMethod = mappingResolver.mapMethodName("intermediary",
-                                    intermediaryClass.replace("/", ".").removePrefix("L").removeSuffix(";"),
-                                    remapper.mapMethodName(srgClass.removePrefix("L").removeSuffix(";"), srgMethod, srgDesc) ?: srgMethod,
-                                    intermediaryDesc
-                                )
+                                val intermediaryMethod = "".run {
+                                    if (srgClass.isNotBlank()) {
+                                        mappingResolver.mapMethodName(
+                                            "intermediary",
+                                            intermediaryClass
+                                                .replace("/", ".")
+                                                .removePrefix("L").removeSuffix(";"),
+                                            remapper.mapMethodName(
+                                                srgClass
+                                                    .removePrefix("L").removeSuffix(";"),
+                                                srgMethod, srgDesc
+                                            ) ?: srgMethod,
+                                            intermediaryDesc
+                                        )
+                                    } else {
+                                        // If the refmap is missing an owner class, try to figure it out
+                                        // Since record classes can provide methods with f_num_, these have to be
+                                        // taken into account.
+                                        if ((srgMethod.startsWith("f_") || srgMethod.startsWith("m_")) && srgMethod.endsWith("_"))
+                                            srgMethod // short-circuit if it doesn't look like a method
+                                        else {
+                                            if (nameMappingCache.contains(srgMethod))
+                                                nameMappingCache[srgMethod]!!
+                                            else {
+                                                val possibleClass = srgIntermediaryMapping.classes.firstOrNull { it.getMethod(srgMethod, srgDesc) != null } ?: return@run srgMethod
+
+                                                mappingResolver.mapMethodName(
+                                                    "intermediary",
+                                                    possibleClass.mapped.replace("/", "."),
+                                                    possibleClass.remapMethod(srgMethod, srgDesc),
+                                                    intermediaryDesc
+                                                ).apply {
+                                                    // Cache the method we found, so we don't have to go through this again
+                                                    nameMappingCache[srgMethod] = this
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
 
                                 properMapped.addProperty(name, "$intermediaryClass$intermediaryMethod$intermediaryDesc")
                             }
