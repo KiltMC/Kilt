@@ -191,7 +191,7 @@ class KiltLoader {
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
 
-            if (preloadedMods.isEmpty()) {
+            if (preloadedMods.isNotEmpty()) {
                 try {
                     remapMods()
                 } catch (e: Exception) {
