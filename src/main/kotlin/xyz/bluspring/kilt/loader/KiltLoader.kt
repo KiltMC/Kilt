@@ -191,16 +191,20 @@ class KiltLoader {
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
 
-            try {
-                remapMods()
-            } catch (e: Exception) {
-                FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {
-                    val tab = it.addTab("Kilt Error")
+            if (preloadedMods.isEmpty()) {
+                try {
+                    remapMods()
+                } catch (e: Exception) {
+                    FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {
+                        val tab = it.addTab("Kilt Error")
 
-                    it.tabs.removeIf { t -> t != tab }
-                }, true)
+                        it.tabs.removeIf { t -> t != tab }
+                    }, true)
 
-                exitProcess(1)
+                    exitProcess(1)
+                }
+            } else {
+                Kilt.logger.info("No Forge mods located, not proceeding with mod remapping.")
             }
 
             modLoadingQueue.forEach { mod ->

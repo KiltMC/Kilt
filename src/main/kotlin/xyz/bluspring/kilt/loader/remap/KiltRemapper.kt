@@ -96,6 +96,8 @@ object KiltRemapper {
         if (forceRemap)
             logger.warn("Forced remaps enabled! All Forge mods will be remapped.")
 
+        srgGamePath = remapMinecraft()
+
         val exceptions = mutableListOf<Exception>()
 
         val modRemapQueue = ArrayList<ForgeMod>(modLoadingQueue.size).apply {
@@ -365,7 +367,7 @@ object KiltRemapper {
     }
 
     val gameFile = getMCGameFile()
-    val srgGamePath = remapMinecraft()
+    lateinit var srgGamePath: Path
 
     private fun getMCGameFile(): File? {
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
