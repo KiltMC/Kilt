@@ -53,10 +53,10 @@ class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetad
 
     override fun getAuthors(): MutableCollection<Person> {
         return mutableListOf<Person>().apply {
-            mod.authors.split(", ").forEach {
+            mod.authors.split(",").forEach {
                 this.add(object : Person {
                     override fun getName(): String {
-                        return it
+                        return it.trim()
                     }
 
                     override fun getContact(): ContactInformation {
