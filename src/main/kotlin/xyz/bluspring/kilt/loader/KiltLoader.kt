@@ -362,6 +362,8 @@ class KiltLoader {
                             manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
                         else if (this == "\${global.forgeVersion}")
                             SUPPORTED_FORGE_API_VERSION.toString()
+                        else if (this == "\${global.mcVersion}")
+                            MC_VERSION.friendlyString
                         else this
                     }
             )
@@ -686,6 +688,7 @@ class KiltLoader {
         // These constants are to be updated each time we change versions
         val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("43") // 1.19.2
         val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("43.2.14")
+        val MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version
 
         private val MOD_ANNOTATION = Type.getType(Mod::class.java)
         private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(Mod.EventBusSubscriber::class.java)

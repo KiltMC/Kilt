@@ -420,7 +420,7 @@ object KiltRemapper {
     }
 
     private fun remapMinecraft(): Path {
-        val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString}-srg.jar")
+        val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg.jar")
 
         if (srgFile.exists())
             return srgFile.toPath()
