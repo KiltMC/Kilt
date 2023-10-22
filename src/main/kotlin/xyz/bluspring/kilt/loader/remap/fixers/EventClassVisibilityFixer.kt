@@ -8,6 +8,7 @@ object EventClassVisibilityFixer {
         if (classNode.methods.none { m -> m.visibleAnnotations != null && m.visibleAnnotations.any { it.desc.contains("SubscribeEvent") } })
             return
 
+        // Mark class as public
         classNode.access = (classNode.access and Opcodes.ACC_PRIVATE.inv() and Opcodes.ACC_PROTECTED.inv()) or Opcodes.ACC_PUBLIC
     }
 }
