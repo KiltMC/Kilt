@@ -24,12 +24,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Mixin(StructureTemplate.class)
 public abstract class StructureTemplateInject implements StructureTemplateInjection {
     @CreateStatic
-    private static Vec3 transformedVec3d(StructurePlaceSettings placementIn, Vec3 pos) {
+    private static Vec3 forge$transformedVec3d(StructurePlaceSettings placementIn, Vec3 pos) {
         return StructureTemplateInjection.transformedVec3d(placementIn, pos);
     }
 
     @CreateStatic
-    private static List<StructureTemplate.StructureEntityInfo> processEntityInfos(@Nullable StructureTemplate template, LevelAccessor level, BlockPos blockPos, StructurePlaceSettings structurePlaceSettings, List<StructureTemplate.StructureEntityInfo> structureEntityInfoList) {
+    private static List<StructureTemplate.StructureEntityInfo> forge$processEntityInfos(@Nullable StructureTemplate template, LevelAccessor level, BlockPos blockPos, StructurePlaceSettings structurePlaceSettings, List<StructureTemplate.StructureEntityInfo> structureEntityInfoList) {
         return StructureTemplateInjection.processEntityInfos(template, level, blockPos, structurePlaceSettings, structureEntityInfoList);
     }
 

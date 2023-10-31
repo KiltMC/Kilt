@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.remap.fixers.ConflictingStaticMethodFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.KiltHelper
@@ -49,7 +50,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 106
+    const val REMAPPER_VERSION = 107
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -285,7 +286,7 @@ object KiltRemapper {
                                         )
                                     } else {
                                         // If the refmap is missing an owner class, try to figure it out
-                                        if (srgField.startsWith("f_") && srgField.endsWith("_"))
+                                        if (!srgField.startsWith("f_") || !srgField.endsWith("_"))
                                             srgField // short-circuit if it doesn't look like a field
                                         else {
                                             if (nameMappingCache.contains(srgField))
@@ -333,7 +334,7 @@ object KiltRemapper {
                                         // If the refmap is missing an owner class, try to figure it out
                                         // Since record classes can provide methods with f_num_, these have to be
                                         // taken into account.
-                                        if ((srgMethod.startsWith("f_") || srgMethod.startsWith("m_")) && srgMethod.endsWith("_"))
+                                        if (!(srgMethod.startsWith("f_") || srgMethod.startsWith("m_")) || !srgMethod.endsWith("_"))
                                             srgMethod // short-circuit if it doesn't look like a method
                                         else {
                                             if (nameMappingCache.contains(srgMethod))
@@ -527,6 +528,7 @@ object KiltRemapper {
 
                 val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
                 classNode.accept(visitor)
+                ConflictingStaticMethodFixer.fixClass(classNode)
 
                 // We need to remap to the SRG name, otherwise the remapper completely fails in production environments.
                 val srgName = intermediarySrgMapping.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
