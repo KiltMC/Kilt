@@ -130,7 +130,8 @@ dependencies {
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
-    implementation(include("com.github.llamalad7.mixinextras:mixinextras-fabric:${property("mixinextras_version")}")!!)
+    implementation(include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")!!)
+    implementation(include("com.github.thecatcore:CursedMixinExtensions:${property("cursedmixinextensions_version")}")!!)
     annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${property("mixinextras_version")}")
     modImplementation(include("com.github.Chocohead:Fabric-ASM:${property("fabric_asm_version")}")!!)
     modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
