@@ -5,10 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityDispatcher;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.extensions.IForgeItemStack;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
@@ -123,6 +120,16 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Override
     public boolean areCapsCompatible(CapabilityProvider<ItemStack> other) {
         return workaround.areCapsCompatible(other);
+    }
+
+    @Override
+    public boolean areCapsCompatible(ICapabilityProviderImpl<ItemStack> stack) {
+        if (stack instanceof ItemStackCapabilityProviderImpl stackWorkaround)
+            return workaround.areCapsCompatible(stackWorkaround.getWorkaround());
+        else if (stack instanceof CapabilityProvider<ItemStack> provider)
+            return workaround.areCapsCompatible(provider);
+        else
+            return false;
     }
 
     @Override

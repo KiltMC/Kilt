@@ -8,4 +8,8 @@ public interface ItemStackCapabilityProviderImpl extends ICapabilityProviderImpl
     default CapabilityProviderWorkaround<ItemStack> getWorkaround() {
         throw new IllegalStateException();
     }
+
+    default boolean areCapsCompatible(ICapabilityProviderImpl<ItemStack> stack) {
+        throw new IllegalStateException();
+    }
 }

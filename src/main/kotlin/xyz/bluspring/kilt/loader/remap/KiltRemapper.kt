@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.remap.fixers.CompatibleCapabilityWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.ConflictingStaticMethodFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
@@ -50,7 +51,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 107
+    const val REMAPPER_VERSION = 110
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -401,6 +402,9 @@ object KiltRemapper {
                 val visitor = EnhancedClassRemapper(classWriter, remapper, RenamingTransformer(remapper, false))
                 classNode.accept(visitor)
 
+                ConflictingStaticMethodFixer.fixClass(classNode)
+                CompatibleCapabilityWorkaroundFixer.fixClass(classNode)
+
                 jarOutput.putNextEntry(entry)
                 jarOutput.write(classWriter.toByteArray())
                 jarOutput.closeEntry()
@@ -468,7 +472,7 @@ object KiltRemapper {
         return null
     }
 
-    private fun getGameClassPath(): Array<out Path> {
+    fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
             arrayOf(
                 FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
