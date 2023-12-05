@@ -1,14 +1,11 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.capabilities.*;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeItemStack;
-import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,14 +16,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
-import xyz.bluspring.kilt.workarounds.CapabilityProviderWorkaround;
-
-import java.util.function.Supplier;
 
 @Mixin(ItemStack.class)
+@Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ItemStackCapabilityProviderImpl, ItemStackInjection {
     private CompoundTag capNBT;
 
@@ -42,13 +38,6 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Shadow private int count;
 
     @Shadow public abstract Item getItem();
-
-    private final CapabilityProviderWorkaround<ItemStack> workaround = new CapabilityProviderWorkaround<>(ItemStack.class, (ItemStack) (Object) this);
-
-    @Override
-    public CapabilityProviderWorkaround<ItemStack> getWorkaround() {
-        return workaround;
-    }
 
     public ItemStackInject(ItemLike item, int count) {}
 
@@ -78,73 +67,6 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         if (capNbt != null && !capNbt.isEmpty()) {
             compoundTag.put("ForgeCaps", capNbt);
         }
-    }
-
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return workaround.getCapability(cap, side);
-    }
-
-    @Override
-    public void gatherCapabilities() {
-        workaround.invokeGatherCapabilities();
-    }
-
-    @Override
-    public void gatherCapabilities(@Nullable ICapabilityProvider parent) {
-        workaround.invokeGatherCapabilities(parent);
-    }
-
-    @Override
-    public void gatherCapabilities(@Nullable Supplier<ICapabilityProvider> parent) {
-        workaround.invokeGatherCapabilities(parent);
-    }
-
-    @Nullable
-    @Override
-    public CapabilityDispatcher getCapabilities() {
-        return workaround.invokeGetCapabilities();
-    }
-
-    @Nullable
-    @Override
-    public CompoundTag serializeCaps() {
-        return workaround.invokeSerializeCaps();
-    }
-
-    @Override
-    public void deserializeCaps(CompoundTag tag) {
-        workaround.invokeDeserializeCaps(tag);
-    }
-
-    @Override
-    public boolean areCapsCompatible(CapabilityProvider<ItemStack> other) {
-        return workaround.areCapsCompatible(other);
-    }
-
-    @Override
-    public boolean areCapsCompatible(ICapabilityProviderImpl<ItemStack> stack) {
-        if (stack instanceof ItemStackCapabilityProviderImpl stackWorkaround)
-            return workaround.areCapsCompatible(stackWorkaround.getWorkaround());
-        else if (stack instanceof CapabilityProvider<ItemStack> provider)
-            return workaround.areCapsCompatible(provider);
-        else
-            return false;
-    }
-
-    @Override
-    public boolean areCapsCompatible(@Nullable CapabilityDispatcher other) {
-        return workaround.areCapsCompatible(other);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        workaround.invalidateCaps();
-    }
-
-    @Override
-    public void reviveCaps() {
-        workaround.reviveCaps();
     }
 
     @Override

@@ -1,16 +1,22 @@
 --- ItemHandlerHelper.java
 +++ ItemHandlerHelper.java
-@@ -42,5 +42,5 @@
+@@ -13,4 +13,5 @@
+ import net.minecraft.util.Mth;
+ import net.minecraft.world.level.Level;
++import net.minecraftforge.common.capabilities.CapabilityProvider;
+ import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
+ import org.jetbrains.annotations.NotNull;
+@@ -42,5 +43,5 @@
              return false;
  
 -        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
-+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
++        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible((CapabilityProvider<ItemStack>) (Object) b);
      }
  
-@@ -67,5 +67,5 @@
+@@ -67,5 +68,5 @@
              return false;
  
 -        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b);
-+        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible(b.getWorkaround());
++        return (!a.hasTag() || a.getTag().equals(b.getTag())) && a.areCapsCompatible((CapabilityProvider<ItemStack>) (Object) b);
      }
  

@@ -38,6 +38,8 @@ public class TestingMoreShit {
 
     public boolean moreRandomShit(Item item) {
         var quack = new Item(new Item.Properties().durability(0));
+        var test = Item.class;
+        System.out.println(test);
         //return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
         return quack.equals("a");
     }

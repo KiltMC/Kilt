@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.helpers.mixin;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
@@ -11,6 +12,24 @@ import java.util.ArrayList;
 public final class MixinExtensionHelper {
     // This should be executed in the mixin plugin with the corresponding method.
     // This is only separated into this class for anyone who wants to use this code.
+    private static boolean containsOpcode(InsnList list, int opcode) {
+        for (AbstractInsnNode node : list) {
+            if (node.getOpcode() == opcode)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static boolean containsThisCall(ClassNode classNode, InsnList list) {
+        for (AbstractInsnNode node : list) {
+            if (node.getOpcode() == Opcodes.INVOKESPECIAL && node instanceof MethodInsnNode methodInsnNode && methodInsnNode.owner.equals(classNode.name))
+                return true;
+        }
+
+        return false;
+    }
+
     @ApiStatus.Internal
     public static void apply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         var classNode = mixinInfo.getClassNode(0);
@@ -19,6 +38,17 @@ public final class MixinExtensionHelper {
 
         var fieldsToRemove = new ArrayList<FieldNode>();
         var methodsToRemove = new ArrayList<MethodNode>();
+
+        var extend = Annotations.getVisible(classNode, Extends.class);
+        if (extend != null) {
+            if (targetClass.superName != null && !targetClass.superName.equals("java/lang/Object"))
+                throw new IllegalStateException(String.format("Class %s should not already have a super class! (tried extend by %s, has %s)", targetClassName, mixinClassName, classNode.superName));
+
+            var visitor = new AnnotationValueVisitor();
+            extend.accept(visitor);
+            var className = ((Type) visitor.values.get("value")).getClassName();
+            targetClass.superName = className.replace(".", "/");
+        }
 
         for (FieldNode fieldNode : classNode.fields) {
             if (Annotations.getVisible(fieldNode, CreateStatic.class) == null)
@@ -121,6 +151,31 @@ public final class MixinExtensionHelper {
                 node.localVariables = methodNode.localVariables;
 
                 targetClass.methods.add(node);
+            }
+        }
+
+        if (extend != null) {
+            if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
+                for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
+                    if (containsThisCall(targetClass, node.instructions))
+                        continue;
+
+                    var aload = node.instructions.get(2);
+                    var invoke = node.instructions.get(3);
+                    var firstInsn = node.instructions.get(4);
+
+                    // remove Object.<init> call
+                    node.instructions.remove(aload);
+                    node.instructions.remove(invoke);
+
+                    var insnList = new InsnList();
+                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                    insnList.add(new LdcInsnNode(Type.getObjectType(targetClass.name)));
+                    insnList.add(new InsnNode(Opcodes.ICONST_0));
+                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "(Ljava/lang/Class;Z)V"));
+
+                    node.instructions.insertBefore(firstInsn, insnList);
+                }
             }
         }
 

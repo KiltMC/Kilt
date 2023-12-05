@@ -534,7 +534,7 @@ class KiltLoader {
                 // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                 try {
-                    val modId = it.annotationData["modid"] as String
+                    val modId = it.annotationData["modid"] as String? ?: mod.modId
 
                     if (modId != mod.modId)
                         return@forEach
@@ -551,6 +551,7 @@ class KiltLoader {
 
                     Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Exception) {
+                    Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
                     exceptions.add(e)
                 }
