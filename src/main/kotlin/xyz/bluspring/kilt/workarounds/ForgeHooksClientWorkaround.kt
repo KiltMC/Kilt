@@ -1,6 +1,8 @@
 package xyz.bluspring.kilt.workarounds
 
+import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.datafixers.util.Either
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry
 import net.minecraft.FileUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -8,9 +10,13 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.model.Model
+import net.minecraft.client.model.geom.ModelLayerLocation
+import net.minecraft.client.model.geom.builders.LayerDefinition
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.block.model.ItemTransforms
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
+import net.minecraft.client.resources.model.BakedModel
 import net.minecraft.client.resources.model.Material
 import net.minecraft.core.BlockPos
 import net.minecraft.locale.Language
@@ -38,6 +44,7 @@ import net.minecraftforge.fml.ModLoader.Companion.isLoadingStateValid
 import net.minecraftforge.registries.ForgeRegistries
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Supplier
 import java.util.stream.Stream
 
 
@@ -278,5 +285,15 @@ object ForgeHooksClientWorkaround {
         return IClientFluidTypeExtensions.of(fluid).textures
             .filter(Objects::nonNull)
             .map(this::getBlockMaterial)
+    }
+
+    @JvmStatic
+    fun handleCameraTransforms(poseStack: PoseStack, model: BakedModel, cameraTransformType: ItemTransforms.TransformType, applyLeftHandTransform: Boolean): BakedModel {
+        return (model as IForgeBakedModel).applyTransform(cameraTransformType, poseStack, applyLeftHandTransform)
+    }
+
+    @JvmStatic
+    fun registerLayerDefinition(layerLocation: ModelLayerLocation, supplier: Supplier<LayerDefinition>) {
+        EntityModelLayerRegistry.registerModelLayer(layerLocation) { supplier.get() }
     }
 }

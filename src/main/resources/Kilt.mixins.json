@@ -21,6 +21,7 @@
     "DyeColorAccessor",
     "EnchantmentCategoryAccessor",
     "EntityAccessor",
+    "GeometryLoaderManagerAccessor",
     "GrassColorModifierAccessor",
     "InvertedLootItemConditionAccessor",
     "ItemBlockRenderTypesAccessor",

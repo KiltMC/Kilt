@@ -627,6 +627,10 @@ class KiltLoader {
         return mods.firstOrNull { it.modId == id }
     }
 
+    fun hasMod(id: String): Boolean {
+        return mods.any { it.modId == id }
+    }
+
     private var statesProvider: ForgeStatesProvider? = null
 
     fun runPhaseExecutors(phase: ModLoadingPhase) {

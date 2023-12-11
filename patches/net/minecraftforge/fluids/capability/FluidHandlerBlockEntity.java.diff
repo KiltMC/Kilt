@@ -7,35 +7,15 @@
 +import net.minecraftforge.common.capabilities.CapabilityProvider;
  import net.minecraftforge.common.capabilities.ForgeCapabilities;
  import net.minecraftforge.common.util.LazyOptional;
-@@ -51,5 +53,30 @@
+@@ -51,5 +53,10 @@
          if (capability == ForgeCapabilities.FLUID_HANDLER)
              return holder.cast();
 -        return super.getCapability(capability, facing);
-+        return this.getWorkaround().getCapability(capability, facing);
++        return this.getCapability(capability, facing);
      }
-+
-+    @Override
-+    public boolean areCapsCompatible(CapabilityProvider<BlockEntity> other) {
-+        return this.getWorkaround().areCapsCompatible(other);
-+    }
-+
-+    @Override
-+    public boolean areCapsCompatible(@Nullable CapabilityDispatcher other) {
-+        return this.getWorkaround().areCapsCompatible(other);
-+    }
-+
-+    @Override
-+    public void reviveCaps() {
-+        this.getWorkaround().reviveCaps();
-+    }
 +
 +    @Override
 +    public CompoundTag getPersistentData() {
 +        return null;
-+    }
-+
-+    @Override
-+    public void invalidateCaps() {
-+        this.getWorkaround().invalidateCaps();
 +    }
  }

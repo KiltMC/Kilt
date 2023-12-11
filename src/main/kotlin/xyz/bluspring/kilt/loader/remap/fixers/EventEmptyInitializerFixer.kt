@@ -20,7 +20,8 @@ object EventEmptyInitializerFixer {
             return
 
         // check if the class isn't static and is an inner class
-        val isStatic = !(!Modifier.isStatic(classNode.access) && classNode.outerClass != null)
+        // also ensure it's not a record
+        val isStatic = !(!Modifier.isStatic(classNode.access) && classNode.outerClass != null) || classNode.superName == "java/lang/Record"
 
         if (classNode.methods.any { m -> m.name == "<init>" && m.desc == "()V" })
             return
@@ -83,7 +84,7 @@ object EventEmptyInitializerFixer {
 
         initMethod.visitLocalVariable("this", "L${classNode.name};", null, label0, label1, 0)
         if (!isStatic) {
-            initMethod.visitLocalVariable("this$0", "L${classNode.outerClass};", null, label0, label1, 0)
+            initMethod.visitLocalVariable("this$0", "L${classNode.outerClass};", null, label0, label1, 1)
             initMethod.visitMaxs(stackSize, 2)
         } else {
             initMethod.visitMaxs(stackSize, 1)

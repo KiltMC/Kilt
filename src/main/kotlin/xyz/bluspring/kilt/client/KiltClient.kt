@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.client
 
+import com.google.common.collect.ImmutableMap
 import com.mojang.blaze3d.systems.RenderSystem
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
@@ -25,9 +26,8 @@ import net.minecraftforge.client.gui.overlay.GuiOverlayManager
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
-import net.minecraftforge.fml.ModLoadingStage
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
 import java.util.concurrent.atomic.AtomicReference
@@ -38,10 +38,6 @@ class KiltClient : ClientModInitializer {
         registerFabricEvents()
 
         hasInitialized = true
-
-        Kilt.loader.mods.forEach { mod ->
-            mod.eventBus.post(FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
-        }
     }
 
     private fun registerFabricEvents() {
@@ -188,6 +184,7 @@ class KiltClient : ClientModInitializer {
 
         RegisterGeometryLoadersCallback.EVENT.register { map ->
             ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
+            shouldPostGeoLoaders = true
         }
     }
 
@@ -200,5 +197,16 @@ class KiltClient : ClientModInitializer {
             private set
 
         lateinit var forgeGui: ForgeGui
+        private var shouldPostGeoLoaders = false
+
+        fun lateRegisterEvents() {
+            if (shouldPostGeoLoaders) {
+                val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
+                ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
+
+                GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
+                GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })
+            }
+        }
     }
 }

@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
-import xyz.bluspring.kilt.loader.remap.fixers.CompatibleCapabilityWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.ConflictingStaticMethodFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
+import xyz.bluspring.kilt.loader.remap.fixers.WorkaroundFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -51,7 +51,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 110
+    const val REMAPPER_VERSION = 114
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -391,6 +391,7 @@ object KiltRemapper {
             EventClassVisibilityFixer.fixClass(classNode)
             EventEmptyInitializerFixer.fixClass(classNode)
             ObjectHolderDefinalizer.processClass(classNode)
+            WorkaroundFixer.fixClass(classNode)
 
             entriesToMap.add(JarEntry(entry.name) to classNode)
         }
@@ -403,7 +404,6 @@ object KiltRemapper {
                 classNode.accept(visitor)
 
                 ConflictingStaticMethodFixer.fixClass(classNode)
-                CompatibleCapabilityWorkaroundFixer.fixClass(classNode)
 
                 jarOutput.putNextEntry(entry)
                 jarOutput.write(classWriter.toByteArray())

@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Timer;
+import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.particle.ParticleEngine;
@@ -22,18 +23,18 @@ import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.gametest.ForgeGameTestHooks;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.client.ClientStartingCallback;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 
 @Mixin(Minecraft.class)
-public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
-    @Shadow @Final private ItemColors itemColors;
+public abstract class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
+    @Shadow @Final @Mutable
+    private ItemColors itemColors;
 
     @Shadow @Final private SearchRegistry searchRegistry;
     @Shadow @Final private ReloadableResourceManager resourceManager;
@@ -44,6 +45,11 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
     @Shadow @Final public ParticleEngine particleEngine;
     @Shadow @Final private PackRepository resourcePackRepository;
     @Shadow @Final private ClientPackSource clientPackSource;
+
+    @Shadow public abstract BlockColors getBlockColors();
+
+    @Mutable
+    @Shadow @Final private BlockColors blockColors;
     @Unique
     private float realPartialTick;
 
@@ -52,8 +58,17 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
         return realPartialTick;
     }
 
+    @Inject(method = "getBlockColors", at = @At("HEAD"))
+    private void kilt$workaroundEmptyBlockColors(CallbackInfoReturnable<BlockColors> cir) {
+        if (this.blockColors == null)
+            this.blockColors = BlockColors.createDefault();
+    }
+
     @Override
     public ItemColors getItemColors() {
+        if (this.itemColors == null)
+            this.itemColors = ItemColors.createDefault(this.getBlockColors());
+
         return this.itemColors;
     }
 
@@ -78,6 +93,11 @@ public class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
         NamedRenderTypeManager.init();
         ColorResolverManager.init();
         ItemDecoratorHandler.init();
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$callStartingEvent(GameConfig gameConfig, CallbackInfo ci) {
+        ClientStartingCallback.EVENT.invoker().onClientStarting((Minecraft) (Object) this);
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V"), method = "<init>")

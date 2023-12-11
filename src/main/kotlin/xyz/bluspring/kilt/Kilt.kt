@@ -7,9 +7,11 @@ import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
+import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Mob
@@ -26,9 +28,12 @@ import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.bluspring.kilt.client.ClientStartingCallback
+import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import java.util.*
@@ -36,6 +41,26 @@ import java.util.*
 class Kilt : ModInitializer {
     override fun onInitialize() {
         MinecraftForge.EVENT_BUS.start()
+
+        ClientStartingCallback.EVENT.register {
+            load()
+            lateRegisterEvents()
+            KiltClient.lateRegisterEvents()
+        }
+
+        val dist = FabricLoader.getInstance().environmentType
+
+        ServerLifecycleEvents.SERVER_STARTING.register {
+            if (dist != EnvType.SERVER)
+                return@register
+
+            load()
+            lateRegisterEvents()
+        }
+    }
+
+    fun load() {
+        loader.loadMods()
 
         registerFabricEvents()
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
@@ -47,7 +72,15 @@ class Kilt : ModInitializer {
             mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
         }
 
+        loader.mods.forEach { mod ->
+            mod.eventBus.post(FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
+        }
+
         loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
+    }
+
+    private fun lateRegisterEvents() {
+
     }
 
     private fun registerFabricEvents() {
