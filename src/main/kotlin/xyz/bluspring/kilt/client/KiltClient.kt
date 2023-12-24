@@ -183,7 +183,6 @@ class KiltClient : ClientModInitializer {
         }
 
         RegisterGeometryLoadersCallback.EVENT.register { map ->
-            ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
             shouldPostGeoLoaders = true
         }
     }

@@ -1,8 +1,10 @@
 package net.minecraftforge.fml
 
 import com.electronwill.nightconfig.toml.TomlParser
+import net.minecraftforge.api.fml.event.config.ModConfigEvents
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
+import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import org.apache.commons.codec.digest.DigestUtils
@@ -21,6 +23,22 @@ class ModLoadingContext(private val mod: ForgeMod) {
         get() {
             return mod.modId
         }
+
+    init {
+        ModConfigEvents.loading(mod.modId).register {
+            val prevId = kiltActiveModId
+            kiltActiveModId = mod.modId
+            mod.eventBus.post(ModConfigEvent.Loading(it))
+            kiltActiveModId = prevId
+        }
+
+        ModConfigEvents.reloading(mod.modId).register {
+            val prevId = kiltActiveModId
+            kiltActiveModId = mod.modId
+            mod.eventBus.post(ModConfigEvent.Reloading(it))
+            kiltActiveModId = prevId
+        }
+    }
 
     fun extension(): FMLJavaModLoadingContext {
         return languageExtension

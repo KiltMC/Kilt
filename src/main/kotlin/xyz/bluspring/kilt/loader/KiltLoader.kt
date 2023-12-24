@@ -481,8 +481,6 @@ class KiltLoader {
 
                 // basically emulate how Forge loads stuff
                 try {
-                    println("Scanning ${mod.remappedModFile.name} for mod initialization points...")
-
                     mod.jar.entries().asIterator().forEach {
                         if (it.name.endsWith(".class")) {
                             val inputStream = mod.jar.getInputStream(it)
@@ -500,8 +498,6 @@ class KiltLoader {
                 } catch (e: Exception) {
                     throw e
                 }
-
-                mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
             } catch (e: Exception) {
                 e.printStackTrace()
                 exceptions.add(e)
@@ -509,7 +505,7 @@ class KiltLoader {
         }
 
         if (exceptions.isNotEmpty()) {
-            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", null, {
+            FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", null, {
                 val tab = it.addTab("Kilt Error")
 
                 exceptions.forEach { e ->
@@ -557,6 +553,32 @@ class KiltLoader {
                 }
             }
 
+        return exceptions
+    }
+
+    fun initMods() {
+        val exceptions = mutableListOf<Exception>()
+
+        for (mod in mods) {
+            exceptions.addAll(initMod(mod, mod.scanData))
+        }
+
+        if (exceptions.isNotEmpty()) {
+            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", null, {
+                val tab = it.addTab("Kilt Error")
+
+                exceptions.forEach { e ->
+                    tab.node.addCleanedException(e)
+                }
+
+                it.tabs.removeIf { t -> t != tab }
+            }, true)
+        }
+    }
+
+    fun initMod(mod: ForgeMod, scanData: ModFileScanData): List<Exception> {
+        val exceptions = mutableListOf<Exception>()
+
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         scanData.annotations
@@ -584,6 +606,8 @@ class KiltLoader {
                     exceptions.add(e)
                 }
             }
+
+        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
 
         return exceptions
     }

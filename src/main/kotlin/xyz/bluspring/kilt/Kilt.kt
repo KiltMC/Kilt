@@ -27,6 +27,7 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.ModLoadingPhase
 import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import net.minecraftforge.server.ServerLifecycleHooks
@@ -42,10 +43,10 @@ class Kilt : ModInitializer {
     override fun onInitialize() {
         MinecraftForge.EVENT_BUS.start()
 
+        registerFabricEvents()
+
         ClientStartingCallback.EVENT.register {
-            load()
-            lateRegisterEvents()
-            KiltClient.lateRegisterEvents()
+            load(false)
         }
 
         val dist = FabricLoader.getInstance().environmentType
@@ -54,15 +55,13 @@ class Kilt : ModInitializer {
             if (dist != EnvType.SERVER)
                 return@register
 
-            load()
-            lateRegisterEvents()
+            load(true)
         }
     }
 
-    fun load() {
-        loader.loadMods()
+    fun load(onServer: Boolean) {
+        loader.initMods()
 
-        registerFabricEvents()
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
 
         // config load should be here
@@ -73,14 +72,20 @@ class Kilt : ModInitializer {
         }
 
         loader.mods.forEach { mod ->
-            mod.eventBus.post(FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
+            mod.eventBus.post(
+                if (onServer)
+                    FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
+                else {
+                    FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
+                }
+            )
+        }
+
+        if (!onServer) {
+            KiltClient.lateRegisterEvents()
         }
 
         loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
-    }
-
-    private fun lateRegisterEvents() {
-
     }
 
     private fun registerFabricEvents() {
