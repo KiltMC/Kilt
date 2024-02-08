@@ -1,20 +1,24 @@
 # Kilt
 [Join us on Discord](https://discord.gg/enGK2TymYJ) | [Buy me a coffee!](https://ko-fi.com/bluspring)
 
-A Fabric mod that brings Forge mods into the Fabric ecosystem. Very experimental.
+A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.
 
 ## FAQ (probably)
 ### Why?
 I like Fabric. And I hate Forge. More reasons [here](WHY.md).
 
-### No, but like, doesn't Patchwork exist?
-Patchwork has been in development for over 2 years, and I essentially got tired of waiting.
-The source code that's currently being worked on isn't even available to the public yet!
+### What about Patchwork?
+Patchwork completely halted development recently, which means they will no longer be worked on
+for future versions.
+
+### What about Connector?
+Connector's aim is to have Fabric mods on Forge, while Kilt aims to have Forge mods on Fabric.
+Isn't it reasonable to just have both?
 
 ### Okay... so how does this work?
-Basically this recreates FML in its own way, with some of its own changes
-to hopefully improve on its performance, and sometimes also using
-native Fabric-provided APIs for compatibility.
+Basically this recreates FML in a way that functions with Fabric Loader, with some of its own changes
+to hopefully improve on its performance, and interoperating with Fabric-native APIs for the sake
+of compatibility.
 
 ### How have you not lost your sanity doing this?
 Already have. Next question.

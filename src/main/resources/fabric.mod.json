@@ -94,7 +94,23 @@
       "net/minecraft/class_2817": ["net/minecraftforge/network/ICustomPacket"],
       "net/minecraft/class_2899": ["net/minecraftforge/network/ICustomPacket"],
       "net/minecraft/class_2913": ["net/minecraftforge/network/ICustomPacket"],
-      "net/minecraft/class_1937": ["xyz/bluspring/kilt/injections/CapabilityProviderInjection", "xyz/bluspring/kilt/injections/capabilities/LevelCapabilityProviderImpl"]
+      "net/minecraft/class_1937": ["xyz/bluspring/kilt/injections/CapabilityProviderInjection", "xyz/bluspring/kilt/injections/capabilities/LevelCapabilityProviderImpl"],
+      "net/minecraft/class_1688": ["net/minecraftforge/common/extensions/IForgeAbstractMinecart"],
+      "net/minecraft/class_161/class_162": ["net/minecraftforge/common/extensions/IForgeAdvancementBuilder"],
+      "net/minecraft/class_2241": ["net/minecraftforge/common/extensions/IForgeBaseRailBlock"],
+      "net/minecraft/class_1922": ["net/minecraftforge/common/extensions/IForgeBlockGetter"],
+      "net/minecraft/class_2680": ["net/minecraftforge/common/extensions/IForgeBlockState"],
+      "net/minecraft/class_1690": ["net/minecraftforge/common/extensions/IForgeBoat"],
+      "net/minecraft/class_2263": ["net/minecraftforge/common/extensions/IForgeBucketPickup"],
+      "net/minecraft/class_5633": ["net/minecraftforge/common/extensions/IForgeDispensibleContainerItem"],
+      "net/minecraft/class_1887": ["net/minecraftforge/common/extensions/IForgeEnchantment"],
+      "net/minecraft/class_7889/class_7890": ["net/minecraftforge/common/extensions/IForgeIntrinsicHolderTagAppender"],
+      "net/minecraft/class_2818": ["net/minecraftforge/common/extensions/IForgeLevelChunk"],
+      "net/minecraft/class_3917": ["net/minecraftforge/common/extensions/IForgeMenuType"],
+      "net/minecraft/class_1291": ["net/minecraftforge/common/extensions/IForgeMobEffect"],
+      "net/minecraft/class_1293": ["net/minecraftforge/common/extensions/IForgeMobEffectInstance"],
+      "net/minecraft/class_1842": ["net/minecraftforge/common/extensions/IForgePotion"],
+      "net/minecraft/class_4590": ["net/minecraftforge/common/extensions/IForgeTransformation"]
     }
   },
   "breaks": {

@@ -1,0 +1,3 @@
+[submodule "forge"]
+	path = forge
+	url = git@github.com:KiltMC/NeoForge.git

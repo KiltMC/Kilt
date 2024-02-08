@@ -1,7 +1,7 @@
 # Why?
 ## Why did you even make Kilt? How did this even start?
 
-On the 29th of December 2022, my friend Em had asked me to port 
+On the 29th of December 2022, my friend Kiran had asked me to port 
 a long list of Forge mods over to Fabric. I had thought to myself,
 "Why port this many mods for only a few people to play it, and if no
 one else is going to use it except for us?"
@@ -22,10 +22,7 @@ The project I would dedicate myself towards until the day
 I die. Something I can look back upon and think "Wow, I'm proud
 of myself for this."
 
-At the time of writing, I have only told 4 of my friends 
-about what I've been doing. My close friends Axil, Zuite, Em and Red. 
-Not even my best friend Storm knows. Because I want to drop
-this in as a random surprise. My love letter to Minecraft,
+This is my love letter to Minecraft,
 the game that has raised me to who I am now, since I was 5.
 My gift to the community, born from my love of Fabric, and
 my hatred of Forge.
