@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.extensions.IForgeItem;
@@ -10,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
+import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
 import xyz.bluspring.kilt.injections.item.ItemInjection;
 import xyz.bluspring.kilt.injections.item.ItemPropertiesInjection;
 

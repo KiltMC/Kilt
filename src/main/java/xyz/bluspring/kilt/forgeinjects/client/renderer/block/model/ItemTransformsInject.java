@@ -6,7 +6,7 @@ import net.minecraftforge.common.IExtensibleEnum;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformsTransformTypeInjection;
+import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformsTransformTypeInjection;
 
 @Mixin(ItemTransforms.class)
 public class ItemTransformsInject {

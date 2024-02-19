@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.render.LevelRendererInjection;
+import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 
 import java.util.concurrent.atomic.AtomicReference;
 

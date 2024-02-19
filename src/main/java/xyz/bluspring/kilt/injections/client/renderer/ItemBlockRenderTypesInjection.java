@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render;
+package xyz.bluspring.kilt.injections.client.renderer;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

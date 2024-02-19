@@ -1,5 +1,6 @@
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 
 plugins {
     kotlin("jvm")
@@ -263,6 +264,18 @@ tasks {
                 loaderDepsFile.createNewFile()
 
             loaderDepsFile.writeText(File("$projectDir/gradle/loader_dep_overrides.json").readText())
+        }
+    }
+
+    register("transformerToWidener") {
+        group = "kilt"
+
+        doLast {
+            val remapper = AccessTransformerRemapper()
+            val transformerFile = File("$projectDir/forge/src/main/resources/META-INF/accesstransformer.cfg")
+            val widenerFile = File("$projectDir/src/main/resources/kilt.accesswidener")
+
+            remapper.convertTransformerToWidener(transformerFile.readText(), widenerFile, project.property("minecraft_version") as String, buildDir)
         }
     }
 }

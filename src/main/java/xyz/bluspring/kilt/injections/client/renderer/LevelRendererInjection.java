@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render;
+package xyz.bluspring.kilt.injections.client.renderer;
 
 import com.mojang.math.Matrix4f;
 

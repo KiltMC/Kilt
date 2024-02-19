@@ -5,7 +5,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.render.SheetsInjection;
+import xyz.bluspring.kilt.injections.client.renderer.SheetsInjection;
 
 @Mixin(Sheets.class)
 public class SheetsInject implements SheetsInjection {

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.render.LevelRendererInjection;
+import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 
 @Mixin(value = SodiumWorldRenderer.class, remap = false)

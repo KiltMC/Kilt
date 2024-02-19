@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render;
+package xyz.bluspring.kilt.injections.client.renderer;
 
 import java.util.function.Consumer;
 

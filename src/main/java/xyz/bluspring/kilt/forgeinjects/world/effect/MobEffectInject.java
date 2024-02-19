@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
+import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
 
 @Mixin(MobEffect.class)
 public class MobEffectInject implements RenderPropertiesInjection<IClientMobEffectExtensions>, IForgeMobEffect {

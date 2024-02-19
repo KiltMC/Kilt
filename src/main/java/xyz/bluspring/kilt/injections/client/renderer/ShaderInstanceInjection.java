@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render;
+package xyz.bluspring.kilt.injections.client.renderer;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.ShaderInstance;

@@ -1,0 +1,3 @@
+net/minecraftforge/fluids/FluidStack
+    getAmount
+    writeToPacket

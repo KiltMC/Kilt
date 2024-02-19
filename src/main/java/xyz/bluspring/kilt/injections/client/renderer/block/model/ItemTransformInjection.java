@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render.block.model;
+package xyz.bluspring.kilt.injections.client.renderer.block.model;
 
 import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.block.model.ItemTransform;

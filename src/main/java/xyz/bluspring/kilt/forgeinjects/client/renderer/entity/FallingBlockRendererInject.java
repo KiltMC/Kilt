@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import xyz.bluspring.kilt.injections.client.render.block.ModelBlockRendererInjection;
+import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
 
 @Mixin(FallingBlockRenderer.class)
 public class FallingBlockRendererInject {

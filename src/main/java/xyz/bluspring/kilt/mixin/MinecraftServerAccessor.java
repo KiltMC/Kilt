@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(MinecraftServer.class)
 public interface MinecraftServerAccessor {
-    @Accessor
-    MinecraftServer.ReloadableResources getResources();
+    @Accessor("resources")
+    MinecraftServer.ReloadableResources getServerResources();
 
     @Invoker
     boolean callHaveTime();

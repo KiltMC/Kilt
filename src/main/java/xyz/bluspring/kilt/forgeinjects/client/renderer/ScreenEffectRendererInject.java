@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.render.ScreenEffectRendererInjection;
+import xyz.bluspring.kilt.injections.client.renderer.ScreenEffectRendererInjection;
 import xyz.bluspring.kilt.mixin.ScreenEffectRendererAccessor;
 
 import java.util.concurrent.atomic.AtomicReference;

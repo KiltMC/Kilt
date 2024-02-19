@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render.block;
+package xyz.bluspring.kilt.injections.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

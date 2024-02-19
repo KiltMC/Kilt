@@ -4,7 +4,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.client.render.block.model.ItemTransformInjection;
+import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformInjection;
 
 @Mixin(ItemTransform.class)
 public abstract class ItemTransformInject implements ItemTransformInjection {

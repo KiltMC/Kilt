@@ -44,6 +44,10 @@ class ModLoader {
         })
     }
 
+    fun <T> postEventWrapContainerInModOrder(e: T) where T : Event, T : IModBusEvent {
+        kiltPostEventWrappingMods(e)
+    }
+
     // TODO: these aren't used by Kilt, so no point really. these are only added to appease the Forge API's compile errors.
     // right now it seems to be used by the ClientModLoader class, which appears to just load datapacks and resource packs and such?
     // maybe it can be updated to use Kilt internals later.

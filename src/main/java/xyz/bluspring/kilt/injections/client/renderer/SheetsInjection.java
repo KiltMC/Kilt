@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.render;
+package xyz.bluspring.kilt.injections.client.renderer;
 
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;

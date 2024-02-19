@@ -10,7 +10,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.render.ItemBlockRenderTypesInjection;
+import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 
 import java.util.function.Predicate;
 
