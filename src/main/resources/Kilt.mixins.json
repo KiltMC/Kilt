@@ -25,6 +25,7 @@
         "GrassColorModifierAccessor",
         "InvertedLootItemConditionAccessor",
         "ItemBlockRenderTypesAccessor",
+        "ItemDisplayContextAccessor",
         "ItemPredicateAccessor",
         "ItemRendererAccessor",
         "LazyRegistrarAccessor",
@@ -36,6 +37,7 @@
         "MinecraftServerAccessor",
         "MobCategoryAccessor",
         "MobSpawnSettingsAccessor",
+        "NetworkedRegistryDataAccessor",
         "PoiTypesAccessor",
         "PropertiesAccessor",
         "RaiderTypeAccessor",
@@ -53,10 +55,16 @@
         "TypeAccessor",
         "WoodTypeAccessor",
         "client.gui.components.ButtonBuilderAccessor",
+        "data.registries.VanillaRegistriesAccessor",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.RegistryObjectAccessor",
         "porting_lib.RegistryObjectMixin",
-        "sodium.SodiumWorldRendererMixin"
+        "porting_lib.TicketHelperAccessor",
+        "porting_lib.TicketOwnerAccessor",
+        "porting_lib.TicketTrackerAccessor",
+        "sodium.SodiumWorldRendererMixin",
+        "world.item.CreativeModeTabBuilderAccessor",
+        "world.level.biome.BiomeClimateSettingsAccessor"
     ],
     "client": [
         "DebugScreenOverlayMixin",

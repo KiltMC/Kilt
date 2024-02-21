@@ -13,7 +13,8 @@ interface IConfigEvent {
     @JvmRecord
     data class ConfigConfig(
         val loading: java.util.function.Function<ModConfig, IConfigEvent>,
-        val reloading: java.util.function.Function<ModConfig, IConfigEvent>
+        val reloading: java.util.function.Function<ModConfig, IConfigEvent>,
+        val unloading: java.util.function.Function<ModConfig, IConfigEvent>,
     )
     companion object {
         @JvmField

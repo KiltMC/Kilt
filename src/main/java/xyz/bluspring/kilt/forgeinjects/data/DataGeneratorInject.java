@@ -1,43 +1,57 @@
 package xyz.bluspring.kilt.forgeinjects.data;
 
-import net.minecraft.WorldVersion;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import org.apache.commons.compress.utils.Lists;
-import org.objectweb.asm.Opcodes;
+import net.minecraft.data.PackOutput;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.injections.data.DataGeneratorInjection;
-import xyz.bluspring.kilt.mixin.DataGeneratorAccessor;
 
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 @Mixin(DataGenerator.class)
 public class DataGeneratorInject implements DataGeneratorInjection {
-    @Shadow @Final private Collection<Path> inputFolders;
+    @Shadow @Final private Map<String, DataProvider> providersToRun;
+    @Shadow @Final private PackOutput vanillaPackOutput;
+    @Shadow @Final private Path rootOutputFolder;
+    @Shadow @Final private Set<String> allProviderIds;
+    @Unique private final Map<String, DataProvider> providersView = Collections.unmodifiableMap(this.providersToRun);
 
-    @Shadow @Final private List<DataProvider> allProviders;
-
-    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/data/DataGenerator;inputFolders:Ljava/util/Collection;", opcode = Opcodes.PUTFIELD), method = "<init>")
-    public void kilt$makeInputsMutable(DataGenerator instance, Collection<Path> value) {
-        ((DataGeneratorAccessor) instance).setInputFolders(Lists.newArrayList(value.iterator()));
+    @Override
+    public Map<String, DataProvider> getProvidersView() {
+        return this.providersView;
     }
 
     @Override
-    public List<DataProvider> getProviders() {
-        return this.allProviders;
+    public PackOutput getPackOutput() {
+        return this.vanillaPackOutput;
     }
 
     @Override
-    public void addInput(Path value) {
-        inputFolders.add(value);
+    public PackOutput getPackOutput(String path) {
+        return new PackOutput(this.rootOutputFolder.resolve(path));
+    }
+
+    @Override
+    public <T extends DataProvider> T addProvider(boolean run, DataProvider.Factory<T> factory) {
+        return addProvider(run, factory.create(this.vanillaPackOutput));
+    }
+
+    @Override
+    public <T extends DataProvider> T addProvider(boolean run, T provider) {
+        var id = provider.getName();
+
+        if (!this.allProviderIds.add(id))
+            throw new IllegalStateException("Duplicate provider: " + id);
+
+        if (run)
+            this.providersToRun.put(id, provider);
+
+        return provider;
     }
 }

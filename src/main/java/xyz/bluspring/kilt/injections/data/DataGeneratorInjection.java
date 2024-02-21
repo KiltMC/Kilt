@@ -1,16 +1,14 @@
 package xyz.bluspring.kilt.injections.data;
 
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 
-import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 
 public interface DataGeneratorInjection {
-    default List<DataProvider> getProviders() {
-        throw new IllegalStateException();
-    }
-
-    default void addInput(Path value) {
-        throw new IllegalStateException();
-    }
+    Map<String, DataProvider> getProvidersView();
+    PackOutput getPackOutput();
+    PackOutput getPackOutput(String path);
+    <T extends DataProvider> T addProvider(boolean run, DataProvider.Factory<T> factory);
+    <T extends DataProvider> T addProvider(boolean run, T provider);
 }

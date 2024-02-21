@@ -2,7 +2,9 @@ package xyz.bluspring.kilt.forgeinjects.data.tags;
 
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.tags.TagBuilder;
@@ -23,15 +25,15 @@ import java.nio.file.Path;
 
 @Mixin(TagsProvider.class)
 public abstract class TagsProviderInject<T> implements TagsProviderInjection {
-    @Shadow @Final protected Registry<T> registry;
-    @Shadow @Final protected DataGenerator.PathProvider pathProvider;
+    @Shadow @Final
+    protected ResourceKey<? extends Registry<T>> registryKey;
+    @Shadow @Final
+    protected PackOutput.PathProvider pathProvider;
+
     protected String modId = "vanilla";
     protected ExistingFileHelper existingFileHelper = null;
-    @Unique
-    private final ExistingFileHelper.IResourceType resourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", TagManager.getTagDir(this.registry.key()));
-
-    @Unique
-    private final ExistingFileHelper.IResourceType elementResourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", ForgeHooks.prefixNamespace(this.registry.key().location()));
+    @Unique private final ExistingFileHelper.IResourceType resourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", TagManager.getTagDir(this.registryKey));
+    @Unique private final ExistingFileHelper.IResourceType elementResourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", ForgeHooks.prefixNamespace(this.registryKey.location()));
 
     @CreateInitializer
     protected TagsProviderInject(DataGenerator dataGenerator, Registry<T> registry, String modId, @Nullable ExistingFileHelper existingFileHelper) {
@@ -58,7 +60,7 @@ public abstract class TagsProviderInject<T> implements TagsProviderInjection {
     }
 
     @Mixin(TagsProvider.TagAppender.class)
-    public static class TagAppenderInject<T> implements IForgeTagAppender<T> {
+    public static class TagAppenderInject<T> implements IForgeTagAppender<T>, TagAppenderInjection {
         @Shadow @Final private TagBuilder builder;
         @Unique
         private String modId;

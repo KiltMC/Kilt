@@ -120,6 +120,9 @@ class AccessTransformerRemapper {
             }
         }
 
+        // Custom widener values for Kilt
+        widener += "transitive-accessible class net/minecraft/world/item/CreativeModeTab\$ItemDisplayBuilder"
+
         if (!output.exists())
             output.createNewFile()
 

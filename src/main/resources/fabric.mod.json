@@ -110,7 +110,8 @@
       "net/minecraft/class_1291": ["net/minecraftforge/common/extensions/IForgeMobEffect"],
       "net/minecraft/class_1293": ["net/minecraftforge/common/extensions/IForgeMobEffectInstance"],
       "net/minecraft/class_1842": ["net/minecraftforge/common/extensions/IForgePotion"],
-      "net/minecraft/class_4590": ["net/minecraftforge/common/extensions/IForgeTransformation"]
+      "net/minecraft/class_4590": ["net/minecraftforge/common/extensions/IForgeTransformation"],
+      "net/minecraft/class_1826": ["xyz/bluspring/kilt/injections/world/item/SpawnEggItemInjection"]
     }
   },
   "breaks": {

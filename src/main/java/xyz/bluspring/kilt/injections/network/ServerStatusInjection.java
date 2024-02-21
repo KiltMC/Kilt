@@ -2,20 +2,14 @@ package xyz.bluspring.kilt.injections.network;
 
 import net.minecraftforge.network.ServerStatusPing;
 
+import java.util.Optional;
+
 public interface ServerStatusInjection {
-    default ServerStatusPing getForgeData() {
+    default Optional<ServerStatusPing> forgeData() {
         throw new IllegalStateException();
     }
 
-    default void setForgeData(ServerStatusPing data) {
-        throw new IllegalStateException();
-    }
-
-    default String getJson() {
-        throw new IllegalStateException();
-    }
-
-    default void invalidateJson() {
+    default void setForgeData(Optional<ServerStatusPing> data) {
         throw new IllegalStateException();
     }
 }
