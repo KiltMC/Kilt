@@ -210,10 +210,25 @@ tasks {
 
     processResources {
         inputs.property("version", project.version)
+        inputs.property("loader_version", project.property("loader_version"))
+        inputs.property("fabric_version", project.property("fabric_version"))
+        inputs.property("minecraft_version", project.property("minecraft_version"))
+        inputs.property("fabric_kotlin_version", project.property("fabric_kotlin_version"))
+        inputs.property("fabric_asm_version", project.property("fabric_asm_version"))
+        inputs.property("forge_config_version", project.property("forgeconfigapiport_version"))
+        inputs.property("architectury_version", project.property("architectury_version"))
         filteringCharset = "UTF-8"
 
         filesMatching("fabric.mod.json") {
-            expand(mutableMapOf("version" to project.version))
+            expand(mutableMapOf(
+                "version" to project.version,
+                "fabric_version" to project.property("fabric_version"),
+                "minecraft_version" to project.property("minecraft_version"),
+                "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
+                "fabric_asm_version" to project.property("fabric_asm_version"),
+                "forge_config_version" to project.property("forgeconfigapiport_version"),
+                "architectury_version" to project.property("architectury_version"),
+            ))
         }
     }
 
