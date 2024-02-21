@@ -5,7 +5,6 @@ import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.util.List;
 
@@ -15,7 +14,6 @@ public abstract class ReloadableResourceManagerInject {
 
     @Shadow public abstract void registerReloadListener(PreparableReloadListener listener);
 
-    @Unique
     public void registerReloadListenerIfNotPresent(PreparableReloadListener listener) {
         if (!this.listeners.contains(listener)) {
             this.registerReloadListener(listener);

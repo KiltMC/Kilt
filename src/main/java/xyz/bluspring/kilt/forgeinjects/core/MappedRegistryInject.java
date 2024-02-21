@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.core;
 
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
@@ -7,7 +9,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,19 +17,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 @Mixin(MappedRegistry.class)
 public class MappedRegistryInject<T> implements MappedRegistryInjection {
     @Shadow public boolean frozen;
 
-    @Shadow @Final @Nullable private Function<T, Holder.Reference<T>> customHolderProvider;
-
-    @Shadow @Nullable private Map<T, Holder.Reference<T>> intrusiveHolderCache;
-
+    @Shadow @Nullable public Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
     @CreateStatic
     private static final Set<ResourceLocation> knownRegistries = MappedRegistryInjection.knownRegistries;
 
@@ -50,7 +46,16 @@ public class MappedRegistryInject<T> implements MappedRegistryInjection {
     @Override
     public void unfreeze() {
         this.frozen = false;
-        if (this.customHolderProvider != null && this.intrusiveHolderCache == null)
-            this.intrusiveHolderCache = new IdentityHashMap<>();
+    }
+
+    // Kilt: force store unregisteredIntrusiveHolders
+    @Inject(method = "freeze", at = @At("HEAD"))
+    private void kilt$disableNullRegister(CallbackInfoReturnable<Registry<T>> cir, @Share("kilt$unregisteredIntrusiveHolders") LocalRef<Map<T, Holder.Reference<T>>> unregistered) {
+        unregistered.set(this.unregisteredIntrusiveHolders);
+    }
+
+    @Inject(method = "freeze", at = @At("RETURN"))
+    private void kilt$forceSetUnregistered(CallbackInfoReturnable<Registry<T>> cir, @Share("kilt$unregisteredIntrusiveHolders") LocalRef<Map<T, Holder.Reference<T>>> unregistered) {
+        this.unregisteredIntrusiveHolders = unregistered.get();
     }
 }

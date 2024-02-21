@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.injections.entity;
 
-import io.github.fabricators_of_create.porting_lib.extensions.AbstractMinecartExtensions;
+import io.github.fabricators_of_create.porting_lib.entity.extensions.AbstractMinecartExtensions;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraftforge.common.IMinecartCollisionHandler;
 

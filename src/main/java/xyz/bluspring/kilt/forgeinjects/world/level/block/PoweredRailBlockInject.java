@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
@@ -72,7 +73,7 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
 
     @Redirect(method = "isSameRailWithPower", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 0))
     public Comparable kilt$getRailDirectionWithForge(BlockState instance, Property property, Level level, BlockPos pos) {
-        return ((PoweredRailBlock) instance.getBlock()).getRailDirection(instance, level, pos, null);
+        return ((PoweredRailBlock) instance.getBlock()).getRailDirection(instance, level, pos, (AbstractMinecart) null);
     }
 
     @Redirect(method = "isSameRailWithPower", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 1))

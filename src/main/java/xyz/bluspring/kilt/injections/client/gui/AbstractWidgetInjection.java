@@ -14,4 +14,6 @@ public interface AbstractWidgetInjection {
     default void clearFGColor() {
         throw new IllegalStateException();
     }
+
+    default void setHeight(int value) {}
 }

@@ -4,9 +4,9 @@ import com.google.gson.GsonBuilder
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
 import dev.architectury.event.events.common.TickEvent.ServerLevelTick
+import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
-import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.Mob
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
@@ -88,8 +87,9 @@ class Kilt : ModInitializer {
         loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
     }
 
+    @Suppress("removal")
     private fun registerFabricEvents() {
-        LivingEntityEvents.DROPS_WITH_LEVEL.register { entity, source, drops, level, recentlyHit ->
+        LivingEntityEvents.DROPS.register { entity, source, drops, level, recentlyHit ->
             MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
@@ -102,7 +102,7 @@ class Kilt : ModInitializer {
         }
 
         EntitySleepEvents.ALLOW_SETTING_SPAWN.register { player, pos ->
-            ForgeEventFactory.onPlayerSpawnSet(player, player.level.dimension(), pos, false)
+            ForgeEventFactory.onPlayerSpawnSet(player, player.level().dimension(), pos, false)
         }
 
         EntitySleepEvents.ALLOW_SLEEP_TIME.register { player, pos, _ ->
@@ -184,19 +184,6 @@ class Kilt : ModInitializer {
 
                 else -> throw IllegalStateException("impossible")
             }
-        }
-
-        InteractEvents.PICK.register { minecraft, hit ->
-            val player = minecraft.player
-
-            ForgeHooks.onPickBlock(hit, player, minecraft.level)
-        }
-
-        EntityEvent.LIVING_CHECK_SPAWN.register { entity, level, x, y, z, spawnType, spawner ->
-            if (entity is Mob)
-                eventBusToArchitectury(ForgeEventFactory.canEntitySpawn(entity, level, x, y, z, spawner, spawnType))
-            else
-                EventResult.pass()
         }
 
         EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->

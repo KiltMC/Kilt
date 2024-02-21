@@ -18,7 +18,6 @@ public class BlockPathTypesInject implements BlockPathTypesInjection, IExtensibl
         var type = ((BlockPathTypes) (Object) this);
 
         return (type == BlockPathTypes.DAMAGE_FIRE || type == BlockPathTypes.DANGER_FIRE) ? BlockPathTypes.DANGER_FIRE
-                : (type == BlockPathTypes.DAMAGE_CACTUS || type == BlockPathTypes.DANGER_CACTUS) ? BlockPathTypes.DANGER_CACTUS
                 : (type == BlockPathTypes.DAMAGE_OTHER || type == BlockPathTypes.DANGER_OTHER) ? BlockPathTypes.DANGER_OTHER
                 : (type == BlockPathTypes.LAVA) ? BlockPathTypes.DAMAGE_FIRE
                 : null;

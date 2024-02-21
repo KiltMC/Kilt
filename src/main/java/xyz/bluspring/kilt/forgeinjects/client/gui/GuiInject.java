@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.client.gui;
 
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -14,12 +14,14 @@ import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
@@ -34,6 +36,8 @@ import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.gui.GuiInjection;
 
+import java.util.List;
+
 @Mixin(Gui.class)
 public abstract class GuiInject implements GuiInjection {
     private ForgeGui getGui() {
@@ -47,6 +51,19 @@ public abstract class GuiInject implements GuiInjection {
     @Shadow public int screenHeight;
 
     @Shadow public abstract void renderSelectedItemName(GuiGraphics guiGraphics);
+
+    @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;showIcon()Z"))
+    private boolean kilt$checkIconVisible(MobEffectInstance instance, Operation<Boolean> original) {
+        var renderer = IClientMobEffectExtensions.of(instance);
+        return original.call(instance) && renderer.isVisibleInGui(instance);
+    }
+
+    @WrapWithCondition(method = "renderEffects", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
+    private boolean kilt$renderGuiIconWithCustomRenderer(List<Runnable> instance, Object e, @Local MobEffectInstance effectInstance, @Local GuiGraphics guiGraphics, @Local(name = "i") int i, @Local(name = "j") int j, @Local(name = "f") float f) {
+        var renderer = IClientMobEffectExtensions.of(effectInstance);
+
+        return !renderer.renderGuiIcon(effectInstance, (Gui) (Object) this, guiGraphics, i, j, 0, f);
+    }
 
     // This doesn't match what Forge is doing, but I'm rewriting it in mixins
     // for better Fabric mod support.

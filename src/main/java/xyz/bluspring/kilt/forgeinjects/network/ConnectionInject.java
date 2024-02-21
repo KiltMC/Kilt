@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.ConnectionInjection;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.function.Consumer;
 
@@ -43,14 +42,14 @@ public class ConnectionInject implements ConnectionInjection {
         return this.receiving;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/channel/Channel;remoteAddress()Ljava/net/SocketAddress;", shift = At.Shift.AFTER), method = "channelActive")
+    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/channel/Channel;remoteAddress()Ljava/net/SocketAddress;", shift = At.Shift.AFTER, remap = false), method = "channelActive", remap = false)
     public void kilt$acceptActivationHandler(ChannelHandlerContext channelHandlerContext, CallbackInfo ci) {
         if (activationHandler != null)
             activationHandler.accept((Connection) (Object) this);
     }
 
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;"), method = "sendPacket")
+    @Redirect(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;", remap = false), method = "sendPacket")
     public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b) {
         this.channel.eventLoop().execute(() -> instance.setAutoRead(false));
 

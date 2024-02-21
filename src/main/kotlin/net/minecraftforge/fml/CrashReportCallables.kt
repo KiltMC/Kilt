@@ -14,6 +14,10 @@ object CrashReportCallables {
     fun registerCrashCallable(headerName: String, reportGenerator: Supplier<String>) {
         registerCrashCallable(object : ISystemReportExtender {
             override val label = headerName
+            override fun isActive(): Boolean {
+                return true
+            }
+
             override fun get(): String {
                 return reportGenerator.get()
             }

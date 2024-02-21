@@ -1,7 +1,8 @@
 package net.minecraftforge.fml
 
 import com.electronwill.nightconfig.toml.TomlParser
-import net.minecraftforge.api.fml.event.config.ModConfigEvents
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.event.config.ModConfigEvent
@@ -38,6 +39,13 @@ class ModLoadingContext(private val mod: ForgeMod) {
             mod.eventBus.post(ModConfigEvent.Reloading(it))
             kiltActiveModId = prevId
         }
+
+        ModConfigEvents.unloading(mod.modId).register {
+            val prevId = kiltActiveModId
+            kiltActiveModId = mod.modId
+            mod.eventBus.post(ModConfigEvent.Unloading(it))
+            kiltActiveModId = prevId
+        }
     }
 
     fun extension(): FMLJavaModLoadingContext {
@@ -52,12 +60,12 @@ class ModLoadingContext(private val mod: ForgeMod) {
     // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
         val modId = mod.modId
-        net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec, fileName)
+        ForgeConfigRegistry.INSTANCE.register(modId, type, spec, fileName)
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
         val modId = mod.modId
-        net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec)
+        ForgeConfigRegistry.INSTANCE.register(modId, type, spec)
     }
 
     companion object {

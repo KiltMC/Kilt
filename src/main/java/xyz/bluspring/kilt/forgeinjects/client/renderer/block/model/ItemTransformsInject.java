@@ -1,79 +1,78 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block.model;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.IExtensibleEnum;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.ItemDisplayContext;
 import org.spongepowered.asm.mixin.Mixin;
-import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformsTransformTypeInjection;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformsInjection;
+import xyz.bluspring.kilt.injections.world.item.ItemDisplayContextInjection;
+
+import java.lang.reflect.Type;
 
 @Mixin(ItemTransforms.class)
-public class ItemTransformsInject {
-    @Mixin(ItemTransforms.TransformType.class)
-    public static class TransformTypeInject implements ItemTransformsTransformTypeInjection, IExtensibleEnum {
-        @CreateStatic
-        private static ItemTransforms.TransformType create(String keyName, ResourceLocation serializeName) {
-            return ItemTransformsTransformTypeInjection.create(keyName, serializeName);
-        }
+public class ItemTransformsInject implements ItemTransformsInjection {
+    public ImmutableMap<ItemDisplayContext, ItemTransform> moddedTransforms = ImmutableMap.of();
 
-        @CreateStatic
-        private static ItemTransforms.TransformType create(String keyName, ResourceLocation serializeName, ItemTransforms.TransformType fallback) {
-            return ItemTransformsTransformTypeInjection.create(keyName, serializeName, fallback);
-        }
+    @Inject(method = "<init>(Lnet/minecraft/client/renderer/block/model/ItemTransforms;)V", at = @At("TAIL"))
+    private void kilt$setModdedTransformsInInit(ItemTransforms transforms, CallbackInfo ci) {
+        this.moddedTransforms = ((ItemTransformsInjection) transforms).kilt$getModdedTransforms();
+    }
 
-        private String serializeName;
-        private boolean isModded = false;
-        @javax.annotation.Nullable
-        private ItemTransforms.TransformType fallback;
+    public ItemTransformsInject(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed) {}
 
-        @Override
-        public String getSerializeName() {
-            if (serializeName == null) {
-                // Make the serialized name later, since we can't do it as an initializer.
-                var transformType = ((ItemTransforms.TransformType) (Object) this);
+    @CreateInitializer
+    public ItemTransformsInject(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed, ImmutableMap<ItemDisplayContext, ItemTransform> moddedTransforms) {
+        this(thirdPersonLeftHand, thirdPersonRightHand, firstPersonLeftHand, firstPersonRightHand, head, gui, ground, fixed);
+        this.moddedTransforms = moddedTransforms;
+    }
 
-                switch (transformType.name()) {
-                    case "THIRD_PERSON_LEFT_HAND" ->
-                            serializeName = "thirdperson_lefthand";
-                    case "THIRD_PERSON_RIGHT_HAND" ->
-                            serializeName = "thirdperson_righthand";
-                    case "FIRST_PERSON_LEFT_HAND" ->
-                            serializeName = "firstperson_lefthand";
-                    case "FIRST_PERSON_RIGHT_HAND" ->
-                            serializeName = "firstperson_righthand";
-                    default ->
-                            serializeName = transformType.name().toLowerCase();
+    @Override
+    public ImmutableMap<ItemDisplayContext, ItemTransform> kilt$getModdedTransforms() {
+        return this.moddedTransforms;
+    }
+
+    @Override
+    public void kilt$setModdedTransforms(ImmutableMap<ItemDisplayContext, ItemTransform> moddedTransforms) {
+        this.moddedTransforms = moddedTransforms;
+    }
+
+    @Mixin(ItemTransforms.Deserializer.class)
+    public static abstract class DeserializerInject {
+        @Shadow protected abstract ItemTransform getTransform(JsonDeserializationContext deserializationContext, JsonObject json, ItemDisplayContext displayContext);
+
+        @Inject(method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/ItemTransforms;", at = @At("RETURN"))
+        private void kilt$addModdedTransforms(JsonElement json, Type type, JsonDeserializationContext context, CallbackInfoReturnable<ItemTransforms> cir) {
+            var builder = ImmutableMap.<ItemDisplayContext, ItemTransform>builder();
+            var obj = json.getAsJsonObject();
+
+            for (ItemDisplayContext value : ItemDisplayContext.values()) {
+                if (((ItemDisplayContextInjection) (Object) value).isModded()) {
+                    var transform = this.getTransform(context, obj, value);
+                    var fallbackType = value;
+
+                    while (transform == ItemTransform.NO_TRANSFORM && ((ItemDisplayContextInjection) (Object) fallbackType).fallback() != null) {
+                        fallbackType = ((ItemDisplayContextInjection) (Object) fallbackType).fallback();
+                        transform = this.getTransform(context, obj, fallbackType);
+                    }
+
+                    if (transform != ItemTransform.NO_TRANSFORM) {
+                        builder.put(value, transform);
+                    }
                 }
             }
 
-            return serializeName;
-        }
-
-        @Nullable
-        @Override
-        public ItemTransforms.TransformType fallback() {
-            return fallback;
-        }
-
-        @Override
-        public boolean isModded() {
-            return isModded;
-        }
-
-        @Override
-        public void setSerializeName(String name) {
-            serializeName = name;
-        }
-
-        @Override
-        public void setFallback(ItemTransforms.TransformType fallback) {
-            this.fallback = fallback;
-        }
-
-        @Override
-        public void setModded(boolean modded) {
-            this.isModded = modded;
+            var transforms = cir.getReturnValue();
+            ((ItemTransformsInjection) transforms).kilt$setModdedTransforms(builder.build());
         }
     }
 }

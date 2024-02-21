@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
@@ -18,7 +19,7 @@ import xyz.bluspring.kilt.injections.client.gui.screens.advancements.Advancement
 @Mixin(AdvancementTab.class)
 public class AdvancementTabInject implements AdvancementTabInjection {
     @Shadow @Final private Advancement advancement;
-    private int page;
+    @Unique private int page;
 
     public AdvancementTabInject(Minecraft p_97145_, AdvancementsScreen p_97146_, AdvancementTabType p_97147_, int p_97148_, Advancement p_97149_, DisplayInfo p_97150_) {}
 
@@ -41,7 +42,7 @@ public class AdvancementTabInject implements AdvancementTabInjection {
         return AdvancementTabInjection.create(minecraft, advancementsScreen, advancementTabType, tabIndex % AdvancementTabTypeInjection.MAX_TABS, tabIndex / AdvancementTabTypeInjection.MAX_TABS, advancement, displayInfo);
     }
 
-    // need to figure out how to redirect local vars
+    // TODO: need to figure out how to redirect local vars
     /*@Redirect(method = "create", at = @At(value = "LOAD", opcode = Opcodes.ILOAD))
     private static int kilt$checkWithMaxTabs(int tabs) {
 

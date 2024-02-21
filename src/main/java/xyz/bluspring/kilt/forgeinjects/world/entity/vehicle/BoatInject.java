@@ -43,7 +43,7 @@ public abstract class BoatInject extends Entity implements IForgeBoat {
 
     @Redirect(method = "getGroundFriction", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     public float kilt$useForgeFriction(Block instance, @Local BlockState state, @Local BlockPos.MutableBlockPos mutableBlockPos) {
-        return ((IForgeBlockState) state).getFriction(this.level, mutableBlockPos, (Boat) (Object) this);
+        return ((IForgeBlockState) state).getFriction(this.level(), mutableBlockPos, (Boat) (Object) this);
     }
 
     @Redirect(method = "checkInWater", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))

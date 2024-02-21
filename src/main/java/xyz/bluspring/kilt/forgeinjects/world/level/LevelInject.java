@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,11 +56,6 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
     @Override
     public ArrayList<BlockSnapshot> getCapturedBlockSnapshots() {
         return capturedBlockSnapshots;
-    }
-
-    @Redirect(method = "getSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isRedstoneConductor(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"))
-    public boolean kilt$checkForWeakPower(BlockState instance, BlockGetter blockGetter, BlockPos blockPos, BlockPos unused, Direction facing) {
-        return ((IForgeBlockState) instance).shouldCheckWeakPower((Level) blockGetter, blockPos, facing);
     }
 
     @Redirect(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))

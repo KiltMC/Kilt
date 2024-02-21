@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.injections.client.gui.screens;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -22,7 +22,7 @@ public interface MenuScreensInjection {
         } else {
             var screenConstructor = MenuScreens.getConstructor(menuType);
             if (screenConstructor == null) {
-                logger.warn("Failed to create screen for menu type: {}", Registry.MENU.getKey(menuType));
+                logger.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(menuType));
             } else {
                 return Optional.of(screenConstructor);
             }

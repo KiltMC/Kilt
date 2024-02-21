@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils
 import cpw.mods.modlauncher.api.ILaunchHandlerService
 import cpw.mods.modlauncher.api.ITransformingClassLoaderBuilder
 import net.minecraftforge.api.distmarker.Dist
-import net.minecraftforge.fml.loading.LogMarkers
 import org.slf4j.Logger
 import java.io.File
 import java.nio.file.Path
@@ -40,7 +39,7 @@ abstract class CommonLaunchHandler : ILaunchHandlerService {
 
     protected fun getModClasses(): Map<String, List<Path>> {
         val modClasses: String = Optional.ofNullable(System.getenv("MOD_CLASSES")).orElse("")
-        LOGGER.debug(LogMarkers.CORE, "Got mod coordinates {} from env", modClasses)
+        //LOGGER.debug(LogMarkers.CORE, "Got mod coordinates {} from env", modClasses)
         data class ExplodedModPath(val modid: String, val path: Path)
 
         // "a/b/;c/d/;" -> "modid%%c:\fish\pepper;modid%%c:\fish2\pepper2\;modid2%%c:\fishy\bums;modid2%%c:\hmm"
@@ -60,7 +59,7 @@ abstract class CommonLaunchHandler : ILaunchHandlerService {
                         Collectors.mapping(ExplodedModPath::path, Collectors.toList())
                     )
                 )
-        LOGGER.debug(LogMarkers.CORE, "Found supplied mod coordinates [{}]", modClassPaths)
+        //LOGGER.debug(LogMarkers.CORE, "Found supplied mod coordinates [{}]", modClassPaths)
 
         //final var explodedTargets = ((Map<String, List<ExplodedDirectoryLocator.ExplodedMod>>)arguments).computeIfAbsent("explodedTargets", a -> new ArrayList<>());
         //modClassPaths.forEach((modlabel,paths) -> explodedTargets.add(new ExplodedDirectoryLocator.ExplodedMod(modlabel, paths)));

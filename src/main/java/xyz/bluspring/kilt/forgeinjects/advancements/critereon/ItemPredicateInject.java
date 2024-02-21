@@ -44,11 +44,11 @@ public class ItemPredicateInject implements ItemPredicateInjection {
 
     @CreateStatic
     private static void register(ResourceLocation name, Function<JsonObject, ItemPredicate> deserializer) {
-        ItemPredicateInjection.customPredicates.put(name, deserializer);
+        ItemPredicateInjection.register(name, deserializer);
     }
 
     @CreateStatic
     private static Map<ResourceLocation, Function<JsonObject, ItemPredicate>> getPredicates() {
-        return ItemPredicateInjection.customPredicates;
+        return ItemPredicateInjection.getPredicates();
     }
 }

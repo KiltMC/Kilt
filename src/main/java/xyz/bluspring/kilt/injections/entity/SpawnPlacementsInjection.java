@@ -4,6 +4,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraftforge.fml.ModLoader;
+import xyz.bluspring.kilt.mixin.SpawnPlacementsDataAccessor;
 
 import java.util.HashMap;
 
@@ -12,7 +13,7 @@ public interface SpawnPlacementsInjection {
         var map = new HashMap<EntityType<?>, SpawnPlacementRegisterEvent.MergedSpawnPredicate<?>>();
 
         SpawnPlacements.DATA_BY_TYPE.forEach((entityType, data) -> {
-            map.put(entityType, new SpawnPlacementRegisterEvent.MergedSpawnPredicate<>(data.predicate, data.placement, data.heightMap));
+            map.put(entityType, new SpawnPlacementRegisterEvent.MergedSpawnPredicate<>(((SpawnPlacementsDataAccessor) data).getPredicate(), ((SpawnPlacementsDataAccessor) data).getPlacement(), ((SpawnPlacementsDataAccessor) data).getHeightMap()));
         });
 
         ModLoader.get().postEvent(new SpawnPlacementRegisterEvent(map));

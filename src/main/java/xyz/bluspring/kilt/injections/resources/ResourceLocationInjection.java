@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.injections.resources;
 
-import io.github.fabricators_of_create.porting_lib.extensions.ResourceLocationExtensions;
+import io.github.fabricators_of_create.porting_lib.extensions.extensions.ResourceLocationExtensions;
 import net.minecraft.resources.ResourceLocation;
 
 public interface ResourceLocationInjection extends ResourceLocationExtensions {

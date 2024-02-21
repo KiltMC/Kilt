@@ -22,7 +22,7 @@ public class InventoryInject {
 
     @Inject(at = @At("TAIL"), method = "tick")
     public void kilt$tickArmor(CallbackInfo ci) {
-        this.armor.forEach(e -> e.onArmorTick(this.player.level, this.player));
+        this.armor.forEach(e -> e.onArmorTick(this.player.level(), this.player));
     }
 
     @Redirect(method = "getSuitableHotbarSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEnchanted()Z"))

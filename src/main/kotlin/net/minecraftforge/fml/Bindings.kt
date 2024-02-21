@@ -4,7 +4,6 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.event.config.ModConfigEvent
-import java.util.function.Function
 import java.util.function.Supplier
 
 object Bindings {
@@ -37,6 +36,8 @@ object Bindings {
                 ModConfigEvent.Loading(it)
             }, {
                 ModConfigEvent.Reloading(it)
+            }, {
+                ModConfigEvent.Unloading(it)
             })
         }
     }

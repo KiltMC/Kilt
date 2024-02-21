@@ -127,8 +127,8 @@ dependencies {
     }
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
     implementation(include("com.github.thecatcore:CursedMixinExtensions:${property("cursedmixinextensions_version")}")!!)
-    modImplementation(include("com.github.Chocohead:Fabric-ASM:${property("fabric_asm_version")}")!!)
-    modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
+    modImplementation(include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")!!)
+    //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
@@ -144,6 +144,7 @@ dependencies {
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
+    implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
     // Use Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("dev.su5ed.sinytra:ForgeAutoRenamingTool:${property("forgerenamer_version")}")!!)
@@ -222,6 +223,7 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(mutableMapOf(
                 "version" to project.version,
+                "loader_version" to project.property("loader_version"),
                 "fabric_version" to project.property("fabric_version"),
                 "minecraft_version" to project.property("minecraft_version"),
                 "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
@@ -234,7 +236,6 @@ tasks {
 
     compileKotlin {
         kotlinOptions.jvmTarget = targetJavaVersion
-        dependsOn("processPatches")
     }
 
     jar {

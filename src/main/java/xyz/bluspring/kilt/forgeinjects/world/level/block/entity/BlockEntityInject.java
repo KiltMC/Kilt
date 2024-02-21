@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.block.entity;
 
-import io.github.fabricators_of_create.porting_lib.extensions.BlockEntityExtensions;
+import io.github.fabricators_of_create.porting_lib.extensions.extensions.BlockEntityExtensions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.CapabilityProvider;

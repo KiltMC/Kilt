@@ -122,6 +122,12 @@ class AccessTransformerRemapper {
 
         // Custom widener values for Kilt
         widener += "transitive-accessible class net/minecraft/world/item/CreativeModeTab\$ItemDisplayBuilder"
+        widener += "transitive-accessible class net/minecraft/client/gui/screens/advancements/AdvancementTabType"
+        widener += "transitive-accessible field net/minecraft/client/renderer/ItemBlockRenderTypes TYPE_BY_BLOCK Ljava/util/Map;"
+        widener += "transitive-accessible field net/minecraft/client/renderer/ItemBlockRenderTypes TYPE_BY_FLUID Ljava/util/Map;"
+        widener += "transitive-accessible field net/minecraft/commands/synchronization/ArgumentTypeInfos BY_CLASS Ljava/util/Map;"
+        widener += "transitive-accessible field net/minecraft/world/entity/SpawnPlacements DATA_BY_TYPE Ljava/util/Map;"
+        widener += "transitive-accessible class net/minecraft/world/entity/SpawnPlacements\$Data"
 
         if (!output.exists())
             output.createNewFile()

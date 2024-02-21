@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ public abstract class ShaderInstanceInject {
 
         @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/FileUtil;normalizeResourcePath(Ljava/lang/String;)Ljava/lang/String;"), method = "applyImport")
         public String kilt$getForgeShaderImports(String string, boolean bl, String string2) {
-            var location = ForgeHooksClientWorkaround.getShaderImportLocation(val$relativePath, bl, string2);
+            var location = ForgeHooksClient.getShaderImportLocation(val$relativePath, bl, string2);
             return location.toString();
         }
     }

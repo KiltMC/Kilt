@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.mixin.porting_lib;
 
 import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ public abstract class RegistryObjectMixin<T> implements RegistryObjectInjection 
         if (this.key == null)
             return;
 
-        Optional<T> optional = (Optional<T>) Registry.REGISTRY.get(this.key.registry()).getOptional(this.id);
+        Optional<T> optional = (Optional<T>) BuiltInRegistries.REGISTRY.get(this.key.registry()).getOptional(this.id);
         optional.ifPresent(this::setValue);
     }
 }

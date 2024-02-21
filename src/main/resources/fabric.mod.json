@@ -52,7 +52,7 @@
       "net/minecraft/class_6885": ["net/minecraftforge/common/extensions/IForgeHolderSet"],
       "net/minecraft/class_3611": ["net/minecraftforge/common/extensions/IForgeFluid"],
       "net/minecraft/class_3610": ["net/minecraftforge/common/extensions/IForgeFluidState"],
-      "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock", "xyz/bluspring/kilt/injections/client/render/RenderPropertiesInjection"],
+      "net/minecraft/class_2248": ["net/minecraftforge/common/extensions/IForgeBlock"],
       "net/minecraft/class_1792": ["net/minecraftforge/common/extensions/IForgeItem"],
       "net/minecraft/class_1799": ["net/minecraftforge/common/extensions/IForgeItemStack", "xyz/bluspring/kilt/injections/CapabilityProviderInjection", "xyz/bluspring/kilt/injections/capabilities/ItemStackCapabilityProviderImpl", "xyz/bluspring/kilt/injections/item/ItemStackInjection"],
       "net/minecraft/class_29": ["xyz/bluspring/kilt/injections/PlayerDataStorageInjection"],

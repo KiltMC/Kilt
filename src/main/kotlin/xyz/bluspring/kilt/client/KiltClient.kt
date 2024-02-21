@@ -6,17 +6,16 @@ import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
-import io.github.fabricators_of_create.porting_lib.event.client.RegisterGeometryLoadersCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
+import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.components.Widget
+import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
@@ -61,7 +60,7 @@ class KiltClient : ClientModInitializer {
 
         ClientGuiEvent.INIT_PRE.register { screen, access ->
             add.set(Consumer<GuiEventListener> {
-                if (it is Widget)
+                if (it is Renderable)
                     access.renderables.add(it)
 
                 if (it is NarratableEntry)
@@ -132,15 +131,6 @@ class KiltClient : ClientModInitializer {
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
             if (screen != null)
                 MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
-        }
-
-        TextureStitchCallback.PRE.register { atlas, consumer ->
-            val map = mutableSetOf<ResourceLocation>()
-            ModLoader.get().postEvent(TextureStitchEvent.Pre(atlas, map))
-
-            map.forEach {
-                consumer.accept(it)
-            }
         }
 
         TextureStitchCallback.POST.register { atlas ->

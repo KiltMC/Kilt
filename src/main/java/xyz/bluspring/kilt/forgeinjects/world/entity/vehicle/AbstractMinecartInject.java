@@ -107,12 +107,12 @@ public abstract class AbstractMinecartInject extends Entity implements AbstractM
             return getMaxSpeed();
 
         var pos = getCurrentRailPosition();
-        var state = this.level.getBlockState(pos);
+        var state = this.level().getBlockState(pos);
 
         if (!state.is(BlockTags.RAILS))
             return getMaxSpeed();
 
-        var railMaxSpeed = ((IForgeBaseRailBlock) state.getBlock()).getRailMaxSpeed(state, this.level, pos, (AbstractMinecart) (Object) this);
+        var railMaxSpeed = ((IForgeBaseRailBlock) state.getBlock()).getRailMaxSpeed(state, this.level(), pos, (AbstractMinecart) (Object) this);
 
         return Math.min(railMaxSpeed, getCurrentCartSpeedCapOnRail());
     }

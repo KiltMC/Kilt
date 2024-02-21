@@ -7,6 +7,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
+import xyz.bluspring.kilt.mixin.RegistryOpsAccessor;
 
 public interface RegistryOpsInjection {
     static <E> MapCodec<HolderLookup.RegistryLookup<E>> retrieveRegistryLookup(ResourceKey<? extends Registry<? extends E>> resourceKey) {
@@ -14,11 +15,11 @@ public interface RegistryOpsInjection {
             if (!(ops instanceof RegistryOps<?> registryOps))
                 return DataResult.error(() -> "Not a registry ops");
 
-            return registryOps.lookupProvider.lookup(resourceKey).map(registryInfo -> {
+            return ((RegistryOpsAccessor) registryOps).getLookupProvider().lookup(resourceKey).map(registryInfo -> {
                 if (!(registryInfo.owner() instanceof HolderLookup.RegistryLookup<E> registryLookup))
-                    return DataResult.error(() -> "Found holder getter but was not a registry lookup for " + resourceKey);
+                    return DataResult.<HolderLookup.RegistryLookup<E>>error(() -> "Found holder getter but was not a registry lookup for " + resourceKey);
 
-                return DataResult.success(registryInfo, registryInfo.elementsLifecycle());
+                return DataResult.success(registryLookup, registryInfo.elementsLifecycle());
             }).orElseGet(() -> DataResult.error(() -> "Unknown registry: " + resourceKey));
         });
     }

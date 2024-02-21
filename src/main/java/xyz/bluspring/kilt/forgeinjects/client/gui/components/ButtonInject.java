@@ -9,6 +9,8 @@ import xyz.bluspring.kilt.injections.client.gui.components.ButtonBuilderInjectio
 import xyz.bluspring.kilt.injections.client.gui.components.ButtonInjection;
 import xyz.bluspring.kilt.mixin.client.gui.components.ButtonBuilderAccessor;
 
+import java.util.function.Function;
+
 @Mixin(Button.class)
 public abstract class ButtonInject extends AbstractButton implements ButtonInjection {
     protected ButtonInject(int x, int y, int width, int height, Component message, Button.OnPress onPress, Button.CreateNarration createNarration) {
@@ -23,6 +25,9 @@ public abstract class ButtonInject extends AbstractButton implements ButtonInjec
 
     @Mixin(Button.Builder.class)
     public static class ButtonBuilderInject implements ButtonBuilderInjection {
-
+        @Override
+        public Button build(Function<Button.Builder, Button> builder) {
+            return ButtonBuilderInjection.super.build(builder);
+        }
     }
 }

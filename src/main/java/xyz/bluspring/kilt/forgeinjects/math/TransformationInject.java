@@ -1,19 +1,19 @@
 package xyz.bluspring.kilt.forgeinjects.math;
 
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
-import net.minecraftforge.client.extensions.IForgeTransformation;
+import net.minecraftforge.common.extensions.IForgeTransformation;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import xyz.bluspring.kilt.injections.math.TransformationInjection;
 
 @Mixin(Transformation.class)
-public class TransformationInject implements IForgeTransformation {
+public class TransformationInject implements IForgeTransformation, TransformationInjection {
     @Shadow @Final private Matrix4f matrix;
-    @Unique
-    private Matrix3f normalTransform = null;
+    @Unique private Matrix3f normalTransform = null;
 
     public Matrix3f getNormalMatrix() {
         checkNormalTransform();

@@ -4,6 +4,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.tags.TagManager;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraftforge.common.crafting.conditions.ConditionContext;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,7 @@ public class ReloadableServerResourcesInject implements ReloadableServerResource
     private ICondition.IContext kilt$context;
 
     @Inject(at = @At("TAIL"), method = "<init>")
-    public void kilt$addContext(RegistryAccess.Frozen frozen, Commands.CommandSelection commandSelection, int i, CallbackInfo ci) {
+    public void kilt$addContext(RegistryAccess.Frozen registryAccess, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, int functionCompilationLevel, CallbackInfo ci) {
         this.kilt$context = new ConditionContext(this.tagManager);
     }
 

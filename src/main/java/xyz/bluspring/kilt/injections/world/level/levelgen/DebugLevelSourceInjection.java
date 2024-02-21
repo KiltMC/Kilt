@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.injections.world.level.levelgen;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import xyz.bluspring.kilt.mixin.DebugLevelSourceAccessor;
 
@@ -14,7 +14,7 @@ public interface DebugLevelSourceInjection {
         // f_64116_ = GRID_HEIGHT
 
         DebugLevelSourceAccessor.setAllBlocks(
-                StreamSupport.stream(Registry.BLOCK.spliterator(), false).flatMap((block) ->
+                StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false).flatMap((block) ->
                     block.getStateDefinition().getPossibleStates().stream()
                 ).collect(Collectors.toList())
         );

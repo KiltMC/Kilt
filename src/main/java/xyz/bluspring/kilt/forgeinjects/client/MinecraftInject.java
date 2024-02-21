@@ -7,7 +7,6 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.resources.ClientPackSource;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -44,7 +43,6 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Shadow @Final private Timer timer;
     @Shadow @Final public ParticleEngine particleEngine;
     @Shadow @Final private PackRepository resourcePackRepository;
-    @Shadow @Final private ClientPackSource clientPackSource;
 
     @Shadow public abstract BlockColors getBlockColors();
 
@@ -102,7 +100,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V"), method = "<init>")
     public void kilt$initializeClientModLoader(GameConfig gameConfig, CallbackInfo ci) {
-        ClientModLoader.begin((Minecraft) (Object) this, this.resourcePackRepository, this.resourceManager, this.clientPackSource);
+        ClientModLoader.begin((Minecraft) (Object) this, this.resourcePackRepository, this.resourceManager);
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.BEFORE), method = "runTick")
@@ -111,7 +109,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         ForgeEventFactory.onRenderTickStart(realPartialTick);
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/toasts/ToastComponent;render(Lcom/mojang/blaze3d/vertex/PoseStack;)V", shift = At.Shift.BY, by = 3), method = "runTick")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(FJZ)V", shift = At.Shift.BY, by = 2), method = "runTick")
     public void kilt$callRenderTickEnd(boolean bl, CallbackInfo ci) {
         ForgeEventFactory.onRenderTickEnd(realPartialTick);
     }
