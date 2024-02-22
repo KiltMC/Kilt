@@ -84,7 +84,7 @@ class ForgeMod(
             if (this@ForgeMod::remappedModFile.isInitialized)
                 SecureJar.from(remappedModFile.toPath())
             else
-                SecureJar.from(modFile?.toPath())
+                SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
         }
     }
 

@@ -7,10 +7,12 @@ import net.minecraftforge.forgespi.language.IModLanguageProvider
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import net.minecraftforge.forgespi.locating.IModProvider
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModProvider
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.nio.file.Path
 import java.util.function.Supplier
+import kotlin.io.path.toPath
 
 class ModFile(private val kiltMod: ForgeMod) : IModFile {
     override fun getLoaders(): MutableList<IModLanguageProvider> {
@@ -35,7 +37,11 @@ class ModFile(private val kiltMod: ForgeMod) : IModFile {
     }
 
     override fun getFilePath(): Path {
-        TODO("Not yet implemented")
+        if (kiltMod.modFile == null) {
+            return Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()
+        }
+
+        return kiltMod.modFile.toPath()
     }
 
     override fun getSecureJar(): SecureJar {

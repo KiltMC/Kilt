@@ -133,8 +133,16 @@ dependencies {
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // Forge stuff
-    implementation(include("net.minecraftforge:eventbus:${property("eventbus_version")}")!!)
-    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}")!!)
+    implementation(include("net.minecraftforge:eventbus:${property("eventbus_version")}") {
+        exclude("cpw.mods", "modlauncher")
+        exclude("net.minecraftforge", "modlauncher")
+        exclude("net.minecraftforge", "securemodules")
+    })
+    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}") {
+        exclude("cpw.mods", "modlauncher")
+        exclude("net.minecraftforge", "modlauncher")
+        exclude("net.minecraftforge", "securemodules")
+    })
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
     implementation(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
