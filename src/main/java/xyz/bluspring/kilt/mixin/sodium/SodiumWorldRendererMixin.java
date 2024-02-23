@@ -6,7 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -14,8 +16,10 @@ import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 
 @Mixin(value = SodiumWorldRenderer.class, remap = false)
+@Pseudo
 public class SodiumWorldRendererMixin {
-    @Inject(method = "drawChunkLayer", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/passes/BlockRenderPass;endDrawing()V", shift = At.Shift.BEFORE, remap = false), remap = false)
+    @Dynamic
+    @Inject(method = "drawChunkLayer", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/RenderSectionManager;renderLayer(Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderMatrices;Lme/jellysquid/mods/sodium/client/render/chunk/terrain/TerrainRenderPass;DDD)V", shift = At.Shift.BEFORE, remap = false), remap = false)
     public void kilt$sodiumDispatchRenderEventBasedOnType(RenderType renderLayer, PoseStack matrixStack, double x, double y, double z, CallbackInfo ci) {
         var stage = RenderLevelStageEvent.Stage.fromRenderType(renderLayer);
 
