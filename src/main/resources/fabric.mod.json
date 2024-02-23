@@ -29,6 +29,9 @@
     ],
     "mm:early_risers": [
       "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
+    ],
+    "mixinsquared": [
+      "xyz.bluspring.kilt.mixin.ferritecore.FerriteMrlCanceller"
     ]
   },
   "mixins": [

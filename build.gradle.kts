@@ -128,7 +128,8 @@ dependencies {
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
     implementation(include("com.github.thecatcore:CursedMixinExtensions:${property("cursedmixinextensions_version")}")!!)
     modImplementation(include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")!!)
-    //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
+    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${property("mixin_squared_version")}")!!)!!)
+//modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
