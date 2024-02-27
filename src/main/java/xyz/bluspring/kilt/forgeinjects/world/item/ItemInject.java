@@ -49,4 +49,20 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
     public void initializeClient(Consumer consumer) {
         ItemInjection.super.initializeClient(consumer);
     }
+
+    @Mixin(Item.Properties.class)
+    public static class PropertiesInject implements ItemPropertiesInjection {
+        private boolean canRepair = true;
+
+        @Override
+        public Item.Properties setNoRepair() {
+            canRepair = false;
+            return (Item.Properties) (Object) this;
+        }
+
+        @Override
+        public boolean getCanRepair() {
+            return canRepair;
+        }
+    }
 }

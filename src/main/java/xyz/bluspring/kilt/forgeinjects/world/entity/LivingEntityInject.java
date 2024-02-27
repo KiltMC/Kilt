@@ -1,4 +1,5 @@
-package xyz.bluspring.kilt.forgeinjects.world.entity.living;
+// TRACKED HASH: 2baefae1a6b22a5d5e3b2548b6b43f9b3d78cd7c
+package xyz.bluspring.kilt.forgeinjects.world.entity;
 
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import net.minecraft.core.Direction;
