@@ -4,6 +4,7 @@ import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodInsnNode
 import java.lang.reflect.Modifier
 
 // This used to be the CommonSuperFixer's job,
@@ -32,7 +33,8 @@ object EventEmptyInitializerFixer {
         // Manually calculate the stack size, as otherwise the ClassWriter has a stroke.
         var stackSize = 1
         val initMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_SYNTHETIC, "<init>", if (!isStatic) "(L${classNode.outerClass};)V" else "()V", null, null)
-        val firstInitMethod = classNode.methods.firstOrNull { it.name == "<init>" }
+        val shouldFirstInit = classNode.methods.none { it.instructions.any { i -> i.opcode == Opcodes.INVOKESPECIAL && i is MethodInsnNode && i.name == "<init>" && i.owner != classNode.name && (i.owner == "java/lang/Object" || i.owner == "net/minecraftforge/eventbus/api/Event") } }
+        val firstInitMethod = classNode.methods.filter { it.name == "<init>" }.maxByOrNull { Type.getMethodType(it.desc).argumentTypes.size }
 
         initMethod.visitCode()
 
@@ -48,7 +50,7 @@ object EventEmptyInitializerFixer {
         }
 
         initMethod.visitVarInsn(Opcodes.ALOAD, 0)
-        if (firstInitMethod != null) { // init this itself
+        if (firstInitMethod != null && shouldFirstInit) { // init this itself
             val methodType = Type.getMethodType(firstInitMethod.desc)
             methodType.argumentTypes.forEach { arg ->
                 when (arg.descriptor) {
@@ -75,6 +77,40 @@ object EventEmptyInitializerFixer {
             initMethod.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.name, "<init>", firstInitMethod.desc, false)
         } else {
             initMethod.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName, "<init>", "()V", false)
+
+            val label = Label()
+            initMethod.visitLabel(label)
+
+            val finalFields = classNode.fields.filter { it.access and Opcodes.ACC_FINAL == Opcodes.ACC_FINAL && it.access and Opcodes.ACC_STATIC != Opcodes.ACC_STATIC }
+
+            for (field in finalFields) {
+                val l = Label()
+                initMethod.visitLabel(l)
+
+                initMethod.visitVarInsn(Opcodes.ALOAD, 0)
+
+                when (field.desc) {
+                    "I" -> {
+                        initMethod.visitInsn(Opcodes.ICONST_0)
+                    } // int
+                    "F" -> initMethod.visitInsn(Opcodes.FCONST_0) // float
+                    "D" -> initMethod.visitInsn(Opcodes.DCONST_0) // double
+                    "J" -> initMethod.visitInsn(Opcodes.LCONST_0) // long
+                    "Z" -> initMethod.visitInsn(Opcodes.ICONST_0) // boolean
+                    "S" -> initMethod.visitInsn(Opcodes.ICONST_0) // short
+                    "B" -> initMethod.visitInsn(Opcodes.ICONST_0) // byte
+
+                    else -> initMethod.visitInsn(Opcodes.ACONST_NULL)
+                }
+
+                initMethod.visitFieldInsn(Opcodes.PUTFIELD, classNode.name, field.name, field.desc)
+
+                stackSize += when (field.desc) {
+                    "D", "J" -> 2 // doubles and longs are, of course, 64-bit.
+
+                    else -> 1
+                }
+            }
         }
 
         initMethod.visitInsn(Opcodes.RETURN)
