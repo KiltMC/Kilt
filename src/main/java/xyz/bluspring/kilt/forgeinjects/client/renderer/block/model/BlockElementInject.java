@@ -29,7 +29,7 @@ public class BlockElementInject implements BlockElementInjection {
     public BlockElementInject(Vector3f from, Vector3f to, Map<Direction, BlockElementFace> faces, @Nullable BlockElementRotation rotation, boolean shade, ForgeFaceData faceData) {
         this(from, to, faces, rotation, shade);
         this.setFaceData(faceData);
-        this.faces.values().forEach(face -> ((BlockElementFaceInjection) face).kilt$setParent((BlockElement) (Object) this));
+        this.kilt$setFaces();
     }
 
     @Override
