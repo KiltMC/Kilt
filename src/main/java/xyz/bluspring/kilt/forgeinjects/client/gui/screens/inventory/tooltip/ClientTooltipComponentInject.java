@@ -1,3 +1,4 @@
+// TRACKED HASH: 8b7635b1c3fd59ad1be627c6c000e2bc4dbd3311
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.inventory.tooltip;
 
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;

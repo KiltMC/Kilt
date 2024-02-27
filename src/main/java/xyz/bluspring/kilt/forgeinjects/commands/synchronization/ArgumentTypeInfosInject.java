@@ -1,3 +1,4 @@
+// TRACKED HASH: 2bffb0fe9cfd4490897033dbf7f02f15990726ba
 package xyz.bluspring.kilt.forgeinjects.commands.synchronization;
 
 import com.mojang.brigadier.arguments.ArgumentType;

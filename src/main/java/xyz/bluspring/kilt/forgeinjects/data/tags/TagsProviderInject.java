@@ -1,3 +1,4 @@
+// TRACKED HASH: 8d47c79d6a772b42135fb88a71db48a51fbae652
 package xyz.bluspring.kilt.forgeinjects.data.tags;
 
 import net.minecraft.core.Registry;

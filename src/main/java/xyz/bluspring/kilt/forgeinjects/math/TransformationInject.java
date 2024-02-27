@@ -1,3 +1,4 @@
+// TRACKED HASH: 530ffd564fc9a3e6a9785a5c90873c529567a4cc
 package xyz.bluspring.kilt.forgeinjects.math;
 
 import com.mojang.math.Transformation;

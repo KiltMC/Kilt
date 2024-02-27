@@ -1,3 +1,4 @@
+// TRACKED HASH: c90ad9c5c8bd04fe0240bdfe4249e3f318e2cd46
 package xyz.bluspring.kilt.forgeinjects.world.effect;
 
 import net.minecraft.world.effect.MobEffectInstance;

@@ -1,3 +1,4 @@
+// TRACKED HASH: 0352f8e699c8b1e9b6ac77b9927e3852ffaf311c
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;

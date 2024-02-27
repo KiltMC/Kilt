@@ -1,3 +1,4 @@
+// TRACKED HASH: 77565619d9e3fb1b0af1612ca043da5909eb659a
 package xyz.bluspring.kilt.forgeinjects.client.renderer.entity;
 
 import net.minecraft.client.renderer.entity.FishingHookRenderer;

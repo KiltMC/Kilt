@@ -1,3 +1,4 @@
+// TRACKED HASH: 65326a80010482966a2797124eab63fbaf21f71e
 package xyz.bluspring.kilt.forgeinjects.world.level.biome;
 
 import net.minecraft.world.level.biome.Biome;

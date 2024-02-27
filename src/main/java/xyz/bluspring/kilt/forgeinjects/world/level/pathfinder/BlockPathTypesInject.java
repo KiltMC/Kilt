@@ -1,3 +1,4 @@
+// TRACKED HASH: fae6987b3158124fcb232d116b822683aaed5047
 package xyz.bluspring.kilt.forgeinjects.world.level.pathfinder;
 
 import net.minecraft.world.level.pathfinder.BlockPathTypes;

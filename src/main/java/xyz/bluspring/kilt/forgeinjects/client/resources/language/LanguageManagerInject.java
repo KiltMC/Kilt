@@ -1,3 +1,4 @@
+// TRACKED HASH: f14b642e554402137488ad6bb8d2c64862ca5f2f
 package xyz.bluspring.kilt.forgeinjects.client.resources.language;
 
 import net.minecraft.client.resources.language.LanguageManager;

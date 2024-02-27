@@ -1,3 +1,4 @@
+// TRACKED HASH: b1d270381307f1dd2174ce194ca2605380b6ed59
 package xyz.bluspring.kilt.forgeinjects.network.protocol.handshake;
 
 import net.minecraft.network.FriendlyByteBuf;

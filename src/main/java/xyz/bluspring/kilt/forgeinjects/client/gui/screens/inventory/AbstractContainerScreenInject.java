@@ -1,3 +1,4 @@
+// TRACKED HASH: c7da1c1b82a8d0a88d3f2a674ea41109be948d6c
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.inventory;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;

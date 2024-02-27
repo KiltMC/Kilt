@@ -1,3 +1,4 @@
+// TRACKED HASH: f7771377b9b1ccc4e36e12d9261c92039fef8d18
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block.model;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;

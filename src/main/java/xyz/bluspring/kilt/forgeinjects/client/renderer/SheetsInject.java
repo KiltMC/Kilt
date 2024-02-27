@@ -1,3 +1,4 @@
+// TRACKED HASH: 230230582e2edceefcbd96d5a8ae8fde240fa88d
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;

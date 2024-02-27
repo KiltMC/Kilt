@@ -1,3 +1,4 @@
+// TRACKED HASH: 31fa78f22b9de5f08b03a4be3162c7c3334e121f
 package xyz.bluspring.kilt.forgeinjects.world.inventory;
 
 import net.minecraft.world.inventory.AnvilMenu;

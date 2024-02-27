@@ -1,3 +1,4 @@
+// TRACKED HASH: 0ce404d106018ee2fbf70e284692f9e57382cddd
 package xyz.bluspring.kilt.forgeinjects.client.color.block;
 
 import net.minecraft.client.color.block.BlockColors;

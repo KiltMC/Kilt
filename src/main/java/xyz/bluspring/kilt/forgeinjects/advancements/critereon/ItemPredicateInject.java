@@ -1,3 +1,4 @@
+// TRACKED HASH: fbf90064bc1c666d9dd612d17118f04bc3be42a9
 package xyz.bluspring.kilt.forgeinjects.advancements.critereon;
 
 import com.google.gson.JsonElement;

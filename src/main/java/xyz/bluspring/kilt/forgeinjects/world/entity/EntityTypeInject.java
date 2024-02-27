@@ -1,3 +1,4 @@
+// TRACKED HASH: 285b05db3877c1ccdd76c7704e1de0c69adff005
 package xyz.bluspring.kilt.forgeinjects.world.entity;
 
 import net.minecraft.core.Holder;

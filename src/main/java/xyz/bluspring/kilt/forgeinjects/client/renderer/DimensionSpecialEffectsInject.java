@@ -1,3 +1,4 @@
+// TRACKED HASH: 870418c225798f0447483d4ac354f518addc694d
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
 import net.minecraft.client.renderer.DimensionSpecialEffects;

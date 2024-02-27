@@ -1,3 +1,4 @@
+// TRACKED HASH: f818e25808bed5f0e6c33a46353235bc2d7f4533
 package xyz.bluspring.kilt.forgeinjects.world.level.levelgen.structure;
 
 import net.minecraft.world.level.levelgen.structure.Structure;

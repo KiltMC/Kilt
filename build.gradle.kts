@@ -1,6 +1,8 @@
 import org.ajoberstar.grgit.Grgit
+import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
+import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
@@ -215,6 +217,52 @@ tasks {
             val kiltInjectCount = count
 
             println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
+        }
+    }
+
+    register("tagPatches") {
+        group = "kilt"
+        description = "Tags the Kilt ForgeInjects with their currently tracked patch hash to ensure they are all up to date."
+
+        doFirst {
+            fun readDir(file: File) {
+                val files = file.listFiles()!!
+                val md = MessageDigest.getInstance("SHA1")
+
+                files.forEach {
+                    if (it.isDirectory) {
+                        readDir(it)
+                    } else {
+                        val startDir = it.absolutePath.replace("\\", "/").replaceBefore("forgeinjects/", "").replace("forgeinjects/", "")
+                        val patchDir = if (startDir.startsWith("blaze3d") || startDir.startsWith("math")) "com/mojang/${startDir.replace("Inject.java", ".java.patch")}"
+                            else "net/minecraft/${startDir.replace("Inject.java", ".java.patch")}"
+
+                        val patchFile = File("$projectDir/forge/patches/minecraft/$patchDir")
+                        if (!patchFile.exists()) {
+                            println("!! WARNING !! Inject $startDir no longer has an associated patch file!")
+                            return@forEach
+                        }
+
+                        val patchHash = md.digest(patchFile.readBytes()).toHexString()
+
+                        val data = it.readLines().toMutableList()
+                        if (!data[0].startsWith("// TRACKED HASH: ")) {
+                            data.add(0, "// TRACKED HASH: $patchHash")
+                            it.writeText(data.joinToString("\r\n"))
+                        } else {
+                            val oldHash = data[0].removePrefix("// TRACKED HASH: ")
+
+                            if (oldHash != patchHash) {
+                                println("Inject $startDir is outdated! (patch: $patchHash, inject: $oldHash) Updating hash...")
+                                data[0] = "// TRACKED HASH: $patchHash"
+                                it.writeText(data.joinToString("\r\n"))
+                            }
+                        }
+                    }
+                }
+            }
+
+            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
         }
     }
 

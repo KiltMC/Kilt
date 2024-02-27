@@ -1,3 +1,4 @@
+// TRACKED HASH: b6a7b3f4dcd24203dabc8d78fcec1330affbe661
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import net.minecraft.resources.ResourceLocation;

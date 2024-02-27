@@ -1,3 +1,4 @@
+// TRACKED HASH: 4a532f665aabef3c36a9818c82e846213791c292
 package xyz.bluspring.kilt.forgeinjects.client.player;
 
 import net.minecraft.client.player.LocalPlayer;

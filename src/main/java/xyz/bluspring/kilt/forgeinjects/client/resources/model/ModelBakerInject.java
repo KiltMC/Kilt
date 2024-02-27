@@ -1,3 +1,4 @@
+// TRACKED HASH: e63986ae2aac1456fe256ecfa6d01712dbfbbc8f
 package xyz.bluspring.kilt.forgeinjects.client.resources.model;
 
 import net.minecraft.client.resources.model.ModelBaker;

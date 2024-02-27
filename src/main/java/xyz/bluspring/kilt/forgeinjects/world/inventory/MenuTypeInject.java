@@ -1,3 +1,4 @@
+// TRACKED HASH: 00999822b8acf90ce2c48fea9dad5cfee4bcdd4e
 package xyz.bluspring.kilt.forgeinjects.world.inventory;
 
 import net.minecraft.network.FriendlyByteBuf;

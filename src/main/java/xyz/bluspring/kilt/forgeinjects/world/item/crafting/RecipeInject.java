@@ -1,3 +1,4 @@
+// TRACKED HASH: 16c317d26c5aa67558a75e4c8d180770e7de06b8
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import net.minecraft.world.item.crafting.Ingredient;

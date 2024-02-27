@@ -1,3 +1,4 @@
+// TRACKED HASH: 1c71a68099025e02b23495d36736a4a8d42f2db3
 package xyz.bluspring.kilt.forgeinjects.world.level.levelgen.structure.templatesystem;
 
 import net.minecraft.core.BlockPos;

@@ -1,3 +1,4 @@
+// TRACKED HASH: 12b17cf5ecf56046e0c8f2d76638acdc60c56dfb
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import net.minecraft.core.NonNullList;

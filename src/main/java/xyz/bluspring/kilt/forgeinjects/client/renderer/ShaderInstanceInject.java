@@ -1,3 +1,4 @@
+// TRACKED HASH: 536471959d94fe44f630b2fc9adf3b6aafdf436a
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
 import com.mojang.blaze3d.vertex.VertexFormat;

@@ -1,11 +1,8 @@
+// TRACKED HASH: d2c363dd841c4bf27dd0d480abbc0a106d8e20ce
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
 import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
-import java.util.Iterator;
 
 @Mixin(Blocks.class)
 public class BlocksInject {

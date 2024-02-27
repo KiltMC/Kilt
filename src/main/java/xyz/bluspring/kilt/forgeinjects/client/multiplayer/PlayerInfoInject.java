@@ -1,3 +1,4 @@
+// TRACKED HASH: 18838234833312d3c610b6e9eee97297572aa05e
 package xyz.bluspring.kilt.forgeinjects.client.multiplayer;
 
 import net.minecraft.client.multiplayer.PlayerInfo;

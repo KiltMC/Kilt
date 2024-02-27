@@ -1,3 +1,4 @@
+// TRACKED HASH: 790222e880a2fb721fe089f49d812d7025836f0a
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.minecraft.world.item.DyeColor;

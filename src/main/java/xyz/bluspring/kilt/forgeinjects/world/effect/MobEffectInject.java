@@ -1,3 +1,4 @@
+// TRACKED HASH: 77d21c29ec548ed8806ff46ca5b80c8a57b615ce
 package xyz.bluspring.kilt.forgeinjects.world.effect;
 
 import net.fabricmc.api.EnvType;

@@ -1,3 +1,4 @@
+// TRACKED HASH: e94105331577df75d436a2b62fbe975ba25febcf
 package xyz.bluspring.kilt.forgeinjects.world.item.enchantment;
 
 import net.minecraft.world.item.ItemStack;

@@ -1,3 +1,4 @@
+// TRACKED HASH: 976f1ac17422a80c6be0cf2e6ec26fc055ebf7b5
 package xyz.bluspring.kilt.forgeinjects.client.gui.components.toasts;
 
 import net.minecraft.client.gui.components.toasts.Toast;

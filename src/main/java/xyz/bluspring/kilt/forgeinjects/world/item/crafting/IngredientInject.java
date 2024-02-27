@@ -1,3 +1,4 @@
+// TRACKED HASH: 297d980725ef2ec87d9bfaf04e6eab59c792fccd
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import com.google.gson.JsonElement;

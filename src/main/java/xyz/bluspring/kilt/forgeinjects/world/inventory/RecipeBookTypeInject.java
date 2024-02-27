@@ -1,3 +1,4 @@
+// TRACKED HASH: d27191d511ec2b22a36acfc37e2404e5b0edc805
 package xyz.bluspring.kilt.forgeinjects.world.inventory;
 
 import net.minecraft.world.inventory.RecipeBookType;

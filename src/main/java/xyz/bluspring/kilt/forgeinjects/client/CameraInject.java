@@ -1,3 +1,4 @@
+// TRACKED HASH: 988ae85739fcd12e564f775b34a9e6306e31f01f
 package xyz.bluspring.kilt.forgeinjects.client;
 
 import net.minecraft.client.Camera;

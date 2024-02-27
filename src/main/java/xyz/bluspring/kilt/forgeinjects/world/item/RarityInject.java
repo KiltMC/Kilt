@@ -1,3 +1,4 @@
+// TRACKED HASH: ad9e0035fc910cb9d79f74951b83b361e6bd1ba9
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.minecraft.ChatFormatting;

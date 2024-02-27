@@ -1,3 +1,4 @@
+// TRACKED HASH: 0a11cec4b35f7391f587273510ae508386f33218
 package xyz.bluspring.kilt.forgeinjects.server.packs;
 
 import net.minecraft.server.packs.PackResources;

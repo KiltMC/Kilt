@@ -1,3 +1,4 @@
+// TRACKED HASH: 44767e4d3a832ae3e4f6603b5367e7a335ce7243
 package xyz.bluspring.kilt.forgeinjects.stats;
 
 import com.mojang.datafixers.util.Pair;

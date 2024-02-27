@@ -1,3 +1,4 @@
+// TRACKED HASH: 7db9f60a09f2e5b156013ce9fa93086ae63920c1
 package xyz.bluspring.kilt.forgeinjects.world.food;
 
 import com.mojang.datafixers.util.Pair;

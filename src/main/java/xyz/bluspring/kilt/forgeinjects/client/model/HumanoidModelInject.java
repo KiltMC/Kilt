@@ -1,3 +1,4 @@
+// TRACKED HASH: decab18fc678570fcc5f2c2b899561ef7d4dcd7a
 package xyz.bluspring.kilt.forgeinjects.client.model;
 
 import net.minecraft.client.model.HumanoidModel;

@@ -1,3 +1,4 @@
+// TRACKED HASH: b77abfa3d010ae58c80d911cff64c39f34dadbd6
 package xyz.bluspring.kilt.forgeinjects.server.packs.resources;
 
 import net.minecraft.resources.ResourceLocation;

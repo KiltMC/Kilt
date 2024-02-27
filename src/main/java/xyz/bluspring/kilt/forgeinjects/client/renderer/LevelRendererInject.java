@@ -1,3 +1,4 @@
+// TRACKED HASH: 66d460a5ca67d57026ea83d7b1223b548ab9de3d
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;

@@ -1,3 +1,4 @@
+// TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import net.minecraft.nbt.CompoundTag;

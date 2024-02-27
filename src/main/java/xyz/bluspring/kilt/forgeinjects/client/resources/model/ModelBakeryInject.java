@@ -1,3 +1,4 @@
+// TRACKED HASH: 9e81b9914e73796e61fbdf90eb1c997d3da3bf81
 package xyz.bluspring.kilt.forgeinjects.client.resources.model;
 
 import com.google.common.collect.Sets;

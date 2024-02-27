@@ -1,3 +1,4 @@
+// TRACKED HASH: 6e5ff0663e40cf957dd3b217b0541c32bd378ce0
 package xyz.bluspring.kilt.forgeinjects.blaze3d.vertex;
 
 import com.llamalad7.mixinextras.sugar.Local;
