@@ -16,9 +16,15 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class BuiltInRegistriesInject {
     @ModifyVariable(method = "internalRegister", at = @At("HEAD"), argsOnly = true)
     private static <T, R extends WritableRegistry<T>> R kilt$wrapWithGameDataWrapper(R registry, @Local(argsOnly = true) ResourceKey<? extends Registry<T>> key, @Local(argsOnly = true) BuiltInRegistries.RegistryBootstrap<T> bootstrap, @Local(argsOnly = true) Lifecycle lifecycle) {
+        R wrapper;
         if (registry instanceof DefaultedRegistry<?> defaulted)
-            return (R) GameData.getWrapper(key, lifecycle, defaulted.getDefaultKey().toString());
+            wrapper = (R) GameData.getWrapper(key, lifecycle, defaulted.getDefaultKey().toString());
+        else
+            wrapper = (R) GameData.getWrapper(key, lifecycle);
 
-        return (R) GameData.getWrapper(key, lifecycle);
+        if (wrapper == null)
+            return registry;
+        else
+            return wrapper;
     }
 }
