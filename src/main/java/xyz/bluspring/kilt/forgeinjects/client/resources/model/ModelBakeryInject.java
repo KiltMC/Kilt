@@ -42,7 +42,7 @@ public abstract class ModelBakeryInject implements ModelBakeryInjection {
         }
     }
 
-    @Mixin(targets = "net.minecraft.client.resources.model.ModelBakery.ModelBakerImpl")
+    @Mixin(targets = "net.minecraft.client.resources.model.ModelBakery$ModelBakerImpl")
     public static abstract class ModelBakerImplInject implements ModelBakerImplInjection {
         @Shadow @Final @Mutable
         private Function<Material, TextureAtlasSprite> modelTextureGetter;
