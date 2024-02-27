@@ -64,7 +64,7 @@ public class ConnectionInject implements ConnectionInjection {
         return connection;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;"), method = "connectToLocalServer", locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;", remap = false), method = "connectToLocalServer", locals = LocalCapture.CAPTURE_FAILHARD)
     private static void kilt$registerClientLoginChannelLocally(SocketAddress address, CallbackInfoReturnable<Connection> cir, Connection connection) {
         connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
     }

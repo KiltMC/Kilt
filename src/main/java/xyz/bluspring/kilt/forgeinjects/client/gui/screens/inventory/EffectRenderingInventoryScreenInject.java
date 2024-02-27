@@ -46,7 +46,7 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
         i.set(event.getHorizontalOffset());
     }
 
-    @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;"))
+    @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;", remap = false))
     private List<MobEffectInstance> kilt$filterOnlyRenderableEffects(Ordering<MobEffectInstance> instance, Iterable<MobEffectInstance> elements, Operation<List<MobEffectInstance>> original) {
         return original.call(instance, elements).stream().filter(ForgeHooksClient::shouldRenderEffect).sorted().collect(Collectors.toList());
     }

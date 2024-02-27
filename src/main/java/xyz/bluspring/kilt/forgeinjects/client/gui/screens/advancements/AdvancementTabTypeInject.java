@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 
 import java.util.Arrays;
 
-@Mixin(targets = "net/minecraft/client/gui/screens/advancements/AdvancementTabType")
+@Mixin(AdvancementTabType.class)
 public abstract class AdvancementTabTypeInject {
     @Shadow
     public static AdvancementTabType[] values() {

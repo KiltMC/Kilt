@@ -20,6 +20,8 @@
         "core.HolderSetInject$NamedInject",
         "core.MappedRegistryInject",
         "core.RegistrySetBuilderInject",
+        "core.particles.BlockParticleOptionInject",
+        "core.registries.BuiltInRegistriesInject",
         "data.DataGeneratorInject",
         "data.loot.LootTableProviderInject",
         "data.recipes.RecipeProviderInject",

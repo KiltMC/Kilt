@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.Map;
 
-@Mixin(PortingLibChunkManager.TicketTracker.class)
+@Mixin(value = PortingLibChunkManager.TicketTracker.class, remap = false)
 public interface TicketTrackerAccessor<T extends Comparable<? super T>> {
     @Accessor("chunks")
     Map<PortingLibChunkManager.TicketOwner<T>, LongSet> kilt$getChunks();

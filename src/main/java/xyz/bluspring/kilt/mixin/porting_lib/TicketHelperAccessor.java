@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.Map;
 import java.util.UUID;
 
-@Mixin(PortingLibChunkManager.TicketHelper.class)
+@Mixin(value = PortingLibChunkManager.TicketHelper.class, remap = false)
 public interface TicketHelperAccessor {
     @Accessor
     Map<BlockPos, Pair<LongSet, LongSet>> getBlockTickets();

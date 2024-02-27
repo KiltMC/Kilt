@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Mixin(LazyRegistrar.class)
+@Mixin(value = LazyRegistrar.class, remap = false)
 public interface LazyRegistrarAccessor<T> {
     @Accessor("entries")
     Map<RegistryObject<T>, Supplier<? extends T>> getEntrySet();
