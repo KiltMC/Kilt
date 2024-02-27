@@ -4,7 +4,9 @@ package xyz.bluspring.kilt.forgeinjects.stats;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.stats.RecipeBookSettings;
 import net.minecraft.world.inventory.RecipeBookType;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,6 +29,7 @@ public class RecipeBookSettingsInject implements RecipeBookSettingsInjection {
         return TAG_FIELDS;
     }
 
+    @Final @Mutable
     @Shadow private static Map<RecipeBookType, Pair<String, String>> TAG_FIELDS;
 
     // there was, in fact, a better way.
