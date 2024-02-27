@@ -10,11 +10,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(BuiltInRegistries.class)
 public class BuiltInRegistriesInject {
-    @ModifyArg(method = "internalRegister", at = @At("HEAD"))
+    @ModifyVariable(method = "internalRegister", at = @At("HEAD"), argsOnly = true)
     private static <T, R extends WritableRegistry<T>> R kilt$wrapWithGameDataWrapper(R registry, @Local(argsOnly = true) ResourceKey<? extends Registry<T>> key, @Local(argsOnly = true) BuiltInRegistries.RegistryBootstrap<T> bootstrap, @Local(argsOnly = true) Lifecycle lifecycle) {
         if (registry instanceof DefaultedRegistry<?> defaulted)
             return (R) GameData.getWrapper(key, lifecycle, defaulted.getDefaultKey().toString());
