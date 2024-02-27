@@ -213,6 +213,8 @@ class KiltLoader {
 
             loadTransformers(null) // load Forge ATs
         }
+
+        loadForgeBuiltinMod() // fuck you
     }
 
     // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
@@ -244,10 +246,13 @@ class KiltLoader {
 
         mods.add(forgeMod)
         addModToFabric(forgeMod)
+    }
 
-        registerAnnotations(forgeMod, scanData)
+    private fun fullLoadForgeBuiltin() {
+        val mod = this.getMod("forge") ?: throw IllegalStateException("WHAT")
 
-        forgeMod.eventBus.post(FMLConstructModEvent(forgeMod, ModLoadingStage.CONSTRUCT))
+        registerAnnotations(mod, mod.scanData)
+        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
     }
 
     // This is used specifically for JiJ'd mods that don't store mods.toml files.
@@ -468,7 +473,7 @@ class KiltLoader {
         val exceptions = mutableListOf<Exception>()
 
         initForge()
-        loadForgeBuiltinMod()
+        fullLoadForgeBuiltin()
 
         while (modLoadingQueue.isNotEmpty()) {
             try {
