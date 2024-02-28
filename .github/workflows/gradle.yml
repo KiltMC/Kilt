@@ -17,7 +17,8 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        submodules: 'recursive'
+        submodules: true
+        token: ${{ secrets.PAT_TOKEN }}
     # Taken from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/workflows/gradle.yml
     - name: Cache/Uncache
       uses: actions/cache@v2
