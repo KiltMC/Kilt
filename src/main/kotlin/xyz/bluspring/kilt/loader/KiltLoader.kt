@@ -340,8 +340,8 @@ class KiltLoader {
 
     // Split this off from the main preloadMods method, in case it needs to be used again later.
     private fun parseModsToml(toml: CommentedConfig, modFile: File?, jarFile: ZipFile?, nestedMods: List<ForgeMod> = listOf()): List<ForgeMod> {
-        if (toml.get("modLoader") as String != "javafml")
-            throw Exception("Forge mod file ${modFile?.name ?: "(unknown)"} is not a javafml mod!")
+        if (toml.get("modLoader") as String != "javafml" && toml.get("modLoader") as String != "lowcodefml")
+            throw Exception("Forge mod file ${modFile?.name ?: "(unknown)"} is not a supported FML mod! (got ${toml.get("modLoader") as String})")
 
         // Load the JAR's manifest file, or at least try to.
         val manifest = if (jarFile != null) try {
@@ -431,7 +431,8 @@ class KiltLoader {
                 modConfig = mainConfig,
                 nestedMods = nestedMods,
                 // TODO: make logo file square
-                logoFile = metadata.getConfigElement<String>("logoFile").orElse("")
+                logoFile = metadata.getConfigElement<String>("logoFile").orElse(""),
+                shouldScan = toml.get("modLoader") as String == "javafml"
             )
             mod.manifest = manifest
 
@@ -478,6 +479,11 @@ class KiltLoader {
         while (modLoadingQueue.isNotEmpty()) {
             try {
                 val mod = modLoadingQueue.remove()
+
+                if (!mod.shouldScan) {
+                    mods.add(mod)
+                    continue
+                }
 
                 val scanData = ModFileScanData()
                 scanData.addModFileInfo(ModFileInfo(mod))

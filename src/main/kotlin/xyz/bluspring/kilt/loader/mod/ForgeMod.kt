@@ -48,7 +48,9 @@ class ForgeMod(
     private val updateURL: URL? = null,
 
     val authors: String = "",
-    val credits: String = ""
+    val credits: String = "",
+
+    val shouldScan: Boolean = true
 ) : IModInfo {
     val container = KiltModContainer(this)
 
