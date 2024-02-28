@@ -934,3 +934,5 @@ transitive-accessible field net/minecraft/commands/synchronization/ArgumentTypeI
 transitive-accessible field net/minecraft/world/entity/SpawnPlacements DATA_BY_TYPE Ljava/util/Map;
 transitive-accessible class net/minecraft/world/entity/SpawnPlacements$Data
 transitive-accessible class net/minecraft/core/registries/BuiltInRegistries$RegistryBootstrap
+transitive-accessible class net/minecraft/core/RegistrySetBuilder$BuildState
+transitive-accessible class net/minecraft/core/RegistrySetBuilder$BuildState$1

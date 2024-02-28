@@ -58,6 +58,7 @@
         "WoodTypeAccessor",
         "client.gui.components.ButtonBuilderAccessor",
         "data.registries.VanillaRegistriesAccessor",
+        "fabric_api.DynamicRegistriesMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.RegistryObjectAccessor",
         "porting_lib.RegistryObjectMixin",

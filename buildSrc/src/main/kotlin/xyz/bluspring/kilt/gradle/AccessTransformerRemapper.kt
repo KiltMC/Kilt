@@ -129,6 +129,8 @@ class AccessTransformerRemapper {
         widener += "transitive-accessible field net/minecraft/world/entity/SpawnPlacements DATA_BY_TYPE Ljava/util/Map;"
         widener += "transitive-accessible class net/minecraft/world/entity/SpawnPlacements\$Data"
         widener += "transitive-accessible class net/minecraft/core/registries/BuiltInRegistries\$RegistryBootstrap"
+        widener += "transitive-accessible class net/minecraft/core/RegistrySetBuilder\$BuildState"
+        widener += "transitive-accessible class net/minecraft/core/RegistrySetBuilder\$BuildState\$1"
 
         if (!output.exists())
             output.createNewFile()

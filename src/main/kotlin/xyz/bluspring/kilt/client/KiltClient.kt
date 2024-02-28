@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
-import com.mojang.blaze3d.systems.RenderSystem
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
@@ -21,7 +20,6 @@ import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
@@ -98,34 +96,8 @@ class KiltClient : ClientModInitializer {
         // we're not using it properly though.
         forgeGui = ForgeGui(mc)
 
-        ClientGuiEvent.RENDER_HUD.register { poseStack, delta ->
-            val overlays = GuiOverlayManager.getOverlays()
-
-            if (overlays.isEmpty())
-                return@register
-
-            val window = mc.window
-
-            forgeGui.screenWidth = window.screenWidth
-            forgeGui.screenHeight = window.screenHeight
-            forgeGui.random.setSeed(forgeGui.tickCount * 312871L)
-
-            overlays.forEach { entry ->
-                try {
-                    val overlay = entry.overlay
-                    if (MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Pre(window, poseStack, delta, entry)))
-                        return@forEach
-
-                    overlay.render(forgeGui, poseStack, delta, forgeGui.screenWidth, forgeGui.screenHeight)
-
-                    MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Post(window, poseStack, delta, entry))
-                } catch (e: Exception) {
-                    Kilt.logger.error("Failed to render overlay ${entry.id}")
-                    e.printStackTrace()
-                }
-            }
-
-            RenderSystem.setShaderColor(1F, 1F, 1F, 1F)
+        ClientGuiEvent.RENDER_HUD.register { guiGraphics, delta ->
+            forgeGui.render(guiGraphics, delta)
         }
 
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
