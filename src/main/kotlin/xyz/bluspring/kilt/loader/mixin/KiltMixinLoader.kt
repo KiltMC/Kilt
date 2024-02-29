@@ -16,8 +16,11 @@ object KiltMixinLoader {
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
 
         mods.forEach { mod ->
-            if (mod.manifest == null)
+            if (mod.manifest == null) {
+                Kilt.loader.addModToFabric(mod)
+                FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
                 return@forEach
+            }
 
             try {
                 Kilt.loader.addModToFabric(mod)

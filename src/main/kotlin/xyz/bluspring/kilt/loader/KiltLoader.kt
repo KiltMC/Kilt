@@ -483,6 +483,8 @@ class KiltLoader {
                 if (!mod.shouldScan) {
                     mod.scanData = ModFileScanData()
                     mods.add(mod)
+                    exceptions.addAll(registerAnnotations(mod, mod.scanData))
+
                     continue
                 }
 
