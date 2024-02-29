@@ -481,6 +481,7 @@ class KiltLoader {
                 val mod = modLoadingQueue.remove()
 
                 if (!mod.shouldScan) {
+                    mod.scanData = ModFileScanData()
                     mods.add(mod)
                     continue
                 }
