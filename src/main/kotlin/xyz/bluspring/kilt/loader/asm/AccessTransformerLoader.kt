@@ -11,7 +11,7 @@ import java.util.regex.Pattern
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
-    private const val debug = false
+    private val debug = FabricLoader.getInstance().isDevelopmentEnvironment
     private var hasLoaded = false
 
     private val whitespace = Pattern.compile("[ \t]+")
@@ -79,7 +79,14 @@ object AccessTransformerLoader {
                     val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor, toIntermediary = true)
                     val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
-                    val methodName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: name, intermediaryDescriptor)
+                    val methodName = mappingResolver.mapMethodName("intermediary",
+                        intermediaryClassName.replace("/", "."),
+                        if (name.startsWith("f_") && name.endsWith("_"))
+                            KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapMethod(name, descriptor) ?: name
+                        else
+                            KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapMethod(name, descriptor) ?: name,
+                        intermediaryDescriptor
+                    )
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
                     val pair = Pair(methodName, mappedDescriptor)
 
