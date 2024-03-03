@@ -11,18 +11,10 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraftforge.client.*;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
-import net.minecraftforge.client.gui.ClientTooltipComponentManager;
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.loading.ClientModLoader;
-import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.gametest.ForgeGameTestHooks;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -78,20 +70,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;updateVsync(Z)V", shift = At.Shift.BEFORE), method = "<init>")
     public void kilt$initializeForge(GameConfig gameConfig, CallbackInfo ci) {
-        ForgeGameTestHooks.registerGametests();
-        ModLoader.get().postEvent(new RegisterClientReloadListenersEvent(this.resourceManager));
-        ModLoader.get().postEvent(new EntityRenderersEvent.RegisterLayerDefinitions());
-        ModLoader.get().postEvent(new EntityRenderersEvent.RegisterRenderers());
-        TextureAtlasSpriteLoaderManager.init();
-        ClientTooltipComponentManager.init();
-        EntitySpectatorShaderManager.init();
-        ModLoader.get().postEvent(new RegisterKeyMappingsEvent(this.options));
-        RecipeBookManager.init();
-        GuiOverlayManager.init();
-        DimensionSpecialEffectsManager.init();
-        NamedRenderTypeManager.init();
-        ColorResolverManager.init();
-        ItemDecoratorHandler.init();
+        ForgeHooksClient.initClientHooks((Minecraft) (Object) this, this.resourceManager);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -113,5 +92,10 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(FJZ)V", shift = At.Shift.BY, by = 2), method = "runTick")
     public void kilt$callRenderTickEnd(boolean bl, CallbackInfo ci) {
         ForgeEventFactory.onRenderTickEnd(realPartialTick);
+    }
+
+    @Inject(method = "method_29338", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;onGameLoadFinished()V"))
+    private void kilt$finishModLoading(CallbackInfo ci) {
+        ClientModLoader.completeModLoading();
     }
 }

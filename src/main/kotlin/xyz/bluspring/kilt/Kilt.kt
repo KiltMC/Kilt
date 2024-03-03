@@ -11,8 +11,13 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.packs.PackType
+import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
@@ -64,27 +69,41 @@ class Kilt : ModInitializer {
         loader.runPhaseExecutors(ModLoadingPhase.GATHER)
 
         // config load should be here
-        loader.runPhaseExecutors(ModLoadingPhase.LOAD)
+        var loaded = false
 
-        loader.mods.forEach { mod ->
-            mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
-        }
+        ResourceManagerHelper.get(if (onServer) PackType.SERVER_DATA else PackType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
+            override fun getFabricId(): ResourceLocation {
+                return ResourceLocation(MOD_ID, "forge_mod_loader")
+            }
 
-        loader.mods.forEach { mod ->
-            mod.eventBus.post(
-                if (onServer)
-                    FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
-                else {
-                    FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
+            override fun onResourceManagerReload(resourceManager: ResourceManager) {
+                if (loaded)
+                    return
+
+                loader.runPhaseExecutors(ModLoadingPhase.LOAD)
+
+                loader.mods.forEach { mod ->
+                    mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
                 }
-            )
-        }
 
-        if (!onServer) {
-            KiltClient.lateRegisterEvents()
-        }
+                loader.mods.forEach { mod ->
+                    mod.eventBus.post(
+                        if (onServer)
+                            FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
+                        else {
+                            FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
+                        }
+                    )
+                }
 
-        loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
+                if (!onServer) {
+                    KiltClient.lateRegisterEvents()
+                }
+
+                loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
+                loaded = true
+            }
+        })
     }
 
     @Suppress("removal")
