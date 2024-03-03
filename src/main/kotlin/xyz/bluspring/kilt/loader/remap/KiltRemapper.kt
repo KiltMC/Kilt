@@ -51,7 +51,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 115
+    const val REMAPPER_VERSION = 119
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -79,6 +79,8 @@ object KiltRemapper {
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
     private lateinit var remappedModsDir: File
+
+    private val classNodeList = mutableSetOf<ClassNode>()
 
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         if (disableRemaps) {
@@ -129,6 +131,19 @@ object KiltRemapper {
 
                 if (mod.isRemapped())
                     return@forEach
+
+                val jar = JarFile(mod.modFile)
+                for (entry in jar.entries()) {
+                    if (entry.name.endsWith(".class")) {
+                        val classReader = ClassReader(jar.getInputStream(entry))
+
+                        // we need the info for this for the class writer
+                        val classNode = ClassNode(Opcodes.ASM9)
+                        classReader.accept(classNode, 0)
+
+                        classNodeList.add(classNode)
+                    }
+                }
 
                 modRemappingCoroutines[mod] = (async {
                     if (mod.isRemapped())
@@ -388,13 +403,10 @@ object KiltRemapper {
             val classNode = ClassNode(Opcodes.ASM9)
             classReader.accept(classNode, 0)
 
-            EventClassVisibilityFixer.fixClass(classNode)
-            EventEmptyInitializerFixer.fixClass(classNode)
-            ObjectHolderDefinalizer.processClass(classNode)
-            WorkaroundFixer.fixClass(classNode)
-
             entriesToMap.add(JarEntry(entry.name) to classNode)
         }
+
+        val classes = entriesToMap.map { it.second }.intersect(KiltHelper.getForgeClassNodes().toSet()).intersect(classNodeList).toList()
 
         for ((entry, classNode) in entriesToMap) {
             try {
@@ -403,6 +415,10 @@ object KiltRemapper {
                 val visitor = EnhancedClassRemapper(classWriter, remapper, RenamingTransformer(remapper, false))
                 classNode.accept(visitor)
 
+                EventClassVisibilityFixer.fixClass(classNode)
+                EventEmptyInitializerFixer.fixClass(classNode, classes)
+                ObjectHolderDefinalizer.processClass(classNode)
+                WorkaroundFixer.fixClass(classNode)
                 ConflictingStaticMethodFixer.fixClass(classNode)
 
                 jarOutput.putNextEntry(entry)

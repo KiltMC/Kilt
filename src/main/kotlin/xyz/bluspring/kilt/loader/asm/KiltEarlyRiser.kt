@@ -292,7 +292,7 @@ class KiltEarlyRiser : Runnable {
 
             ClassTinkerers.addTransformation(classNode.name) {
                 EventClassVisibilityFixer.fixClass(it)
-                EventEmptyInitializerFixer.fixClass(it)
+                EventEmptyInitializerFixer.fixClass(it, classes)
                 ObjectHolderDefinalizer.processClass(it)
             }
         }
