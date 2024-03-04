@@ -31,8 +31,7 @@
       "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
     ],
     "mixinsquared": [
-      "xyz.bluspring.kilt.mixin.ferritecore.FerriteMrlCanceller",
-      "xyz.bluspring.kilt.mixin.porting_lib.LootTableLateMixinCanceller"
+      "xyz.bluspring.kilt.mixin.ferritecore.FerriteMrlCanceller"
     ]
   },
   "mixins": [
