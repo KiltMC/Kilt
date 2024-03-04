@@ -473,7 +473,6 @@ class KiltLoader {
 
         val exceptions = mutableListOf<Exception>()
 
-        initForge()
         fullLoadForgeBuiltin()
 
         while (modLoadingQueue.isNotEmpty()) {
@@ -607,9 +606,9 @@ class KiltLoader {
                     if (modId != mod.modId)
                         return@forEach
 
-                    val clazz = launcher.loadIntoTarget(it.clazz.className)
-
                     ModLoadingContext.kiltActiveModId = modId
+
+                    val clazz = launcher.loadIntoTarget(it.clazz.className)
 
                     mod.modObject = clazz.getDeclaredConstructor().newInstance()
                     Kilt.logger.info("Initialized new instance of mod $modId.")
@@ -699,7 +698,7 @@ class KiltLoader {
 
     // We need to initialize all early Forge-related things immediately,
     // because otherwise things will break entirely.
-    private fun initForge() {
+    fun initForge() {
         Bootstrap.bootStrap() // fuck you
         ForgeRegistries.init()
     }

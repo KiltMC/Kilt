@@ -1,5 +1,7 @@
 package net.minecraftforge.fml
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.event.IModBusEvent
@@ -48,15 +50,24 @@ class ModLoader {
         kiltPostEventWrappingMods(e)
     }
 
-    // TODO: these aren't used by Kilt, so no point really. these are only added to appease the Forge API's compile errors.
-    // right now it seems to be used by the ClientModLoader class, which appears to just load datapacks and resource packs and such?
-    // maybe it can be updated to use Kilt internals later.
     fun gatherAndInitializeMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
-        ForgeFeature.registerFeature("java_version", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.SERVER, System.getProperty("java.version")))
+        ForgeFeature.registerFeature("javaVersion", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.BOTH, System.getProperty("java.version")))
+        ForgeFeature.registerFeature("openGLVersion", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.CLIENT, "3.2 Core")) // TODO: set this to the actual ver
+
+        // TODO: test mod bounds
+
+        Kilt.loader.loadMods()
+        Kilt.load(FabricLoader.getInstance().environmentType == EnvType.SERVER)
+
+        Kilt.loader.runPhaseExecutors(ModLoadingPhase.GATHER)
     }
 
-    fun loadMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {}
-    fun finishMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {}
+    fun loadMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
+        Kilt.loader.runPhaseExecutors(ModLoadingPhase.LOAD)
+    }
+    fun finishMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
+        Kilt.loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
+    }
 
     companion object {
         private lateinit var instance: ModLoader

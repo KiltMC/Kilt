@@ -7,17 +7,10 @@ import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
-import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.core.BlockPos
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.packs.PackType
-import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
@@ -29,15 +22,9 @@ import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.fml.ModLoadingPhase
-import net.minecraftforge.fml.ModLoadingStage
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.bluspring.kilt.client.ClientStartingCallback
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
@@ -45,65 +32,7 @@ import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
-        MinecraftForge.EVENT_BUS.start()
-
         registerFabricEvents()
-
-        ClientStartingCallback.EVENT.register {
-            load(false)
-        }
-
-        val dist = FabricLoader.getInstance().environmentType
-
-        ServerLifecycleEvents.SERVER_STARTING.register {
-            if (dist != EnvType.SERVER)
-                return@register
-
-            load(true)
-        }
-    }
-
-    fun load(onServer: Boolean) {
-        loader.initMods()
-
-        loader.runPhaseExecutors(ModLoadingPhase.GATHER)
-
-        // config load should be here
-        var loaded = false
-
-        ResourceManagerHelper.get(if (onServer) PackType.SERVER_DATA else PackType.CLIENT_RESOURCES).registerReloadListener(object : SimpleSynchronousResourceReloadListener {
-            override fun getFabricId(): ResourceLocation {
-                return ResourceLocation(MOD_ID, "forge_mod_loader")
-            }
-
-            override fun onResourceManagerReload(resourceManager: ResourceManager) {
-                if (loaded)
-                    return
-
-                loader.runPhaseExecutors(ModLoadingPhase.LOAD)
-
-                loader.mods.forEach { mod ->
-                    mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
-                }
-
-                loader.mods.forEach { mod ->
-                    mod.eventBus.post(
-                        if (onServer)
-                            FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
-                        else {
-                            FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
-                        }
-                    )
-                }
-
-                if (!onServer) {
-                    KiltClient.lateRegisterEvents()
-                }
-
-                loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
-                loaded = true
-            }
-        })
     }
 
     @Suppress("removal")
@@ -280,8 +209,20 @@ class Kilt : ModInitializer {
     companion object {
         const val MOD_ID = "kilt"
 
+        lateinit var instance: Kilt
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
         val loader: KiltLoader = KiltLoader()
         val gson = GsonBuilder().setPrettyPrinting().create()
+
+        fun load(onServer: Boolean) {
+            loader.initMods()
+
+            // config load should be here
+            var loaded = false
+
+            if (!onServer) {
+                KiltClient.lateRegisterEvents()
+            }
+        }
     }
 }

@@ -160,7 +160,8 @@ class KiltClient : ClientModInitializer {
         lateinit var forgeGui: ForgeGui
         private var shouldPostGeoLoaders = false
 
-        fun lateRegisterEvents() {
+        fun
+                lateRegisterEvents() {
             if (shouldPostGeoLoaders) {
                 val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
                 ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
