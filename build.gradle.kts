@@ -36,7 +36,7 @@ loom {
 }
 
 repositories {
-    maven("https://mvn.devos.one/snapshots/") {
+    maven("https://mvn.devos.one/releases/") {
         name = "DevOS One"
     }
 
