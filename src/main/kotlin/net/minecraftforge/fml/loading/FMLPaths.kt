@@ -32,5 +32,13 @@ class FMLPaths private constructor(private val path: Path) {
                     this.mkdirs()
             }.toPath()
         }
+
+        @JvmStatic
+        fun getOrCreateGameRelativePath(path: Path): Path {
+            return GAMEDIR.get().resolve(path).toFile().apply {
+                if (!this.exists())
+                    this.mkdirs()
+            }.toPath()
+        }
     }
 }

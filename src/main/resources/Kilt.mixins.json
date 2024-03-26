@@ -60,6 +60,8 @@
         "data.registries.VanillaRegistriesAccessor",
         "fabric_api.DynamicRegistriesMixin",
         "forgeconfigapiport.ConfigTrackerMixin",
+        "forgeconfigapiport.ForgeConfigSpecMixin",
+        "forgeconfigapiport.ModConfigMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.PLConfigTrackerMixin",
         "porting_lib.RegistryObjectAccessor",
