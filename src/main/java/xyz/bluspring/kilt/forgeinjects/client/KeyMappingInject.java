@@ -3,15 +3,13 @@ package xyz.bluspring.kilt.forgeinjects.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraftforge.client.extensions.IForgeKeyMapping;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 import java.util.Map;
@@ -29,6 +27,7 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
     @Shadow @Final private String category;
     @Shadow @Final private static Map<String, KeyMapping> ALL;
     @Shadow @Final private static Set<String> CATEGORIES;
+    @Shadow @Final private static Map<String, Integer> CATEGORY_SORT_ORDER;
     private KeyModifier keyModifierDefault = KeyModifier.NONE;
     private KeyModifier keyModifier = KeyModifier.NONE;
     private IKeyConflictContext keyConflictContext = KeyConflictContext.UNIVERSAL;
@@ -100,5 +99,20 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
         ALL.put(description, (KeyMapping) (Object) this);
         MAP.put(keyCode, (KeyMapping) (Object) this);
         CATEGORIES.add(category);
+    }
+
+    /**
+     * @author BluSpring, MinecraftForge, NeoForge
+     * @reason the game will crash on opening the screen otherwise.
+     */
+    @Overwrite
+    public int compareTo(KeyMapping mapping) {
+        if (this.category.equals(mapping.getCategory())) return I18n.get(this.name).compareTo(I18n.get(mapping.getName()));
+        Integer tCat = CATEGORY_SORT_ORDER.get(this.category);
+        Integer oCat = CATEGORY_SORT_ORDER.get(mapping.getCategory());
+        if (tCat == null && oCat != null) return 1;
+        if (tCat != null && oCat == null) return -1;
+        if (tCat == null && oCat == null) return I18n.get(this.category).compareTo(I18n.get(mapping.getCategory()));
+        return tCat.compareTo(oCat);
     }
 }
