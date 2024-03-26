@@ -11,6 +11,9 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
@@ -18,6 +21,7 @@ import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
+import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.common.MinecraftForge
@@ -148,6 +152,48 @@ class KiltClient : ClientModInitializer {
             shouldPostGeoLoaders = true
 
             ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
+        }
+
+        ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
+            ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
+                !ForgeHooksClient.onScreenMouseClickedPre(screen, mouseX, mouseY, button)
+            }
+
+            ScreenMouseEvents.afterMouseClick(screen).register { _, mouseX, mouseY, button ->
+                ForgeHooksClient.onScreenMouseClickedPost(screen, mouseX, mouseY, button, true) // TODO: set handled
+            }
+
+            ScreenMouseEvents.allowMouseRelease(screen).register { _, mouseX, mouseY, button ->
+                !ForgeHooksClient.onScreenMouseReleasedPre(screen, mouseX, mouseY, button)
+            }
+
+            ScreenMouseEvents.afterMouseRelease(screen).register { _, mouseX, mouseY, button ->
+                ForgeHooksClient.onScreenMouseReleasedPost(screen, mouseX, mouseY, button, true) // TODO: set handled
+            }
+
+            ScreenMouseEvents.allowMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
+                !ForgeHooksClient.onScreenMouseScrollPre(Minecraft.getInstance().mouseHandler, screen, scrollY)
+            }
+
+            ScreenMouseEvents.afterMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
+                ForgeHooksClient.onScreenMouseScrollPost(Minecraft.getInstance().mouseHandler, screen, scrollY)
+            }
+
+            ScreenKeyboardEvents.allowKeyPress(screen).register { _, key, scanCode, modifiers ->
+                !ForgeHooksClient.onScreenKeyPressedPre(screen, key, scanCode, modifiers)
+            }
+
+            ScreenKeyboardEvents.afterKeyPress(screen).register { _, key, scanCode, modifiers ->
+                ForgeHooksClient.onScreenKeyPressedPost(screen, key, scanCode, modifiers)
+            }
+
+            ScreenKeyboardEvents.allowKeyRelease(screen).register { _, key, scanCode, modifiers ->
+                !ForgeHooksClient.onScreenKeyReleasedPre(screen, key, scanCode, modifiers)
+            }
+
+            ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
+                ForgeHooksClient.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
+            }
         }
     }
 
