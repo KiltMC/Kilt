@@ -36,7 +36,7 @@ public abstract class FlowerPotBlockInject extends Block implements FlowerPotBlo
     @Shadow public abstract Block getContent();
 
     @Unique
-    private Map<net.minecraft.resources.ResourceLocation, java.util.function.Supplier<? extends Block>> fullPots;
+    private Map<net.minecraft.resources.ResourceLocation, java.util.function.Supplier<? extends Block>> fullPots = Maps.newHashMap();
     @Unique
     private Supplier<FlowerPotBlock> emptyPot;
     @Unique
