@@ -13,7 +13,7 @@ object VersionInfo {
     }
 
     fun mcpVersion(): String {
-        return "yarn"
+        return "intermediary"
     }
 
     fun forgeVersion(): String {
