@@ -239,6 +239,7 @@
         "client.renderer.chunk.ChunkRenderDispatcherInject$RebuildTaskInject",
         "client.renderer.chunk.RenderChunkRegionInject",
         "client.renderer.culling.FrustumInject",
+        "client.renderer.entity.EntityRenderDispatcherInject",
         "client.renderer.entity.FallingBlockRendererInject",
         "client.renderer.entity.FishingHookRendererInject",
         "client.renderer.entity.ItemRendererInject",
