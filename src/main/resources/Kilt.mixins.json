@@ -61,6 +61,7 @@
         "fabric_api.DynamicRegistriesMixin",
         "forgeconfigapiport.ConfigTrackerMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
+        "porting_lib.PLConfigTrackerMixin",
         "porting_lib.RegistryObjectAccessor",
         "porting_lib.RegistryObjectMixin",
         "porting_lib.TicketHelperAccessor",
@@ -72,6 +73,7 @@
     ],
     "client": [
         "DebugScreenOverlayMixin",
+        "client.gui.screens.inventory.AbstractContainerScreenAccessor",
         "fabric_api.FluidRenderHandlerRegistryImplMixin"
     ],
     "injectors": {

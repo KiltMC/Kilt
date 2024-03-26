@@ -28,8 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.AbstractContainerScreenInjection;
 import xyz.bluspring.kilt.injections.world.inventory.SlotInjection;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import xyz.bluspring.kilt.mixin.client.gui.screens.inventory.AbstractContainerScreenAccessor;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenInject extends Screen implements AbstractContainerScreenInjection {
@@ -45,26 +44,20 @@ public abstract class AbstractContainerScreenInject extends Screen implements Ab
     @Shadow protected int imageWidth;
     @Shadow protected int imageHeight;
 
-    @Shadow
-    public static void renderSlotHighlight(GuiGraphics guiGraphics, int x, int y, int blitOffset) {
-    }
-
-    private static final int defaultSlotColor = -2130706433;
-    private static final AtomicInteger kilt$slotColor = new AtomicInteger(-2130706433);
-
     @CreateStatic
     private static void renderSlotHighlight(GuiGraphics guiGraphics, int x, int y, int blitOffset, int slotColor) {
-        kilt$slotColor.set(slotColor);
-        renderSlotHighlight(guiGraphics, x, y, blitOffset);
-        kilt$slotColor.set(defaultSlotColor);
+        AbstractContainerScreenInjection.kilt$slotColor.set(slotColor);
+        // this is called: workarounds.
+        AbstractContainerScreenAccessor.invokeRenderSlotHighlight(guiGraphics, x, y, blitOffset);
+        AbstractContainerScreenInjection.kilt$slotColor.set(defaultSlotColor);
     }
 
     @ModifyExpressionValue(method = "renderSlotHighlight", at = @At(value = "CONSTANT", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V", args = "intValue=-2130706433"))
     private static int kilt$useCustomSlotColor(int original) {
-        if (original != defaultSlotColor)
+        if (original != AbstractContainerScreenInjection.defaultSlotColor)
             return original;
 
-        return kilt$slotColor.get();
+        return AbstractContainerScreenInjection.kilt$slotColor.get();
     }
 
     @Inject(method = "renderFloatingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
