@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.client.resources.model.SimpleBakedModelBuilderInjection;
 import xyz.bluspring.kilt.injections.client.resources.model.SimpleBakedModelInjection;
 
@@ -30,6 +31,14 @@ public class SimpleBakedModelInject implements BakedModelInject, SimpleBakedMode
     protected ChunkRenderTypeSet blockRenderTypes;
     protected List<RenderType> itemRenderTypes;
     protected List<RenderType> fabulousItemRenderTypes;
+
+    public SimpleBakedModelInject(List<BakedQuad> unculledFaces, Map<Direction, List<BakedQuad>> culledFaces, boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides) {}
+
+    @CreateInitializer
+    public SimpleBakedModelInject(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
+        this(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
+        this.addRenderTypes(renderTypeGroup);
+    }
 
     @Override
     public void addRenderTypes(RenderTypeGroup renderTypeGroup) {
