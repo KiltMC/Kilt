@@ -13,8 +13,8 @@ object WorkaroundFixer {
             val newNodeMap = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
 
             for (insnNode in method.instructions) {
-                if (insnNode is MethodInsnNode && insnNode.owner == "net/minecraftforge/client/ForgeHooksClient") {
-                    val node = MethodInsnNode(insnNode.opcode, "xyz/bluspring/kilt/workarounds/ForgeHooksClientWorkaround", insnNode.name, insnNode.desc)
+                if (insnNode is MethodInsnNode && insnNode.owner == "net/minecraftforge/fluids/FluidStack" && insnNode.name == "getAmount") {
+                    val node = MethodInsnNode(insnNode.opcode, "net/minecraftforge/fluids/FluidStack", "forge\$getAmount", insnNode.desc)
                     newNodeMap[insnNode] = node
                 }
             }

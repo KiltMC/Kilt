@@ -415,14 +415,21 @@ object KiltRemapper {
                 val visitor = EnhancedClassRemapper(classWriter, remapper, RenamingTransformer(remapper, false))
                 classNode.accept(visitor)
 
-                EventClassVisibilityFixer.fixClass(classNode)
-                EventEmptyInitializerFixer.fixClass(classNode, classes)
-                ObjectHolderDefinalizer.processClass(classNode)
-                WorkaroundFixer.fixClass(classNode)
-                ConflictingStaticMethodFixer.fixClass(classNode)
+                val classReader2 = ClassReader(classWriter.toByteArray())
+                val classNode2 = ClassNode(Opcodes.ASM9)
+                classReader2.accept(classNode2, 0)
+
+                EventClassVisibilityFixer.fixClass(classNode2)
+                EventEmptyInitializerFixer.fixClass(classNode2, classes)
+                ObjectHolderDefinalizer.processClass(classNode2)
+                WorkaroundFixer.fixClass(classNode2)
+                ConflictingStaticMethodFixer.fixClass(classNode2)
+
+                val classWriter2 = ClassWriter(0)
+                classNode2.accept(classWriter2)
 
                 jarOutput.putNextEntry(entry)
-                jarOutput.write(classWriter.toByteArray())
+                jarOutput.write(classWriter2.toByteArray())
                 jarOutput.closeEntry()
             } catch (e: Exception) {
                 logger.error("Failed to remap class ${entry.name}!")

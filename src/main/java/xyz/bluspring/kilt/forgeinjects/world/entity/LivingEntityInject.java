@@ -52,7 +52,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
                 return handlers[1].cast();
         }
 
-        return this.getCapability(cap, side);
+        return super.getCapability(cap, side);
     }
 
     @Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;JLjava/util/function/Consumer;)V"))

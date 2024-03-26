@@ -26,7 +26,7 @@ object EventEmptyInitializerFixer {
         if (classNode.methods.any { m -> m.name == "<init>" && m.desc == "()V" })
             return
 
-        if (classNode.methods.any { m -> m.name == "<init>" && m.desc == "(L${classNode.outerClass};)V" })
+        if (!Modifier.isStatic(classNode.access) && classNode.methods.any { m -> m.name == "<init>" && m.desc == "(L${classNode.outerClass};)V" })
             return
 
         val isEventSubscriber = classNode.methods.any {
@@ -34,7 +34,7 @@ object EventEmptyInitializerFixer {
                 a.desc == "net/minecraftforge/eventbus/api/SubscribeEvent"
             }
         }
-
+        /*
         // ignore non-events
         val classParentHierarchy = recursiveLookupParents(classNode, classList)
         if (!isEventSubscriber && classParentHierarchy.none {
@@ -46,12 +46,12 @@ object EventEmptyInitializerFixer {
                     a.desc == "net/minecraftforge/eventbus/api/SubscribeEvent"
                 }
             }
-        })
-            return
+        } && !classNode.name.contains("Event"))
+            return*/
 
         // Manually calculate the stack size, as otherwise the ClassWriter has a stroke.
         var stackSize = 1
-        val initMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_SYNTHETIC, "<init>", if (!isStatic) "(L${classNode.outerClass};)V" else "()V", null, null)
+        val initMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", if (!isStatic) "(L${classNode.outerClass};)V" else "()V", null, null)
         val shouldFirstInit = isEventSubscriber && classNode.methods.none { it.instructions.any { i -> i.opcode == Opcodes.INVOKESPECIAL && i is MethodInsnNode && i.name == "<init>" && i.owner != classNode.name && (i.owner == "java/lang/Object" || i.owner == "net/minecraftforge/eventbus/api/Event") } }
         val firstInitMethod = classNode.methods.filter { it.name == "<init>" }.maxByOrNull { Type.getMethodType(it.desc).argumentTypes.size }
 

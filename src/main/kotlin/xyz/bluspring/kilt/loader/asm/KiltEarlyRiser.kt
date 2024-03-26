@@ -290,6 +290,9 @@ class KiltEarlyRiser : Runnable {
             if (ignoredKeywords.any { classNode.name.lowercase().contains(it) })
                 return@forEach
 
+            if (classNode.name.contains("ForgeConfigSpec") || classNode.outerClass?.contains("ForgeConfigSpec") == true)
+                return@forEach
+
             ClassTinkerers.addTransformation(classNode.name) {
                 EventClassVisibilityFixer.fixClass(it)
                 EventEmptyInitializerFixer.fixClass(it, classes)
