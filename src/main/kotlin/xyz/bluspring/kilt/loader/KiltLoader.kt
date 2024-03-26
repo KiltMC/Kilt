@@ -13,12 +13,12 @@ import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.fml.ModList
-import net.minecraftforge.fml.ModLoadingContext
-import net.minecraftforge.fml.ModLoadingPhase
-import net.minecraftforge.fml.ModLoadingStage
+import net.minecraftforge.fml.*
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
+import net.minecraftforge.fml.config.ConfigTracker
+import net.minecraftforge.fml.config.ModConfig
+import net.minecraftforge.fml.event.lifecycle.*
+import net.minecraftforge.fml.loading.FMLPaths
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
@@ -670,6 +670,36 @@ class KiltLoader {
 
     private var statesProvider: ForgeStatesProvider? = null
 
+    private val fmlPhases = mutableMapOf(
+        ModLoadingPhase.LOAD to {
+            // CONFIG_LOAD
+            if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
+                ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.CLIENT, FMLPaths.CONFIGDIR.get());
+            }
+            ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.COMMON, FMLPaths.CONFIGDIR.get());
+
+            // COMMON_SETUP
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+
+            // SIDED_SETUP
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent {
+                if (FabricLoader.getInstance().environmentType == EnvType.CLIENT)
+                    FMLClientSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                else
+                    FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+            }
+
+            // ENQUEUE_IMC
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+
+            // PROCESS_IMC
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+
+            // COMPLETE
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
+        }
+    )
+
     fun runPhaseExecutors(phase: ModLoadingPhase) {
         if (statesProvider == null)
             statesProvider = ForgeStatesProvider()
@@ -682,6 +712,8 @@ class KiltLoader {
             else
                 -1
         }
+
+        fmlPhases[phase]?.invoke()
 
         for (state in sortedStates) {
             println("running ${state.name()} in ${state.phase()}")

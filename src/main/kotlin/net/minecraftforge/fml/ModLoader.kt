@@ -8,8 +8,10 @@ import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.concurrent.Executor
 import java.util.function.BiConsumer
+import java.util.function.Function
 
 class ModLoader {
     val warnings = mutableListOf<ModLoadingWarning>()
@@ -44,6 +46,14 @@ class ModLoader {
         }, { _, _ ->
             ModLoadingContext.kiltActiveModId = null
         })
+    }
+
+    fun <T> kiltPostEventWrappingModsBuildEvent(e: Function<ForgeMod, T>) where T : Event, T : IModBusEvent {
+        Kilt.loader.mods.forEach {
+            ModLoadingContext.kiltActiveModId = it.modId
+            it.eventBus.post(e.apply(it))
+            ModLoadingContext.kiltActiveModId = null
+        }
     }
 
     fun <T> postEventWrapContainerInModOrder(e: T) where T : Event, T : IModBusEvent {
