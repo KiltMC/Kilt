@@ -1,17 +1,18 @@
 // TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,6 +27,8 @@ import xyz.bluspring.kilt.injections.item.ItemStackInjection;
 @Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ItemStackCapabilityProviderImpl, ItemStackInjection {
     private CompoundTag capNBT;
+
+    @Unique @Nullable private Holder.Reference<Item> delegate;
 
     @Override
     public CompoundTag getCapNBT() {
@@ -45,6 +48,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @CreateInitializer
     public ItemStackInject(ItemLike item, int count, CompoundTag tag) {
         this(item, count);
+        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(item.asItem());
         this.capNBT = tag;
         this.forgeInit();
     }
@@ -52,11 +56,14 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {
         this.capNBT = compoundTag.contains("ForgeCaps") ? compoundTag.getCompound("ForgeCaps") : null;
+        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(this.item.asItem());
         this.forgeInit();
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/ItemLike;I)V")
     public void kilt$initForgeItemStack(ItemLike itemLike, int i, CallbackInfo ci) {
+        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(itemLike.asItem());
+
         // this might run twice.
         // TODO: figure out how to avoid double-running
         this.forgeInit();
@@ -79,8 +86,24 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
             deserializeCaps(itemStack.getCapNBT());
     }
 
+    @WrapOperation(method = "isEmpty", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack;item:Lnet/minecraft/world/item/Item;"))
+    private Item kilt$useDelegateCheckOnEmptyCheck(ItemStack instance, Operation<Item> original) {
+        if (this.delegate == null)
+            return original.call(instance);
+
+        return this.delegate.value();
+    }
+
+    @WrapOperation(method = "getItem", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack;item:Lnet/minecraft/world/item/Item;"))
+    private Item kilt$useDelegateCheckOnItemGet(ItemStack instance, Operation<Item> original) {
+        if (this.delegate == null)
+            return original.call(instance);
+
+        return this.delegate.value();
+    }
+
     private void forgeInit() {
-        if (this.item != null) {
+        if (this.delegate != null || this.item != null) {
             this.gatherCapabilities(() -> this.item.initCapabilities((ItemStack) (Object) this, this.capNBT));
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
