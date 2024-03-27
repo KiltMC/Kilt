@@ -71,6 +71,7 @@
         "porting_lib.TicketTrackerAccessor",
         "sodium.SodiumWorldRendererMixin",
         "world.item.CreativeModeTabBuilderAccessor",
+        "world.item.CreativeModeTabMixin",
         "world.level.biome.BiomeClimateSettingsAccessor"
     ],
     "client": [
