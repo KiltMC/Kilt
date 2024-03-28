@@ -23,6 +23,8 @@ import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
 
+import java.util.Objects;
+
 @Mixin(ItemStack.class)
 @Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ItemStackCapabilityProviderImpl, ItemStackInjection {
@@ -104,7 +106,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     private void forgeInit() {
         if (this.delegate != null || this.item != null) {
-            this.gatherCapabilities(() -> this.item.initCapabilities((ItemStack) (Object) this, this.capNBT));
+            this.gatherCapabilities(() -> Objects.requireNonNullElseGet(this.item, () -> this.delegate.value()).initCapabilities((ItemStack) (Object) this, this.capNBT));
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
         }
