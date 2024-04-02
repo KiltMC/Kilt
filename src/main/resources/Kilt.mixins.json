@@ -27,6 +27,8 @@
         "ItemDisplayContextAccessor",
         "ItemPredicateAccessor",
         "ItemRendererAccessor",
+        "KeyBindsListAccessor",
+        "KeyMappingAccessor",
         "LazyRegistrarAccessor",
         "LevelRendererAccessor",
         "LocalPlayerAccessor",
