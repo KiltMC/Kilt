@@ -14,4 +14,11 @@ public class ChunkAccessInject implements ChunkAccessInjection {
     public LevelAccessor getWorldForge() {
         return null;
     }
+
+    /*@Redirect(method = "findBlockLightSources", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/ChunkAccess;findBlocks(Ljava/util/function/Predicate;Ljava/util/function/BiConsumer;)V"))
+    private void kilt$useForgeLightEmissionCheck(ChunkAccess instance, Predicate<BlockState> predicate, BiConsumer<BlockPos, BlockState> output) {
+        instance.findBlocks((state, pos) -> {
+            return state.getLightEmission((ChunkAccess) (Object) this, pos) != 0;
+        }, output);
+    }*/
 }

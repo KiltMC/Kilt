@@ -157,6 +157,7 @@
         "world.level.block.state.BlockStateInject",
         "world.level.chunk.ChunkAccessInject",
         "world.level.chunk.LevelChunkInject",
+        "world.level.chunk.storage.ChunkSerializerInject",
         "world.level.levelgen.DebugLevelSourceInject",
         "world.level.levelgen.structure.StructureInject",
         "world.level.levelgen.structure.templatesystem.StructureProcessorInject",

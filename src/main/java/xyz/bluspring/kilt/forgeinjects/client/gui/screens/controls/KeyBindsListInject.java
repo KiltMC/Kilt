@@ -1,3 +1,4 @@
+// TRACKED HASH: dc2f14e758389a304a6ed1f74286d07572328592
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.controls;
 
 import net.minecraft.ChatFormatting;

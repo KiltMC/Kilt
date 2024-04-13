@@ -1,4 +1,4 @@
-// TRACKED HASH: 55954f29283374374411e03d1687d92a59065c5a
+// TRACKED HASH: 48afedcf760978451af8e22637ce9e3872d1e82d
 package xyz.bluspring.kilt.forgeinjects.world.entity.vehicle;
 
 import net.minecraft.core.Direction;

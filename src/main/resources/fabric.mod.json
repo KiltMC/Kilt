@@ -106,7 +106,7 @@
       "net/minecraft/class_5633": ["net/minecraftforge/common/extensions/IForgeDispensibleContainerItem"],
       "net/minecraft/class_1887": ["net/minecraftforge/common/extensions/IForgeEnchantment"],
       "net/minecraft/class_7889/class_7890": ["net/minecraftforge/common/extensions/IForgeIntrinsicHolderTagAppender"],
-      "net/minecraft/class_2818": ["net/minecraftforge/common/extensions/IForgeLevelChunk"],
+      "net/minecraft/class_2818": ["net/minecraftforge/common/extensions/IForgeLevelChunk", "xyz/bluspring/kilt/injections/world/level/chunk/LevelChunkInjection"],
       "net/minecraft/class_3917": ["net/minecraftforge/common/extensions/IForgeMenuType"],
       "net/minecraft/class_1291": ["net/minecraftforge/common/extensions/IForgeMobEffect"],
       "net/minecraft/class_1293": ["net/minecraftforge/common/extensions/IForgeMobEffectInstance"],

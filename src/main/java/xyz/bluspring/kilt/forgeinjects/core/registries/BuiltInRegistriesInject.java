@@ -1,3 +1,4 @@
+// TRACKED HASH: 33c37e1450e21ad82101b30b9cc1bf7f4cb0c12d
 package xyz.bluspring.kilt.forgeinjects.core.registries;
 
 import com.llamalad7.mixinextras.sugar.Local;
