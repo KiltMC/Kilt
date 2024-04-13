@@ -6,7 +6,7 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.5-SNAPSHOT"
+    id ("fabric-loom") version "1.6-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
