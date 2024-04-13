@@ -764,8 +764,8 @@ class KiltLoader {
 
     companion object {
         // These constants are to be updated each time we change versions
-        val SUPPORTED_FORGE_SPEC_VERSION = DefaultArtifactVersion("47") // 1.20.1
-        val SUPPORTED_FORGE_API_VERSION = DefaultArtifactVersion("47.1.104")
+        val SUPPORTED_FORGE_SPEC_VERSION = Constants.FORGE_LOADER_VERSION
+        val SUPPORTED_FORGE_API_VERSION = Constants.FORGE_API_VERSION
         val MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version
 
         private val MOD_ANNOTATION = Type.getType(Mod::class.java)
