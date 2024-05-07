@@ -7,6 +7,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(value = ConditionalRecipe.Serializer.class, remap = false)
 public class ConditionalRecipeSerializerMixin {
+    @Unique
     private static final AtomicBoolean kilt$useForgeConditions = new AtomicBoolean(false);
 
     @Redirect(at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/util/GsonHelper;getAsJsonArray(Lcom/google/gson/JsonObject;Ljava/lang/String;)Lcom/google/gson/JsonArray;"), method = "fromJson", remap = true)
