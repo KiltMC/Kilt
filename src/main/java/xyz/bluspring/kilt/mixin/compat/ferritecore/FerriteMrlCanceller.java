@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.ferritecore;
+package xyz.bluspring.kilt.mixin.compat.ferritecore;
 
 import com.bawnorton.mixinsquared.api.MixinCanceller;
 import xyz.bluspring.kilt.Kilt;

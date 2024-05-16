@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.fabric_api;
+package xyz.bluspring.kilt.mixin.compat.fabric_api;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.impl.client.rendering.fluid.FluidRenderHandlerRegistryImpl;

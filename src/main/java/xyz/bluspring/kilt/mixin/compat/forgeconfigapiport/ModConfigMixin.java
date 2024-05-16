@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.forgeconfigapiport;
+package xyz.bluspring.kilt.mixin.compat.forgeconfigapiport;
 
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.IConfigSpec;

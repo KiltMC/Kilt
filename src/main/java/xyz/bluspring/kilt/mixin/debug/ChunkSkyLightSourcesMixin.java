@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.mixin.debug;
 
+import com.moulberry.mixinconstraints.annotations.IfDevEnvironment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+@IfDevEnvironment
 @Mixin(ChunkSkyLightSources.class)
 public class ChunkSkyLightSourcesMixin {
     @Inject(method = "findLowestSourceY", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/lighting/ChunkSkyLightSources;isEdgeOccluded(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILEXCEPTION)

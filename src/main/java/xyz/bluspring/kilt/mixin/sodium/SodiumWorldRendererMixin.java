@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.mixin.sodium;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 
+@IfModLoaded("sodium")
 @Mixin(value = SodiumWorldRenderer.class, remap = false)
 @Pseudo
 public class SodiumWorldRendererMixin {

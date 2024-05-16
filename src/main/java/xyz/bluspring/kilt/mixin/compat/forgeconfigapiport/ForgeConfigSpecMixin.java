@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.forgeconfigapiport;
+package xyz.bluspring.kilt.mixin.compat.forgeconfigapiport;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;

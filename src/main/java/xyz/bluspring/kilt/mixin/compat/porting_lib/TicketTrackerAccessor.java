@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.porting_lib;
+package xyz.bluspring.kilt.mixin.compat.porting_lib;
 
 import io.github.fabricators_of_create.porting_lib.chunk.loading.PortingLibChunkManager;
 import it.unimi.dsi.fastutil.longs.LongSet;

@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.porting_lib;
+package xyz.bluspring.kilt.mixin.compat.porting_lib;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

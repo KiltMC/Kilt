@@ -1,7 +1,8 @@
 package xyz.bluspring.kilt;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
-import net.fabricmc.loader.api.FabricLoader;
+import com.moulberry.mixinconstraints.MixinConstraints;
+import com.moulberry.mixinconstraints.mixin.MixinConstraintsBootstrap;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -11,11 +12,14 @@ import java.util.List;
 import java.util.Set;
 
 public class KiltMixinPlugin implements IMixinConfigPlugin {
-    private static final String MIXIN_PACKAGE_ROOT = "xyz.bluspring.kilt.mixin.";
+    private String mixinPackage;
 
     @Override
     public void onLoad(String mixinPackage) {
+        this.mixinPackage = mixinPackage;
+
         MixinExtrasBootstrap.init();
+        MixinConstraintsBootstrap.init(mixinPackage);
     }
 
     @Override
@@ -25,17 +29,11 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (!mixinClassName.startsWith(MIXIN_PACKAGE_ROOT)) {
+        if (!mixinClassName.startsWith(mixinPackage)) {
             return true;
         }
 
-        var mixin = mixinClassName.substring(MIXIN_PACKAGE_ROOT.length());
-
-        if (mixin.startsWith("sodium.")) {
-            return FabricLoader.getInstance().isModLoaded("sodium");
-        }
-
-        return true;
+        return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName);
     }
 
     @Override

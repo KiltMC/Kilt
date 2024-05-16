@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.porting_lib;
+package xyz.bluspring.kilt.mixin.compat.porting_lib;
 
 /*import io.github.fabricators_of_create.porting_lib.config.ConfigTracker;
 import io.github.fabricators_of_create.porting_lib.config.ModConfig;

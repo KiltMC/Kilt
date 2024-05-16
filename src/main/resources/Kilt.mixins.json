@@ -59,18 +59,18 @@
         "TypeAccessor",
         "WoodTypeAccessor",
         "client.gui.components.ButtonBuilderAccessor",
+        "compat.fabric_api.DynamicRegistriesMixin",
+        "compat.forgeconfigapiport.ConfigTrackerMixin",
+        "compat.forgeconfigapiport.ForgeConfigSpecMixin",
+        "compat.forgeconfigapiport.ModConfigMixin",
+        "compat.porting_lib.ConditionalRecipeSerializerMixin",
+        "compat.porting_lib.RegistryObjectAccessor",
+        "compat.porting_lib.RegistryObjectMixin",
+        "compat.porting_lib.TicketHelperAccessor",
+        "compat.porting_lib.TicketOwnerAccessor",
+        "compat.porting_lib.TicketTrackerAccessor",
         "data.registries.VanillaRegistriesAccessor",
         "debug.ChunkSkyLightSourcesMixin",
-        "fabric_api.DynamicRegistriesMixin",
-        "forgeconfigapiport.ConfigTrackerMixin",
-        "forgeconfigapiport.ForgeConfigSpecMixin",
-        "forgeconfigapiport.ModConfigMixin",
-        "porting_lib.ConditionalRecipeSerializerMixin",
-        "porting_lib.RegistryObjectAccessor",
-        "porting_lib.RegistryObjectMixin",
-        "porting_lib.TicketHelperAccessor",
-        "porting_lib.TicketOwnerAccessor",
-        "porting_lib.TicketTrackerAccessor",
         "sodium.SodiumWorldRendererMixin",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.CreativeModeTabMixin",
@@ -79,7 +79,7 @@
     "client": [
         "DebugScreenOverlayMixin",
         "client.gui.screens.inventory.AbstractContainerScreenAccessor",
-        "fabric_api.FluidRenderHandlerRegistryImplMixin"
+        "compat.fabric_api.FluidRenderHandlerRegistryImplMixin"
     ],
     "injectors": {
         "defaultRequire": 1

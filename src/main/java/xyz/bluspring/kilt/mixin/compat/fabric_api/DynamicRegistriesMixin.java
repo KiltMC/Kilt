@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.fabric_api;
+package xyz.bluspring.kilt.mixin.compat.fabric_api;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
