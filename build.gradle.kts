@@ -151,6 +151,7 @@ dependencies {
     implementation(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
     implementation(include("net.minecraftforge:unsafe:0.2.+")!!)
+    implementation(include("net.minecraftforge:mergetool-api:1.0")!!)
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
 
