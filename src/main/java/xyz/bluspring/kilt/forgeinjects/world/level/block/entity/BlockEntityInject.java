@@ -16,6 +16,6 @@ import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderI
 public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, BlockEntityCapabilityProviderImpl, BlockEntityExtensions {
     @Override
     public CompoundTag getPersistentData() {
-        return null;
+        return this.getCustomData();
     }
 }
