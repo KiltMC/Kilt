@@ -60,7 +60,7 @@ public abstract class GuiInject implements GuiInjection {
     }
 
     @WrapWithCondition(method = "renderEffects", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
-    private boolean kilt$renderGuiIconWithCustomRenderer(List<Runnable> instance, Object e, @Local MobEffectInstance effectInstance, @Local GuiGraphics guiGraphics, @Local(name = "i") int i, @Local(name = "j") int j, @Local(name = "f") float f) {
+    private boolean kilt$renderGuiIconWithCustomRenderer(List<Runnable> instance, Object e, @Local MobEffectInstance effectInstance, @Local GuiGraphics guiGraphics, @Local(ordinal = 0) int i, @Local(ordinal = 1) int j, @Local(ordinal = 0) float f) {
         var renderer = IClientMobEffectExtensions.of(effectInstance);
 
         return !renderer.renderGuiIcon(effectInstance, (Gui) (Object) this, guiGraphics, i, j, 0, f);

@@ -19,7 +19,7 @@ public abstract class AbstractButtonInject extends AbstractWidget {
     }
 
     @Inject(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/AbstractButton;renderString(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;I)V", shift = At.Shift.BEFORE))
-    private void kilt$useForgeFgColor(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci, @Local(name = "i") LocalIntRef i) {
+    private void kilt$useForgeFgColor(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci, @Local(ordinal = 2) LocalIntRef i) {
         i.set(this.getFGColor());
     }
 }
