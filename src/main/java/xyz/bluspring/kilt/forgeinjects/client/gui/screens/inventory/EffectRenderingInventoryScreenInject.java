@@ -35,7 +35,7 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
     }
 
     @Inject(method = "renderEffects", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;", shift = At.Shift.BEFORE, remap = false), cancellable = true)
-    private void kilt$setScreenPotionSize(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci, @Local(name = "i") LocalIntRef i, @Local(name = "j") int j, @Local LocalBooleanRef flag) {
+    private void kilt$setScreenPotionSize(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci, @Local(ordinal = 2) LocalIntRef i, @Local(ordinal = 3) int j, @Local LocalBooleanRef flag) {
         var event = ForgeHooksClient.onScreenPotionSize(this, j, !flag.get(), i.get());
         if (event.isCanceled()) {
             ci.cancel();
@@ -52,7 +52,7 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
     }
 
     @Inject(method = "renderIcons", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;getEffect()Lnet/minecraft/world/effect/MobEffect;", shift = At.Shift.BEFORE))
-    private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, boolean isSmall, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(name = "i") LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
+    private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, boolean isSmall, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(ordinal = 2) LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
         var renderer = IClientMobEffectExtensions.of(effectInstance);
 
         if (renderer.renderInventoryIcon(effectInstance, (EffectRenderingInventoryScreen<?>) (Object) this, guiGraphics, renderX + (isSmall ? 6 : 7), i.get(), 0)) {
@@ -70,7 +70,7 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
     }
 
     @Inject(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectRenderingInventoryScreen;getEffectName(Lnet/minecraft/world/effect/MobEffectInstance;)Lnet/minecraft/network/chat/Component;", shift = At.Shift.BEFORE))
-    private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(name = "i") LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
+    private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(ordinal = 2) LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
         var renderer = IClientMobEffectExtensions.of(effectInstance);
 
         if (renderer.renderInventoryText(effectInstance, (EffectRenderingInventoryScreen<?>) (Object) this, guiGraphics, renderX, i.get(), 0)) {
