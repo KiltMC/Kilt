@@ -52,14 +52,9 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         canUpdate = value;
     }
 
-    private CompoundTag persistentData;
-
     @Override
     public CompoundTag getPersistentData() {
-        if (persistentData == null)
-            persistentData = new CompoundTag();
-
-        return persistentData;
+        return this.getCustomData();
     }
 
     @SuppressWarnings("ConstantConditions")
