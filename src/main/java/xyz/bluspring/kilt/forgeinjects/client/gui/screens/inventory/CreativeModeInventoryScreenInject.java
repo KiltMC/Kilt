@@ -141,7 +141,7 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
         this.searchBox.setX(this.leftPos + (82 + 89) - this.searchBox.getWidth());
     }
 
-    @Mixin(targets = "net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.SlotWrapper")
+    @Mixin(targets = "net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen$SlotWrapper")
     public static class SlotWrapperInject implements SlotInjection {
         @Shadow @Final
         Slot target;
