@@ -286,20 +286,38 @@ object KiltRemapper {
 
                                 val intermediaryField = "".run {
                                     if (srgClass.isNotBlank()) {
-                                        // Remap SRG to Intermediary, then to whatever the current FabricMC environment
-                                        // is using.
-                                        mappingResolver.mapFieldName(
-                                            "intermediary",
-                                            intermediaryClass
-                                                .replace("/", ".")
-                                                .removePrefix("L").removeSuffix(";"),
-                                            remapper.mapFieldName(
-                                                srgClass.removePrefix("L").removeSuffix(";"),
-                                                srgField,
-                                                srgDesc
-                                            ) ?: srgField,
-                                            intermediaryDesc
-                                        )
+                                        if (nameMappingCache.contains(srgField)) {
+                                            nameMappingCache[srgField]!!
+                                        } else {
+                                            // Remap SRG to Intermediary, then to whatever the current FabricMC environment
+                                            // is using.
+                                            mappingResolver.mapFieldName(
+                                                "intermediary",
+                                                intermediaryClass
+                                                    .replace("/", ".")
+                                                    .removePrefix("L").removeSuffix(";"),
+                                                (remapper.mapFieldName(
+                                                    srgClass.removePrefix("L").removeSuffix(";"),
+                                                    srgField,
+                                                    srgDesc
+                                                ).run a@{
+                                                    if (this == srgField) {
+                                                        val possibleClass = srgIntermediaryMapping.classes.firstOrNull { it.getField(srgField) != null } ?: return@run srgField
+
+                                                        mappingResolver.mapFieldName(
+                                                            "intermediary",
+                                                            possibleClass.mapped.replace("/", "."),
+                                                            possibleClass.remapField(srgField),
+                                                            intermediaryDesc
+                                                        )
+                                                    } else this
+                                                }).apply {
+                                                    // Cache the field we found, so we don't have to go through this again
+                                                    nameMappingCache[srgField] = this
+                                                } ?: srgField,
+                                                intermediaryDesc
+                                            )
+                                        }
                                     } else {
                                         // If the refmap is missing an owner class, try to figure it out
                                         if (!srgField.startsWith("f_") || !srgField.endsWith("_"))
@@ -334,18 +352,35 @@ object KiltRemapper {
                                 val intermediaryDesc = remapDescriptor(srgDesc)
                                 val intermediaryMethod = "".run {
                                     if (srgClass.isNotBlank()) {
-                                        mappingResolver.mapMethodName(
-                                            "intermediary",
-                                            intermediaryClass
-                                                .replace("/", ".")
-                                                .removePrefix("L").removeSuffix(";"),
-                                            remapper.mapMethodName(
-                                                srgClass
+                                        if (nameMappingCache.contains(srgMethod)) {
+                                            nameMappingCache[srgMethod]!!
+                                        } else {
+                                            mappingResolver.mapMethodName(
+                                                "intermediary",
+                                                intermediaryClass
+                                                    .replace("/", ".")
                                                     .removePrefix("L").removeSuffix(";"),
-                                                srgMethod, srgDesc
-                                            ) ?: srgMethod,
-                                            intermediaryDesc
-                                        )
+                                                (remapper.mapMethodName(
+                                                    srgClass
+                                                        .removePrefix("L").removeSuffix(";"),
+                                                    srgMethod, srgDesc
+                                                ).run a@{
+                                                    if (this == srgMethod) {
+                                                        val possibleClass = srgIntermediaryMapping.classes.firstOrNull { it.getMethod(srgMethod, srgDesc) != null } ?: return@a srgMethod
+
+                                                        mappingResolver.mapMethodName(
+                                                            "intermediary",
+                                                            possibleClass.mapped.replace("/", "."),
+                                                            possibleClass.remapMethod(srgMethod, srgDesc),
+                                                            intermediaryDesc
+                                                        )
+                                                    } else this
+                                                }).apply {
+                                                    nameMappingCache[srgMethod] = this
+                                                } ?: srgMethod,
+                                                intermediaryDesc
+                                            )
+                                        }
                                     } else {
                                         // If the refmap is missing an owner class, try to figure it out
                                         // Since record classes can provide methods with f_num_, these have to be
