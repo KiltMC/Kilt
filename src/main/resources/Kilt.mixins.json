@@ -62,6 +62,7 @@
         "compat.fabric_api.DynamicRegistriesMixin",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
+        "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
         "compat.porting_lib.ConditionalRecipeSerializerMixin",
         "compat.porting_lib.RegistryObjectAccessor",
