@@ -212,8 +212,15 @@ object KiltRemapper {
             this.addLibrary(srgGamePath)
 
             // List down Forge paths
-            for (path in KiltHelper.getKiltPaths()) {
-                this.addLibrary(path)
+            //for (path in KiltHelper.getKiltPaths()) {
+                //this.addLibrary(path)
+            //}
+
+            // Add all Fabric mods
+            for (container in FabricLoader.getInstance().allMods) {
+                for (rootPath in container.rootPaths) {
+                    this.addLibrary(rootPath)
+                }
             }
 
             // Add all Forge mods to the library path, because dependencies don't have to be specified
@@ -514,7 +521,10 @@ object KiltRemapper {
 
     private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
         return GameProviderHelper::class.java
-            .getMethod("getDeobfJarDir", Path::class.java, String::class.java, String::class.java)
+            .getDeclaredMethod("getDeobfJarDir", Path::class.java, String::class.java, String::class.java)
+            .apply {
+                isAccessible = true
+            }
             .invoke(null, gameDir, gameId, gameVersion) as Path
     }
 
