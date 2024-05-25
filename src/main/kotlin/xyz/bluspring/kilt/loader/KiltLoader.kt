@@ -195,6 +195,8 @@ class KiltLoader {
                 try {
                     remapMods()
                 } catch (e: Exception) {
+                    e.printStackTrace()
+
                     FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {
                         val tab = it.addTab("Kilt Error")
 

@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
@@ -47,6 +48,7 @@ import java.util.stream.Collectors
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.toPath
 
+
 object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
@@ -62,10 +64,19 @@ object KiltRemapper {
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
 
+    // Mainly for debugging, to make sure all Forge mods remap correctly in production environments
+    // without needing to actually launch a production environment.
+    private val forceProductionRemap = System.getProperty("kilt.forceProductionRemap")?.lowercase() == "true"
+
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
     val srgIntermediaryMapping = IMappingFile.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!)
-        .rename(DevMappingRenamer())
+        .run {
+            if (!forceProductionRemap)
+                this.rename(DevMappingRenamer())
+            else
+                this
+        }
     val intermediarySrgMapping = srgIntermediaryMapping.reverse()
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
 
@@ -502,6 +513,32 @@ object KiltRemapper {
     val gameFile = getMCGameFile()
     lateinit var srgGamePath: Path
 
+    // Code from https://github.com/FabricMC/fabric-loader/blob/master/src/main/java/net/fabricmc/loader/impl/game/GameProviderHelper.java#L250
+    private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
+        val ret = gameDir.resolve(FabricLoaderImpl.CACHE_DIR_NAME).resolve(FabricLoaderImpl.REMAPPED_JARS_DIR_NAME)
+        val versionDirName = StringBuilder()
+
+        if (gameId.isNotEmpty()) {
+            versionDirName.append(gameId)
+        }
+
+        if (gameVersion.isNotEmpty()) {
+            if (versionDirName.isNotEmpty())
+                versionDirName.append('-')
+
+            versionDirName.append(gameVersion)
+        }
+
+        if (versionDirName.isNotEmpty())
+            versionDirName.append('-')
+
+        // avoid calling for FabricLoaderImpl.VERSION specifically because javac ends up inlining it
+        // due to the field being final.
+        versionDirName.append(FabricLoader.getInstance().getModContainer("fabricloader").orElseThrow().metadata.version.friendlyString)
+
+        return ret.resolve(versionDirName.toString().replace("[^\\w\\-. ]+".toRegex(), "_"))
+    }
+
     private fun getMCGameFile(): File? {
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
             val commonJar = GameProviderHelper.getCommonGameJar()
@@ -514,10 +551,20 @@ object KiltRemapper {
             if (sidedJar != null)
                 return sidedJar.toFile()
 
-            val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")
+            // this gives the obfuscated JAR, we don't want that
+            //val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")
+            //if (inputGameJar is Path)
+                //return inputGameJar.toFile()
 
-            if (inputGameJar is Path)
-                return inputGameJar.toFile()
+            // This is our best bet towards getting the Intermediary JAR.
+            val deobfJar = getDeobfJarDir(FabricLoader.getInstance().gameDir, "minecraft", KiltLoader.MC_VERSION.friendlyString)
+                .resolve("${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.targetNamespace}.jar")
+                .toFile()
+
+            logger.info(deobfJar.path)
+
+            if (deobfJar.exists())
+                return deobfJar
         } else {
             // TODO: is there a better way of doing this?
             val possibleMcGameJar = FabricLauncherBase.getLauncher().classPath.firstOrNull { path ->
@@ -527,6 +574,7 @@ object KiltRemapper {
 
             return possibleMcGameJar.toFile()
         }
+
         return null
     }
 
@@ -557,7 +605,7 @@ object KiltRemapper {
     private fun remapMinecraft(): Path {
         val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg.jar")
 
-        if (srgFile.exists())
+        if (srgFile.exists() && !forceRemap)
             return srgFile.toPath()
 
         if (gameFile == null) {
