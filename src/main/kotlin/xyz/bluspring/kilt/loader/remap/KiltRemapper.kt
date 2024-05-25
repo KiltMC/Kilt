@@ -7,7 +7,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
@@ -513,30 +512,10 @@ object KiltRemapper {
     val gameFile = getMCGameFile()
     lateinit var srgGamePath: Path
 
-    // Code from https://github.com/FabricMC/fabric-loader/blob/master/src/main/java/net/fabricmc/loader/impl/game/GameProviderHelper.java#L250
     private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
-        val ret = gameDir.resolve(FabricLoaderImpl.CACHE_DIR_NAME).resolve(FabricLoaderImpl.REMAPPED_JARS_DIR_NAME)
-        val versionDirName = StringBuilder()
-
-        if (gameId.isNotEmpty()) {
-            versionDirName.append(gameId)
-        }
-
-        if (gameVersion.isNotEmpty()) {
-            if (versionDirName.isNotEmpty())
-                versionDirName.append('-')
-
-            versionDirName.append(gameVersion)
-        }
-
-        if (versionDirName.isNotEmpty())
-            versionDirName.append('-')
-
-        // avoid calling for FabricLoaderImpl.VERSION specifically because javac ends up inlining it
-        // due to the field being final.
-        versionDirName.append(FabricLoader.getInstance().getModContainer("fabricloader").orElseThrow().metadata.version.friendlyString)
-
-        return ret.resolve(versionDirName.toString().replace("[^\\w\\-. ]+".toRegex(), "_"))
+        return GameProviderHelper::class.java
+            .getMethod("getDeobfJarDir", Path::class.java, String::class.java, String::class.java)
+            .invoke(null, gameDir, gameId, gameVersion) as Path
     }
 
     private fun getMCGameFile(): File? {
