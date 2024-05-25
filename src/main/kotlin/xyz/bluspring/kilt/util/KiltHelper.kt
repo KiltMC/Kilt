@@ -9,7 +9,6 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.nio.file.Path
 import java.util.jar.JarFile
-import kotlin.io.path.toPath
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
@@ -21,7 +20,8 @@ object KiltHelper {
 
     fun getKiltPaths(): List<Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
-            listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
+            //listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
+            listOf()
         } else {
             val filesToScan = mutableListOf<File>()
 

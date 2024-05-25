@@ -212,9 +212,9 @@ object KiltRemapper {
             this.addLibrary(srgGamePath)
 
             // List down Forge paths
-            //for (path in KiltHelper.getKiltPaths()) {
-                //this.addLibrary(path)
-            //}
+            for (path in KiltHelper.getKiltPaths()) {
+                this.addLibrary(path)
+            }
 
             // Add all Fabric mods
             for (container in FabricLoader.getInstance().allMods) {
