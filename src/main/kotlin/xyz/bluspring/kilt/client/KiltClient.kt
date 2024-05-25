@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
+import com.mojang.datafixers.util.Pair
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
@@ -9,6 +10,7 @@ import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCal
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -18,6 +20,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.renderer.ShaderInstance
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
@@ -27,6 +31,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
+import net.minecraftforge.fml.ModLoadingContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
@@ -193,6 +198,25 @@ class KiltClient : ClientModInitializer {
 
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
                 ForgeHooksClient.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
+            }
+        }
+
+        CoreShaderRegistrationCallback.EVENT.register {
+            for (mod in Kilt.loader.mods) {
+                ModLoadingContext.kiltActiveModId = mod.modId
+
+                val shaderList = mutableListOf<Pair<ShaderInstance, Consumer<ShaderInstance>>>()
+                val event = RegisterShadersEvent(Minecraft.getInstance().resourceManager, shaderList)
+                mod.eventBus.post(event)
+
+                for (pair in shaderList) {
+                    val shader = pair.first
+                    val consumer = pair.second
+
+                    it.register(ResourceLocation.tryParse(shader.name)!!, shader.vertexFormat, consumer)
+                }
+
+                ModLoadingContext.kiltActiveModId = null
             }
         }
     }
