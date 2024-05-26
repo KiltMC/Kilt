@@ -16,7 +16,7 @@ object CoreModLoader {
     )
 
     val ALLOWED_CLASSES = setOf(
-        "net.neoforged.coremod.api.ASMAPI", "org.objectweb.asm.Opcodes",
+        "net.minecraftforge.coremod.api.ASMAPI", "org.objectweb.asm.Opcodes",
 
         // Editing the code of methods
         "org.objectweb.asm.tree.AbstractInsnNode",
@@ -70,6 +70,8 @@ object CoreModLoader {
                 for (key in json.keySet()) {
                     val filePath = json.get(key).asString
                     val coreMod = CoreMod(mod, key, filePath)
+
+                    coreMod.init()
 
                     mod.coreMods.add(coreMod)
                     loadedCoreMods.add(coreMod)
