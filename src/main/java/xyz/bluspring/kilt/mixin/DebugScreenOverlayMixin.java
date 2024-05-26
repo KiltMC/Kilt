@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
+import xyz.bluspring.kilt.loader.asm.CoreModLoader;
 
 import java.util.List;
 
@@ -17,8 +18,20 @@ public class DebugScreenOverlayMixin {
         var messages = cir.getReturnValue();
 
         messages.add("");
-        messages.add("Kilt Loader v" + FabricLoader.getInstance().getModContainer("kilt").get().getMetadata().getVersion());
+
+        var version = FabricLoader.getInstance().getModContainer("kilt").orElseThrow().getMetadata().getVersion().getFriendlyString();
+        var color = "§";
+
+        if (version.endsWith("-local"))
+            color += "c";
+        else if (version.contains("+build."))
+            color += "6";
+        else
+            color += "b";
+
+        messages.add("Kilt Loader " + color + "v" + version);
         messages.add(Kilt.Companion.getLoader().getMods().size() + " mods loaded");
+        messages.add(CoreModLoader.INSTANCE.getLoadedCoreMods().size() + " coremods loaded");
         messages.add("");
     }
 }

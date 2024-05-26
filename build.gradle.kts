@@ -154,6 +154,7 @@ dependencies {
     implementation(include("net.minecraftforge:mergetool-api:1.0")!!)
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
+    implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
@@ -371,7 +372,7 @@ fun getVersionMetadata(): String {
         "dir" to File("$projectDir")
     ))
     val commitHash =
-        System.getenv("GITHUB_SHA") ?: (grgit.head().abbreviatedId + if (!grgit.status().isClean) "-dirty" else "")
+        System.getenv("GITHUB_SHA") ?: (grgit.head().abbreviatedId + if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else "")
 
     return "+build.${commitHash.subSequence(0, 6)}"
 }

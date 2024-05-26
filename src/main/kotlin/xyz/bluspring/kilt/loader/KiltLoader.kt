@@ -34,6 +34,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
+import xyz.bluspring.kilt.loader.asm.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
@@ -211,6 +212,7 @@ class KiltLoader {
 
             modLoadingQueue.forEach { mod ->
                 loadTransformers(mod)
+                CoreModLoader.scanAndLoadCoreMods(mod)
             }
 
             loadTransformers(null) // load Forge ATs
@@ -245,6 +247,8 @@ class KiltLoader {
 
             visitor.buildData(scanData.classes, scanData.annotations)
         }
+
+        CoreModLoader.scanAndLoadCoreMods(forgeMod)
 
         mods.add(forgeMod)
         addModToFabric(forgeMod)
