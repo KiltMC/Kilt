@@ -77,7 +77,7 @@
         "world.level.biome.BiomeClimateSettingsAccessor"
     ],
     "client": [
-        "DebugScreenOverlayMixin",
+        "client.gui.components.DebugScreenOverlayMixin",
         "client.gui.screens.inventory.AbstractContainerScreenAccessor",
         "compat.fabric_api.FluidRenderHandlerRegistryImplMixin"
     ],

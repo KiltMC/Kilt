@@ -60,7 +60,6 @@ object CoreModLoader {
     )
 
     val loadedCoreMods = mutableListOf<CoreMod>()
-
     val enableCoreMods = System.getProperty("kilt.enableCoreMods") == "true"
 
     fun scanAndLoadCoreMods(mod: ForgeMod) {

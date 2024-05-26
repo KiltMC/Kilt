@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin;
+package xyz.bluspring.kilt.mixin.client.gui.components;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
@@ -31,7 +31,10 @@ public class DebugScreenOverlayMixin {
 
         messages.add("Kilt Loader " + color + "v" + version);
         messages.add(Kilt.Companion.getLoader().getMods().size() + " mods loaded");
-        messages.add(CoreModLoader.INSTANCE.getLoadedCoreMods().size() + " coremods loaded");
+
+        if (CoreModLoader.INSTANCE.getEnableCoreMods())
+            messages.add(CoreModLoader.INSTANCE.getLoadedCoreMods().size() + " coremods loaded");
+
         messages.add("");
     }
 }
