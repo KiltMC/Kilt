@@ -1,9 +1,7 @@
 package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
-import cpw.mods.modlauncher.api.INameMappingService
 import net.minecraftforge.coremod.api.TargetType
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
@@ -69,7 +67,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                 TargetType.FIELD -> {
                     val className = targetData["class"] as String
                     val fieldName = targetData["fieldName"] as String
-                    val mappedFieldName = ObfuscationReflectionHelper.remapName(INameMappingService.Domain.FIELD, fieldName)
+                    val mappedFieldName = KiltRemapper.srgMappedFields[fieldName]?.second ?: fieldName
 
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
                         val field = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@addTransformation
@@ -82,7 +80,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     val methodName = targetData["methodName"] as String
                     val descName = targetData["methodDesc"] as String
 
-                    val mappedMethodName = ObfuscationReflectionHelper.remapName(INameMappingService.Domain.METHOD, methodName)
+                    val mappedMethodName = KiltRemapper.srgMappedMethods[methodName]?.second ?: methodName
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->

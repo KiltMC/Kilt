@@ -1,13 +1,13 @@
 package net.minecraftforge.coremod.api
 
-import cpw.mods.modlauncher.api.INameMappingService
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import org.objectweb.asm.util.Textifier
 import org.objectweb.asm.util.TraceClassVisitor
 import org.objectweb.asm.util.TraceMethodVisitor
+import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.asm.CoreMod
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -19,6 +19,8 @@ import kotlin.math.min
 
 // Mostly copied from https://github.com/MinecraftForge/CoreMods/blob/master/src/main/java/net/minecraftforge/coremod/api/ASMAPI.java
 object ASMAPI {
+    private val logger = LoggerFactory.getLogger("CoreMod ASM API")
+
     @JvmStatic
     fun getMethodNode(): MethodNode {
         return MethodNode(Opcodes.ASM6)
@@ -49,17 +51,12 @@ object ASMAPI {
 
     @JvmStatic
     fun mapMethod(name: String): String {
-        return map(name, INameMappingService.Domain.METHOD)
+        return KiltRemapper.srgMappedMethods[name]?.second ?: name
     }
 
     @JvmStatic
     fun mapField(name: String): String {
-        return map(name, INameMappingService.Domain.FIELD)
-    }
-
-    @JvmStatic
-    private fun map(name: String, domain: INameMappingService.Domain): String {
-        return ObfuscationReflectionHelper.remapName(domain, name)
+        return KiltRemapper.srgMappedFields[name]?.second ?: name
     }
 
     /**
@@ -292,12 +289,13 @@ object ASMAPI {
         }
 
         checkNotNull(foundField) { "No field with name $fieldName found" }
-        check(!(!Modifier.isPrivate(foundField.access) || Modifier.isStatic(foundField.access))) { "Field $fieldName is not private and an instance field" }
+        // Kilt: avoid checking isPrivate
+        check(!(/*!Modifier.isPrivate(foundField.access) ||*/ Modifier.isStatic(foundField.access))) { "Field $fieldName is not private and an instance field" }
 
         val methodSignature = "()" + foundField.desc
 
         for (methodNode in classNode.methods) {
-            if (Objects.equals(methodNode.desc, methodSignature)) {
+            if (methodNode.desc == methodSignature) {
                 if (foundMethod == null && Objects.equals(methodNode.name, methodName)) {
                     foundMethod = methodNode
                 } else if (foundMethod == null && methodName == null) {
@@ -311,7 +309,10 @@ object ASMAPI {
             }
         }
 
-        checkNotNull(foundMethod) { "Unable to find method $methodSignature" }
+        if (foundMethod == null) {
+            logger.error("Unable to find method $methodSignature. Skipping.")
+            return
+        }
 
         for (methodNode in classNode.methods) {
             // skip the found getter method

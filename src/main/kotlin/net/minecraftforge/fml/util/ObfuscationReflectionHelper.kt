@@ -14,10 +14,9 @@ object ObfuscationReflectionHelper {
 
     private val fabricRemapper = FabricLoader.getInstance().mappingResolver
     private val srgIntermediaryTree = KiltRemapper.srgIntermediaryMapping
-    private val srgMappedFields =
-        srgIntermediaryTree.classes.flatMap { it.fields.map { f -> f.original to fabricRemapper.mapFieldName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
-    private val srgMappedMethods =
-        srgIntermediaryTree.classes.flatMap { it.methods.map { f -> f.original to fabricRemapper.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
+
+    private val srgMappedFields = KiltRemapper.srgMappedFields
+    private val srgMappedMethods = KiltRemapper.srgMappedMethods
 
     @JvmStatic
     fun remapName(domain: INameMappingService.Domain, name: String): String {

@@ -290,7 +290,7 @@ class KiltEarlyRiser : Runnable {
             if (ignoredKeywords.any { classNode.name.lowercase().contains(it) })
                 return@forEach
 
-            if (classNode.name.contains("ForgeConfigSpec") || classNode.outerClass?.contains("ForgeConfigSpec") == true)
+            if (classNode.name.contains("ForgeConfigSpec") || classNode.outerClass?.contains("ForgeConfigSpec") == true || classNode.name.lowercase().contains("coremod"))
                 return@forEach
 
             ClassTinkerers.addTransformation(classNode.name) {

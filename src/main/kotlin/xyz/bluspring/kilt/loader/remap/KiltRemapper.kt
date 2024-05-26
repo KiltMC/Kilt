@@ -92,6 +92,9 @@ object KiltRemapper {
 
     private val classNodeList = mutableSetOf<ClassNode>()
 
+    val srgMappedFields = srgIntermediaryMapping.classes.flatMap { it.fields.map { f -> f.original to mappingResolver.mapFieldName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
+    val srgMappedMethods = srgIntermediaryMapping.classes.flatMap { it.methods.map { f -> f.original to mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
+
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
