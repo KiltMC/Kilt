@@ -182,6 +182,8 @@ dependencies {
 
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
+
+    implementation(include("commons-codec:commons-codec:1.15")!!)
 }
 
 configurations.all {
