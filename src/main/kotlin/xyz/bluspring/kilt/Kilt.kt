@@ -5,7 +5,6 @@ import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
 import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
-import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
@@ -13,9 +12,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.ChunkPos
-import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.phys.EntityHitResult
-import net.minecraft.world.phys.HitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
@@ -81,57 +77,6 @@ class Kilt : ModInitializer {
 
         ExplosionEvents.DETONATE.register { level, explosion, entities, diameter ->
             ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter)
-        }
-
-        InteractEvents.USE.register { minecraft, hit, hand ->
-            val player = minecraft.player
-
-            when (hit.type) {
-                HitResult.Type.BLOCK -> {
-                    val result = ForgeHooks.onRightClickBlock(player, hand, (hit as BlockHitResult).blockPos, hit)
-
-                    result.cancellationResult
-                }
-
-                HitResult.Type.MISS -> {
-                    ForgeHooks.onItemRightClick(player, hand) ?: InteractionResult.PASS
-                }
-
-                HitResult.Type.ENTITY -> {
-                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand) ?: InteractionResult.PASS
-                }
-
-                else -> throw IllegalStateException("this should be impossible.")
-            }
-        }
-
-        InteractEvents.ATTACK.register { minecraft, hit ->
-            val player = minecraft.player
-
-            when (hit.type) {
-                HitResult.Type.BLOCK -> {
-                    val result = ForgeHooks.onLeftClickBlock(player, (hit as BlockHitResult).blockPos, hit.direction)
-
-                    result.cancellationResult
-                }
-
-                HitResult.Type.ENTITY -> {
-                    val result = ForgeHooks.onPlayerAttackTarget(minecraft.player, (hit as EntityHitResult).entity)
-
-                    if (!result)
-                        InteractionResult.FAIL
-                    else
-                        InteractionResult.PASS
-                }
-
-                HitResult.Type.MISS -> {
-                    ForgeHooks.onEmptyLeftClick(player)
-
-                    InteractionResult.PASS
-                }
-
-                else -> throw IllegalStateException("impossible")
-            }
         }
 
         EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->

@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
+import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
@@ -22,12 +23,14 @@ import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.renderer.ShaderInstance
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
+import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
@@ -39,6 +42,7 @@ import xyz.bluspring.kilt.mixin.ScreenAccessor
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
+@Suppress("removal")
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
         registerFabricEvents()
@@ -150,6 +154,57 @@ class KiltClient : ClientModInitializer {
                 }
 
                 else -> return@register false
+            }
+        }
+
+        InteractEvents.USE.register { minecraft, hit, hand ->
+            val player = minecraft.player
+
+            when (hit.type) {
+                HitResult.Type.BLOCK -> {
+                    val result = ForgeHooks.onRightClickBlock(player, hand, (hit as BlockHitResult).blockPos, hit)
+
+                    result.cancellationResult
+                }
+
+                HitResult.Type.MISS -> {
+                    ForgeHooks.onItemRightClick(player, hand) ?: InteractionResult.PASS
+                }
+
+                HitResult.Type.ENTITY -> {
+                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand) ?: InteractionResult.PASS
+                }
+
+                else -> throw IllegalStateException("this should be impossible.")
+            }
+        }
+
+        InteractEvents.ATTACK.register { minecraft, hit ->
+            val player = minecraft.player
+
+            when (hit.type) {
+                HitResult.Type.BLOCK -> {
+                    val result = ForgeHooks.onLeftClickBlock(player, (hit as BlockHitResult).blockPos, hit.direction)
+
+                    result.cancellationResult
+                }
+
+                HitResult.Type.ENTITY -> {
+                    val result = ForgeHooks.onPlayerAttackTarget(minecraft.player, (hit as EntityHitResult).entity)
+
+                    if (!result)
+                        InteractionResult.FAIL
+                    else
+                        InteractionResult.PASS
+                }
+
+                HitResult.Type.MISS -> {
+                    ForgeHooks.onEmptyLeftClick(player)
+
+                    InteractionResult.PASS
+                }
+
+                else -> throw IllegalStateException("impossible")
             }
         }
 
