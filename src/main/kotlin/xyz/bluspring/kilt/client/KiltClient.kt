@@ -7,6 +7,7 @@ import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
+import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
@@ -273,6 +274,11 @@ class KiltClient : ClientModInitializer {
 
                 ModLoadingContext.kiltActiveModId = null
             }
+        }
+
+        RenderHandCallback.EVENT.register { event ->
+            val forgeEvent = RenderHandEvent(event.hand, event.poseStack, event.multiBufferSource, event.packedLight, event.partialTicks, event.pitch, event.swingProgress, event.equipProgress, event.itemStack)
+            MinecraftForge.EVENT_BUS.post(forgeEvent)
         }
     }
 
