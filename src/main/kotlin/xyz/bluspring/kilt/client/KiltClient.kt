@@ -11,6 +11,7 @@ import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallba
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
@@ -34,6 +35,9 @@ import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
+import net.minecraftforge.event.TickEvent
+import net.minecraftforge.event.TickEvent.ClientTickEvent
+import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.ModLoader
 import net.minecraftforge.fml.ModLoadingContext
 import xyz.bluspring.kilt.Kilt
@@ -282,6 +286,22 @@ class KiltClient : ClientModInitializer {
 
             if (forgeEvent.isCanceled)
                 event.isCanceled = true
+        }
+
+        ClientTickEvents.START_CLIENT_TICK.register {
+            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.START))
+        }
+
+        ClientTickEvents.END_CLIENT_TICK.register {
+            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.END))
+        }
+
+        ClientTickEvents.START_WORLD_TICK.register {
+            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.START, it) { !it.dimensionType().hasFixedTime() })
+        }
+
+        ClientTickEvents.END_WORLD_TICK.register {
+            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.END, it) { !it.dimensionType().hasFixedTime() })
         }
     }
 
