@@ -208,6 +208,7 @@ object KiltRemapper {
         val jarOutput = JarOutputStream(output)
 
         val mixinClasses = mutableListOf<String>()
+        val refmaps = mutableListOf<String>()
 
         // Use the regular mod file
         val classProvider = ClassProvider.builder().apply {
@@ -237,67 +238,74 @@ object KiltRemapper {
         val remapper = EnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
         val entriesToMap = mutableListOf<Pair<JarEntry, ClassNode>>()
 
+        // JAR validation information stripping.
+        // If we can find out how to use this to our advantage prior to remapping,
+        // we may still be able to utilize this information safely.
+        val manifestEntry = jar.getJarEntry("META-INF/MANIFEST.MF")
+        if (manifestEntry != null) {
+            // Modify the manifest to avoid hash checking, because if
+            // hash checking occurs, the JAR will fail to load entirely.
+            val manifest = Manifest(jar.getInputStream(manifestEntry))
+
+            val hashes = mutableListOf<String>()
+            manifest.entries.forEach { (name, attr) ->
+                if (attr.entries.any { it.toString().startsWith("SHA-256-Digest") || it.toString().startsWith("SHA-1-Digest") }) {
+                    hashes.add(name)
+                }
+            }
+
+            val mixinConfigs = manifest.mainAttributes.entries.filter { it.toString().startsWith("MixinConfigs") }
+
+            for (mixinConfig in mixinConfigs) {
+                val value = mixinConfig.value.toString()
+                val jsonEntry = jar.getJarEntry(value) ?: continue
+                val data = jar.getInputStream(jsonEntry).bufferedReader()
+
+                val json = JsonParser.parseReader(data).asJsonObject
+
+                val mixinPackage = json.get("package").asString
+
+                if (json.has("mixins")) {
+                    for (element in json.getAsJsonArray("mixins")) {
+                        val className = element.asString
+                        mixinClasses.add("$mixinPackage.$className")
+                    }
+                }
+
+                if (json.has("client")) {
+                    for (element in json.getAsJsonArray("client")) {
+                        val className = element.asString
+                        mixinClasses.add("$mixinPackage.$className")
+                    }
+                }
+
+                if (json.has("server")) {
+                    for (element in json.getAsJsonArray("server")) {
+                        val className = element.asString
+                        mixinClasses.add("$mixinPackage.$className")
+                    }
+                }
+
+                if (json.has("refmap")) {
+                    refmaps.add(json.get("refmap").asString)
+                }
+            }
+
+            hashes.forEach {
+                manifest.entries.remove(it)
+            }
+
+            val outputStream = ByteArrayOutputStream()
+            manifest.write(outputStream)
+
+            jarOutput.putNextEntry(manifestEntry)
+            jarOutput.write(outputStream.toByteArray())
+            jarOutput.closeEntry()
+        }
+
         for (entry in jar.entries()) {
             if (!entry.name.endsWith(".class")) {
-                // JAR validation information stripping.
-                // If we can find out how to use this to our advantage prior to remapping,
-                // we may still be able to utilize this information safely.
-                if (entry.name.lowercase().endsWith("manifest.mf")) {
-                    // Modify the manifest to avoid hash checking, because if
-                    // hash checking occurs, the JAR will fail to load entirely.
-                    val manifest = Manifest(jar.getInputStream(entry))
-
-                    val hashes = mutableListOf<String>()
-                    manifest.entries.forEach { (name, attr) ->
-                        if (attr.entries.any { it.toString().startsWith("SHA-256-Digest") || it.toString().startsWith("SHA-1-Digest") }) {
-                            hashes.add(name)
-                        }
-                    }
-
-                    val mixinConfigs = manifest.mainAttributes.entries.filter { it.toString().startsWith("MixinConfigs") }
-
-                    for (mixinConfig in mixinConfigs) {
-                        val value = mixinConfig.value.toString()
-                        val jsonEntry = jar.getJarEntry(value) ?: continue
-                        val data = jar.getInputStream(jsonEntry).bufferedReader()
-
-                        val json = JsonParser.parseReader(data).asJsonObject
-
-                        val mixinPackage = json.get("package").asString
-
-                        if (json.has("mixins")) {
-                            for (element in json.getAsJsonArray("mixins")) {
-                                val className = element.asString
-                                mixinClasses.add("$mixinPackage.$className")
-                            }
-                        }
-
-                        if (json.has("client")) {
-                            for (element in json.getAsJsonArray("client")) {
-                                val className = element.asString
-                                mixinClasses.add("$mixinPackage.$className")
-                            }
-                        }
-
-                        if (json.has("server")) {
-                            for (element in json.getAsJsonArray("server")) {
-                                val className = element.asString
-                                mixinClasses.add("$mixinPackage.$className")
-                            }
-                        }
-                    }
-
-                    hashes.forEach {
-                        manifest.entries.remove(it)
-                    }
-
-                    val outputStream = ByteArrayOutputStream()
-                    manifest.write(outputStream)
-
-                    jarOutput.putNextEntry(entry)
-                    jarOutput.write(outputStream.toByteArray())
-                    jarOutput.closeEntry()
-
+                if (entry.name.lowercase() == "meta-inf/manifest.mf") {
                     continue
                 } else if (entry.name.lowercase().endsWith(".rsa") || entry.name.lowercase().endsWith(".sf")) {
                     // ignore JAR signatures.
@@ -309,7 +317,7 @@ object KiltRemapper {
                 }
 
                 // Mixin remapping
-                if (entry.name.lowercase().endsWith("refmap.json")) {
+                if (refmaps.any { entry.name.lowercase() == it.lowercase() }) {
                     val refmapData = JsonParser.parseString(String(jar.getInputStream(entry).readAllBytes())).asJsonObject
 
                     val refmapMappings = refmapData.getAsJsonObject("mappings")
