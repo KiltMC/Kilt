@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 120
+    const val REMAPPER_VERSION = 121
 
     val logConsumer = Consumer<String> {
         logger.debug(it)
@@ -254,11 +254,10 @@ object KiltRemapper {
                 }
             }
 
-            val mixinConfigs = manifest.mainAttributes.entries.filter { it.toString().startsWith("MixinConfigs") }
+            val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
 
             for (mixinConfig in mixinConfigs) {
-                val value = mixinConfig.value.toString()
-                val jsonEntry = jar.getJarEntry(value) ?: continue
+                val jsonEntry = jar.getJarEntry(mixinConfig) ?: continue
                 val data = jar.getInputStream(jsonEntry).bufferedReader()
 
                 val json = JsonParser.parseReader(data).asJsonObject
