@@ -145,6 +145,7 @@
         "world.level.block.BlocksInject",
         "world.level.block.BucketPickupInject",
         "world.level.block.ComparatorBlockInject",
+        "world.level.block.FenceGateBlockInject",
         "world.level.block.FlowerPotBlockInject",
         "world.level.block.LiquidBlockInject",
         "world.level.block.PoweredRailBlockInject",
