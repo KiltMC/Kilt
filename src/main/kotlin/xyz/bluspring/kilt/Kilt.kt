@@ -1,8 +1,10 @@
 package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
+import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
+import dev.architectury.event.events.common.InteractionEvent
 import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
@@ -12,6 +14,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
@@ -33,6 +36,40 @@ class Kilt : ModInitializer {
 
     @Suppress("removal")
     private fun registerFabricEvents() {
+        InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
+            val event = ForgeHooks.onRightClickBlock(player, hand, pos, BlockHitResult(pos.center, direction, pos, false))
+            eventBusToArchitectury(event.result)
+        }
+
+        InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
+            val result = ForgeHooks.onItemRightClick(player, hand)
+
+            when (result) {
+                InteractionResult.PASS -> CompoundEventResult.pass()
+                InteractionResult.FAIL -> CompoundEventResult.interruptFalse(player.getItemInHand(hand))
+                InteractionResult.SUCCESS -> CompoundEventResult.interruptTrue(player.getItemInHand(hand))
+                else -> CompoundEventResult.interruptDefault(player.getItemInHand(hand))
+            }
+        }
+
+        InteractionEvent.INTERACT_ENTITY.register { player, entity, hand ->
+            val result = ForgeHooks.onInteractEntity(player, entity, hand)
+            vanillaToArchitectury(result)
+        }
+
+        InteractionEvent.LEFT_CLICK_BLOCK.register { player, hand, pos, direction ->
+            val event = ForgeHooks.onLeftClickBlock(player, pos, direction)
+            eventBusToArchitectury(event.result)
+        }
+
+        InteractionEvent.CLIENT_LEFT_CLICK_AIR.register { player, hand ->
+            ForgeHooks.onEmptyLeftClick(player)
+        }
+
+        InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
+            ForgeHooks.onEmptyClick(player, hand)
+        }
+
         LivingEntityEvents.DROPS.register { entity, source, drops, level, recentlyHit ->
             MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
@@ -142,15 +179,6 @@ class Kilt : ModInitializer {
         }
     }
 
-    private fun eventBusToArchitectury(result: Event.Result): EventResult {
-        return when (result) {
-            Event.Result.ALLOW -> EventResult.interruptTrue()
-            Event.Result.DEFAULT -> EventResult.pass()
-            Event.Result.DENY -> EventResult.interruptFalse()
-            else -> EventResult.pass()
-        }
-    }
-
     companion object {
         const val MOD_ID = "kilt"
 
@@ -167,6 +195,24 @@ class Kilt : ModInitializer {
 
             if (!onServer) {
                 KiltClient.lateRegisterEvents()
+            }
+        }
+
+        fun eventBusToArchitectury(result: Event.Result): EventResult {
+            return when (result) {
+                Event.Result.ALLOW -> EventResult.interruptTrue()
+                Event.Result.DEFAULT -> EventResult.pass()
+                Event.Result.DENY -> EventResult.interruptFalse()
+                else -> EventResult.pass()
+            }
+        }
+
+        fun vanillaToArchitectury(result: InteractionResult): EventResult {
+            return when (result) {
+                InteractionResult.PASS -> EventResult.pass()
+                InteractionResult.FAIL -> EventResult.interruptFalse()
+                InteractionResult.SUCCESS -> EventResult.interruptTrue()
+                else -> EventResult.interruptDefault()
             }
         }
     }
