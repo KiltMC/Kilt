@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
+import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
 import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
@@ -34,6 +35,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.event.TickEvent.ClientTickEvent
+import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.ModLoader
 import net.minecraftforge.fml.ModLoadingContext
@@ -248,6 +250,14 @@ class KiltClient : ClientModInitializer {
 
         ClientTickEvents.END_WORLD_TICK.register {
             MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.END, it) { !it.dimensionType().hasFixedTime() })
+        }
+
+        ClientWorldEvents.LOAD.register { client, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
+        }
+
+        ClientWorldEvents.UNLOAD.register { client, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))
         }
     }
 

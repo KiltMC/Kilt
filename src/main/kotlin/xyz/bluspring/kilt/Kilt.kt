@@ -11,6 +11,7 @@ import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.ChunkPos
@@ -20,6 +21,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.living.LivingDropsEvent
+import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
@@ -177,6 +179,14 @@ class Kilt : ModInitializer {
 
         ServerLevelTick.PLAYER_POST.register {
             ForgeEventFactory.onPlayerPostTick(it)
+        }
+
+        ServerWorldEvents.LOAD.register { server, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
+        }
+
+        ServerWorldEvents.UNLOAD.register { server, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))
         }
     }
 
