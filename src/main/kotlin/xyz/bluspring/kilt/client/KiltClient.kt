@@ -279,6 +279,9 @@ class KiltClient : ClientModInitializer {
         RenderHandCallback.EVENT.register { event ->
             val forgeEvent = RenderHandEvent(event.hand, event.poseStack, event.multiBufferSource, event.packedLight, event.partialTicks, event.pitch, event.swingProgress, event.equipProgress, event.itemStack)
             MinecraftForge.EVENT_BUS.post(forgeEvent)
+
+            if (forgeEvent.isCanceled)
+                event.isCanceled = true
         }
     }
 
