@@ -27,6 +27,7 @@ import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
+import xyz.bluspring.kilt.interop.transfer.TransferInterop
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import java.util.*
@@ -34,6 +35,8 @@ import java.util.*
 class Kilt : ModInitializer {
     override fun onInitialize() {
         registerFabricEvents()
+
+        TransferInterop.init()
     }
 
     @Suppress("removal")
@@ -44,7 +47,7 @@ class Kilt : ModInitializer {
         }
 
         InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
-            val result = ForgeHooks.onItemRightClick(player, hand)
+            val result = ForgeHooks.onItemRightClick(player, hand) ?: return@register CompoundEventResult.pass()
 
             when (result) {
                 InteractionResult.PASS -> CompoundEventResult.pass()
@@ -55,7 +58,7 @@ class Kilt : ModInitializer {
         }
 
         InteractionEvent.INTERACT_ENTITY.register { player, entity, hand ->
-            val result = ForgeHooks.onInteractEntity(player, entity, hand)
+            val result = ForgeHooks.onInteractEntity(player, entity, hand) ?: return@register EventResult.pass()
             vanillaToArchitectury(result)
         }
 
