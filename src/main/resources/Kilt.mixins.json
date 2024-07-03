@@ -70,9 +70,9 @@
         "compat.porting_lib.TicketHelperAccessor",
         "compat.porting_lib.TicketOwnerAccessor",
         "compat.porting_lib.TicketTrackerAccessor",
+        "compat.sodium.SodiumWorldRendererMixin",
         "data.registries.VanillaRegistriesAccessor",
         "debug.ChunkSkyLightSourcesMixin",
-        "sodium.SodiumWorldRendererMixin",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.level.biome.BiomeClimateSettingsAccessor"
     ],

@@ -170,13 +170,13 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:ferrite-core:6.0.1-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modImplementation ("maven.modrinth:sodium:mc1.20.1-0.5.8") {
+    modImplementation ("maven.modrinth:sodium:mc1.20.1-0.5.11") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modRuntimeOnly ("maven.modrinth:lithium:mc1.20.1-0.11.2") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modRuntimeOnly ("maven.modrinth:indium:1.0.30+mc1.20.4") {
+    modRuntimeOnly ("maven.modrinth:indium:1.0.34+mc1.20.1") {
         exclude("net.fabricmc", "fabric-loader")
     }
 
