@@ -74,8 +74,9 @@ class Kilt : ModInitializer {
             MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
-        LivingEntityEvents.TICK.register {
-            ForgeHooks.onLivingTick(it)
+        LivingEntityEvents.LivingTickEvent.TICK.register { event ->
+            if (ForgeHooks.onLivingTick(event.entity))
+                event.isCanceled = true
         }
 
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
