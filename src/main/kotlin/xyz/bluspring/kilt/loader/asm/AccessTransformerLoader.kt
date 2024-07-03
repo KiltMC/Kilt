@@ -2,6 +2,8 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -22,6 +24,50 @@ object AccessTransformerLoader {
     private fun println(info: String) {
         if (debug)
             logger.info(info)
+    }
+
+    val entryTripleClass = Class.forName("net.fabricmc.loader.impl.lib.accesswidener.EntryTriple")
+    val enumNameMethod = Enum::class.java.getDeclaredMethod("name")
+
+    private fun getClassWidenedState(className: String): Pair<AccessType, Final> {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
+        val classAccessMethod = AccessWidener::class.java.getDeclaredMethod("getClassAccess", String::class.java)
+        classAccessMethod.isAccessible = true
+
+        val currentAccess = classAccessMethod.invoke(accessWidener, className.replace(".", "/"))
+        val accessName = enumNameMethod.invoke(currentAccess) as String
+
+        return when (accessName) {
+            "DEFAULT" -> Pair(AccessType.DEFAULT, Final.DEFAULT)
+            "ACCESSIBLE" -> Pair(AccessType.PUBLIC, Final.REMOVE) // Fabric does Final.ADD, let's remove final.
+            "EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            "ACCESSIBLE_EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            else -> throw IllegalStateException("Too many access widener names!")
+        }
+    }
+
+    private fun getMethodWidenedState(owner: String, method: String, descriptor: String): Pair<AccessType, Final> {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
+        val entryTripleInit = entryTripleClass.getDeclaredConstructor(String::class.java, String::class.java, String::class.java)
+        entryTripleInit.isAccessible = true
+
+        val methodAccessMethod = AccessWidener::class.java.getDeclaredMethod("getMethodAccess", entryTripleClass)
+        methodAccessMethod.isAccessible = true
+
+        val entryTriple = entryTripleInit.newInstance(owner, method, descriptor)
+
+        val currentAccess = methodAccessMethod.invoke(accessWidener, entryTriple)
+        val accessName = enumNameMethod.invoke(currentAccess) as String
+
+        return when (accessName) {
+            "DEFAULT" -> Pair(AccessType.DEFAULT, Final.DEFAULT)
+            "ACCESSIBLE" -> Pair(AccessType.PUBLIC, Final.REMOVE) // Fabric does Final.ADD, let's remove final.
+            "EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            "ACCESSIBLE_EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            else -> throw IllegalStateException("Too many access widener names!")
+        }
     }
 
     fun convertTransformers(data: ByteArray) {
@@ -90,20 +136,34 @@ object AccessTransformerLoader {
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
                     val pair = Pair(methodName, mappedDescriptor)
 
+                    val fabricTransform = getMethodWidenedState(intermediaryClassName, methodName, mappedDescriptor)
+                    val fabricAccess = fabricTransform.first
+                    val fabricFinal = fabricTransform.second
+
+                    val priorityAccess = if (accessType.ordinal < fabricAccess.ordinal)
+                        accessType
+                    else
+                        fabricAccess
+
+                    val priorityFinal = if (finalType.ordinal < fabricFinal.ordinal)
+                        finalType
+                    else
+                        fabricFinal
+
                     if (transformInfo.methods.contains(pair)) {
                         val methodTransformInfo = transformInfo.methods[pair]!!
 
                         // promote access type
-                        if (accessType.ordinal < methodTransformInfo.currentAccessType.ordinal) {
-                            methodTransformInfo.currentAccessType = accessType
+                        if (priorityAccess.ordinal < methodTransformInfo.currentAccessType.ordinal) {
+                            methodTransformInfo.currentAccessType = priorityAccess
                         }
 
                         // promote final type
-                        if (finalType.ordinal < methodTransformInfo.final.ordinal) {
-                            methodTransformInfo.final = finalType
+                        if (priorityFinal.ordinal < methodTransformInfo.final.ordinal) {
+                            methodTransformInfo.final = priorityFinal
                         }
                     } else {
-                        transformInfo.methods[pair] = TransformInfo(accessType, finalType)
+                        transformInfo.methods[pair] = TransformInfo(priorityAccess, priorityFinal)
                     }
 
                     if (!classTransformInfo.contains(intermediaryClassName))
@@ -136,19 +196,33 @@ object AccessTransformerLoader {
                         classTransformInfo[intermediaryClassName] = transformInfo
                 }
             } else { // class
+                val fabricTransform = getClassWidenedState(intermediaryClassName)
                 val transformInfo = classTransformInfo[intermediaryClassName]
 
+                val fabricAccess = fabricTransform.first
+                val fabricFinal = fabricTransform.second
+
+                val priorityAccess = if (accessType.ordinal < fabricAccess.ordinal)
+                    accessType
+                else
+                    fabricAccess
+
+                val priorityFinal = if (finalType.ordinal < fabricFinal.ordinal)
+                    finalType
+                else
+                    fabricFinal
+
                 if (transformInfo == null) {
-                    classTransformInfo[intermediaryClassName] = ClassTransformInfo(accessType, finalType)
+                    classTransformInfo[intermediaryClassName] = ClassTransformInfo(priorityAccess, priorityFinal)
                 } else {
                     // Promote the access type if the level is higher than the current one
-                    if (accessType.ordinal < transformInfo.currentAccessType.ordinal) {
-                        transformInfo.currentAccessType = accessType
+                    if (priorityAccess.ordinal < transformInfo.currentAccessType.ordinal) {
+                        transformInfo.currentAccessType = priorityAccess
                     }
 
                     // Also promote the final type
-                    if (finalType.ordinal < transformInfo.final.ordinal) {
-                        transformInfo.final = finalType
+                    if (priorityFinal.ordinal < transformInfo.final.ordinal) {
+                        transformInfo.final = priorityFinal
                     }
                 }
             }
