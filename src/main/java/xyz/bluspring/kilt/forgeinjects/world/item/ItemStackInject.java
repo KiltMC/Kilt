@@ -4,6 +4,7 @@ package xyz.bluspring.kilt.forgeinjects.world.item;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +51,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @CreateInitializer
     public ItemStackInject(ItemLike item, int count, CompoundTag tag) {
         this(item, count);
-        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(item.asItem());
+        this.delegate = getDelegate(item.asItem());
         this.capNBT = tag;
         this.forgeInit();
     }
@@ -58,13 +59,13 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {
         this.capNBT = compoundTag.contains("ForgeCaps") ? compoundTag.getCompound("ForgeCaps") : null;
-        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(this.item.asItem());
+        this.delegate = getDelegate(this.item.asItem());
         this.forgeInit();
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/ItemLike;I)V")
     public void kilt$initForgeItemStack(ItemLike itemLike, int i, CallbackInfo ci) {
-        this.delegate = ForgeRegistries.ITEMS.getDelegateOrThrow(itemLike.asItem());
+        this.delegate = getDelegate(itemLike.asItem());
 
         // this might run twice.
         // TODO: figure out how to avoid double-running
@@ -110,5 +111,22 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
         }
+    }
+
+    @Unique
+    private static Holder.Reference<Item> getDelegate(Item item) {
+        var forgeDelegate = ForgeRegistries.ITEMS.getDelegate(item);
+
+        if (forgeDelegate.isEmpty()) {
+            var key = BuiltInRegistries.ITEM.getResourceKey(item);
+
+            if (key.isPresent()) {
+                return BuiltInRegistries.ITEM.getHolderOrThrow(key.orElseThrow());
+            }
+        } else {
+            return forgeDelegate.get();
+        }
+
+        return null;
     }
 }
