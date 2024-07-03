@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
-import xyz.bluspring.kilt.loader.remap.fixers.ConflictingStaticMethodFixer
-import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
-import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
-import xyz.bluspring.kilt.loader.remap.fixers.WorkaroundFixer
+import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -210,6 +207,8 @@ object KiltRemapper {
         val output = modifiedJarFile.outputStream()
         val jarOutput = JarOutputStream(output)
 
+        val mixinClasses = mutableListOf<String>()
+
         // Use the regular mod file
         val classProvider = ClassProvider.builder().apply {
             this.addLibrary(srgGamePath)
@@ -243,7 +242,7 @@ object KiltRemapper {
                 // JAR validation information stripping.
                 // If we can find out how to use this to our advantage prior to remapping,
                 // we may still be able to utilize this information safely.
-                if (entry.name.lowercase() == "manifest.mf") {
+                if (entry.name.lowercase().endsWith("manifest.mf")) {
                     // Modify the manifest to avoid hash checking, because if
                     // hash checking occurs, the JAR will fail to load entirely.
                     val manifest = Manifest(jar.getInputStream(entry))
@@ -252,6 +251,39 @@ object KiltRemapper {
                     manifest.entries.forEach { (name, attr) ->
                         if (attr.entries.any { it.toString().startsWith("SHA-256-Digest") || it.toString().startsWith("SHA-1-Digest") }) {
                             hashes.add(name)
+                        }
+                    }
+
+                    val mixinConfigs = manifest.mainAttributes.entries.filter { it.toString().startsWith("MixinConfigs") }
+
+                    for (mixinConfig in mixinConfigs) {
+                        val value = mixinConfig.value.toString()
+                        val jsonEntry = jar.getJarEntry(value) ?: continue
+                        val data = jar.getInputStream(jsonEntry).bufferedReader()
+
+                        val json = JsonParser.parseReader(data).asJsonObject
+
+                        val mixinPackage = json.get("package").asString
+
+                        if (json.has("mixins")) {
+                            for (element in json.getAsJsonArray("mixins")) {
+                                val className = element.asString
+                                mixinClasses.add("$mixinPackage.$className")
+                            }
+                        }
+
+                        if (json.has("client")) {
+                            for (element in json.getAsJsonArray("client")) {
+                                val className = element.asString
+                                mixinClasses.add("$mixinPackage.$className")
+                            }
+                        }
+
+                        if (json.has("server")) {
+                            for (element in json.getAsJsonArray("server")) {
+                                val className = element.asString
+                                mixinClasses.add("$mixinPackage.$className")
+                            }
                         }
                     }
 
@@ -473,6 +505,11 @@ object KiltRemapper {
                 val classReader2 = ClassReader(classWriter.toByteArray())
                 val classNode2 = ClassNode(Opcodes.ASM9)
                 classReader2.accept(classNode2, 0)
+
+                // only do this on mixin classes, please
+                if (mixinClasses.contains(classNode2.name.replace("/", "."))) {
+                    MixinShadowRemapper.remapClass(classNode2)
+                }
 
                 EventClassVisibilityFixer.fixClass(classNode2)
                 EventEmptyInitializerFixer.fixClass(classNode2, classes)
