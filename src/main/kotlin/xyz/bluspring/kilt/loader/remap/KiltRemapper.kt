@@ -51,6 +51,8 @@ object KiltRemapper {
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
     const val REMAPPER_VERSION = 121
 
+    const val MC_MAPPED_JAR_VERSION = 2
+
     val logConsumer = Consumer<String> {
         logger.debug(it)
     }
@@ -617,7 +619,7 @@ object KiltRemapper {
     fun getGameClassPath(): Array<out Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment)
             arrayOf(
-                FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
+                getMCGameFile()?.toPath() ?: FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar") as Path,
                 Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()
             )
         else
@@ -639,7 +641,7 @@ object KiltRemapper {
     }
 
     private fun remapMinecraft(): Path {
-        val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg.jar")
+        val srgFile = File(KiltLoader.kiltCacheDir, "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg_$MC_MAPPED_JAR_VERSION.jar")
 
         if (srgFile.exists() && !forceRemap)
             return srgFile.toPath()
