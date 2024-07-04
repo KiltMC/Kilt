@@ -1,9 +1,9 @@
 package xyz.bluspring.kilt.interop.transfer.item
 
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.world.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 
@@ -35,9 +35,12 @@ class FabricItemStorageCapability(val storage: SlottedStorage<ItemVariant>) : II
             return slotStorage.resource.toStack(extractedCount.toInt())
         }
 
-        Transaction.openNested(null).use {
+        TransferUtil.getTransaction().use {
             val extractedCount = slotStorage.extract(slotStorage.resource, amount.toLong(), it)
-            return slotStorage.resource.toStack(extractedCount.toInt())
+            val extracted =  slotStorage.resource.toStack(extractedCount.toInt())
+            it.commit()
+
+            return extracted
         }
     }
 

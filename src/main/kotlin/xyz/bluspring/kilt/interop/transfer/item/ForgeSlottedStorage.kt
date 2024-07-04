@@ -63,7 +63,7 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
         return maxAmount - currentAmount
     }
 
-    inner class ForgeSingleSlotStorage(val slot: Int) : SingleSlotStorage<ItemVariant> {
+    private inner class ForgeSingleSlotStorage(val slot: Int) : SingleSlotStorage<ItemVariant> {
         override fun insert(resource: ItemVariant, maxAmount: Long, transaction: TransactionContext): Long {
             val snapshot = ForgeStackInsertSnapshot(resource.toStack(maxAmount.toInt()))
 
@@ -96,7 +96,7 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
             return handler.getSlotLimit(slot).toLong()
         }
 
-        inner class ForgeStackInsertSnapshot(var stack: ItemStack) : SnapshotParticipant<ItemStack>() {
+        private inner class ForgeStackInsertSnapshot(var stack: ItemStack) : SnapshotParticipant<ItemStack>() {
             val original = stack.copy()
 
             override fun createSnapshot(): ItemStack {
@@ -112,7 +112,7 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
             }
         }
 
-        inner class ForgeStackExtractSnapshot(var maxAmount: Long) : SnapshotParticipant<Long>() {
+        private inner class ForgeStackExtractSnapshot(var maxAmount: Long) : SnapshotParticipant<Long>() {
             val original = maxAmount
 
             override fun createSnapshot(): Long {
