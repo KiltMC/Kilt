@@ -12,10 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderImpl
 import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl
-import xyz.bluspring.kilt.interop.transfer.fluid.FabricFluidItemStorageCapabilityProvider
-import xyz.bluspring.kilt.interop.transfer.fluid.FabricFluidStorageCapability
-import xyz.bluspring.kilt.interop.transfer.fluid.FabricFluidStorageCapabilityProvider
-import xyz.bluspring.kilt.interop.transfer.fluid.ForgeFluidStorage
+import xyz.bluspring.kilt.interop.transfer.fluid.*
 import xyz.bluspring.kilt.interop.transfer.item.FabricItemStorageCapability
 import xyz.bluspring.kilt.interop.transfer.item.FabricItemStorageCapabilityProvider
 import xyz.bluspring.kilt.interop.transfer.item.ForgeSlottedStorage
@@ -66,7 +63,7 @@ object TransferInterop {
 
             if (fluidHandlerCapability.isPresent) {
                 val handler = fluidHandlerCapability.resolve().get()
-                if (true) { // TODO: verify if FabricFluidItemStorageCapability
+                if (handler !is FabricFluidItemStorageCapability) {
                     return@registerFallback ForgeFluidStorage(handler)
                 }
             }
