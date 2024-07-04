@@ -264,5 +264,6 @@
     ],
     "injectors": {
         "defaultRequire": 1
-  }
+    },
+    "mixinPriority": 999
 }
