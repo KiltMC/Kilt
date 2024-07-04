@@ -1,6 +1,8 @@
 // TRACKED HASH: b6113e1d44b934ff02eb6b5b554fa8ccbd085e79
 package xyz.bluspring.kilt.forgeinjects.network;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
@@ -14,7 +16,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
@@ -50,9 +51,9 @@ public class ConnectionInject implements ConnectionInjection {
     }
 
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;", remap = false), method = "sendPacket")
-    public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b) {
-        this.channel.eventLoop().execute(() -> instance.setAutoRead(false));
+    @WrapOperation(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;", remap = false), method = "sendPacket")
+    public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b, Operation<ChannelConfig> original) {
+        this.channel.eventLoop().execute(() -> original.call(false));
 
         return instance;
     }

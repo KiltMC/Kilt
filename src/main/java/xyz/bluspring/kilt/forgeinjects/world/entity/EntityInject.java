@@ -1,6 +1,8 @@
 // TRACKED HASH: 34fb617752c8022973f9dca4fb9eed32600931bf
 package xyz.bluspring.kilt.forgeinjects.world.entity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -19,7 +21,6 @@ import net.minecraftforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
@@ -119,13 +120,13 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return null;
     }
 
-    @Redirect(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
-    public boolean kilt$captureSpawnDrops(Level instance, Entity entity) {
+    @WrapOperation(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    public boolean kilt$captureSpawnDrops(Level instance, Entity entity, Operation<Boolean> original) {
         if (captureDrops() != null) {
             captureDrops().add((ItemEntity) entity);
             return false;
         } else {
-            return instance.addFreshEntity(entity);
+            return original.call(instance, entity);
         }
     }
 }

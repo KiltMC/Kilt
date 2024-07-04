@@ -1,6 +1,7 @@
 // TRACKED HASH: c113d4a78bfff9b69b2cf30b24c0ec29f4fafe4f
 package xyz.bluspring.kilt.forgeinjects.world.entity.projectile;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -42,10 +43,9 @@ public abstract class FishingHookInject extends Projectile {
         return instance.canPerformAction(ToolActions.FISHING_ROD_CAST);
     }
 
-    @Redirect(method = "checkCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/FishingHook;onHit(Lnet/minecraft/world/phys/HitResult;)V"))
-    public void kilt$checkHitResultFirst(FishingHook instance, HitResult hitResult) {
-        if (hitResult.getType() == HitResult.Type.MISS || ForgeEventFactory.onProjectileImpact((FishingHook) (Object) this, hitResult))
-            onHit(hitResult);
+    @WrapWithCondition(method = "checkCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/FishingHook;onHit(Lnet/minecraft/world/phys/HitResult;)V"))
+    public boolean kilt$checkHitResultFirst(FishingHook instance, HitResult hitResult) {
+        return hitResult.getType() == HitResult.Type.MISS || !ForgeEventFactory.onProjectileImpact((FishingHook) (Object) this, hitResult);
     }
 
     @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootParams$Builder;create(Lnet/minecraft/world/level/storage/loot/parameters/LootContextParamSet;)Lnet/minecraft/world/level/storage/loot/LootParams;"), method = "retrieve")

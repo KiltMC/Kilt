@@ -165,9 +165,9 @@ public abstract class GuiInject implements GuiInjection {
     }
 
     // Portal
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEffect(Lnet/minecraft/world/effect/MobEffect;)Z"))
-    public boolean kilt$renderPortal(LocalPlayer player, MobEffect effect, @Local(argsOnly = true) GuiGraphics guiGraphics, @Local(ordinal = 0, index = 0) float delta) {
-        return !kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.PORTAL) && player.hasEffect(effect);
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEffect(Lnet/minecraft/world/effect/MobEffect;)Z"))
+    public boolean kilt$renderPortal(LocalPlayer instance, MobEffect mobEffect, Operation<Boolean> original, @Local(argsOnly = true) GuiGraphics guiGraphics, @Local(ordinal = 0, argsOnly = true) float delta) {
+        return !kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.PORTAL) && original.call(instance, mobEffect);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;getPlayerMode()Lnet/minecraft/world/level/GameType;", shift = At.Shift.BEFORE))
@@ -181,9 +181,9 @@ public abstract class GuiInject implements GuiInjection {
         return kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.HOTBAR);
     }
 
-    @Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z", ordinal = 0))
-    public boolean kilt$renderRegularHotbar(Options instance, @Local GuiGraphics guiGraphics, @Local(ordinal = 0, index = 0) float delta) {
-        return !kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.HOTBAR) && instance.hideGui;
+    @WrapOperation(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z", ordinal = 0))
+    public boolean kilt$renderRegularHotbar(Options instance, Operation<Boolean> original, @Local(argsOnly = true) GuiGraphics guiGraphics, @Local(ordinal = 0, argsOnly = true) float delta) {
+        return !kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.HOTBAR) && original.call(instance);
     }
 
     @Inject(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z", shift = At.Shift.BEFORE, ordinal = 1))

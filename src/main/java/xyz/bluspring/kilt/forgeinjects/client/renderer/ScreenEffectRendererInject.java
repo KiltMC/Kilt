@@ -1,7 +1,8 @@
 // TRACKED HASH: 0352f8e699c8b1e9b6ac77b9927e3852ffaf311c
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ScreenEffectRenderer;
@@ -9,7 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.renderer.ScreenEffectRendererInjection;
@@ -27,9 +27,9 @@ public class ScreenEffectRendererInject implements ScreenEffectRendererInjection
         ScreenEffectRendererInjection.renderFluid(mc, poseStack, texture);
     }
 
-    @Redirect(method = "renderWater", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/resources/ResourceLocation;)V"))
-    private static void kilt$useForgeWaterRender(int i, ResourceLocation resourceLocation) {
-        RenderSystem.setShaderTexture(i, ScreenEffectRendererInjection.currentTexture.get());
+    @WrapOperation(method = "renderWater", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/resources/ResourceLocation;)V"))
+    private static void kilt$useForgeWaterRender(int i, ResourceLocation resourceLocation, Operation<Void> original) {
+        original.call(i, ScreenEffectRendererInjection.currentTexture.get());
     }
 
     @Inject(at = @At("TAIL"), method = "<clinit>")

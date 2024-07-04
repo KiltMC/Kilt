@@ -2,6 +2,8 @@
 package xyz.bluspring.kilt.forgeinjects.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Screenshot;
@@ -12,7 +14,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -59,11 +60,12 @@ public class ScreenshotInject {
         return file;
     }
 
-    @Redirect(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
-    private static void kilt$useForgeEventSuccess(Consumer<Component> instance, Object component) {
+    @SuppressWarnings("MixinExtrasOperationParameters") // shush
+    @WrapOperation(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
+    private static <T> void kilt$useForgeEventSuccess(Consumer<T> instance, T t, Operation<Void> original) {
         if (kilt$target.get() != null)
-            instance.accept(kilt$target.get().getResultMessage());
+            original.call(instance, kilt$target.get().getResultMessage());
         else
-            instance.accept((Component) component);
+            original.call(instance, t);
     }
 }

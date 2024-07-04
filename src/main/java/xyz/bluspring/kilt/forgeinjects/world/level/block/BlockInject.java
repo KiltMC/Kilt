@@ -1,6 +1,8 @@
 // TRACKED HASH: cfca572d6c2e46ca49cb8ffbdda7f12c0d1c4d30
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
@@ -18,7 +20,6 @@ import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
@@ -53,10 +54,10 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
             cir.setReturnValue(false);
     }
 
-    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"), method = "popResource(Lnet/minecraft/world/level/Level;Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;)V")
-    private static boolean kilt$checkRestoringBlockSnapshots(Level instance) {
-        // TODO: how do i inject fields into stuff
-        return instance.isClientSide; //&& !((IForgeLevel) instance).restoringBlockSnapshots;
+    @WrapOperation(at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"), method = "popResource(Lnet/minecraft/world/level/Level;Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;)V")
+    private static boolean kilt$checkRestoringBlockSnapshots(Level instance, Operation<Boolean> original) {
+        // TODO: actually implement this
+        return original.call(instance); //&& !((IForgeLevel) instance).restoringBlockSnapshots;
     }
 
     @Override

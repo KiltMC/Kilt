@@ -36,7 +36,6 @@ public class RecipeManagerInject implements RecipeManagerInjection {
         this.context = context;
     }
 
-    @SuppressWarnings("InvalidInjectorMethodSignature")
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/RecipeManager;fromJson(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;"), method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V")
     public Recipe<?> kilt$useForgeFromJson(ResourceLocation resourceLocation, JsonObject jsonObject, @Local Map.Entry<ResourceLocation, JsonElement> entry) {
         if (entry.getValue().isJsonObject() && !CraftingHelper.processConditions(entry.getValue().getAsJsonObject(), "conditions", this.context)) {
