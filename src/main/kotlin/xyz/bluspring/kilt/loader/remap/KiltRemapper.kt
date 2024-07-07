@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 121
+    const val REMAPPER_VERSION = 122
 
     const val MC_MAPPED_JAR_VERSION = 2
 
@@ -237,7 +237,7 @@ object KiltRemapper {
             this.addLibrary(mod.modFile?.toPath())
         }.build()
 
-        val remapper = EnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
+        val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
         val entriesToMap = mutableListOf<Pair<JarEntry, ClassNode>>()
 
         // JAR validation information stripping.
