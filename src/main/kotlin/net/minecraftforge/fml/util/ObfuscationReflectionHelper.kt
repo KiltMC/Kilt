@@ -30,7 +30,7 @@ object ObfuscationReflectionHelper {
             }
 
             INameMappingService.Domain.METHOD -> {
-                srgMappedMethods[name]?.second ?: name
+                srgMappedMethods[name]?.values?.firstOrNull() ?: name
             }
         }
     }

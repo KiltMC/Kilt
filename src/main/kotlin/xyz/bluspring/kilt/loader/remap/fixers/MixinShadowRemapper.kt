@@ -31,7 +31,7 @@ object MixinShadowRemapper {
             if (method.visibleAnnotations.none { it.desc.contains("org/spongepowered/asm/mixin/Shadow") })
                 continue
 
-            val remapped = KiltRemapper.srgMappedMethods[method.name]?.second ?: continue
+            val remapped = KiltRemapper.srgMappedMethods[method.name]?.get(classNode.name.replace(".", "/")) ?: KiltRemapper.srgMappedMethods[method.name]?.values?.firstOrNull() ?: continue
             remappedMethods[method.name] = remapped
             method.name = remapped
         }

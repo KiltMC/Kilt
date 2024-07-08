@@ -51,7 +51,7 @@ object ASMAPI {
 
     @JvmStatic
     fun mapMethod(name: String): String {
-        return KiltRemapper.srgMappedMethods[name]?.second ?: name
+        return KiltRemapper.srgMappedMethods[name]?.values?.firstOrNull() ?: name
     }
 
     @JvmStatic

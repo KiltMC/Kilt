@@ -8,10 +8,18 @@ import java.util.function.Consumer
 class KiltEnhancedRemapper(provider: ClassProvider, file: IMappingFile, log: Consumer<String>) : EnhancedRemapper(provider, file, log) {
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
         if (name.startsWith("m_") && name.endsWith("_")) {
-            return KiltRemapper.srgMappedMethods[name]?.second ?: super.mapMethodName(owner, name, descriptor)
+            return KiltRemapper.srgMappedMethods[name]?.get(owner) ?: KiltRemapper.srgMappedMethods[name]?.values?.firstOrNull() ?: super.mapMethodName(owner, name, descriptor)
         }
 
         return super.mapMethodName(owner, name, descriptor)
+    }
+
+    override fun mapInvokeDynamicMethodName(name: String, descriptor: String): String {
+        if (name.startsWith("m_") && name.endsWith("_")) {
+            return KiltRemapper.srgMappedMethods[name]?.values?.firstOrNull() ?: super.mapInvokeDynamicMethodName(name, descriptor)
+        }
+
+        return super.mapInvokeDynamicMethodName(name, descriptor)
     }
 
     override fun mapFieldName(owner: String, name: String, descriptor: String): String {

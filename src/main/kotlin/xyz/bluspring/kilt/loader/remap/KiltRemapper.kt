@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 122
+    const val REMAPPER_VERSION = 123
 
     const val MC_MAPPED_JAR_VERSION = 2
 
@@ -92,7 +92,22 @@ object KiltRemapper {
     private val classNodeList = mutableSetOf<ClassNode>()
 
     val srgMappedFields = srgIntermediaryMapping.classes.flatMap { it.fields.map { f -> f.original to mappingResolver.mapFieldName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
-    val srgMappedMethods = srgIntermediaryMapping.classes.flatMap { it.methods.map { f -> f.original to mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
+    val srgMappedMethods = mutableMapOf<String, MutableMap<String, String>>()
+
+    init {
+        srgIntermediaryMapping.classes.forEach {
+            it.methods.forEach m@{ f ->
+                val map = srgMappedMethods.computeIfAbsent(f.original) { mutableMapOf() }
+                val mapped = (mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor))
+
+                // otherwise FunctionalInterface methods don't get remapped properly???
+                if (!mapped.startsWith("method_"))
+                    return@m
+
+                map[f.parent.original] = mapped
+            }
+        }
+    }
 
     fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: File): List<Exception> {
         if (disableRemaps) {

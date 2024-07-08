@@ -80,7 +80,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     val methodName = targetData["methodName"] as String
                     val descName = targetData["methodDesc"] as String
 
-                    val mappedMethodName = KiltRemapper.srgMappedMethods[methodName]?.second ?: methodName
+                    val mappedMethodName = KiltRemapper.srgMappedMethods[methodName]?.get(className) ?: KiltRemapper.srgMappedMethods[methodName]?.values?.firstOrNull() ?: methodName
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
