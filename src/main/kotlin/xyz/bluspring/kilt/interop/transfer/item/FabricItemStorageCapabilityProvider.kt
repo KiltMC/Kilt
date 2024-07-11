@@ -16,9 +16,13 @@ class FabricItemStorageCapabilityProvider(val blockEntity: BlockEntity) : ICapab
             val fabricStorage = ItemStorage.SIDED.getProvider(blockEntity.blockState.block) ?: return LazyOptional.empty()
             val storage = fabricStorage.find(blockEntity.level!!, blockEntity.blockPos, blockEntity.blockState, blockEntity, side) ?: return LazyOptional.empty()
 
-            // Forge's transfer API is effectively slot-based, so let's respect that.
-            if (storage !is SlottedStorage<ItemVariant> || storage is ForgeSlottedStorage)
+            // Ignore our own storage
+            if (storage is ForgeSlottedStorage)
                 return LazyOptional.empty()
+
+            // Forge's transfer API is effectively slot-based, so fallback to a wrapper for Fabric's transfer to be slotted.
+            if (storage !is SlottedStorage<ItemVariant>)
+                return LazyOptional.of { FabricItemStorageCapability(FabricStorageWrapper(storage)) }.cast()
 
             return LazyOptional.of { FabricItemStorageCapability(storage) }.cast()
         }
