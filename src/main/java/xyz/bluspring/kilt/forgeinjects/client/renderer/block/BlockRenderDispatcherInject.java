@@ -33,10 +33,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.client.renderer.block.BlockRenderDispatcherInjection;
 import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
 
 @Mixin(BlockRenderDispatcher.class)
-public abstract class BlockRenderDispatcherInject {
+public abstract class BlockRenderDispatcherInject implements BlockRenderDispatcherInjection {
     @Shadow @Final @Mutable
     private ModelBlockRenderer modelRenderer;
 
@@ -55,6 +56,7 @@ public abstract class BlockRenderDispatcherInject {
         this.modelRenderer = new ForgeModelBlockRenderer(blockColors);
     }
 
+    @Override
     public void renderBreakingTexture(BlockState state, BlockPos pos, BlockAndTintGetter level, PoseStack poseStack, VertexConsumer consumer, ModelData data) {
         if (state.getRenderShape() == RenderShape.MODEL) {
             var bakedModel = this.blockModelShaper.getBlockModel(state);
@@ -63,10 +65,12 @@ public abstract class BlockRenderDispatcherInject {
         }
     }
 
+    @Override
     public void renderBatched(BlockState state, BlockPos pos, BlockAndTintGetter level, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, ModelData modelData, RenderType renderType) {
         renderBatched(state, pos, level, poseStack, consumer, checkSides, random, modelData, renderType, true);
     }
 
+    @Override
     public void renderBatched(BlockState state, BlockPos pos, BlockAndTintGetter level, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, ModelData modelData, RenderType renderType, boolean queryModelSpecificData) {
         try {
             RenderShape renderShape = state.getRenderShape();
@@ -82,6 +86,7 @@ public abstract class BlockRenderDispatcherInject {
         }
     }
 
+    @Override
     public void renderSingleBlock(BlockState state, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ModelData modelData, RenderType renderType) {
         RenderShape renderShape = state.getRenderShape();
         if (renderShape != RenderShape.INVISIBLE) {

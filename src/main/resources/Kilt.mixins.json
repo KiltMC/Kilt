@@ -58,6 +58,7 @@
         "TooltipRenderUtilAccessor",
         "TypeAccessor",
         "WoodTypeAccessor",
+        "WorldSliceAccessor",
         "client.gui.components.ButtonBuilderAccessor",
         "compat.fabric_api.DynamicRegistriesMixin",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
@@ -79,7 +80,10 @@
     "client": [
         "client.gui.components.DebugScreenOverlayMixin",
         "client.gui.screens.inventory.AbstractContainerScreenAccessor",
-        "compat.fabric_api.FluidRenderHandlerRegistryImplMixin"
+        "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
+        "compat.fabric_api.rendering.FabricBakedModelMixin",
+        "compat.fabric_api.rendering.VanillaModelEncoderMixin",
+        "compat.indium.BakedModelMixin"
     ],
     "injectors": {
         "defaultRequire": 1

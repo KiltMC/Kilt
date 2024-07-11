@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.client.renderer.block.BlockRenderDispatcherInjection;
 import xyz.bluspring.kilt.mixin.RenderChunkAccessor;
 
 import java.util.Map;
@@ -60,7 +61,7 @@ public class ChunkRenderDispatcherInject {
 
                     poseStack.pushPose();
                     poseStack.translate((blockPos3.getX() & 15), (blockPos3.getY() & 15), (blockPos3.getZ() & 15));
-                    dispatcher.renderBatched(instance, blockPos3, region, poseStack, bufferBuilder, true, randomSource);
+                    ((BlockRenderDispatcherInjection) dispatcher).renderBatched(instance, blockPos3, region, poseStack, bufferBuilder, true, randomSource, modelData, renderType);
                     poseStack.popPose();
                 }
             }
