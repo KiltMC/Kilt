@@ -53,7 +53,7 @@ public class ConnectionInject implements ConnectionInjection {
 
     @WrapOperation(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;", remap = false), method = "sendPacket")
     public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b, Operation<ChannelConfig> original) {
-        this.channel.eventLoop().execute(() -> original.call(false));
+        this.channel.eventLoop().execute(() -> original.call(instance, false));
 
         return instance;
     }
