@@ -98,7 +98,7 @@ object KiltRemapper {
         srgIntermediaryMapping.classes.forEach {
             it.methods.forEach m@{ f ->
                 // otherwise FunctionalInterface methods don't get remapped properly???
-                if (!f.mapped.startsWith("method_"))
+                if (!f.mapped.startsWith("method_") && !FabricLoader.getInstance().isDevelopmentEnvironment)
                     return@m
 
                 val map = srgMappedMethods.computeIfAbsent(f.original) { mutableMapOf() }
