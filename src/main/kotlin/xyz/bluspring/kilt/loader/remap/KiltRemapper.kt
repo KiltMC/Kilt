@@ -97,12 +97,12 @@ object KiltRemapper {
     init {
         srgIntermediaryMapping.classes.forEach {
             it.methods.forEach m@{ f ->
+                // otherwise FunctionalInterface methods don't get remapped properly???
+                if (!f.mapped.startsWith("method_"))
+                    return@m
+
                 val map = srgMappedMethods.computeIfAbsent(f.original) { mutableMapOf() }
                 val mapped = (mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor))
-
-                // otherwise FunctionalInterface methods don't get remapped properly???
-                if (!mapped.startsWith("method_"))
-                    return@m
 
                 map[f.parent.original] = mapped
             }
