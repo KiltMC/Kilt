@@ -9,9 +9,14 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.ForgeCapabilities
 import net.minecraftforge.event.AttachCapabilitiesEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
+import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderImpl
 import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl
+import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyItemStorageCapabilityProvider
+import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyStorageCapability
+import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyStorageCapabilityProvider
+import xyz.bluspring.kilt.interop.transfer.energy.ForgeEnergyStorage
 import xyz.bluspring.kilt.interop.transfer.fluid.*
 import xyz.bluspring.kilt.interop.transfer.item.FabricItemStorageCapability
 import xyz.bluspring.kilt.interop.transfer.item.FabricItemStorageCapabilityProvider
@@ -19,9 +24,8 @@ import xyz.bluspring.kilt.interop.transfer.item.ForgeSlottedStorage
 
 object TransferInterop {
     fun init() {
-        MinecraftForge.EVENT_BUS.register(::onAttachBlockEntityItemCapabilities)
-        MinecraftForge.EVENT_BUS.register(::onAttachBlockEntityFluidCapabilities)
-        MinecraftForge.EVENT_BUS.register(::onAttachItemStackFluidCapabilities)
+        MinecraftForge.EVENT_BUS.register(::onAttachBlockEntityCapabilities)
+        MinecraftForge.EVENT_BUS.register(::onAttachItemStackCapabilities)
 
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)
@@ -70,23 +74,52 @@ object TransferInterop {
 
             null
         }
+
+        EnergyStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
+            if (blockEntity == null)
+                return@registerFallback null
+
+            val energyHandlerCapability = (blockEntity as BlockEntityCapabilityProviderImpl).getCapability(ForgeCapabilities.ENERGY, direction)
+
+            if (energyHandlerCapability.isPresent) {
+                val handler = energyHandlerCapability.resolve().get()
+                if (handler !is FabricEnergyStorageCapability) {
+                    return@registerFallback ForgeEnergyStorage(handler)
+                }
+            }
+
+            null
+        }
+
+        EnergyStorage.ITEM.registerFallback { itemStack, context ->
+            if (itemStack == null || itemStack.isEmpty)
+                return@registerFallback null
+
+            val energyHandlerCapability = (itemStack as ItemStackCapabilityProviderImpl).getCapability(ForgeCapabilities.ENERGY)
+
+            if (energyHandlerCapability.isPresent) {
+                val handler = energyHandlerCapability.resolve().get()
+                if (handler !is FabricEnergyStorageCapability) {
+                    return@registerFallback ForgeEnergyStorage(handler)
+                }
+            }
+
+            null
+        }
     }
 
     @SubscribeEvent
-    fun onAttachBlockEntityItemCapabilities(event: AttachCapabilitiesEvent<BlockEntity>) {
+    fun onAttachBlockEntityCapabilities(event: AttachCapabilitiesEvent<BlockEntity>) {
         val blockEntity = event.`object`
         event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_item_storage"), FabricItemStorageCapabilityProvider(blockEntity))
-    }
-
-    @SubscribeEvent
-    fun onAttachBlockEntityFluidCapabilities(event: AttachCapabilitiesEvent<BlockEntity>) {
-        val blockEntity = event.`object`
         event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_fluid_storage"), FabricFluidStorageCapabilityProvider(blockEntity))
+        event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_energy_storage"), FabricEnergyStorageCapabilityProvider(blockEntity))
     }
 
     @SubscribeEvent
-    fun onAttachItemStackFluidCapabilities(event: AttachCapabilitiesEvent<ItemStack>) {
+    fun onAttachItemStackCapabilities(event: AttachCapabilitiesEvent<ItemStack>) {
         val stack = event.`object`
         event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_fluid_item_storage"), FabricFluidItemStorageCapabilityProvider(stack))
+        event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_energy_item_storage"), FabricEnergyItemStorageCapabilityProvider(stack))
     }
 }

@@ -160,6 +160,8 @@ dependencies {
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
     implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
+    modImplementation(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
+
     // Use Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("dev.su5ed.sinytra:ForgeAutoRenamingTool:${property("forgerenamer_version")}")!!)
 
