@@ -376,7 +376,7 @@ fun getVersionMetadata(): String {
         "dir" to File("$projectDir")
     ))
     val commitHash =
-        System.getenv("GITHUB_SHA") ?: (grgit.head().abbreviatedId + if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else "")
+        System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "+build.${commitHash.subSequence(0, 6)}"
+    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
 }
