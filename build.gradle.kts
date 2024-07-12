@@ -6,7 +6,7 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.6-SNAPSHOT"
+    id ("fabric-loom") version "1.7-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
@@ -123,7 +123,7 @@ dependencies {
     })
 
     // Forge Reimplementations
-    val portingLibs = listOf("asm", "accessors", "attributes", "base", "brewing", "client_events", "common", "core", "chunk_loading", "data", "entity", "extensions", "fluids", "gametest", "items", "lazy_registration", "loot", "mixin_extensions", "model_builders", "model_generators", "model_loader", "model_materials", "models", "networking", "obj_loader", "recipe_book_categories", "registries", "tags", "tool_actions", "transfer", "utility")
+    val portingLibs = listOf("accessors", "asm", "attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "common", "core", "data", "entity", "extensions", "fluids", "gametest", "gui_utils", "items", "lazy_registration", "level_events", "loot", "mixin_extensions", "model_builders", "model_generators", "model_loader", "model_materials", "models", "networking", "obj_loader", "recipe_book_categories", "registries", "tags", "tool_actions", "transfer", "utility")
     portingLibs.forEach { lib ->
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
