@@ -76,16 +76,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
                 return contexts[kiltActiveModId]!!
             }
 
-            // Apparently this is possible, and this seems a lot better to do.
-            val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-            val source = stackWalker.callerClass ?: return getForgeContext()
-
-            return try {
-                get(source)
-            } catch (e: Exception) {
-                println("Error occurred in ${source.canonicalName ?: source}")
-                throw e
-            }
+            return getForgeContext()
         }
 
         private fun getForgeContext(): ModLoadingContext {
@@ -100,7 +91,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
         // Put this here so ModLoadingContext can be called from a Forge method
         @JvmStatic
         fun get(source: Class<*>): ModLoadingContext {
-            val tomlText = source.getResource("/META-INF/mods.toml")?.readText() ?: return getForgeContext()
+            val tomlText = source.getResource("/META-INF/mods.toml")?.readText() ?: source.getResource("/META-INF/forge.mods.toml")?.readText() ?: return getForgeContext()
             val tomlStream = tomlText.byteInputStream()
 
             val hash = DigestUtils.md5Hex(tomlStream)

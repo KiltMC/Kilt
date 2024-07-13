@@ -296,6 +296,11 @@ tasks {
                 "architectury_version" to project.property("architectury_version"),
             ))
         }
+
+        // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
+        filesMatching("META-INF/mods.toml") {
+            this.name = "forge.mods.toml"
+        }
     }
 
     compileKotlin {

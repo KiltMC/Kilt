@@ -225,13 +225,13 @@ class KiltLoader {
     // Let's do a trick to load the Forge built-in mod.
     private fun loadForgeBuiltinMod() {
         val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/mods.toml"))
+            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/forge.mods.toml"))
             parseModsToml(toml, null, null).first()
         } else {
             val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
             val kiltJar = JarFile(kiltFile)
 
-            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/mods.toml")))
+            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
 
             parseModsToml(toml, kiltFile, kiltJar).first()
         }
