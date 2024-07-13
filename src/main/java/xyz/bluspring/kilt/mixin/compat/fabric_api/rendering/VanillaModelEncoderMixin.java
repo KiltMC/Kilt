@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelDataManager;
 import org.spongepowered.asm.mixin.Final;
@@ -24,6 +25,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import xyz.bluspring.kilt.helpers.FRAPIThreadedStorage;
+import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,11 +49,16 @@ public class VanillaModelEncoderMixin {
         if (modelDataManager == null)
             return original.call(model, state, direction, randomSource);
 
-        mappedRenderTypes.set(new LinkedList<>());
-
         var modelData = model.getModelData(level, pos, state, modelDataManager.getAt(new ChunkPos(pos)).getOrDefault(pos, ModelData.EMPTY));
         var renderTypes = model.getRenderTypes(state, randomSource, modelData);
 
+        if (modelData == ModelData.EMPTY && (renderTypes.isEmpty() ||
+            // TODO: this may cause performance issues, and might not actually be what we want, so.
+            ChunkRenderTypeSet.intersection(ItemBlockRenderTypesInjection.getRenderLayers(state), renderTypes).asList().size() == renderTypes.asList().size())
+        )
+            return original.call(model, state, direction, randomSource);
+
+        mappedRenderTypes.set(new LinkedList<>());
         var list = new LinkedList<BakedQuad>();
 
         for (RenderType renderType : renderTypes) {
@@ -70,8 +77,11 @@ public class VanillaModelEncoderMixin {
     @ModifyArg(method = "emitBlockQuads", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/renderer/v1/mesh/QuadEmitter;fromVanilla(Lnet/minecraft/client/renderer/block/model/BakedQuad;Lnet/fabricmc/fabric/api/renderer/v1/material/RenderMaterial;Lnet/minecraft/core/Direction;)Lnet/fabricmc/fabric/api/renderer/v1/mesh/QuadEmitter;"))
     private static RenderMaterial kilt$useMappedRenderType(RenderMaterial material, @Share("renderTypes") LocalRef<List<RenderType>> mappedRenderTypes, @Local(ordinal = 2) int j) {
         var mapped = mappedRenderTypes.get();
-        if (mapped == null)
+        if (mapped == null || mapped.isEmpty())
             return material;
+
+        if (j >= mapped.size())
+            mappedRenderTypes.set(null);
 
         var renderType = mapped.get(j);
 
