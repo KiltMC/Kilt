@@ -6,7 +6,7 @@ public interface BlockRenderContextInjection {
 
     default void kilt$set(ModelData data) {}
 
-    default ModelData klit$data() {
+    default ModelData kilt$data() {
         return ModelData.EMPTY;
     }
 }
