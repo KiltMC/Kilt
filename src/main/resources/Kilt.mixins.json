@@ -60,7 +60,6 @@
         "WoodTypeAccessor",
         "WorldSliceAccessor",
         "client.gui.components.ButtonBuilderAccessor",
-        "compat.fabric_api.DynamicRegistriesMixin",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
