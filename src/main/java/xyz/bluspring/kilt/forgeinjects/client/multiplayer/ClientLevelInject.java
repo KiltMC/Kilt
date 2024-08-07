@@ -77,6 +77,7 @@ public abstract class ClientLevelInject extends Level {
         return QuadLighter.calculateShade(normalX, normalY, normalZ, constantAmbientLight);
     }
 
+    @Override
     public ModelDataManager getModelDataManager() {
         return modelDataManager;
     }
