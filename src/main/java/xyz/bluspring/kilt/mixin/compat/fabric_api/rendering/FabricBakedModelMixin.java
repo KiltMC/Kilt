@@ -8,7 +8,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,15 +17,6 @@ import java.util.function.Supplier;
 
 @Mixin(FabricBakedModel.class)
 public interface FabricBakedModelMixin {
-    /**
-     * @author BluSpring
-     * @reason Otherwise, Forge models wouldn't get rendered correctly.
-     */
-    @Overwrite(remap = false)
-    public default boolean isVanillaAdapter() {
-        return false;
-    }
-
     @Inject(method = "emitBlockQuads", at = @At("HEAD"))
     private void kilt$storeVariables(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, CallbackInfo ci) {
         if (!(blockView instanceof ClientLevel))

@@ -1,6 +1,7 @@
 // TRACKED HASH: 4b295056fcc0933cc21e852fd285a0e2f5c42bfe
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.RenderType;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -119,5 +121,16 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
         kilt$modelData.set(modelData);
         kilt$renderType.set(renderType);
         renderModel(pose, vertexConsumer, blockState, bakedModel, f1, f2, f3, i1, i2);
+    }
+
+    // Sodium compatibility
+    @Dynamic
+    @TargetHandler(
+        mixin = "me.jellysquid.mods.sodium.mixin.features.render.model.block.BlockModelRendererMixin",
+        name = "renderFast"
+    )
+    @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$getForgeQuadsDirectional(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource) {
+        return instance.getQuads(blockState, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
     }
 }
