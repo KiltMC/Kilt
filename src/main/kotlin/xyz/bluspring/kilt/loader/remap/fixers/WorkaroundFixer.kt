@@ -13,9 +13,14 @@ object WorkaroundFixer {
             val newNodeMap = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
 
             for (insnNode in method.instructions) {
-                if (insnNode is MethodInsnNode && insnNode.owner == "net/minecraftforge/fluids/FluidStack" && insnNode.name == "getAmount") {
-                    val node = MethodInsnNode(insnNode.opcode, "net/minecraftforge/fluids/FluidStack", "forge\$getAmount", insnNode.desc)
-                    newNodeMap[insnNode] = node
+                if (insnNode is MethodInsnNode && insnNode.owner == "net/minecraftforge/fluids/FluidStack") {
+                    if (insnNode.name == "getAmount") {
+                        val node = MethodInsnNode(insnNode.opcode, "net/minecraftforge/fluids/FluidStack", "forge\$getAmount", insnNode.desc)
+                        newNodeMap[insnNode] = node
+                    } else if (insnNode.name == "writeToPacket") {
+                        val node = MethodInsnNode(insnNode.opcode, "net/minecraftforge/fluids/FluidStack", "forge\$writeToPacket", insnNode.desc)
+                        newNodeMap[insnNode] = node
+                    }
                 }
             }
 
