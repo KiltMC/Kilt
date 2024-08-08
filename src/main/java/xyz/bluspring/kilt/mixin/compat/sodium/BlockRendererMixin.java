@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.mixin.compat.sodium;
 
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import me.jellysquid.mods.sodium.client.model.color.ColorProvider;
 import me.jellysquid.mods.sodium.client.model.color.ColorProviderRegistry;
 import me.jellysquid.mods.sodium.client.model.light.LightMode;
@@ -28,7 +29,8 @@ import xyz.bluspring.kilt.injections.sodium.BlockRenderContextInjection;
 
 import java.util.List;
 
-@Mixin(value = BlockRenderer.class, remap = false)
+@IfModLoaded("sodium")
+@Mixin(BlockRenderer.class)
 public abstract class BlockRendererMixin {
 
     @Shadow @Final private ColorProviderRegistry colorProviderRegistry;

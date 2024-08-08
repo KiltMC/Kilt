@@ -19,7 +19,7 @@ import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 
 @IfModLoaded("sodium")
-@Mixin(value = SodiumWorldRenderer.class, remap = false)
+@Mixin(SodiumWorldRenderer.class)
 @Pseudo
 public class SodiumWorldRendererMixin {
     @IfModLoaded(value = "sodium", maxVersion = "0.5.8")

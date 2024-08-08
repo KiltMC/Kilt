@@ -4,6 +4,7 @@ package xyz.bluspring.kilt.forgeinjects.client.renderer.block;
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -125,6 +126,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
     }
 
     // Sodium compatibility
+    @IfModLoaded(value = "sodium", maxVersion = "0.6.0")
     @Dynamic
     @TargetHandler(
         mixin = "me.jellysquid.mods.sodium.mixin.features.render.model.block.BlockModelRendererMixin",

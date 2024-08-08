@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildContext;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
@@ -26,7 +27,8 @@ import xyz.bluspring.kilt.injections.sodium.BlockRenderContextInjection;
 
 import java.util.Map;
 
-@Mixin(value = ChunkBuilderMeshingTask.class, remap = false)
+@IfModLoaded("sodium")
+@Mixin(ChunkBuilderMeshingTask.class)
 public class ChunkBuilderMeshingTaskMixin {
     @Shadow @Final private RenderSection render;
 

@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -21,6 +22,7 @@ import java.util.function.Supplier;
 
 @IfModLoaded("indium")
 @IfModAbsent(value = "sodium", minVersion = "0.6.0") // Sodium version that supports FRAPI
+@Pseudo // We can't @IfModAbsent for Embeddium, so this is the next best bet...
 @Mixin(value = BakedModel.class, priority = 1500)
 public interface BakedModelMixin {
     @TargetHandler(
