@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -89,8 +90,8 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
     }
 
     // Because we can't exactly provide new parameters easily, let's just do this.
-    private final AtomicReference<ModelData> kilt$modelData = new AtomicReference<>();
-    private final AtomicReference<RenderType> kilt$renderType = new AtomicReference<>();
+    @Unique private final AtomicReference<ModelData> kilt$modelData = new AtomicReference<>(ModelData.EMPTY);
+    @Unique private final AtomicReference<RenderType> kilt$renderType = new AtomicReference<>();
 
     @Override
     public void tesselateWithAO(BlockAndTintGetter blockAndTintGetter, BakedModel bakedModel, BlockState blockState, BlockPos blockPos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean bl, RandomSource random, long l, int i, ModelData modelData, RenderType renderType) {
