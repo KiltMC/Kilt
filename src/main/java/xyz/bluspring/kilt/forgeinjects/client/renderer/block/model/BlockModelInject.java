@@ -37,7 +37,7 @@ public class BlockModelInject implements BlockModelInjection {
     @Shadow public String name;
     public final BlockGeometryBakingContext customData = new BlockGeometryBakingContext((BlockModel) (Object) this);
 
-    @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/gson/GsonBuilder;registerTypeAdapter(Ljava/lang/reflect/Type;Ljava/lang/Object;)Lcom/google/gson/GsonBuilder;", ordinal = 0))
+    @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/gson/GsonBuilder;registerTypeAdapter(Ljava/lang/reflect/Type;Ljava/lang/Object;)Lcom/google/gson/GsonBuilder;", ordinal = 0, remap = false), remap = false)
     private static GsonBuilder kilt$useForgeExtendedBlockModelDeserializer(GsonBuilder instance, Type factory, Object o, Operation<GsonBuilder> original) {
         // Keeping the factory here might be a little unsafe as another mixin could possibly change it, but that's likely never going to happen.
         return original.call(instance, factory, new ExtendedBlockModelDeserializer())

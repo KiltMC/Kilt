@@ -30,9 +30,9 @@ import java.util.Map;
 @IfModLoaded("sodium")
 @Mixin(ChunkBuilderMeshingTask.class)
 public class ChunkBuilderMeshingTaskMixin {
-    @Shadow @Final private RenderSection render;
+    @Shadow(remap = false) @Final private RenderSection render;
 
-    @Inject(method = "execute(Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lme/jellysquid/mods/sodium/client/util/task/CancellationToken;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;", at = @At("HEAD"))
+    @Inject(method = "execute(Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lme/jellysquid/mods/sodium/client/util/task/CancellationToken;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;", at = @At("HEAD"), remap = false)
     private void kilt$getData(ChunkBuildContext buildContext, CancellationToken cancellationToken, CallbackInfoReturnable<ChunkBuildOutput> cir, @Share("render_data") LocalRef<Map<BlockPos, ModelData>> dataRef) {
         WorldSlice slice = buildContext.cache.getWorldSlice();
         dataRef.set(slice.getModelDataManager().getAt(ChunkPos.asLong(render.getChunkX(), render.getChunkZ())));

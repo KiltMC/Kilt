@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(RegistrySynchronization.class)
 public class RegistrySynchronizationInject {
-    @WrapOperation(method = "method_45958", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;build()Lcom/google/common/collect/ImmutableMap;"))
+    @WrapOperation(method = "method_45958", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;build()Lcom/google/common/collect/ImmutableMap;", remap = false))
     private static ImmutableMap<ResourceKey<? extends Registry<?>>, RegistrySynchronization.NetworkedRegistryData<?>> kilt$redirectNetworkRegistries(ImmutableMap.Builder<ResourceKey<? extends Registry<?>>, RegistrySynchronization.NetworkedRegistryData<?>> instance, Operation<ImmutableMap<ResourceKey<? extends Registry<?>>, RegistrySynchronization.NetworkedRegistryData<?>>> original) {
         return (ImmutableMap<ResourceKey<? extends Registry<?>>, RegistrySynchronization.NetworkedRegistryData<?>>) DataPackRegistriesHooks.grabNetworkableRegistries(instance);
     }

@@ -32,7 +32,7 @@ import java.util.List;
 
 @Mixin(VanillaModelEncoder.class)
 public class VanillaModelEncoderMixin {
-    @Shadow @Final private static Renderer RENDERER;
+    @Shadow(remap = false) @Final private static Renderer RENDERER;
 
     @WrapOperation(method = "emitBlockQuads", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
     private static List<BakedQuad> kilt$useForgeEmitQuads(BakedModel model, BlockState state, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Share("renderTypes") LocalRef<List<RenderType>> mappedRenderTypes) {

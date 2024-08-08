@@ -33,9 +33,9 @@ import java.util.List;
 @Mixin(BlockRenderer.class)
 public abstract class BlockRendererMixin {
 
-    @Shadow @Final private ColorProviderRegistry colorProviderRegistry;
+    @Shadow(remap = false) @Final private ColorProviderRegistry colorProviderRegistry;
 
-    @Shadow @Final private LightPipelineProvider lighters;
+    @Shadow(remap = false) @Final private LightPipelineProvider lighters;
 
     @Shadow protected abstract LightMode getLightingMode(BlockState state, BakedModel model);
 
@@ -51,7 +51,7 @@ public abstract class BlockRendererMixin {
      * @author AlphaMode
      * @reason Temp overwrite for custom model support
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public void renderModel(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
         var data = ((BlockRenderContextInjection) ctx).kilt$getModelData();
 
