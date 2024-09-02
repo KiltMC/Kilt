@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.loader.mod.fabric
 
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.ModContainerImpl
-import net.fabricmc.loader.impl.discovery.ModCandidate
+import net.fabricmc.loader.impl.discovery.ModCandidateImpl
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
@@ -13,14 +13,14 @@ import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 class FabricModProvider : LoaderModProvider {
     override val name: String = "Fabric Loader"
 
-    private val candidates = mutableMapOf<ForgeMod, ModCandidate>()
+    private val candidates = mutableMapOf<ForgeMod, ModCandidateImpl>()
     private val loaderMetadatas = mutableMapOf<ForgeMod, LoaderModMetadata>()
 
     init {
         instance = this
     }
 
-    fun getModCandidate(mod: ForgeMod): ModCandidate {
+    fun getModCandidate(mod: ForgeMod): ModCandidateImpl {
         return candidates[mod]!!
     }
 
@@ -37,21 +37,21 @@ class FabricModProvider : LoaderModProvider {
         }
     }
 
-    fun createModCandidate(mod: ForgeMod): ModCandidate {
+    fun createModCandidate(mod: ForgeMod): ModCandidateImpl {
         if (candidates.containsKey(mod))
             return getModCandidate(mod)
 
         //createPlain(List<Path> paths, LoaderModMetadata metadata, boolean requiresRemap, Collection<ModCandidate> nestedMods)
-        val createPlainMethod = ModCandidate::class.java.getDeclaredMethod("createPlain", List::class.java, LoaderModMetadata::class.java, Boolean::class.java, Collection::class.java)
+        val createPlainMethod = ModCandidateImpl::class.java.getDeclaredMethod("createPlain", List::class.java, LoaderModMetadata::class.java, Boolean::class.java, Collection::class.java)
         createPlainMethod.isAccessible = true
 
         val metadata = createLoaderMetadata(mod)
 
-        return createPlainMethod.invoke(this, mod.paths, metadata, false, mutableListOf<ModCandidate>().apply {
+        return createPlainMethod.invoke(this, mod.paths, metadata, false, mutableListOf<ModCandidateImpl>().apply {
             mod.nestedMods.forEach {
                 this.add(createModCandidate(it))
             }
-        }) as ModCandidate
+        }) as ModCandidateImpl
     }
 
     override fun addModToLoader(mod: ForgeMod) {
