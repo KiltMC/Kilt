@@ -39,7 +39,7 @@
     "kilt_forge_injects.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.1",
+    "fabricloader": ">=${loader_version}",
     "fabric-api": ">=${fabric_version}",
     "minecraft": "${minecraft_version}",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
