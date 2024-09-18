@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: true
         token: ${{ secrets.PAT_TOKEN }}
@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
     # Taken from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/workflows/gradle.yml
     - name: Cache/Uncache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
@@ -36,7 +36,7 @@ jobs:
     - name: Build artifacts
       run: ./gradlew remapJar
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Kilt Build JARs
         path: build/libs/Kilt-*.jar
