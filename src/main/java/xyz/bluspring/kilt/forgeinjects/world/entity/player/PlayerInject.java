@@ -57,4 +57,12 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         if (blockPos != null)
             cir.setReturnValue(ForgeEventFactory.getBreakSpeed((Player) (Object) this, state, cir.getReturnValue(), blockPos));
     }
+
+    /*@ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
+    private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
+        return original
+            .add(ForgeMod.BLOCK_REACH.get())
+            .add(Attributes.ATTACK_KNOCKBACK)
+            .add(ForgeMod.ENTITY_REACH.get());
+    }*/
 }

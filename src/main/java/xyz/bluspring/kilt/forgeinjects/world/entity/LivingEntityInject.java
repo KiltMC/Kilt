@@ -64,4 +64,13 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         var ctx = builder.create(LootContextParamSets.ENTITY);
         lootTable.getRandomItems(ctx).forEach(((LivingEntity) (Object) this)::spawnAtLocation);
     }
+
+    /*@ModifyReturnValue(method = "createLivingAttributes", at = @At("RETURN"))
+    private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
+        return original
+            .add(ForgeMod.SWIM_SPEED.get())
+            .add(ForgeMod.NAMETAG_DISTANCE.get())
+            .add(ForgeMod.ENTITY_GRAVITY.get())
+            .add(ForgeMod.STEP_HEIGHT.get());
+    }*/
 }
