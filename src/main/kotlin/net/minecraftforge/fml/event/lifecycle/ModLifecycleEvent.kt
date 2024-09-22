@@ -10,6 +10,8 @@ import java.util.stream.Stream
 open class ModLifecycleEvent(private val mod: ForgeMod?) : Event(), IModBusEvent {
     constructor() : this(null)
 
+    val container = mod?.container
+
     fun description(): String {
         return this.javaClass.name.run {
             this.substring(this.lastIndexOf('.') + 1)

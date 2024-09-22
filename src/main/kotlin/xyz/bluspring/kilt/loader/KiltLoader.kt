@@ -582,6 +582,12 @@ class KiltLoader {
             exceptions.addAll(initMod(mod, mod.scanData))
         }
 
+        try {
+            ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
+        } catch (e: Exception) {
+            exceptions.add(e)
+        }
+
         if (exceptions.isNotEmpty()) {
             FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", null, {
                 val tab = it.addTab("Kilt Error")
@@ -686,6 +692,7 @@ class KiltLoader {
 
             // COMMON_SETUP
             ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+            ModLoadingStage.COMMON_SETUP.deferredWorkQueue.runTasks()
 
             // SIDED_SETUP
             ModLoader.get().kiltPostEventWrappingModsBuildEvent {
@@ -694,15 +701,19 @@ class KiltLoader {
                 else
                     FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
             }
+            ModLoadingStage.SIDED_SETUP.deferredWorkQueue.runTasks()
 
             // ENQUEUE_IMC
             ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+            ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
 
             // PROCESS_IMC
             ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+            ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
 
             // COMPLETE
             ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
+            ModLoadingStage.COMPLETE.deferredWorkQueue.runTasks()
         }
     )
 
