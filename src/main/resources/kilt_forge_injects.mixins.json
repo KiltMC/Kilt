@@ -249,6 +249,7 @@
         "client.renderer.entity.FishingHookRendererInject",
         "client.renderer.entity.ItemRendererInject",
         "client.renderer.entity.layers.HumanoidArmorLayerInject",
+        "client.renderer.item.ItemPropertiesInject",
         "client.renderer.texture.SpriteContentsInject",
         "client.renderer.texture.TextureAtlasInject",
         "client.resources.language.LanguageManagerInject",

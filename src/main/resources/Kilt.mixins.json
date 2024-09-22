@@ -60,6 +60,7 @@
         "WoodTypeAccessor",
         "WorldSliceAccessor",
         "client.gui.components.ButtonBuilderAccessor",
+        "client.renderer.item.ItemPropertiesAccessor",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
