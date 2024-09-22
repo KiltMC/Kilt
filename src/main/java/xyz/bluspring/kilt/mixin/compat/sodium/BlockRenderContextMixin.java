@@ -11,7 +11,7 @@ import xyz.bluspring.kilt.injections.sodium.BlockRenderContextInjection;
 @Mixin(value = BlockRenderContext.class, remap = false)
 public class BlockRenderContextMixin implements BlockRenderContextInjection {
     @Unique
-    private ModelData kilt$data;
+    private ModelData kilt$data = ModelData.EMPTY;
 
     @Override
     public void kilt$setModelData(ModelData data) {

@@ -41,6 +41,7 @@ public class ChunkBuilderMeshingTaskMixin {
     @WrapOperation(method = "execute(Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lme/jellysquid/mods/sodium/client/util/task/CancellationToken;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/compile/pipeline/BlockRenderContext;update(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/resources/model/BakedModel;J)V"))
     private void kilt$setContext(BlockRenderContext instance, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, Operation<Void> original, @Share("render_data")LocalRef<Map<BlockPos, ModelData>> dataRef) {
         original.call(instance, pos, origin, state, model, seed);
-        ((BlockRenderContextInjection) instance).kilt$setModelData(dataRef.get().get(pos));
+        var data = dataRef.get().get(pos);
+        ((BlockRenderContextInjection) instance).kilt$setModelData(data == null ? ModelData.EMPTY : data);
     }
 }
