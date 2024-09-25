@@ -76,6 +76,9 @@ object KiltRemapper {
                 this
         }
     val intermediarySrgMapping = srgIntermediaryMapping.reverse()
+
+    // Some workaround mappings, to remap some names to Kilt equivalents.
+    // This fixes some compatibility issues.
     private val kiltWorkaroundTree = TinyMappingFactory.load(this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader())
 
     // Mainly for debugging, so already-remapped Forge mods will be remapped again.
@@ -89,9 +92,20 @@ object KiltRemapper {
 
     private lateinit var remappedModsDir: File
 
+    // Just stores literally every class node that's been processed by the remapper.
     private val classNodeList = mutableSetOf<ClassNode>()
 
-    val srgMappedFields = srgIntermediaryMapping.classes.flatMap { it.fields.map { f -> f.original to mappingResolver.mapFieldName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor) } }.associateBy { it.first }
+    // SRG name -> (parent class name, intermediary/mapped name)
+    val srgMappedFields = srgIntermediaryMapping.classes.flatMap {
+        it.fields.map { f -> f.original to
+            if (!forceProductionRemap)
+                mappingResolver.mapFieldName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor)
+            else
+                f.mapped
+        }
+    }.associateBy { it.first }
+
+    // SRG name -> (parent class name, intermediary/mapped name)
     val srgMappedMethods = mutableMapOf<String, MutableMap<String, String>>()
 
     init {
@@ -102,7 +116,10 @@ object KiltRemapper {
                     return@m
 
                 val map = srgMappedMethods.computeIfAbsent(f.original) { mutableMapOf() }
-                val mapped = (mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor))
+                val mapped = if (!forceProductionRemap)
+                    (mappingResolver.mapMethodName("intermediary", it.mapped.replace("/", "."), f.mapped, f.mappedDescriptor))
+                else
+                    f.mapped
 
                 map[f.parent.original] = mapped
             }
@@ -273,6 +290,7 @@ object KiltRemapper {
 
             val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
 
+            // Read mixin configs and add them to the list of mixins to fix
             for (mixinConfig in mixinConfigs) {
                 val jsonEntry = jar.getJarEntry(mixinConfig) ?: continue
                 val data = jar.getInputStream(jsonEntry).bufferedReader()
