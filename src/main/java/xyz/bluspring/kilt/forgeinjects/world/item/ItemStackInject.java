@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.common.extensions.IForgeItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
@@ -21,14 +22,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
-import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
 
 import java.util.Objects;
 
 @Mixin(ItemStack.class)
 @Extends(CapabilityProvider.class)
-public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ItemStackCapabilityProviderImpl, ItemStackInjection {
+public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStack>, ItemStackInjection {
     private CompoundTag capNBT;
 
     @Unique @Nullable private Holder.Reference<Item> delegate;

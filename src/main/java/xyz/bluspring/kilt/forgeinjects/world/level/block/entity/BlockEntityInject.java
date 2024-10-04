@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,11 +16,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
-import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderImpl;
+import xyz.bluspring.kilt.workarounds.CapabilityInvalidationWorkaround;
 
 @Mixin(BlockEntity.class)
 @Extends(CapabilityProvider.class)
-public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, BlockEntityCapabilityProviderImpl, BlockEntityExtensions {
+public abstract class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderInjection, ICapabilityProviderImpl<BlockEntity>, BlockEntityExtensions, CapabilityInvalidationWorkaround {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$gatherCapabilities(BlockEntityType<?> type, BlockPos pos, BlockState blockState, CallbackInfo ci) {
         this.gatherCapabilities();
@@ -51,5 +52,10 @@ public class BlockEntityInject implements IForgeBlockEntity, CapabilityProviderI
     @Override
     public CompoundTag getPersistentData() {
         return this.getCustomData();
+    }
+
+    @Override
+    public void invalidateCaps() {
+        this.kilt$invalidateCaps();
     }
 }

@@ -7,12 +7,11 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.ForgeCapabilities
+import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.event.AttachCapabilitiesEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.injections.capabilities.BlockEntityCapabilityProviderImpl
-import xyz.bluspring.kilt.injections.capabilities.ItemStackCapabilityProviderImpl
 import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyItemStorageCapabilityProvider
 import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyStorageCapability
 import xyz.bluspring.kilt.interop.transfer.energy.FabricEnergyStorageCapabilityProvider
@@ -31,7 +30,7 @@ object TransferInterop {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val itemHandlerCapability = (blockEntity as BlockEntityCapabilityProviderImpl).getCapability(ForgeCapabilities.ITEM_HANDLER, direction)
+            val itemHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.ITEM_HANDLER, direction)
 
             if (itemHandlerCapability.isPresent) {
                 val handler = itemHandlerCapability.resolve().get()
@@ -47,7 +46,7 @@ object TransferInterop {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val fluidHandlerCapability = (blockEntity as BlockEntityCapabilityProviderImpl).getCapability(ForgeCapabilities.FLUID_HANDLER, direction)
+            val fluidHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.FLUID_HANDLER, direction)
 
             if (fluidHandlerCapability.isPresent) {
                 val handler = fluidHandlerCapability.resolve().get()
@@ -63,7 +62,7 @@ object TransferInterop {
             if (itemStack == null || itemStack.isEmpty)
                 return@registerFallback null
 
-            val fluidHandlerCapability = (itemStack as ItemStackCapabilityProviderImpl).getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
+            val fluidHandlerCapability = (itemStack as ICapabilityProvider).getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
 
             if (fluidHandlerCapability.isPresent) {
                 val handler = fluidHandlerCapability.resolve().get()
@@ -79,7 +78,7 @@ object TransferInterop {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val energyHandlerCapability = (blockEntity as BlockEntityCapabilityProviderImpl).getCapability(ForgeCapabilities.ENERGY, direction)
+            val energyHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.ENERGY, direction)
 
             if (energyHandlerCapability.isPresent) {
                 val handler = energyHandlerCapability.resolve().get()
@@ -95,7 +94,7 @@ object TransferInterop {
             if (itemStack == null || itemStack.isEmpty)
                 return@registerFallback null
 
-            val energyHandlerCapability = (itemStack as ItemStackCapabilityProviderImpl).getCapability(ForgeCapabilities.ENERGY)
+            val energyHandlerCapability = (itemStack as ICapabilityProvider).getCapability(ForgeCapabilities.ENERGY)
 
             if (energyHandlerCapability.isPresent) {
                 val handler = energyHandlerCapability.resolve().get()

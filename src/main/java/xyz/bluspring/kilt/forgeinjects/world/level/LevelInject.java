@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.common.extensions.IForgeLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
@@ -22,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
-import xyz.bluspring.kilt.injections.capabilities.LevelCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.EnumSet;
 
 @Mixin(Level.class)
 @Extends(CapabilityProvider.class)
-public abstract class LevelInject implements CapabilityProviderInjection, LevelCapabilityProviderImpl, IForgeLevel, LevelInjection {
+public abstract class LevelInject implements CapabilityProviderInjection, ICapabilityProviderImpl<Level>, IForgeLevel, LevelInjection {
     @Shadow @Final public boolean isClientSide;
 
     @Shadow public abstract ResourceKey<Level> dimension();
