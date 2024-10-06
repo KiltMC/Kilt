@@ -3,17 +3,16 @@ package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.*;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 import java.util.function.Supplier;
@@ -40,10 +39,22 @@ public class StairBlockInject extends Block {
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(HALF, Half.BOTTOM).setValue(SHAPE, StairsShape.STRAIGHT).setValue(WATERLOGGED, false));
 
         this.stateSupplier = stateSupplier;
+        this.base = Blocks.AIR;
+        this.baseState = Blocks.AIR.defaultBlockState();
         // this is not accurate to what Forge does, but I can't be bothered to coremod *or* ASM these.
         // if this bites me in the ass later, welp.
-        this.base = this.getModelBlock();
-        this.baseState = this.getModelState();
+        // update 6/10/2024: it did bite me in the ass later.
+        this.kilt$refreshState();
+    }
+
+    @Inject(method = {"animateTick", "attack", "destroy", "onPlace", "onRemove", "randomTick", "tick", "wasExploded"}, at = @At("HEAD"))
+    private void kilt$refreshBaseStateIfUnavailable(CallbackInfo ci) {
+        this.kilt$refreshState();
+    }
+
+    @Inject(method = {"getExplosionResistance", "isRandomlyTicking", "use"}, at = @At("HEAD"))
+    private void kilt$refreshBaseStateIfUnavailable2(CallbackInfoReturnable<Object> ci) {
+        this.kilt$refreshState();
     }
 
     // i'm staring at this code, and i'm questioning.. why are these private?
@@ -59,5 +70,16 @@ public class StairBlockInject extends Block {
 
     private BlockState getModelState() {
         return this.stateSupplier.get();
+    }
+
+    @Unique
+    private void kilt$refreshState() {
+        if (this.base == Blocks.AIR) {
+            this.baseState = this.getModelState();
+
+            if (this.baseState != null && this.baseState.getBlock() != Blocks.AIR) {
+                this.base = this.getModelBlock();
+            }
+        }
     }
 }
