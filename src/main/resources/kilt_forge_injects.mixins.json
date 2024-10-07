@@ -43,6 +43,7 @@
         "network.protocol.login.ServerboundCustomQueryPacketInject",
         "network.protocol.status.ServerStatusInject",
         "network.syncher.EntityDataSerializersInject",
+        "resources.HolderSetCodecInject",
         "resources.ResourceLocationInject",
         "server.BootstrapInject",
         "server.MinecraftServerInject",

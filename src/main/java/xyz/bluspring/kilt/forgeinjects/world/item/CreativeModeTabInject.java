@@ -1,6 +1,7 @@
 // TRACKED HASH: be042a2fb57e71e2ff4f71f41e1bbac6b9698ff7
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -15,9 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
@@ -69,9 +68,9 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         return new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0);
     }
 
-    @Inject(method = "buildContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;accept(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void kilt$buildContentsWithForge(CreativeModeTab.ItemDisplayParameters parameters, CallbackInfo ci, CreativeModeTab.ItemDisplayBuilder itemDisplayBuilder, ResourceKey<CreativeModeTab> resourceKey) {
-        ForgeHooksClient.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, resourceKey, this.displayItemsGenerator, parameters, itemDisplayBuilder);
+    @Redirect(method = "buildContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;accept(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V"))
+    private void kilt$buildContentsWithForge(CreativeModeTab.DisplayItemsGenerator instance, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output itemDisplayBuilder, @Local ResourceKey<CreativeModeTab> resourceKey) {
+        ForgeHooksClient.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, resourceKey, instance, parameters, itemDisplayBuilder);
     }
 
     @Override
