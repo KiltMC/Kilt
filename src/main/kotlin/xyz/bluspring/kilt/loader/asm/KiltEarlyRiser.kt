@@ -135,7 +135,7 @@ class KiltEarlyRiser : Runnable {
                     classNode.methods.removeIf { it.name == getTransformsName }
 
                     val itemTransforms = mappingResolver.mapClassName(namespace, itemTransformsIm).replace(".", "/")
-                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "NO_TRANSFORMS", "L${itemTransformsIm.replace(".", "/")};")
+                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "field_4301", "L${itemTransformsIm.replace(".", "/")};")
 
                     // this method should look like this
                     /*
