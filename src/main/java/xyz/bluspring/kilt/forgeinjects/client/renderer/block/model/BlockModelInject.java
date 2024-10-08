@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.forgeinjects.client.renderer.block.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.math.Transformation;
@@ -15,11 +17,13 @@ import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.ExtendedBlockModelDeserializer;
 import net.minecraftforge.client.model.geometry.BlockGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 import net.minecraftforge.common.util.TransformationHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -75,10 +79,10 @@ public class BlockModelInject implements BlockModelInjection {
     )
     public void kilt$handleCustomModels(ModelBaker modelBaker, BlockModel ownerModel, Function<Material, TextureAtlasSprite> spriteGetter,
                                    ModelState modelTransform, ResourceLocation modelLocation, boolean guiLight3d, CallbackInfoReturnable<BakedModel> cir) {
-        if (customData.hasCustomGeometry()) {
-            cir.setReturnValue(customData.getCustomGeometry().bake(
-                    customData, modelBaker, spriteGetter, modelTransform, getOverrides(modelBaker, ownerModel, spriteGetter), modelLocation
-            ));
+        // Avoid replacing the bake process entirely, unless there are any obvious tells that
+        // the model data is from a Forge model
+        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData()) {
+            cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, modelTransform, modelLocation, guiLight3d));
         }
     }
 
@@ -100,5 +104,15 @@ public class BlockModelInject implements BlockModelInjection {
     @Override
     public String getSerializedName() {
         return this.name;
+    }
+
+    @Mixin(BlockModel.Deserializer.class)
+    public static class DeserializerInject {
+        @Unique private static final ExtendedBlockModelDeserializer EXTENDED_BLOCK_MODEL_DESERIALIZER = new ExtendedBlockModelDeserializer();
+
+        @Inject(method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/BlockModel;", at = @At("RETURN"))
+        private void kilt$attachExtendedForgeData(JsonElement json, Type type, JsonDeserializationContext context, CallbackInfoReturnable<BlockModel> cir) {
+            EXTENDED_BLOCK_MODEL_DESERIALIZER.kilt$deserialize(json, type, context, cir.getReturnValue());
+        }
     }
 }

@@ -238,6 +238,7 @@
         "client.renderer.block.model.BlockElementInject",
         "client.renderer.block.model.BlockElementInject$DeserializerInject",
         "client.renderer.block.model.BlockModelInject",
+        "client.renderer.block.model.BlockModelInject$DeserializerInject",
         "client.renderer.block.model.ItemOverridesInject",
         "client.renderer.block.model.ItemTransformInject",
         "client.renderer.block.model.ItemTransformsInject",
