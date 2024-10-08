@@ -51,16 +51,16 @@ public class ModelManagerInject implements ModelManagerInjection {
         GeometryLoaderManager.init();
     }
 
-    @Inject(method = "apply", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", shift = At.Shift.BEFORE))
-    public void kilt$addModelBakery(ModelManager.ReloadState reloadState, ProfilerFiller profiler, CallbackInfo ci, @Local ModelBakery bakery) {
-        this.modelBakery = bakery;
-        ForgeHooksClient.onModelBake((ModelManager) (Object) this, this.bakedRegistry, bakery);
-    }
-
     @Inject(method = "loadModels", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 1, shift = At.Shift.BEFORE))
     private void kilt$modifyBakingResult(ProfilerFiller profilerFiller, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, ModelBakery modelBakery, CallbackInfoReturnable<ModelManager.ReloadState> cir) {
         profilerFiller.popPush("forge_modify_baking_result");
         ForgeHooksClient.onModifyBakingResult(modelBakery.getBakedTopLevelModels(), modelBakery);
+    }
+
+    @Inject(method = "apply", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", shift = At.Shift.BEFORE))
+    public void kilt$addModelBakery(ModelManager.ReloadState reloadState, ProfilerFiller profiler, CallbackInfo ci, @Local ModelBakery bakery) {
+        this.modelBakery = bakery;
+        ForgeHooksClient.onModelBake((ModelManager) (Object) this, this.bakedRegistry, bakery);
     }
 
     public ModelBakery getModelBakery() {
