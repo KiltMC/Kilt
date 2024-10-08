@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap
 import com.mojang.datafixers.util.Pair
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
-import dev.architectury.event.events.client.ClientTooltipEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
 import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback
@@ -65,10 +64,6 @@ class KiltClient : ClientModInitializer {
 
         ItemTooltipCallback.EVENT.register { stack, flag, components ->
             ForgeEventFactory.onItemTooltip(stack, null, components, flag)
-        }
-
-        ClientTooltipEvent.RENDER_MODIFY_COLOR.register { poseStack, x, y, ctx ->
-            //val event = RenderTooltipEvent.Color(ItemStack.EMPTY, poseStack, x, y, null, ctx.backgroundColor, ctx.outlineGradientBottomColor, ctx.outlineGradientTopColor, null)
         }
 
         val add = AtomicReference<Consumer<GuiEventListener>>()

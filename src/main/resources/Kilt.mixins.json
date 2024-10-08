@@ -13,6 +13,7 @@
         "BlockPathTypesAccessor",
         "BuilderAccessor",
         "ClientPacketListenerAccessor",
+        "ClientTextTooltipAccessor",
         "CompositeEntryBaseAccessor",
         "CreativeModeTabAccessor",
         "DataGeneratorAccessor",
