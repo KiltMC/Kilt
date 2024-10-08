@@ -1,6 +1,7 @@
 // TRACKED HASH: 1d8a0b7284d1984f5569698b72ad22e422c65e9a
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block.model;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -35,6 +36,7 @@ public class BlockModelInject implements BlockModelInjection {
     @Shadow @Nullable public ResourceLocation parentLocation;
     @Shadow @Final private List<ItemOverride> overrides;
     @Shadow public String name;
+    @Shadow public static Gson GSON;
     public final BlockGeometryBakingContext customData = new BlockGeometryBakingContext((BlockModel) (Object) this);
 
     @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/gson/GsonBuilder;registerTypeAdapter(Ljava/lang/reflect/Type;Ljava/lang/Object;)Lcom/google/gson/GsonBuilder;", ordinal = 0, remap = false), remap = false)
@@ -42,6 +44,11 @@ public class BlockModelInject implements BlockModelInjection {
         // Keeping the factory here might be a little unsafe as another mixin could possibly change it, but that's likely never going to happen.
         return original.call(instance, factory, new ExtendedBlockModelDeserializer())
                 .registerTypeAdapter(Transformation.class, new TransformationHelper.Deserializer());
+    }
+
+    @Inject(method = "<clinit>", at = @At("TAIL"))
+    private static void kilt$storeExtendedBlockModelDeserializer(CallbackInfo ci) {
+        ExtendedBlockModelDeserializer.INSTANCE = GSON;
     }
 
     @Inject(method = "getElements", at = @At("HEAD"), cancellable = true)
