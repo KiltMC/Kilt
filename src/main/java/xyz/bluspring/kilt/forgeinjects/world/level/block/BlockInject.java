@@ -8,14 +8,16 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.IdMapper;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.PlantType;
 import net.minecraftforge.common.extensions.IForgeBlock;
-import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -50,7 +52,7 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     private static void kilt$handleRenderFace(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, Direction direction, BlockPos blockPos2, CallbackInfoReturnable<Boolean> cir, BlockState blockState2) {
         if (blockState.skipRendering(blockState2, direction))
             cir.setReturnValue(false);
-        else if (((IForgeBlockState) blockState).supportsExternalFaceHiding() && ((IForgeBlockState) blockState2).hidesNeighborFace(blockGetter, blockPos, blockState, direction))
+        else if (blockState.supportsExternalFaceHiding() && blockState2.hidesNeighborFace(blockGetter, blockPos, blockState, direction))
             cir.setReturnValue(false);
     }
 
@@ -63,5 +65,49 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @Override
     public Object getRenderPropertiesInternal() {
         return renderProperties;
+    }
+
+    @Override
+    public boolean canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction facing, IPlantable plantable) {
+        BlockState plant = plantable.getPlant(level, pos.relative(facing));
+        PlantType type = plantable.getPlantType(level, pos.relative(facing));
+
+        if (plant.getBlock() == Blocks.CACTUS)
+            return state.is(Blocks.CACTUS) || state.is(BlockTags.SAND);
+
+        if (plant.getBlock() == Blocks.SUGAR_CANE && (Object) this == Blocks.SUGAR_CANE)
+            return true;
+
+        if (plantable instanceof BushBlock && ((BushBlock) plantable).mayPlaceOn(state, level, pos))
+            return true;
+
+        if (PlantType.DESERT.equals(type)) {
+            return state.is(BlockTags.SAND) || (Object) this == Blocks.TERRACOTTA || (Object) this instanceof GlazedTerracottaBlock;
+        } else if (PlantType.NETHER.equals(type)) {
+            return (Object) this == Blocks.SOUL_SAND;
+        } else if (PlantType.CROP.equals(type)) {
+            return state.is(Blocks.FARMLAND);
+        } else if (PlantType.CAVE.equals(type)) {
+            return state.isFaceSturdy(level, pos, Direction.UP);
+        } else if (PlantType.PLAINS.equals(type)) {
+            return state.is(BlockTags.DIRT) || (Object) this == Blocks.FARMLAND;
+        } else if (PlantType.WATER.equals(type)) {
+            return (state.is(Blocks.WATER) || state.getBlock() instanceof IceBlock) && level.getFluidState(pos.relative(facing)).isEmpty();
+        } else if (PlantType.BEACH.equals(type)) {
+            boolean isBeach = state.is(BlockTags.DIRT) || state.is(BlockTags.SAND);
+            boolean hasWater = false;
+
+            for (Direction face : Direction.Plane.HORIZONTAL) {
+                BlockState adjacentBlockState = level.getBlockState(pos.relative(face));
+                var adjacentFluidState = level.getFluidState(pos.relative(face));
+                hasWater = hasWater || adjacentBlockState.is(Blocks.FROSTED_ICE) || adjacentFluidState.is(net.minecraft.tags.FluidTags.WATER);
+
+                if (hasWater)
+                    break;
+            }
+
+            return isBeach && hasWater;
+        }
+        return false;
     }
 }
