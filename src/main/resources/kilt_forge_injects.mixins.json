@@ -66,6 +66,7 @@
         "server.packs.repository.ServerPacksSourceInject",
         "server.packs.resources.ReloadableResourceManagerInject",
         "server.packs.resources.SimpleJsonResourceReloadListenerInject",
+        "server.players.PlayerListInject",
         "stats.RecipeBookSettingsInject",
         "tags.BlockTagsInject",
         "tags.FluidTagsInject",
