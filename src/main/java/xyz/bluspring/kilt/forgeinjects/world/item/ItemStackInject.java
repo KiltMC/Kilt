@@ -132,7 +132,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         return null;
     }
 
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin", name = "canPerformAction")
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
     private void kilt$checkCanPerformActionForge(io.github.fabricators_of_create.porting_lib.tool.ToolAction toolAction, CallbackInfoReturnable<Boolean> cir) {
         var forgeToolAction = ToolAction.kilt$getNullable(toolAction.name());
