@@ -96,10 +96,7 @@ class KiltLoader {
 
         Kilt.logger.debug("Re-scanning Forge mods to verify mod dependencies...")
 
-        // Do this first so the version is actually loaded
-        SharedConstants.tryDetectVersion()
-
-        val mcVersion = DefaultArtifactVersion(SharedConstants.getCurrentVersion().name)
+        val mcVersion = DefaultArtifactVersion(FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString)
         val preloadedMods = mutableMapOf<ForgeMod, List<ModLoadingState>>()
 
         // Iterate through the mod loading queue for the first time
@@ -748,6 +745,7 @@ class KiltLoader {
     // We need to initialize all early Forge-related things immediately,
     // because otherwise things will break entirely.
     fun initForge() {
+        SharedConstants.tryDetectVersion()
         Bootstrap.bootStrap() // fuck you
         ForgeRegistries.init()
     }
