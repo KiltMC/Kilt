@@ -1,6 +1,7 @@
 // TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.Holder;
@@ -9,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
+import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
 import net.minecraftforge.common.extensions.IForgeItemStack;
@@ -128,5 +130,14 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         }
 
         return null;
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin", name = "canPerformAction")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$checkCanPerformActionForge(io.github.fabricators_of_create.porting_lib.tool.ToolAction toolAction, CallbackInfoReturnable<Boolean> cir) {
+        var forgeToolAction = ToolAction.kilt$getNullable(toolAction.name());
+        if (forgeToolAction != null && this.canPerformAction(forgeToolAction)) {
+            cir.setReturnValue(true);
+        }
     }
 }
