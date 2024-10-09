@@ -7,7 +7,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.VanillaHopperItemHandler;
@@ -18,9 +17,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.level.block.entity.HopperBlockEntityInjection;
+import xyz.bluspring.kilt.mixin.world.level.block.entity.RandomizableContainerBlockEntityMixin;
 
 @Mixin(HopperBlockEntity.class)
-public abstract class HopperBlockEntityInject extends RandomizableContainerBlockEntity implements HopperBlockEntityInjection {
+public abstract class HopperBlockEntityInject extends RandomizableContainerBlockEntityMixin implements HopperBlockEntityInjection {
     @Shadow private long tickedGameTime;
 
     protected HopperBlockEntityInject(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
@@ -48,5 +48,10 @@ public abstract class HopperBlockEntityInject extends RandomizableContainerBlock
     @Override
     public long getLastUpdateTime() {
         return this.tickedGameTime;
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
     }
 }

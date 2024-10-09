@@ -50,7 +50,7 @@ public abstract class CropBlockInject {
     @Expression("? > 0")
     @ModifyExpressionValue(method = "getGrowthSpeed", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static boolean kilt$callForgePreGrow(boolean original, @Local BlockState state, @Local(argsOnly = true) BlockGetter level, @Local(argsOnly = true) BlockPos pos, @Local(ordinal = 0) int i, @Local(ordinal = 1) int j) {
-        return original || state.isFertile(level, pos.offset(i, 0, j))
+        return original || state.isFertile(level, pos.offset(i, 0, j));
     }
 
     @WrapOperation(method = "entityInside", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))

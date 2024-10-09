@@ -80,7 +80,8 @@
         "data.registries.VanillaRegistriesAccessor",
         "debug.ChunkSkyLightSourcesMixin",
         "world.item.CreativeModeTabBuilderAccessor",
-        "world.level.biome.BiomeClimateSettingsAccessor"
+        "world.level.biome.BiomeClimateSettingsAccessor",
+        "world.level.block.entity.RandomizableContainerBlockEntityMixin"
     ],
     "client": [
         "client.gui.components.DebugScreenOverlayMixin",
