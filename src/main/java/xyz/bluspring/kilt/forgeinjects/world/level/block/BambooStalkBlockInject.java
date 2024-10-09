@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,6 +17,7 @@ import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.ToolActions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 
 @Mixin(BambooStalkBlock.class)
 public abstract class BambooStalkBlockInject implements IPlantable {
@@ -33,7 +35,7 @@ public abstract class BambooStalkBlockInject implements IPlantable {
         }
     }
 
-    @WrapOperation(method = "getDestroyProgress", at = @At(value = "CONSTANT", args = "classValue=net/minecraft/world/item/SwordItem"))
+    @WrapOperation(method = "getDestroyProgress", constant = @Constant(classValue = SwordItem.class))
     private boolean kilt$checkCanPerformSwordDig(Object object, Operation<Boolean> original, @Local(argsOnly = true) Player player) {
         return original.call(object) || player.getMainHandItem().canPerformAction(ToolActions.SWORD_DIG);
     }
