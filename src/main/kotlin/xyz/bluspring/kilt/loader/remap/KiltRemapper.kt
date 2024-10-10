@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 126
+    const val REMAPPER_VERSION = 127
 
     const val MC_MAPPED_JAR_VERSION = 2
 
@@ -258,6 +258,11 @@ object KiltRemapper {
                 for (rootPath in container.rootPaths) {
                     this.addLibrary(rootPath)
                 }
+            }
+
+            // add mapped path too
+            for (path in getGameClassPath()) {
+                this.addLibrary(path)
             }
 
             // Add all Forge mods to the library path, because dependencies don't have to be specified
