@@ -637,8 +637,6 @@ object KiltRemapper {
                 .resolve("${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.targetNamespace}.jar")
                 .toFile()
 
-            logger.info(deobfJar.path)
-
             if (deobfJar.exists())
                 return deobfJar
         } else {
