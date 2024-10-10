@@ -22,13 +22,17 @@ class KiltEnhancedRemapper(provider: ClassProvider, file: IMappingFile, log: Con
     }
 
     private fun tryFindMethodName(owner: String, mappedNames: Map<String, String>): String? {
-        val classOpt = this.classProvider.getClassBytes(owner)
+        val actualOwnerName = if (owner.startsWith("net/minecraft/class_"))
+            KiltRemapper.unmapClass(owner)
+        else owner
 
-        if (mappedNames.contains(owner)) {
-            return mappedNames[owner]!!
+        val classOpt = this.classProvider.getClassBytes(actualOwnerName)
+
+        if (mappedNames.contains(actualOwnerName)) {
+            return mappedNames[actualOwnerName]!!
         }
 
-        if (owner.contains("java/lang/Object"))
+        if (actualOwnerName.contains("java/lang/Object"))
             return null
 
         if (classOpt.isPresent) {

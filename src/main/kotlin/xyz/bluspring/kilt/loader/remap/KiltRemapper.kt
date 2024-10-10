@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 127
+    const val REMAPPER_VERSION = 128
 
     const val MC_MAPPED_JAR_VERSION = 2
 
@@ -600,7 +600,7 @@ object KiltRemapper {
 
     fun unmapClass(name: String): String {
         val intermediary = mappingResolver.unmapClassName("intermediary", name.replace("/", "."))
-        return intermediarySrgMapping.remapClass(intermediary)
+        return intermediarySrgMapping.remapClass(intermediary.replace(".", "/"))
     }
 
     val gameFile = getMCGameFile()
