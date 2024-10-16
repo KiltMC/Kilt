@@ -1,3 +1,4 @@
+// TRACKED HASH: 400a9b89f8ca95162963fb4fdbbc9877f5ae0add
 package xyz.bluspring.kilt.forgeinjects.resources;
 
 import com.llamalad7.mixinextras.injector.ModifyReceiver;

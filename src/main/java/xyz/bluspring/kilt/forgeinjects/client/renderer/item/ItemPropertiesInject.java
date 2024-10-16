@@ -1,3 +1,4 @@
+// TRACKED HASH: 0ce8f1794babd31dbd3e815bf72e006d5b2176f6
 package xyz.bluspring.kilt.forgeinjects.client.renderer.item;
 
 import net.minecraft.client.renderer.item.ItemProperties;

@@ -1,3 +1,4 @@
+// TRACKED HASH: a6a92c5ed3c30e0c66da8293c5f764431f4fee0f
 package xyz.bluspring.kilt.forgeinjects.client.resources.model;
 
 import com.bawnorton.mixinsquared.TargetHandler;
