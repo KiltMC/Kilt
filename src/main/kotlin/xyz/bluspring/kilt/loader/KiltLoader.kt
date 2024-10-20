@@ -674,7 +674,7 @@ class KiltLoader {
     }
 
     fun hasMod(id: String): Boolean {
-        return mods.any { it.modId == id }
+        return mods.any { it.modId == id } || modLoadingQueue.any { it.modId == id }
     }
 
     private var statesProvider: ForgeStatesProvider? = null

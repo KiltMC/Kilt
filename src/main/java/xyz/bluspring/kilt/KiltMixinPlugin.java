@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt;
 
+import com.bawnorton.mixinsquared.ext.ExtensionRegistrar;
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import com.moulberry.mixinconstraints.MixinConstraints;
 import com.moulberry.mixinconstraints.mixin.MixinConstraintsBootstrap;
@@ -7,6 +8,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
+import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifier;
 
 import java.util.List;
 import java.util.Set;
@@ -20,6 +22,8 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
         MixinExtrasBootstrap.init();
         MixinConstraintsBootstrap.init(mixinPackage);
+
+        ExtensionRegistrar.register(new KiltMixinModifier());
     }
 
     @Override

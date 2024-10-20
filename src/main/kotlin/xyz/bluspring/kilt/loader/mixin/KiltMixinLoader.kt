@@ -11,6 +11,7 @@ import kotlin.io.path.toPath
 
 object KiltMixinLoader {
     private val logger = LoggerFactory.getLogger("Kilt Mixin Loader")
+    val forgeMixinPackages = mutableListOf<String>()
 
     fun init(mods: List<ForgeMod>) {
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
@@ -44,6 +45,8 @@ object KiltMixinLoader {
             val config = rawConfig.config
             config.decorate(FabricUtil.KEY_MOD_ID, mod.metadata.id)
             config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST)
+
+            forgeMixinPackages.add(config.mixinPackage)
         }
     }
 }

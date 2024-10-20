@@ -21,6 +21,7 @@ public class BossHealthOverlayInject {
     // TODO: figure out how to wrap blocks of code in an event condition
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;drawBar(Lnet/minecraft/client/gui/GuiGraphics;IILnet/minecraft/world/BossEvent;)V", shift = At.Shift.BEFORE))
     private void kilt$customizeBossEventProgress(GuiGraphics guiGraphics, CallbackInfo ci, @Local LerpingBossEvent bossEvent, @Local(ordinal = 2) int k, @Local(ordinal = 1) int j) {
-        ForgeHooksClient.onCustomizeBossEventProgress(guiGraphics, this.minecraft.getWindow(), bossEvent, k, j, 10 + this.minecraft.font.lineHeight);
+        var event = ForgeHooksClient.onCustomizeBossEventProgress(guiGraphics, this.minecraft.getWindow(), bossEvent, k, j, 10 + this.minecraft.font.lineHeight);
+        event.isCanceled();
     }
 }
