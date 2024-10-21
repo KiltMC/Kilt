@@ -1,8 +1,10 @@
 package xyz.bluspring.kilt;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -13,10 +15,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.joml.Vector3f;
+import xyz.bluspring.kilt.injections.client.color.block.BlockColorsInjection;
 import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 // I use this class to just throw stuff into and
@@ -42,6 +46,10 @@ public class TestingMoreShit {
         System.out.println(test);
         //return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
         return quack.equals("a");
+    }
+
+    public Map<Holder.Reference<Block>, BlockColor> a() {
+        return ((BlockColorsInjection) this).kilt$getBlockColors();
     }
 
     static {

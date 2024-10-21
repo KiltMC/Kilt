@@ -2,8 +2,12 @@ package xyz.bluspring.kilt.loader.mixin.modifier
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import org.objectweb.asm.Label
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
+import org.objectweb.asm.tree.MethodNode
+import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.transformer.ClassInfo
@@ -12,6 +16,7 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
     private val MODIFIERS = mutableMapOf<String, List<MixinModifier>>()
+    private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
 
     val MODIFY_VARIABLE = register(
         ModifyVariable::class.java,
@@ -38,6 +43,43 @@ object KiltMixinModifications {
         )
     )
 
+    val ACCESSOR = registerAccessor(
+        Accessor::class.java,
+
+        AccessorModifier(
+            "net/minecraft/client/color/block/BlockColors",
+            listOf("getBlockColors", "blockColors"),
+            "()Ljava/util/Map;"
+        ) { owner ->
+            MethodNode().apply {
+                visitCode()
+
+                val label0 = Label()
+                val label1 = Label()
+
+                visitLabel(label0)
+
+                visitVarInsn(Opcodes.ALOAD, 0)
+                visitTypeInsn(
+                    Opcodes.CHECKCAST,
+                    "xyz/bluspring/kilt/injections/client/color/block/BlockColorsInjection"
+                )
+                visitMethodInsn(
+                    Opcodes.INVOKEINTERFACE,
+                    "xyz/bluspring/kilt/injections/client/color/block/BlockColorsInjection",
+                    "kilt\$getBlockColors", "()Ljava/util/Map;", true
+                )
+                visitInsn(Opcodes.ARETURN)
+
+                visitLabel(label1)
+                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
+                visitMaxs(1, 1)
+
+                visitEnd()
+            }
+        }
+    )
+
     fun findMatchingModifier(classInfo: ClassInfo, annotation: AnnotationNode): MixinModifier? {
         val modifiers = MODIFIERS[annotation.desc] ?: return null
 
@@ -49,6 +91,24 @@ object KiltMixinModifications {
 
             // check if all conditions match
             if (!checkAllConditionsMatch(modifier.variables, map))
+                continue
+
+            return modifier
+        }
+
+        return null
+    }
+
+    fun findMatchingAccessor(classInfo: ClassInfo, annotation: AnnotationNode, methodNode: MethodNode): AccessorModifier? {
+        val modifiers = ACCESSORS[annotation.desc] ?: return null
+
+        for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
+            val map = annotationValuesToMap(annotation.values)
+
+            if ((map.containsKey("value") && modifier.names.none { it == map["value"] }) && modifier.names.none { it == methodNode.name })
+                continue
+
+            if (methodNode.desc != KiltRemapper.remapDescriptor(modifier.desc))
                 continue
 
             return modifier
@@ -146,6 +206,24 @@ object KiltMixinModifications {
         }
 
         MODIFIERS[typeDesc] = list
+        return list
+    }
+
+    fun registerAccessor(type: Class<*>, vararg accessorModifiers: AccessorModifier): List<AccessorModifier> {
+        val list = mutableListOf<AccessorModifier>()
+        val typeDesc = Type.getDescriptor(type)
+
+        for (modifier in accessorModifiers) {
+            val owner = KiltRemapper.remapClass(modifier.owner)
+            val desc = KiltRemapper.remapDescriptor(modifier.desc)
+            MIXIN_CLASSES.add(owner)
+            modifier.mappedOwner = owner
+            modifier.mappedDesc = desc
+
+            list.add(modifier)
+        }
+
+        ACCESSORS[typeDesc] = list
         return list
     }
 }

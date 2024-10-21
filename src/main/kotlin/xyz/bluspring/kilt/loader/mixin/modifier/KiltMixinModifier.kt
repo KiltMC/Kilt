@@ -3,10 +3,15 @@ package xyz.bluspring.kilt.loader.mixin.modifier
 import com.bawnorton.mixinsquared.reflection.MixinInfoExtension
 import com.bawnorton.mixinsquared.reflection.StateExtension
 import com.bawnorton.mixinsquared.reflection.TargetClassContextExtension
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.InsnList
+import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.FabricUtil
 import org.spongepowered.asm.mixin.MixinEnvironment
+import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
@@ -32,11 +37,34 @@ class KiltMixinModifier : IExtension {
                 val mixinClassNode = mixinInfo.getClassNode(0)
                 var wasModified = false
 
+                val replacedMethods = mutableMapOf<MethodNode, MethodNode>()
+
                 for (methodNode in mixinClassNode.methods) {
                     val annotations = methodNode.visibleAnnotations ?: continue
                     val newAnnotations = mutableListOf<AnnotationNode>()
 
                     for (annotation in annotations) {
+                        if (annotation.desc == ACCESSOR) {
+                            val modifier = KiltMixinModifications.findMatchingAccessor(context.classInfo, annotation, methodNode)
+
+                            if (modifier != null) {
+                                val replacedMethod = modifier.replacedMethod.apply(mixinClassNode.name)
+
+                                val newMethod = MethodNode()
+                                newMethod.name = methodNode.name
+                                newMethod.desc = methodNode.desc
+                                newMethod.access = Opcodes.ACC_PUBLIC
+                                newMethod.signature = methodNode.signature
+
+                                newMethod.instructions = InsnList()
+                                newMethod.instructions.insert(replacedMethod.instructions)
+
+                                replacedMethods[methodNode] = newMethod
+
+                                continue
+                            }
+                        }
+
                         val modifier = KiltMixinModifications.findMatchingModifier(context.classInfo, annotation)
 
                         if (modifier == null) {
@@ -54,6 +82,15 @@ class KiltMixinModifier : IExtension {
                     }
                 }
 
+                if (replacedMethods.isNotEmpty()) {
+                    for ((original, replaced) in replacedMethods) {
+                        mixinClassNode.methods.remove(original)
+                        mixinClassNode.methods.add(replaced)
+                    }
+
+                    wasModified = true
+                }
+
                 if (wasModified) {
                     MixinInfoExtension.tryAs(mixinInfo)
                         .flatMap { StateExtension.tryAs(it.state) }
@@ -67,5 +104,9 @@ class KiltMixinModifier : IExtension {
     }
 
     override fun export(env: MixinEnvironment, name: String, force: Boolean, classNode: ClassNode) {
+    }
+
+    companion object {
+        val ACCESSOR = Type.getDescriptor(Accessor::class.java)
     }
 }
