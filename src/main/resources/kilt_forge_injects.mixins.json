@@ -275,6 +275,7 @@
         "client.renderer.entity.FallingBlockRendererInject",
         "client.renderer.entity.FishingHookRendererInject",
         "client.renderer.entity.ItemRendererInject",
+        "client.renderer.entity.layers.ElytraLayerInject",
         "client.renderer.entity.layers.HumanoidArmorLayerInject",
         "client.renderer.item.ItemPropertiesInject",
         "client.renderer.texture.SpriteContentsInject",
