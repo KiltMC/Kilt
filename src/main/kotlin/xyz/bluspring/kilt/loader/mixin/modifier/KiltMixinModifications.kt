@@ -86,7 +86,7 @@ object KiltMixinModifications {
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
             val map = annotationValuesToMap(annotation.values)
 
-            if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
+            if (modifier.methods != null && modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
                 continue
 
             // check if all conditions match
@@ -105,7 +105,7 @@ object KiltMixinModifications {
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
             val map = annotationValuesToMap(annotation.values)
 
-            if ((map.containsKey("value") && modifier.names.none { it == map["value"] }) && modifier.names.none { it == methodNode.name })
+            if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
                 continue
 
             if (methodNode.desc != KiltRemapper.remapDescriptor(modifier.desc))

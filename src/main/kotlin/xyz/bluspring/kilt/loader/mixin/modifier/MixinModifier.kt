@@ -4,7 +4,7 @@ import org.objectweb.asm.tree.AnnotationNode
 
 data class MixinModifier(
     val owner: String,
-    val methods: List<String>,
+    val methods: List<String>? = null,
 
     val variables: Map<String, Any> = mapOf(),
 

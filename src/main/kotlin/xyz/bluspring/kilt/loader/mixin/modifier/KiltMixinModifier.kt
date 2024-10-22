@@ -53,7 +53,12 @@ class KiltMixinModifier : IExtension {
                                 val newMethod = MethodNode()
                                 newMethod.name = methodNode.name
                                 newMethod.desc = methodNode.desc
-                                newMethod.access = Opcodes.ACC_PUBLIC
+
+                                if (replacedMethod.access != 0)
+                                    newMethod.access = replacedMethod.access
+                                else
+                                    newMethod.access = (methodNode.access and Opcodes.ACC_ABSTRACT.inv()) // remove abstract
+
                                 newMethod.signature = methodNode.signature
 
                                 newMethod.instructions = InsnList()
@@ -77,6 +82,7 @@ class KiltMixinModifier : IExtension {
                     }
 
                     if (wasModified) {
+                        methodNode.visibleAnnotations = mutableListOf()
                         methodNode.visibleAnnotations.clear()
                         methodNode.visibleAnnotations.addAll(newAnnotations)
                     }
