@@ -166,7 +166,16 @@ class KiltLoader {
 
         // Check if any of the dependencies failed to load
         if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
-            Kilt.logger.error("Unloaded dependencies found! Throwing error.")
+            preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }.forEach { (mod, dependencyStates) ->
+                Kilt.logger.error("${mod.displayName} (${mod.modId}) failed to load!")
+
+                dependencyStates.forEach states@{ state ->
+                    if (state is ValidDependencyLoadingState)
+                        return@states
+
+                    Kilt.logger.error("- Dependency ${state.dependency.modId} failed to load: $state")
+                }
+            }
 
             FabricGuiEntry.displayError("Incompatible Forge mod set!", null, {
                 val tab = it.addTab("Kilt Error")
