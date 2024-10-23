@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt;
 
 import com.google.common.collect.Lists;
+import io.github.fabricators_of_create.porting_lib.extensions.extensions.ItemTransformExtensions;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -16,7 +17,6 @@ import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.joml.Vector3f;
 import xyz.bluspring.kilt.injections.client.color.block.BlockColorsInjection;
-import xyz.bluspring.kilt.injections.client.renderer.block.model.ItemTransformInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
 
 import java.util.List;
@@ -88,7 +88,8 @@ public class TestingMoreShit {
     public static abstract class TestingQuadrupleTime extends ItemTransform {
         public TestingQuadrupleTime(Vector3f vector3f, Vector3f vector3f2, Vector3f vector3f3, Vector3f rightRotation) {
             super(vector3f, vector3f2, vector3f3);
-            ((ItemTransformInjection) this).setRightRotation(rightRotation);
+            //noinspection RedundantCast
+            ((ItemTransformExtensions) this).setRightRotation(rightRotation);
         }
     }
 
