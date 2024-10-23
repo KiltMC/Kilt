@@ -1,4 +1,8 @@
 accessWidener v2 named
+
+# Kilt's own access wideners.
+accessible class net/minecraft/server/network/ServerLoginPacketListenerImpl$State
+
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
