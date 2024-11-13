@@ -19,7 +19,6 @@ import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
 import net.fabricmc.mapping.tree.TinyMappingFactory
-import net.minecraft.client.Minecraft
 import net.minecraftforge.fart.api.ClassProvider
 import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper
@@ -53,6 +52,7 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -177,9 +177,6 @@ object KiltRemapper {
 
         val exceptions = mutableListOf<Exception>()
 
-        // Sort according to what dependencies are required and should be loaded first.
-        // If a mod fails to remap because a dependency isn't listed, well,
-        // that's their problem now, I guess.
         val mods = modLoadingQueue.filterNot { it.isRemapped() || it.modFile == null }
         val modById = mods.associateBy { it.modId }
 
@@ -559,10 +556,6 @@ object KiltRemapper {
                     val visitor = EnhancedClassRemapper(remappedNode, remapper, RenamingTransformer(remapper, false))
                     originalNode.accept(visitor)
 
-                    //                val classReader = ClassReader(classWriter.toByteArray())
-                    //                val remappedNode = ClassNode(Opcodes.ASM9)
-                    //                classReader.accept(remappedNode, 0)
-
                     // only do this on mixin classes, please
                     if (remappedNode.name in mixinClasses) {
                         MixinShadowRemapper.remapClass(remappedNode)
@@ -706,12 +699,10 @@ object KiltRemapper {
                 return deobfJar
         } else {
             // TODO: is there a better way of doing this?
-//            val possibleMcGameJar = launcher.classPath.firstOrNull { path ->
-//                val str = path.absolutePathString()
-//                str.contains("net") && str.contains("minecraft") && str.contains("-loom.mappings.") && str.contains("minecraft-merged-")
-//            }
-
-            val possibleMcGameJar = Minecraft::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            val possibleMcGameJar = launcher.classPath.firstOrNull { path ->
+                val str = path.absolutePathString()
+                str.contains("net") && str.contains("minecraft") && str.contains("-loom.mappings.") && str.contains("minecraft-merged-")
+            }
 
             return possibleMcGameJar
         }
@@ -792,19 +783,15 @@ object KiltRemapper {
 
                     withContext(Dispatchers.IO) {
                         outputJar.putNextEntry(JarEntry("$srgName.class"))
-                    }
-                    withContext(Dispatchers.IO) {
                         outputJar.write(classWriter.toByteArray())
-                    }
-                    withContext(Dispatchers.IO) {
                         outputJar.closeEntry()
                     }
                 } else {
                     withContext(Dispatchers.IO) {
                         outputJar.putNextEntry(entry)
+                        outputJar.write(gameJar.getInputStream(entry).readAllBytes())
+                        outputJar.closeEntry()
                     }
-                    outputJar.write(gameJar.getInputStream(entry).readAllBytes())
-                    outputJar.closeEntry()
                 }
             }
         }
