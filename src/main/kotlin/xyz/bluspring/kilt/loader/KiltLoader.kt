@@ -2,8 +2,12 @@ package xyz.bluspring.kilt.loader
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
-import com.google.common.graph.GraphBuilder
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
@@ -43,14 +47,24 @@ import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import xyz.bluspring.kilt.util.KiltHelper
-import java.io.File
+import xyz.bluspring.kilt.util.buildGraph
 import java.net.URL
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.forEachDirectoryEntry
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.toPath
+import kotlin.io.path.writeBytes
 import kotlin.system.exitProcess
 
 class KiltLoader {
@@ -63,22 +77,27 @@ class KiltLoader {
     // be for now.
     val modProvider: LoaderModProvider = FabricModProvider()
 
-    fun scanMods() {
+    val scope = CoroutineScope(SupervisorJob())
+
+    val scanModJob by lazy {
+        scope.launch(Dispatchers.IO) { scanMods() }
+    }
+
+    suspend fun scanMods() {
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
 
-        val modsDir = File(FabricLoader.getInstance().gameDir.toFile(), "mods")
+        val modsDir = FabricLoader.getInstance().gameDir / "mods"
 
-        if (!modsDir.exists() || !modsDir.isDirectory)
+        if (!modsDir.exists() || !modsDir.isDirectory())
             throw IllegalStateException("Mods directory doesn't exist! ...how did you even get to this point?")
 
-        val modFiles = modsDir.listFiles { file -> file.extension == "jar" } ?: throw IllegalStateException("Failed to load mod files!")
 
         val thrownExceptions = mutableMapOf<String, Exception>()
 
         DeltaTimeProfiler.push("preload")
-        modFiles.forEach { modFile ->
-            thrownExceptions.putAll(preloadJarMod(modFile, ZipFile(modFile)))
+        modsDir.forEachDirectoryEntry("*.jar") { modFile ->
+            thrownExceptions.putAll(preloadJarMod(modFile, ZipFile(modFile.toFile())))
         }
         DeltaTimeProfiler.pop()
 
@@ -108,7 +127,9 @@ class KiltLoader {
 
         Kilt.logger.debug("Re-scanning Forge mods to verify mod dependencies...")
 
-        val mcVersion = DefaultArtifactVersion(FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString)
+        val mcVersion = DefaultArtifactVersion(
+            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString
+        )
         val preloadedMods = mutableMapOf<ForgeMod, List<ModLoadingState>>()
 
         // Iterate through the mod loading queue for the first time
@@ -121,10 +142,12 @@ class KiltLoader {
 
                 if (dependency.modId == "forge") {
                     if (!dependency.versionRange.containsVersion(SUPPORTED_FORGE_API_VERSION)) {
-                        dependencies.add(IncompatibleDependencyLoadingState(
-                            dependency,
-                            SUPPORTED_FORGE_API_VERSION
-                        ))
+                        dependencies.add(
+                            IncompatibleDependencyLoadingState(
+                                dependency,
+                                SUPPORTED_FORGE_API_VERSION
+                            )
+                        )
 
                         return@dependencies
                     }
@@ -134,10 +157,12 @@ class KiltLoader {
                     return@dependencies
                 } else if (dependency.modId == "minecraft") {
                     if (!dependency.versionRange.containsVersion(mcVersion)) {
-                        dependencies.add(IncompatibleDependencyLoadingState(
-                            dependency,
-                            mcVersion
-                        ))
+                        dependencies.add(
+                            IncompatibleDependencyLoadingState(
+                                dependency,
+                                mcVersion
+                            )
+                        )
 
                         return@dependencies
                     }
@@ -157,7 +182,8 @@ class KiltLoader {
                 }
 
                 // If it's not required, no need to worry.
-                if (modLoadingQueue.none { it.modId == dependency.modId } && !FabricLoader.getInstance().isModLoaded(dependency.modId))
+                if (modLoadingQueue.none { it.modId == dependency.modId } && !FabricLoader.getInstance()
+                        .isModLoaded(dependency.modId))
                     return@dependencies
 
                 val dependencyMod = modLoadingQueue.firstOrNull { it.modId == dependency.modId }
@@ -179,10 +205,12 @@ class KiltLoader {
                 }
 
                 if (!dependency.versionRange.containsVersion(dependencyMod.version)) {
-                    dependencies.add(IncompatibleDependencyLoadingState(
-                        dependency,
-                        dependencyMod.version
-                    ))
+                    dependencies.add(
+                        IncompatibleDependencyLoadingState(
+                            dependency,
+                            dependencyMod.version
+                        )
+                    )
 
                     return@dependencies
                 }
@@ -195,30 +223,38 @@ class KiltLoader {
 
         // Check if any of the dependencies failed to load
         if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
-            preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }.forEach { (mod, dependencyStates) ->
-                Kilt.logger.error("${mod.displayName} (${mod.modId}) failed to load!")
-
-                dependencyStates.forEach states@{ state ->
-                    if (state is ValidDependencyLoadingState)
-                        return@states
-
-                    Kilt.logger.error("- Dependency ${state.dependency.modId} failed to load: $state")
-                }
-            }
-
-            FabricGuiEntry.displayError("Incompatible Forge mod set!", null, {
-                val tab = it.addTab("Kilt Error")
-
-                preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }.forEach { (mod, dependencyStates) ->
-                    val message = tab.node.addMessage("${mod.displayName} (${mod.modId}) failed to load!", FabricStatusTree.FabricTreeWarningLevel.ERROR)
+            preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
+                .forEach { (mod, dependencyStates) ->
+                    Kilt.logger.error("${mod.displayName} (${mod.modId}) failed to load!")
 
                     dependencyStates.forEach states@{ state ->
                         if (state is ValidDependencyLoadingState)
                             return@states
 
-                        message.addMessage("Dependency ${state.dependency.modId} failed to load: $state", FabricStatusTree.FabricTreeWarningLevel.NONE)
+                        Kilt.logger.error("- Dependency ${state.dependency.modId} failed to load: $state")
                     }
                 }
+
+            FabricGuiEntry.displayError("Incompatible Forge mod set!", null, {
+                val tab = it.addTab("Kilt Error")
+
+                preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
+                    .forEach { (mod, dependencyStates) ->
+                        val message = tab.node.addMessage(
+                            "${mod.displayName} (${mod.modId}) failed to load!",
+                            FabricStatusTree.FabricTreeWarningLevel.ERROR
+                        )
+
+                        dependencyStates.forEach states@{ state ->
+                            if (state is ValidDependencyLoadingState)
+                                return@states
+
+                            message.addMessage(
+                                "Dependency ${state.dependency.modId} failed to load: $state",
+                                FabricStatusTree.FabricTreeWarningLevel.NONE
+                            )
+                        }
+                    }
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
@@ -267,27 +303,7 @@ class KiltLoader {
 
     private fun sortMods(queue: ConcurrentLinkedQueue<ForgeMod>) {
         DeltaTimeProfiler.push("sortMods")
-        val graph = GraphBuilder.directed().build<ForgeMod>()
-
-        for (mod in queue) {
-            graph.addNode(mod)
-        }
-
-        for (mod in queue) {
-            for (dep in mod.dependencies) {
-                val associatedMod = queue.firstOrNull { it.modId == dep.modId } ?: continue
-
-                if (associatedMod == mod)
-                    continue
-
-                if (dep.ordering == IModInfo.Ordering.BEFORE) {
-                    graph.putEdge(mod, associatedMod)
-                } else if (dep.ordering == IModInfo.Ordering.AFTER) {
-                    graph.putEdge(associatedMod, mod)
-                }
-            }
-        }
-
+        val graph = queue.buildGraph()
         val sorted = TopologicalSort.topologicalSort(graph, null)
         queue.clear()
         queue.addAll(sorted)
@@ -305,8 +321,8 @@ class KiltLoader {
             val toml = tomlParser.parse(this::class.java.getResource("/META-INF/forge.mods.toml"))
             parseModsToml(toml, null, null).first()
         } else {
-            val kiltFile = File(KiltLoader::class.java.protectionDomain.codeSource.location.toURI())
-            val kiltJar = JarFile(kiltFile)
+            val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            val kiltJar = JarFile(kiltFile.toFile())
 
             val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
 
@@ -339,18 +355,22 @@ class KiltLoader {
     }
 
     // This is used specifically for JiJ'd mods that don't store mods.toml files.
-    private fun createCustomMod(modFile: File): ForgeMod {
+    private fun createCustomMod(modFile: Path): ForgeMod {
         return ForgeMod(
             "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
             "(Kilt JiJ) ${modFile.nameWithoutExtension}",
             description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway.",
             DefaultArtifactVersion("0.0.0"),
-            modFile = modFile,
+            modFile = modFile.toFile(),
             modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml")))
         )
     }
 
-    private fun preloadJarMod(modFile: File, jarFile: ZipFile, nestedModUpdater: Consumer<ForgeMod>? = null): Map<String, Exception> {
+    private fun preloadJarMod(
+        modFile: Path,
+        jarFile: ZipFile,
+        nestedModUpdater: Consumer<ForgeMod>? = null
+    ): Map<String, Exception> {
         // Do NOT load Fabric mods.
         // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
         // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
@@ -363,7 +383,7 @@ class KiltLoader {
         val thrownExceptions = mutableMapOf<String, Exception>()
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
 
-        Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
+        Kilt.logger.debug("Scanning jar file {} for Forge mod metadata.", modFile.name)
 
         try {
             val modsToml = jarFile.getEntry("META-INF/mods.toml")
@@ -371,7 +391,9 @@ class KiltLoader {
             if (nestedModUpdater != null && modsToml == null) {
                 val mod = createCustomMod(modFile)
 
-                if (FabricLoader.getInstance().isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null) {
+                if (FabricLoader.getInstance()
+                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null
+                ) {
                     Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: ${mod.modId}")
                     return mapOf()
                 }
@@ -408,22 +430,19 @@ class KiltLoader {
                     // if the file already exists, no need to extract it again.
                     val fileName = filePath.split("/").last()
 
-                    val file = File(extractedModsDir, "${entry.crc}-$fileName")
-                    if (!file.exists()) {
-                        // Extract the JAR out of its containing mod.
-                        try {
-                            file.createNewFile()
-                            file.writeBytes(jarFile.getInputStream(entry).readAllBytes())
-                        } catch (e: Exception) {
-                            Kilt.logger.error("Failed to load JiJ'd file: $fileName")
-                            e.printStackTrace()
-                            thrownExceptions[fileName] = e
-
+                    val file = extractedModsDir / "${entry.crc}-$fileName"
+                    runCatching {
+                        file.createFile()
+                        file.writeBytes(jarFile.getInputStream(entry).readAllBytes())
+                    }.onFailure { throwable ->
+                        if (throwable !is FileAlreadyExistsException && throwable is Exception) {
+                            Kilt.logger.error("Failed to load JiJ'd file: $fileName", throwable)
+                            thrownExceptions[fileName] = throwable
                             return@forEach
                         }
                     }
 
-                    preloadJarMod(file, ZipFile(file)) { mod ->
+                    preloadJarMod(file, ZipFile(file.toFile())) { mod ->
                         nestedMods.add(mod)
                     }
                 }
@@ -446,14 +465,27 @@ class KiltLoader {
     }
 
     // Split this off from the main preloadMods method, in case it needs to be used again later.
-    private fun parseModsToml(toml: CommentedConfig, modFile: File?, jarFile: ZipFile?, nestedMods: List<ForgeMod> = listOf()): List<ForgeMod> {
+    private fun parseModsToml(
+        toml: CommentedConfig,
+        modFile: Path?,
+        jarFile: ZipFile?,
+        nestedMods: List<ForgeMod> = listOf()
+    ): List<ForgeMod> {
         if (toml.get("modLoader") as String != "javafml" && toml.get("modLoader") as String != "lowcodefml")
-            throw Exception("Forge mod file ${modFile?.name ?: "(unknown)"} is not a supported FML mod! (got ${toml.get("modLoader") as String})")
+            throw Exception(
+                "Forge mod file ${modFile?.name ?: "(unknown)"} is not a supported FML mod! (got ${
+                    toml.get(
+                        "modLoader"
+                    ) as String
+                })"
+            )
 
         // Load the JAR's manifest file, or at least try to.
         val manifest = if (jarFile != null) try {
             Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
-        } catch (_: Exception) { null } else null
+        } catch (_: Exception) {
+            null
+        } else null
 
         val fileName = modFile?.name ?: "(unknown)"
 
@@ -486,7 +518,9 @@ class KiltLoader {
 
             // In most cases, Fabric versions of mods share the same mod ID as the Forge variant.
             // We don't want two of the same things, so we shouldn't allow this to occur.
-            if (FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null || FabricLoader.getInstance().isModLoaded(modId)) {
+            if (FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null || FabricLoader.getInstance()
+                    .isModLoaded(modId)
+            ) {
                 Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: $modId")
                 return@forEach
             }
@@ -518,7 +552,8 @@ class KiltLoader {
                 },
                 credits = metadata.getConfigElement<String>("credits").orElse(""),
                 authors = metadata.getConfigElement<String>("authors").orElse(""),
-                description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION").replace("\r", ""),
+                description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION")
+                    .replace("\r", ""),
                 dependencies = mainConfig.getConfigList("dependencies", modId)
                     .map {
                         ForgeMod.ForgeModDependency(
@@ -532,11 +567,13 @@ class KiltLoader {
                                         Exception("Forge mod file $fileName's dependencies contains a dependency without a version range!")
                                     }
                             ),
-                            ordering = IModInfo.Ordering.valueOf(it.getConfigElement<String>("ordering").orElse("NONE")),
+                            ordering = IModInfo.Ordering.valueOf(
+                                it.getConfigElement<String>("ordering").orElse("NONE")
+                            ),
                             side = IModInfo.DependencySide.valueOf(it.getConfigElement<String>("side").orElse("BOTH"))
                         )
                     },
-                modFile = modFile,
+                modFile = modFile?.toFile(),
                 modConfig = mainConfig,
                 nestedMods = nestedMods,
                 // TODO: make logo file square
@@ -556,12 +593,11 @@ class KiltLoader {
     }
 
     // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
-    private fun remapMods() {
+    private suspend fun remapMods() {
         DeltaTimeProfiler.push("remapMods")
 
-        val remappedModsDir = File(kiltCacheDir, "remappedMods").apply {
-            if (!this.exists())
-                this.mkdirs()
+        val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
+            runCatching { createDirectories() }
         }
 
         val exceptions = KiltRemapper.remapMods(modLoadingQueue, remappedModsDir)
@@ -582,6 +618,7 @@ class KiltLoader {
     }
 
     fun loadMods() {
+        runBlocking { scanModJob.join() }
         Kilt.logger.info("Starting initialization of Forge mods...")
         DeltaTimeProfiler.push("loadMods")
 
@@ -811,7 +848,8 @@ class KiltLoader {
 
             // COMMON_SETUP
             DeltaTimeProfiler.popPush("common_setup")
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+            ModLoader.get()
+                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
 
             DeltaTimeProfiler.push("runTasks")
 
@@ -834,7 +872,8 @@ class KiltLoader {
 
             // ENQUEUE_IMC
             DeltaTimeProfiler.popPush("enqueue_imc")
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+            ModLoader.get()
+                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
 
             DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
@@ -842,7 +881,8 @@ class KiltLoader {
 
             // PROCESS_IMC
             DeltaTimeProfiler.popPush("process_imc")
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+            ModLoader.get()
+                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
 
             DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
@@ -900,6 +940,7 @@ class KiltLoader {
     // We need to initialize all early Forge-related things immediately,
     // because otherwise things will break entirely.
     fun initForge() {
+        runBlocking { scanModJob.join() }
         SharedConstants.tryDetectVersion()
         Bootstrap.bootStrap() // fuck you
         ForgeRegistries.init()
@@ -941,13 +982,11 @@ class KiltLoader {
         private val MOD_ANNOTATION = Type.getType(Mod::class.java)
         private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(Mod.EventBusSubscriber::class.java)
 
-        val kiltCacheDir = File(FabricLoader.getInstance().gameDir.toFile(), ".kilt").apply {
-            if (!this.exists())
-                this.mkdirs()
+        val kiltCacheDir = (FabricLoader.getInstance().gameDir / ".kilt").apply {
+            runCatching { this.createDirectories() }
         }
-        private val extractedModsDir = File(kiltCacheDir, "extractedMods").apply {
-            if (!this.exists())
-                this.mkdirs()
+        private val extractedModsDir = (kiltCacheDir / "extractedMods").apply {
+            runCatching { this.createDirectories() }
         }
 
         private fun isSideValid(side: DependencySide): Boolean {
@@ -957,5 +996,7 @@ class KiltLoader {
             return (FabricLoader.getInstance().environmentType == EnvType.CLIENT && side == DependencySide.CLIENT)
                     || (FabricLoader.getInstance().environmentType == EnvType.SERVER && side == DependencySide.SERVER)
         }
+
+
     }
 }

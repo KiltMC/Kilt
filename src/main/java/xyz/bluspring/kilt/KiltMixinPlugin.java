@@ -34,7 +34,7 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
         ExtensionRegistrar.register(new KiltMixinModifier());
 
-        Kilt.Companion.getLoader().scanMods();
+        Kilt.Companion.getLoader().getScanModJob();
     }
 
     @Override

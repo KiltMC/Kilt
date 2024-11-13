@@ -204,6 +204,8 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
     implementation(include("commons-codec:commons-codec:1.15")!!)
+
+    implementation(include("org.jgrapht:jgrapht-core:1.5.2")!!)
 }
 
 configurations.all {
@@ -211,6 +213,21 @@ configurations.all {
 }
 
 val targetJavaVersion = "17"
+
+java {
+    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    }
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
 
 tasks {
     register("countPatchProgress") {
@@ -378,20 +395,14 @@ tasks {
             val transformerFile = File("$projectDir/forge/src/main/resources/META-INF/accesstransformer.cfg")
             val widenerFile = File("$projectDir/src/main/resources/kilt.accesswidener")
 
-            remapper.convertTransformerToWidener(transformerFile.readText(), widenerFile, project.property("minecraft_version") as String, buildDir)
+            remapper.convertTransformerToWidener(
+                transformerFile.readText(),
+                widenerFile,
+                project.property("minecraft_version") as String,
+                layout.buildDirectory.get().asFile
+            )
         }
     }
-}
-
-java {
-    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
-    }
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
 }
 
 fun getVersionMetadata(): String {

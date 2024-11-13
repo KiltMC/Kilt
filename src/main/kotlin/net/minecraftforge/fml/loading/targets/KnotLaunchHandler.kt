@@ -1,6 +1,7 @@
 package net.minecraftforge.fml.loading.targets
 
 import cpw.mods.modlauncher.api.ServiceRunner
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraftforge.api.distmarker.Dist
@@ -19,7 +20,7 @@ class KnotLaunchHandler : CommonLaunchHandler() {
     }
 
     private val paths = LocatedPaths(
-        KiltRemapper.getGameClassPath().toList(), { _, _ ->
+        runBlocking { KiltRemapper.getGameClassPath() }.toList(), { _, _ ->
             true
         },
         listOf(), listOf()
