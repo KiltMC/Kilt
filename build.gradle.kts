@@ -346,6 +346,10 @@ tasks {
         }
     }
 
+    named<Jar>("sourcesJar") {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
     // configure the maven publication
     publishing {
         publications {

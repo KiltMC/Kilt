@@ -383,7 +383,7 @@ class KiltLoader {
         val thrownExceptions = mutableMapOf<String, Exception>()
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
 
-        Kilt.logger.debug("Scanning jar file {} for Forge mod metadata.", modFile.name)
+        Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
 
         try {
             val modsToml = jarFile.getEntry("META-INF/mods.toml")
