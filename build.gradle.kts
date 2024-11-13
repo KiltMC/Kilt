@@ -204,8 +204,6 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
     implementation(include("commons-codec:commons-codec:1.15")!!)
-
-    implementation(include("org.jgrapht:jgrapht-core:1.5.2")!!)
 }
 
 configurations.all {
