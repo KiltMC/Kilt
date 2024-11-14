@@ -7,7 +7,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
@@ -618,7 +617,6 @@ class KiltLoader {
     }
 
     fun loadMods() {
-        runBlocking { scanModJob.join() }
         Kilt.logger.info("Starting initialization of Forge mods...")
         DeltaTimeProfiler.push("loadMods")
 
@@ -940,7 +938,6 @@ class KiltLoader {
     // We need to initialize all early Forge-related things immediately,
     // because otherwise things will break entirely.
     fun initForge() {
-        runBlocking { scanModJob.join() }
         SharedConstants.tryDetectVersion()
         Bootstrap.bootStrap() // fuck you
         ForgeRegistries.init()

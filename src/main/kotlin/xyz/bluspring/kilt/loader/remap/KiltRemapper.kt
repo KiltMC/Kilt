@@ -756,10 +756,8 @@ object KiltRemapper {
         }.build()
         val srgRemapper = EnhancedRemapper(classProvider, intermediarySrgMapping, logConsumer)
 
-        val gameJar = withContext(Dispatchers.IO) {
-            JarFile(gameFile.toFile())
-        }
-        srgFile.createFile()
+        val gameJar = withContext(Dispatchers.IO) { JarFile(gameFile.toFile()) }
+        runCatching { srgFile.createFile() }
 
         withContext(Dispatchers.IO) { JarOutputStream(srgFile.outputStream()) }.use { outputJar ->
             for (entry in gameJar.entries()) {

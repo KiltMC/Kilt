@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
+import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -19,6 +20,8 @@ import java.lang.reflect.Modifier
 
 class KiltEarlyRiser : Runnable {
     override fun run() {
+        runBlocking { Kilt.loader.scanModJob.join() }
+
         processForgeClasses()
 
         val mappingResolver = FabricLoader.getInstance().mappingResolver
