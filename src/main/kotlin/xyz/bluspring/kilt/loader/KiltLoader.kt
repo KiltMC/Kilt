@@ -3,7 +3,8 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
@@ -14,11 +15,21 @@ import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.fml.*
+import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.ModLoader
+import net.minecraftforge.fml.ModLoadingContext
+import net.minecraftforge.fml.ModLoadingPhase
+import net.minecraftforge.fml.ModLoadingStage
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.config.ConfigTracker
 import net.minecraftforge.fml.config.ModConfig
-import net.minecraftforge.fml.event.lifecycle.*
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent
 import net.minecraftforge.fml.loading.FMLPaths
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -51,7 +62,16 @@ import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import java.util.zip.ZipFile
-import kotlin.io.path.*
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.forEachDirectoryEntry
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.toPath
+import kotlin.io.path.writeBytes
 import kotlin.system.exitProcess
 
 class KiltLoader {
@@ -66,15 +86,7 @@ class KiltLoader {
 
     val scope = CoroutineScope(SupervisorJob())
 
-    val scanModJob by lazy {
-        scope.launch(Dispatchers.IO) { scanMods() }
-    }
-
-    fun runScanMods() {
-        runBlocking { scanModJob.join() }
-    }
-
-    private suspend fun scanMods() {
+    suspend fun scanMods() {
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
 
