@@ -49,10 +49,8 @@ import xyz.bluspring.kilt.util.collect
 import xyz.bluspring.kilt.util.concurrent
 import xyz.bluspring.kilt.util.filter
 import xyz.bluspring.kilt.util.flatMap
-import xyz.bluspring.kilt.util.launchIn
 import xyz.bluspring.kilt.util.map
 import xyz.bluspring.kilt.util.merge
-import xyz.bluspring.kilt.util.onEach
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Path
@@ -145,33 +143,30 @@ object KiltRemapper {
     // SRG name -> (parent class name, intermediary/mapped name)
     val srgMappedMethods =
         Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
-            .withDefault {
-                Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
-            }
 
     init {
-        srgIntermediaryMapping.classes.asFlow().flowOn(Dispatchers.IO).concurrent().onEach {
-            it.methods.forEach m@{ f ->
-                // otherwise FunctionalInterface methods don't get remapped properly???
-                if (!f.mapped.startsWith("method_") && !FabricLoader.getInstance().isDevelopmentEnvironment)
-                    return@m
+        runBlocking {
+            srgIntermediaryMapping.classes.asFlow().concurrent().collect {
+                it.methods.asFlow().concurrent().collect { f ->
+                    // otherwise FunctionalInterface methods don't get remapped properly???
+                    if (!f.mapped.startsWith("method_") && !FabricLoader.getInstance().isDevelopmentEnvironment)
+                        return@collect
 
-                val map = srgMappedMethods.getValue(f.original)
-                val mapped = if (!forceProductionRemap)
-                    withContext(Dispatchers.IO) {
-                        (mappingResolver.mapMethodName(
+                    val map = srgMappedMethods.getOrPut(f.original) { Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap()) }
+                    val mapped = if (!forceProductionRemap)
+                        mappingResolver.mapMethodName(
                             "intermediary",
                             it.mapped.replace("/", "."),
                             f.mapped,
                             f.mappedDescriptor
-                        ))
-                    }
-                else
-                    f.mapped
+                        )
+                    else
+                        f.mapped
 
-                map[f.parent.original] = mapped
+                    map[f.parent.original] = mapped
+                }
             }
-        }.launchIn(Kilt.loader.scope)
+        }
     }
 
     suspend fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: Path): List<Exception> {
@@ -600,7 +595,8 @@ object KiltRemapper {
             return exceptions
         }
 
-        val mods = modLoadingQueue.asFlow().concurrent().filter { !it.isRemapped() && it.modFile != null }.merge(false).toSet()
+        val mods =
+            modLoadingQueue.asFlow().concurrent().filter { !it.isRemapped() && it.modFile != null }.merge(false).toSet()
 
         mods.asFlow().concurrent()
             .collect { mod ->
