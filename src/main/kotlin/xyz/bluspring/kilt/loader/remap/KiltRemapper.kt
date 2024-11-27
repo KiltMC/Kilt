@@ -608,8 +608,8 @@ object KiltRemapper {
                     logger.info("Remapping ${mod.displayName} (${mod.modId})")
                     val ms = measureTime {
                         exceptions.addAll(remapMod(mod.modFile!!.toPath(), mod, mods))
-                    }
-                    logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${ms}]")
+                    }.inWholeMilliseconds
+                    logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${ms}ms]")
                 }.onFailure {
                     logger.error("Failed to remap ${mod.displayName} (${mod.modId})", it)
                     if (it is Exception) {
