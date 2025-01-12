@@ -66,7 +66,15 @@ open class ModLoadingContext(protected val mod: ForgeMod) {
         private val tomlParser = TomlParser()
 
         // oh so that's why they did it like that
-        var kiltActiveModId: String? = null
+        private val activeModId = ThreadLocal.withInitial<String?> { null }
+
+        var kiltActiveModId: String?
+            get() {
+                return activeModId.get()
+            }
+            set(value) {
+                activeModId.set(value)
+            }
 
         val activeContainer: ModContainer
             get() {
@@ -79,7 +87,6 @@ open class ModLoadingContext(protected val mod: ForgeMod) {
                 return get(source).activeContainer
             }
 
-        // TODO: actually handle multithreading this properly
         @JvmStatic
         fun get(): ModLoadingContext {
             // ensure the mod ID doesn't get overwritten at the exact same time
