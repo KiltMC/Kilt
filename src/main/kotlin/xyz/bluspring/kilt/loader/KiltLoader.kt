@@ -619,14 +619,15 @@ class KiltLoader {
 
         runBlocking {
             launch(Dispatchers.Default) {
-                modLoadingQueue.asFlow().concurrent().onEach { mod ->
+                // TODO: Need to make sure to group mods together so they load in the correct order from each other
+                modLoadingQueue.forEach { mod ->
                     try {
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
                             mods.add(mod)
                             exceptions.addAll(registerAnnotations(mod, mod.scanData))
 
-                            return@onEach
+                            return@forEach
                         }
 
                         val scanData = ModFileScanData()
@@ -658,7 +659,7 @@ class KiltLoader {
                         e.printStackTrace()
                         exceptions.add(e)
                     }
-                }.launchIn(this).join()
+                }
             }.join()
         }
 
