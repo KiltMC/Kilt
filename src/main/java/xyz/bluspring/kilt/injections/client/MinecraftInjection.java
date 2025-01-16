@@ -17,7 +17,7 @@ public interface MinecraftInjection {
         throw new IllegalStateException();
     }
 
-    default void kilt$setForgeGui(ForgeGui gui) {
+    default ForgeGui kilt$getForgeGui() {
         throw new IllegalStateException();
     }
 }

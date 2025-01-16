@@ -35,7 +35,6 @@ import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.ModLoader
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.injections.client.MinecraftInjection
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
@@ -100,11 +99,6 @@ class KiltClient : ClientModInitializer {
             else
                 EventResult.pass()
         }
-
-        // Have the Forge GUI sitting here, because one of the methods depends on it.
-        // we're not using it properly though.
-        forgeGui = ForgeGui(mc)
-        (mc as MinecraftInjection).`kilt$setForgeGui`(forgeGui)
 
         ClientGuiEvent.RENDER_HUD.register { guiGraphics, delta ->
             forgeGui.render(guiGraphics, delta)

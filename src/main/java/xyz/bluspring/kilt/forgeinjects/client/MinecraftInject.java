@@ -12,6 +12,7 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -30,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
+import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 
 import java.util.List;
@@ -184,8 +186,19 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         return this.kilt$tagSearchKey;
     }
 
+    // We're not using the Forge GUI system properly, but we're gonna make this incredibly mod compatible if we can.
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/entity/ItemRenderer;)Lnet/minecraft/client/gui/Gui;"))
+    private Gui kilt$initForgeGui(Minecraft minecraft, ItemRenderer itemRenderer, Operation<Gui> original) {
+        var gui = original.call(minecraft, itemRenderer);
+
+        this.kilt$forgeGui = new ForgeGui(minecraft);
+        KiltClient.Companion.setForgeGui(this.kilt$getForgeGui());
+
+        return gui;
+    }
+
     @Override
-    public void kilt$setForgeGui(ForgeGui gui) {
-        this.kilt$forgeGui = gui;
+    public ForgeGui kilt$getForgeGui() {
+        return (ForgeGui) this.kilt$forgeGui;
     }
 }
