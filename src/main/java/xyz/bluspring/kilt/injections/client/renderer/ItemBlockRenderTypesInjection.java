@@ -41,7 +41,16 @@ public interface ItemBlockRenderTypesInjection {
             return ItemBlockRenderTypesAccessor.isRenderCutout() ? CUTOUT_MIPPED : SOLID;
         }
 
-        return BLOCK_RENDER_TYPES.get(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()));
+        // Kilt: Handle Fabric mods' render types
+        var forgeLayers = BLOCK_RENDER_TYPES.getOrDefault(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()), ChunkRenderTypeSet.none());
+        if (forgeLayers.isEmpty()) {
+            var vanillaLayer = ItemBlockRenderTypes.TYPE_BY_BLOCK.getOrDefault(state.getBlock(), RenderType.solid());
+            forgeLayers = ChunkRenderTypeSet.of(vanillaLayer);
+
+            BLOCK_RENDER_TYPES.put(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()), forgeLayers);
+        }
+
+        return forgeLayers;
     }
 
     static void setRenderLayer(Block block, RenderType type) {
