@@ -4,6 +4,7 @@ import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
+import net.fabricmc.loader.impl.lib.accesswidener.AccessWidenerReader
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
@@ -31,40 +32,38 @@ object AccessTransformerLoader {
     }
 
     val entryTripleClass = Class.forName("net.fabricmc.loader.impl.lib.accesswidener.EntryTriple")
+    val entryTripleInit = entryTripleClass.getDeclaredConstructor(String::class.java, String::class.java, String::class.java)
     val enumNameMethod = Enum::class.java.getDeclaredMethod("name")
+    val classAccessMethod = AccessWidener::class.java.getDeclaredMethod("getClassAccess", String::class.java)
+    val methodAccessMethod = AccessWidener::class.java.getDeclaredMethod("getMethodAccess", entryTripleClass)
+
+    init {
+        entryTripleInit.isAccessible = true
+        methodAccessMethod.isAccessible = true
+        classAccessMethod.isAccessible = true
+    }
 
     private fun getClassWidenedState(className: String): Pair<AccessType, Final> {
         val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
 
-        val classAccessMethod = AccessWidener::class.java.getDeclaredMethod("getClassAccess", String::class.java)
-        classAccessMethod.isAccessible = true
-
         val currentAccess = classAccessMethod.invoke(accessWidener, className.replace(".", "/"))
         val accessName = enumNameMethod.invoke(currentAccess) as String
 
-        return when (accessName) {
-            "DEFAULT" -> Pair(AccessType.DEFAULT, Final.DEFAULT)
-            "ACCESSIBLE" -> Pair(AccessType.PUBLIC, Final.REMOVE) // Fabric does Final.ADD, let's remove final.
-            "EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
-            "ACCESSIBLE_EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
-            else -> throw IllegalStateException("Too many access widener names!")
-        }
+        return getWidenedStatePair(accessName)
     }
 
     private fun getMethodWidenedState(owner: String, method: String, descriptor: String): Pair<AccessType, Final> {
         val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
-
-        val entryTripleInit = entryTripleClass.getDeclaredConstructor(String::class.java, String::class.java, String::class.java)
-        entryTripleInit.isAccessible = true
-
-        val methodAccessMethod = AccessWidener::class.java.getDeclaredMethod("getMethodAccess", entryTripleClass)
-        methodAccessMethod.isAccessible = true
 
         val entryTriple = entryTripleInit.newInstance(owner, method, descriptor)
 
         val currentAccess = methodAccessMethod.invoke(accessWidener, entryTriple)
         val accessName = enumNameMethod.invoke(currentAccess) as String
 
+        return getWidenedStatePair(accessName)
+    }
+
+    private fun getWidenedStatePair(accessName: String): Pair<AccessType, Final> {
         return when (accessName) {
             "DEFAULT" -> Pair(AccessType.DEFAULT, Final.DEFAULT)
             "ACCESSIBLE" -> Pair(AccessType.PUBLIC, Final.REMOVE) // Fabric does Final.ADD, let's remove final.
@@ -75,6 +74,8 @@ object AccessTransformerLoader {
     }
 
     fun convertTransformers(data: ByteArray) {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
         val textData = String(data)
         val delimiter = if (textData.contains("\r\n")) "\r\n" else "\n"
 
@@ -160,6 +161,11 @@ object AccessTransformerLoader {
                         // promote access type
                         if (priorityAccess.ordinal < methodTransformInfo.currentAccessType.ordinal) {
                             methodTransformInfo.currentAccessType = priorityAccess
+
+                            // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
+                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                            // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
+                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
                         }
 
                         // promote final type
