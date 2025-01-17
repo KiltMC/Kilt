@@ -248,6 +248,7 @@ class KiltLoader {
             exitProcess(1)
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
+            mods.size(preloadedMods.size)
 
             if (preloadedMods.isNotEmpty()) {
                 try {
@@ -620,14 +621,14 @@ class KiltLoader {
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                modLoadingQueue.forEach { mod ->
+                for ((index, mod) in modLoadingQueue.withIndex()) {
                     try {
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            mods.add(mod)
+                            mods[index] = mod
                             exceptions.addAll(registerAnnotations(mod, mod.scanData))
 
-                            return@forEach
+                            continue
                         }
 
                         val scanData = ModFileScanData()
@@ -648,7 +649,9 @@ class KiltLoader {
                                     visitor.buildData(scanData.classes, scanData.annotations)
                                 }
 
-                            mods.add(mod)
+                            // Follow the exact order the mod loading queue was sorted.
+                            mods[index] = mod
+
                             // Avoid `ConcurrentModificationException`
                             // when register the event for mods that need to find the context by `getMod`
                             ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
@@ -752,6 +755,7 @@ class KiltLoader {
 
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
+        var hasInitialized = false
         scanData.annotations
             .filter { it.annotationType == MOD_ANNOTATION }
             .forEach {
@@ -779,6 +783,7 @@ class KiltLoader {
                     }
 
                     Kilt.logger.info("Initialized new instance of mod $modId.")
+                    hasInitialized = true
 
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Exception) {
@@ -786,6 +791,12 @@ class KiltLoader {
                     exceptions.add(e)
                 }
             }
+
+        if (!hasInitialized) {
+            val exception = IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!")
+            exception.printStackTrace()
+            exceptions.add(exception)
+        }
 
         mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
 
@@ -829,11 +840,11 @@ class KiltLoader {
     }
 
     fun getMod(id: String): ForgeMod? {
-        return mods.firstOrNull { it.modId == id } ?: modLoadingQueue.firstOrNull { it.modId == id }
+        return mods.firstOrNull { it != null && it.modId == id } ?: modLoadingQueue.firstOrNull { it.modId == id }
     }
 
     fun hasMod(id: String): Boolean {
-        return mods.any { it.modId == id } || modLoadingQueue.any { it.modId == id }
+        return mods.any { it != null && it.modId == id } || modLoadingQueue.any { it.modId == id }
     }
 
     private var statesProvider: ForgeStatesProvider? = null

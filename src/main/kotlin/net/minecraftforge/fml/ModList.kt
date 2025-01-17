@@ -38,7 +38,7 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     }
 
     fun isLoaded(modTarget: String): Boolean {
-        return kiltMods.any { it.modId == modTarget }
+        return Kilt.loader.hasMod(modTarget)
     }
 
     fun size(): Int {

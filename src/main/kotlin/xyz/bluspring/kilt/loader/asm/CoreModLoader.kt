@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.google.gson.JsonParser
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 
@@ -67,7 +66,7 @@ object CoreModLoader {
         if (!enableCoreMods)
             return
 
-        Kilt.logger.warn("Coremods have been enabled! Be advised that this may cause severe incompatibility issues!")
+        //Kilt.logger.warn("Coremods have been enabled! Be advised that this may cause severe incompatibility issues!")
 
         try {
             val entry = mod.getFile("META-INF/coremods.json")
