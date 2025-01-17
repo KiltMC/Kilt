@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 143
+    const val REMAPPER_VERSION = 144
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -386,7 +386,7 @@ object KiltRemapper {
                             val intermediaryField = "".run {
                                 if (srgClass.isNotBlank()) {
                                     if (nameMappingCache.contains(srgField)) {
-                                        nameMappingCache[srgField]!!
+                                        nameMappingCache[srgField]!![srgClass] ?: nameMappingCache[srgField]!!.values.first()
                                     } else {
                                         // Remap SRG to Intermediary, then to whatever the current FabricMC environment
                                         // is using.
@@ -414,7 +414,8 @@ object KiltRemapper {
                                                 } else this
                                             }).apply {
                                                 // Cache the field we found, so we don't have to go through this again
-                                                nameMappingCache[srgField] = this
+                                                nameMappingCache.computeIfAbsent(srgField) { mutableMapOf() }
+                                                    .put(srgClass, this)
                                             } ?: srgField,
                                             intermediaryDesc
                                         )
@@ -425,7 +426,7 @@ object KiltRemapper {
                                         srgField // short-circuit if it doesn't look like a field
                                     else {
                                         if (nameMappingCache.contains(srgField))
-                                            nameMappingCache[srgField]!!
+                                            nameMappingCache[srgField]!!.values.first()
                                         else {
                                             val possibleClass =
                                                 srgIntermediaryMapping.classes.firstOrNull { it.getField(srgField) != null }
@@ -438,7 +439,8 @@ object KiltRemapper {
                                                 intermediaryDesc
                                             ).apply {
                                                 // Cache the field we found, so we don't have to go through this again
-                                                nameMappingCache[srgField] = this
+                                                nameMappingCache.computeIfAbsent(srgField) { mutableMapOf() }
+                                                    .put(possibleClass.mapped, this)
                                             }
                                         }
                                     }
@@ -463,7 +465,7 @@ object KiltRemapper {
                             val intermediaryMethod = "".run {
                                 if (srgClass.isNotBlank()) {
                                     if (nameMappingCache.contains(srgMethod)) {
-                                        nameMappingCache[srgMethod]!!
+                                        nameMappingCache[srgMethod]!![srgClass] ?: nameMappingCache[srgMethod]!!.values.first()
                                     } else {
                                         mappingResolver.mapMethodName(
                                             "intermediary",
@@ -491,7 +493,8 @@ object KiltRemapper {
                                                     )
                                                 } else this
                                             }).apply {
-                                                nameMappingCache[srgMethod] = this
+                                                nameMappingCache.computeIfAbsent(srgMethod) { mutableMapOf() }
+                                                    .put(srgClass, this)
                                             } ?: srgMethod,
                                             intermediaryDesc
                                         )
@@ -507,7 +510,7 @@ object KiltRemapper {
                                         srgMethod // short-circuit if it doesn't look like a method
                                     else {
                                         if (nameMappingCache.contains(srgMethod))
-                                            nameMappingCache[srgMethod]!!
+                                            nameMappingCache[srgMethod]!!.values.first()
                                         else {
                                             val possibleClass = srgIntermediaryMapping.classes.firstOrNull {
                                                 it.getMethod(
@@ -523,7 +526,8 @@ object KiltRemapper {
                                                 intermediaryDesc
                                             ).apply {
                                                 // Cache the method we found, so we don't have to go through this again
-                                                nameMappingCache[srgMethod] = this
+                                                nameMappingCache.computeIfAbsent(srgMethod) { mutableMapOf() }
+                                                    .put(possibleClass.mapped, this)
                                             }
                                         }
                                     }
@@ -689,7 +693,7 @@ object KiltRemapper {
         return exceptions
     }
 
-    private val nameMappingCache = mutableMapOf<String, String>()
+    private val nameMappingCache = mutableMapOf<String, MutableMap<String, String>>()
 
     fun remapClass(name: String, toIntermediary: Boolean = false, ignoreWorkaround: Boolean = false): String {
         val workaround = if (!ignoreWorkaround)
