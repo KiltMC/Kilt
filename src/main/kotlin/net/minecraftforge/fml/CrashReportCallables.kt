@@ -1,5 +1,6 @@
 package net.minecraftforge.fml
 
+import xyz.bluspring.kilt.Kilt
 import java.util.function.BooleanSupplier
 import java.util.function.Supplier
 
@@ -30,7 +31,12 @@ object CrashReportCallables {
         registerCrashCallable(object : ISystemReportExtender {
             override val label = headerName
             override fun isActive(): Boolean {
-                return active.asBoolean
+                try {
+                    return active.asBoolean
+                } catch (e: Throwable) {
+                    Kilt.logger.warn("CrashCallable '$headerName' threw an exception while checking the active flag, disabling", e)
+                    return false
+                }
             }
 
             override fun get(): String {
