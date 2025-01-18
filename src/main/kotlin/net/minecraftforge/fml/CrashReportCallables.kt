@@ -1,5 +1,6 @@
 package net.minecraftforge.fml
 
+import java.util.function.BooleanSupplier
 import java.util.function.Supplier
 
 object CrashReportCallables {
@@ -16,6 +17,20 @@ object CrashReportCallables {
             override val label = headerName
             override fun isActive(): Boolean {
                 return true
+            }
+
+            override fun get(): String {
+                return reportGenerator.get()
+            }
+        })
+    }
+
+    @JvmStatic
+    fun registerCrashCallable(headerName: String, reportGenerator: Supplier<String>, active: BooleanSupplier) {
+        registerCrashCallable(object : ISystemReportExtender {
+            override val label = headerName
+            override fun isActive(): Boolean {
+                return active.asBoolean
             }
 
             override fun get(): String {

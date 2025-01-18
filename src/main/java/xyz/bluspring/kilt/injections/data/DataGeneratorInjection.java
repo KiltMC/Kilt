@@ -6,9 +6,19 @@ import net.minecraft.data.PackOutput;
 import java.util.Map;
 
 public interface DataGeneratorInjection {
-    Map<String, DataProvider> getProvidersView();
-    PackOutput getPackOutput();
-    PackOutput getPackOutput(String path);
-    <T extends DataProvider> T addProvider(boolean run, DataProvider.Factory<T> factory);
-    <T extends DataProvider> T addProvider(boolean run, T provider);
+    default Map<String, DataProvider> getProvidersView() {
+        throw new IllegalStateException();
+    }
+    default PackOutput getPackOutput() {
+        throw new IllegalStateException();
+    }
+    default PackOutput getPackOutput(String path) {
+        throw new IllegalStateException();
+    }
+    default <T extends DataProvider> T addProvider(boolean run, DataProvider.Factory<T> factory) {
+        throw new IllegalStateException();
+    }
+    default <T extends DataProvider> T addProvider(boolean run, T provider) {
+        throw new IllegalStateException();
+    }
 }

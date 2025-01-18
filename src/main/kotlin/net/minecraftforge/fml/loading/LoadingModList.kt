@@ -9,4 +9,13 @@ class LoadingModList {
 
         return kiltMod.owningFile as ModFileInfo
     }
+
+    companion object {
+        val instance = LoadingModList()
+
+        @JvmStatic
+        fun get(): LoadingModList {
+            return instance
+        }
+    }
 }

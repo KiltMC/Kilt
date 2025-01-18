@@ -11,11 +11,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.injections.world.item.RecordItemInjection;
 
 import java.util.function.Supplier;
 
 @Mixin(RecordItem.class)
-public abstract class RecordItemInject extends Item {
+public abstract class RecordItemInject extends Item implements RecordItemInjection {
     @Mutable @Shadow @Final private int analogOutput;
     @Mutable @Shadow @Final private SoundEvent sound;
     @Mutable @Shadow @Final private int lengthInTicks;

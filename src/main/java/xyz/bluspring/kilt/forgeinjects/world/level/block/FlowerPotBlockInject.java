@@ -88,6 +88,7 @@ public abstract class FlowerPotBlockInject extends Block implements FlowerPotBlo
         return emptyPot == null ? (FlowerPotBlock) (Object) this : emptyPot.get();
     }
 
+    @Override
     public void addPlant(ResourceLocation flower, Supplier<? extends Block> fullPot) {
         if (getEmptyPot() != (Object) this) {
             throw new IllegalArgumentException("Cannot add plant to non-empty pot: " + this);

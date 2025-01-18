@@ -114,6 +114,8 @@ gradle-app.setting
 
 # Common working directory
 run/
+run_test/
+!run_test/.gitkeep
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar

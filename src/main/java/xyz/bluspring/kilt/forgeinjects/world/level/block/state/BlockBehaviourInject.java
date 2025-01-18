@@ -54,6 +54,7 @@ public class BlockBehaviourInject {
             return lootTableSupplier;
         }
 
+        @Override
         public BlockBehaviour.Properties lootFrom(Supplier<? extends Block> blockIn) {
             this.lootTableSupplier = () -> blockIn.get().getLootTable();
             return (BlockBehaviour.Properties) (Object) this;

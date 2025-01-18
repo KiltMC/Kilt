@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.function.Supplier;
 
 @Mixin(MobBucketItem.class)
-public class MobBucketItemInject {
+public abstract class MobBucketItemInject {
     @Shadow @Final private SoundEvent emptySound;
     @Shadow @Final private EntityType<?> type;
     private Supplier<? extends EntityType<?>> entityTypeSupplier;

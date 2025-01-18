@@ -86,6 +86,7 @@
         "dev.MappedRegistryMixin",
         "resources.RegistryOpsAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
+        "world.item.UseAnimAccessor",
         "world.level.biome.BiomeClimateSettingsAccessor",
         "world.level.block.entity.RandomizableContainerBlockEntityMixin"
     ],

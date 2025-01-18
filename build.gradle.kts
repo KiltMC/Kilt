@@ -26,6 +26,12 @@ sourceSets {
         resources.srcDir("forge/src/generated/resources")
         resources.srcDir("forge/src/main/resources")
     }
+
+    getByName("test") {
+        java.srcDirs("forge/src/test/java")
+        resources.srcDir("forge/src/generated_test/resources")
+        resources.srcDir("forge/src/test/resources")
+    }
 }
 
 loom {
@@ -212,6 +218,14 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
     implementation(include("commons-codec:commons-codec:1.15")!!)
+
+
+    // Test libraries
+    testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
+    testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
+    testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
 }
 
 configurations.all {
@@ -236,6 +250,10 @@ java {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
+
     register("countPatchProgress") {
         group = "kilt"
         description = "Counts the total of patches in Forge, and checks how many Kilt ForgeInjects there are, to check how much is remaining."
@@ -315,6 +333,17 @@ tasks {
     }
 
     processResources {
+        val properties = mutableMapOf(
+            "version" to project.version,
+            "loader_version" to project.property("loader_version"),
+            "fabric_version" to project.property("fabric_version"),
+            "minecraft_version" to project.property("minecraft_version"),
+            "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
+            "fabric_asm_version" to project.property("fabric_asm_version"),
+            "forge_config_version" to project.property("forgeconfigapiport_version"),
+            "architectury_version" to project.property("architectury_version"),
+        )
+
         inputs.property("version", project.version)
         inputs.property("loader_version", project.property("loader_version"))
         inputs.property("fabric_version", project.property("fabric_version"))
@@ -326,16 +355,20 @@ tasks {
         filteringCharset = "UTF-8"
 
         filesMatching("fabric.mod.json") {
-            expand(mutableMapOf(
-                "version" to project.version,
-                "loader_version" to project.property("loader_version"),
-                "fabric_version" to project.property("fabric_version"),
-                "minecraft_version" to project.property("minecraft_version"),
-                "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
-                "fabric_asm_version" to project.property("fabric_asm_version"),
-                "forge_config_version" to project.property("forgeconfigapiport_version"),
-                "architectury_version" to project.property("architectury_version"),
-            ))
+            // Use this instead of expand, as otherwise Gradle hard-errors when finding unknown $ names, and treats them as properties.
+            this.filter {
+                if (it.contains("\${")) {
+                    var newString = it
+
+                    for ((name, property) in properties) {
+                        newString = newString.replace("\${$name}", property.toString())
+                    }
+
+                    return@filter newString
+                }
+
+                it
+            }
         }
 
         // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
