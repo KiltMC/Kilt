@@ -11,7 +11,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry
 import java.util.function.Function
 import io.github.fabricators_of_create.porting_lib.models.geometry.IUnbakedGeometry as FabricUnbakedGeometry
 
-class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>>(private val deferred: FabricUnbakedGeometry<T>) : IUnbakedGeometry<T> {
+class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>, U : FabricUnbakedGeometry<U>>(private val deferred: FabricUnbakedGeometry<U>) : IUnbakedGeometry<T> {
     override fun bake(
         context: IGeometryBakingContext,
         baker: ModelBaker?,
