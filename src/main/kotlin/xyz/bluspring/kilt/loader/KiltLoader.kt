@@ -305,23 +305,25 @@ class KiltLoader {
     // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
     // Let's do a trick to load the Forge built-in mod.
     private fun loadForgeBuiltinMod() {
-        val forgeMod = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val toml = tomlParser.parse(this::class.java.getResource("/META-INF/forge.mods.toml"))
-            parseModsToml(toml, null, null).first()
+        val forgeMods = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val modsList = mutableListOf<ForgeMod>()
+
+            for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
+                val toml = tomlParser.parse(url)
+                modsList.addAll(parseModsToml(toml, null, null))
+            }
+
+            modsList
         } else {
             val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
             val kiltJar = JarFile(kiltFile.toFile())
 
             val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
 
-            parseModsToml(toml, kiltFile, kiltJar).first()
+            parseModsToml(toml, kiltFile, kiltJar)
         }
 
         val scanData = ModFileScanData()
-        scanData.addModFileInfo(ModFileInfo(forgeMod))
-
-        forgeMod.scanData = scanData
-
         KiltHelper.getForgeClassNodes().forEach {
             val visitor = ModClassVisitor()
             it.accept(visitor)
@@ -329,10 +331,15 @@ class KiltLoader {
             visitor.buildData(scanData.classes, scanData.annotations)
         }
 
-        CoreModLoader.scanAndLoadCoreMods(forgeMod)
+        for (forgeMod in forgeMods) {
+            scanData.addModFileInfo(ModFileInfo(forgeMod))
 
-        mods.add(forgeMod)
-        addModToFabric(forgeMod)
+            forgeMod.scanData = scanData
+            CoreModLoader.scanAndLoadCoreMods(forgeMod)
+
+            mods.add(forgeMod)
+            addModToFabric(forgeMod)
+        }
     }
 
     private fun fullLoadForgeBuiltin() {

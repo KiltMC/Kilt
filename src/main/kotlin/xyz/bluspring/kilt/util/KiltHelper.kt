@@ -25,15 +25,31 @@ object KiltHelper {
         } else {
             val filesToScan = mutableListOf<File>()
 
-            val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
-            val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
-            val kotlinPath = File(path)
-            filesToScan.add(kotlinPath)
+            // Main environment
+            run {
+                val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
+                val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
+                val kotlinPath = File(path)
+                filesToScan.add(kotlinPath)
 
-            val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
-            val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
-            val forgeFile = File(forgePath)
-            filesToScan.add(forgeFile)
+                val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
+                val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
+                val forgeFile = File(forgePath)
+                filesToScan.add(forgeFile)
+            }
+
+            // Test environment
+            run {
+                val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/test/KiltTesting.class")!!
+                val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/test/KiltTesting.class", "")
+                val kotlinPath = File(path)
+                filesToScan.add(kotlinPath)
+
+                val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/test/LazyOptionalTest.class")!!
+                val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/test/LazyOptionalTest.class", "")
+                val forgeFile = File(forgePath)
+                filesToScan.add(forgeFile)
+            }
 
             filesToScan.map { it.toPath() }
         }
@@ -59,20 +75,10 @@ object KiltHelper {
         } else {
             // Need to do this workaround to scan the Kilt JAR in dev.
 
-            val filesToScan = mutableListOf<File>()
-
-            val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
-            val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
-            val kotlinPath = File(path)
-            filesToScan.add(kotlinPath)
-
-            val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
-            val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
-            val forgeFile = File(forgePath)
-            filesToScan.add(forgeFile)
+            val filesToScan = getKiltPaths()
 
             filesToScan.forEach { file ->
-                file.walk().forEach {
+                file.toFile().walk().forEach {
                     if (it.name.endsWith(".class")) {
                         val inputStream = it.inputStream()
                         val classReader = ClassReader(inputStream)

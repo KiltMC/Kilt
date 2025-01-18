@@ -377,6 +377,12 @@ tasks {
         }
     }
 
+    processTestResources {
+        filesMatching("META-INF/mods.toml") {
+            this.name = "forge.mods.toml"
+        }
+    }
+
     compileKotlin {
         kotlinOptions.jvmTarget = targetJavaVersion
     }
