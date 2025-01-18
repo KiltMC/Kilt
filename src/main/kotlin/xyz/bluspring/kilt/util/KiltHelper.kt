@@ -9,6 +9,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.nio.file.Path
 import java.util.jar.JarFile
+import kotlin.io.path.Path
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
@@ -23,36 +24,29 @@ object KiltHelper {
             //listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
             listOf()
         } else {
-            val filesToScan = mutableListOf<File>()
+            val filesToScan = mutableListOf<Path>()
 
             // Main environment
             run {
-                val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/loader/KiltLoader.class")!!
-                val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/loader/KiltLoader.class", "")
-                val kotlinPath = File(path)
-                filesToScan.add(kotlinPath)
-
-                val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/common/ForgeMod.class")!!
-                val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/common/ForgeMod.class", "")
-                val forgeFile = File(forgePath)
-                filesToScan.add(forgeFile)
+                filesToScan.add(getPath("xyz/bluspring/kilt/loader/KiltLoader.class") ?: return@run)
+                filesToScan.add(getPath("net/minecraftforge/common/ForgeMod.class") ?: return@run)
             }
 
             // Test environment
             run {
-                val kiltClassUrl = launcher.targetClassLoader.getResource("xyz/bluspring/kilt/test/KiltTesting.class")!!
-                val path = kiltClassUrl.path.replace("/xyz/bluspring/kilt/test/KiltTesting.class", "")
-                val kotlinPath = File(path)
-                filesToScan.add(kotlinPath)
-
-                val forgeClassUrl = launcher.targetClassLoader.getResource("net/minecraftforge/test/LazyOptionalTest.class")!!
-                val forgePath = forgeClassUrl.path.replace("/net/minecraftforge/test/LazyOptionalTest.class", "")
-                val forgeFile = File(forgePath)
-                filesToScan.add(forgeFile)
+                filesToScan.add(getPath("xyz/bluspring/kilt/test/KiltTesting.class") ?: return@run)
+                filesToScan.add(getPath("net/minecraftforge/test/LazyOptionalTest.class") ?: return@run)
             }
 
-            filesToScan.map { it.toPath() }
+            filesToScan
         }
+    }
+
+    private fun getPath(path: String): Path? {
+        val classUrl = launcher.targetClassLoader.getResource(path) ?: return null
+        val fullPath = classUrl.path.replace("/$path", "")
+
+        return Path(fullPath)
     }
 
     private fun getForgeClassNodesInternal(): List<ClassNode> {
