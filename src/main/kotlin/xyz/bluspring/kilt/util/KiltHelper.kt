@@ -7,9 +7,9 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
+import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.util.jar.JarFile
-import kotlin.io.path.Path
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
@@ -46,7 +46,7 @@ object KiltHelper {
         val classUrl = launcher.targetClassLoader.getResource(path) ?: return null
         val fullPath = classUrl.path.replace("/$path", "")
 
-        return Path(fullPath)
+        return FileSystems.getDefault().getPath(fullPath)
     }
 
     private fun getForgeClassNodesInternal(): List<ClassNode> {
