@@ -250,9 +250,12 @@
         "blaze3d.vertex.VertexFormatElementInject",
         "blaze3d.vertex.VertexFormatInject",
         "client.CameraInject",
+        "client.ClientBrandRetrieverInject",
         "client.ClientRecipeBookInject",
+        "client.KeyboardHandlerInject",
         "client.KeyMappingInject",
         "client.MinecraftInject",
+        "client.MouseHandlerInject",
         "client.RecipeBookCategoriesInject",
         "client.ScreenshotInject",
         "client.color.block.BlockColorsInject",
@@ -297,6 +300,7 @@
         "client.multiplayer.ClientPacketListenerInject",
         "client.multiplayer.PlayerInfoInject",
         "client.multiplayer.ServerDataInject",
+        "client.player.AbstractClientPlayerInject",
         "client.player.LocalPlayerInject",
         "client.player.RemotePlayerInject",
         "client.renderer.DimensionSpecialEffectsInject",
@@ -359,7 +363,8 @@
         "client.resources.model.SimpleBakedModelInject$BuilderInject",
         "client.resources.model.WeightedBakedModelInject",
         "client.resources.sounds.SoundInstanceInject",
-        "client.server.IntegratedServerInject"
+        "client.server.IntegratedServerInject",
+        "client.sounds.SoundEngineInject"
     ],
     "injectors": {
         "defaultRequire": 1
