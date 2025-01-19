@@ -8,20 +8,32 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.extensions.IForgePlayer;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,7 +41,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.entity.PlayerInjection;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(Player.class)
@@ -38,6 +49,8 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
     private static final String PERSISTED_NBT_TAG = PlayerInjection.PERSISTED_NBT_TAG;
 
     @Shadow public abstract float getDestroySpeed(BlockState state);
+
+    @Shadow @Final private Inventory inventory;
 
     protected PlayerInject(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
@@ -103,4 +116,42 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
             .add(Attributes.ATTACK_KNOCKBACK)
             .add(ForgeMod.ENTITY_REACH.get());
     }*/
+
+    @Unique private Pose forcedPose = null;
+
+    @Unique private final LazyOptional<IItemHandler> playerMainHandler = LazyOptional.of(() -> new PlayerMainInvWrapper(inventory));
+    @Unique private final LazyOptional<IItemHandler> playerEquipmentHandler = LazyOptional.of(() -> new CombinedInvWrapper(new PlayerArmorInvWrapper(inventory), new PlayerOffhandInvWrapper(inventory)));
+    @Unique private final LazyOptional<IItemHandler> playerJoinedHandler = LazyOptional.of(() -> new PlayerInvWrapper(inventory));
+
+    @Inject(method = "updatePlayerPose", at = @At("HEAD"), cancellable = true)
+    private void kilt$useForcedPose(CallbackInfo ci) {
+        if (forcedPose != null) {
+            this.setPose(forcedPose);
+            ci.cancel();
+        }
+    }
+
+    @Override
+    public @Nullable Pose getForcedPose() {
+        return forcedPose;
+    }
+
+    @Override
+    public void setForcedPose(Pose forcedPose) {
+        this.forcedPose = forcedPose;
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER && this.isAlive()) {
+            if (side == null)
+                return playerJoinedHandler.cast();
+            else if (side.getAxis().isVertical())
+                return playerMainHandler.cast();
+            else if (side.getAxis().isHorizontal())
+                return playerEquipmentHandler.cast();
+        }
+
+        return super.getCapability(cap, side);
+    }
 }
