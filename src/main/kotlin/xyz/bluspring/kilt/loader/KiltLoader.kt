@@ -63,6 +63,7 @@ import kotlin.system.exitProcess
 class KiltLoader {
     val mods = ObjectArrayList<ForgeMod>()
     internal val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+    internal val forgeMods = ObjectArrayList<ForgeMod>()
     private val tomlParser = TomlParser()
 
     // Meant to be used for compatibility between Fabric and other derivatives of it, such as Quilt.
@@ -339,14 +340,15 @@ class KiltLoader {
 
             mods.add(forgeMod)
             addModToFabric(forgeMod)
+            this.forgeMods.add(forgeMod)
         }
     }
 
     private fun fullLoadForgeBuiltin() {
-        val mod = this.getMod("forge") ?: throw IllegalStateException("WHAT")
-
-        runBlocking { registerAnnotations(mod, mod.scanData) }
-        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        for (mod in forgeMods) {
+            runBlocking { registerAnnotations(mod, mod.scanData) }
+            mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        }
     }
 
     // This is used specifically for JiJ'd mods that don't store mods.toml files.
@@ -702,7 +704,10 @@ class KiltLoader {
                 // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                 try {
-                    val modId = it.annotationData["modid"] as String? ?: mod.modId
+                    val modId = it.annotationData["modid"] as String?
+                        // Use the mod ID of the mod in the class instead
+                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, it.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
+                        ?: mod.modId
 
                     if (modId != mod.modId)
                         return@collect
@@ -726,6 +731,27 @@ class KiltLoader {
             }
 
         return exceptions
+    }
+
+    private fun checkTypeOrParentsAreType(rootType: Type, topType: Type): Boolean {
+        if (topType == rootType)
+            return true
+
+        if (!topType.className.contains("$"))
+            return false
+
+        val classNameSplit = topType.className.split("$")
+        for ((index, typeLvl) in classNameSplit.withIndex()) {
+            if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+                return true
+            else {
+                val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
+                if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+                    return true
+            }
+        }
+
+        return false
     }
 
     fun initMods() {
