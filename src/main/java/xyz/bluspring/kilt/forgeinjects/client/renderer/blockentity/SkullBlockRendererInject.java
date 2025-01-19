@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Mixin(SkullBlockRenderer.class)
 public abstract class SkullBlockRendererInject {
-    @Inject(method = "createSkullRenderers", at = @At("TAIL"))
+    @Inject(method = "createSkullRenderers", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;build()Lcom/google/common/collect/ImmutableMap;", shift = At.Shift.BEFORE))
     private static void kilt$addForgeSkullRenderers(EntityModelSet entityModelSet, CallbackInfoReturnable<Map<SkullBlock.Type, SkullModelBase>> cir, @Local ImmutableMap.Builder<SkullBlock.Type, SkullModelBase> builder) {
         ModLoader.get().postEvent(new EntityRenderersEvent.CreateSkullModels(builder, entityModelSet));
     }
