@@ -21,6 +21,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
 @Mixin(SoundEngine.class)
 public abstract class SoundEngineInject {
     @Inject(method = {"<init>", "reload"}, at = @At("TAIL"))
@@ -34,21 +37,22 @@ public abstract class SoundEngineInject {
     @WrapOperation(method = "play", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/sounds/SoundInstance;canPlaySound()Z"))
     private boolean kilt$checkCanPlaySound(SoundInstance instance, Operation<Boolean> original, @Local(argsOnly = true) LocalRef<SoundInstance> soundInstance) {
         soundInstance.set(ForgeHooksClient.playSound((SoundEngine) (Object) this, instance));
-        kilt$soundInstance.set(soundInstance.get());
-        kilt$soundEngine.set((SoundEngine) (Object) this);
-
         return soundInstance.get() != null && original.call(soundInstance.get());
     }
 
-    @Inject(method = "play", at = @At("TAIL"))
-    private void kilt$resetSoundInstance(SoundInstance sound, CallbackInfo ci) {
-        kilt$soundInstance.remove();
-        kilt$soundEngine.remove();
+    @WrapOperation(method = "play", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenAccept(Ljava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;"))
+    private <T> CompletableFuture<Void> kilt$callPlaySoundSourceEvent(CompletableFuture<T> instance, Consumer<? super T> action, Operation<CompletableFuture<Void>> original, @Local(argsOnly = true) SoundInstance soundInstance) {
+        return original.call(instance.thenApply(e -> {
+            kilt$soundInstance.set(soundInstance);
+            kilt$soundEngine.set((SoundEngine) (Object) this);
+            return e;
+        }), action);
     }
 
     @Inject(method = "method_19752", at = @At("TAIL"))
     private static void kilt$callPlaySoundSourceEvent(SoundBuffer soundBuffer, Channel channel, CallbackInfo ci) {
         MinecraftForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine.get(), kilt$soundInstance.get(), channel));
+        kilt$resetSoundState();
     }
 
     // Kilt: soundInstance.getStream() redirect is handled by Fabric API
@@ -56,5 +60,12 @@ public abstract class SoundEngineInject {
     @Inject(method = "method_19755", at = @At("TAIL"))
     private static void kilt$callPlayStreamSourceEvent(AudioStream audioStream, Channel channel, CallbackInfo ci) {
         MinecraftForge.EVENT_BUS.post(new PlayStreamingSourceEvent(kilt$soundEngine.get(), kilt$soundInstance.get(), channel));
+        kilt$resetSoundState();
+    }
+
+    @Unique
+    private static void kilt$resetSoundState() {
+        kilt$soundInstance.remove();
+        kilt$soundEngine.remove();
     }
 }
