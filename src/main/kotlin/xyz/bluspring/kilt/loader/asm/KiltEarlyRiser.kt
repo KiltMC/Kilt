@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.FieldInsnNode
@@ -10,9 +11,12 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
+import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
@@ -135,7 +139,7 @@ class KiltEarlyRiser : Runnable {
                     classNode.methods.removeIf { it.name == getTransformsName }
 
                     val itemTransforms = mappingResolver.mapClassName(namespace, itemTransformsIm).replace(".", "/")
-                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "NO_TRANSFORMS", "L${itemTransformsIm.replace(".", "/")};")
+                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "field_4301", "L${itemTransformsIm.replace(".", "/")};")
 
                     // this method should look like this
                     /*
@@ -274,9 +278,119 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        Kilt.loader.preloadMods()
-        KiltMixinLoader.init(Kilt.loader.modLoadingQueue.stream().toList())
-        AccessTransformerLoader.runTransformers()
+        run {
+            val biomeSpecialEffectsMapped = KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects")
+            val grassColorModifierMapped = KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
+            val biomeInjectionName = "xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection"
+            val colorModifierName = "$grassColorModifierMapped\$ColorModifier"
+            val modifyColor = mappingResolver.mapMethodName("intermediary", "net.minecraft.class_4763\$class_5486", "method_30823", "(DDI)I")
+
+            val classWriter = ClassWriter(Opcodes.ASM9)
+            classWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT, colorModifierName, null, "java/lang/Object", arrayOf("$biomeInjectionName\$ColorModifier"))
+
+            classWriter.visitNestHost(biomeSpecialEffectsMapped)
+            classWriter.visitAnnotation("Ljava/lang/FunctionalInterface;", true)
+            classWriter.visitInnerClass(grassColorModifierMapped, biomeSpecialEffectsMapped, grassColorModifierMapped.removePrefix(biomeSpecialEffectsMapped).removePrefix("\$"), Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_ENUM)
+            classWriter.visitInnerClass(colorModifierName, grassColorModifierMapped, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+            classWriter.visitInnerClass("$biomeInjectionName\$ColorModifier", biomeInjectionName, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+
+            classWriter.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT, "modifyGrassColor", "(DDI)I", null, null)
+            classWriter.visitEnd()
+
+            ClassTinkerers.define("$grassColorModifierMapped\$ColorModifier", classWriter.toByteArray())
+
+            ClassTinkerers.addTransformation(grassColorModifierMapped) { classNode ->
+                classNode.access = Opcodes.ACC_PUBLIC or Opcodes.ACC_ENUM // why the fuck is this needed????
+                classNode.visitInnerClass(colorModifierName, grassColorModifierMapped, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+
+                // Need to create this, and make sure it remaps to the pre-existing one.
+                /*
+                Expected code:
+                public static GrassColorModifier create(String name, String id, ColorModifier delegate) {
+                    return GrassColorModifier.create(name, id, (BiomeSpecialEffectsGrassColorModifierInjection.ColorModifier) delegate);
+                }
+                 */
+                classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "create", "(Ljava/lang/String;Ljava/lang/String;L$colorModifierName;)L$grassColorModifierMapped;", null, null).apply {
+                    this.visitCode()
+
+                    val label0 = Label()
+                    val label1 = Label()
+                    val label2 = Label()
+
+                    this.visitLabel(label0)
+                    this.visitVarInsn(Opcodes.ALOAD, 0)
+                    this.visitVarInsn(Opcodes.ALOAD, 1)
+                    this.visitVarInsn(Opcodes.ALOAD, 2)
+                    this.visitMethodInsn(Opcodes.INVOKESTATIC, grassColorModifierMapped, "create", "(Ljava/lang/String;Ljava/lang/String;L$biomeInjectionName\$ColorModifier;)L$grassColorModifierMapped;", false)
+
+                    this.visitLabel(label1)
+                    this.visitInsn(Opcodes.ARETURN)
+
+                    this.visitLabel(label2)
+                    this.visitLocalVariable("name", "Ljava/lang/String;", null, label0, label2, 0)
+                    this.visitLocalVariable("id", "Ljava/lang/String;", null, label0, label2, 1)
+                    this.visitLocalVariable("delegate", "L$biomeInjectionName\$ColorModifier;", null, label0, label2, 2)
+
+                    this.visitMaxs(0, 0)
+                    this.visitEnd()
+                }
+
+                // Use a delegate for modifyColor
+                // Expected code:
+                /*
+                public int modifyColor(double x, double z, int grassColor) {
+                    return this.kilt$getDelegate().modifyGrassColor(x, z, grassColor);
+                }
+                 */
+                run {
+                    val originalModifyColorMethod = classNode.methods.first { it.name == modifyColor }
+                    classNode.methods.removeIf { it.name == modifyColor }
+
+                    val modifyColorMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC, originalModifyColorMethod.name, originalModifyColorMethod.desc, originalModifyColorMethod.signature, originalModifyColorMethod.exceptions.toTypedArray())
+
+                    modifyColorMethod.visitCode()
+
+                    val label0 = Label()
+                    val label1 = Label()
+
+                    modifyColorMethod.visitLabel(label0)
+                    modifyColorMethod.visitVarInsn(Opcodes.ALOAD, 0)
+                    modifyColorMethod.visitMethodInsn(Opcodes.INVOKEVIRTUAL, grassColorModifierMapped, "kilt\$getDelegate", "()L$biomeInjectionName\$ColorModifier;", false)
+                    modifyColorMethod.visitVarInsn(Opcodes.DLOAD, 1)
+                    modifyColorMethod.visitVarInsn(Opcodes.DLOAD, 3)
+                    modifyColorMethod.visitVarInsn(Opcodes.ILOAD, 5)
+                    modifyColorMethod.visitMethodInsn(Opcodes.INVOKEINTERFACE, "$biomeInjectionName\$ColorModifier", "modifyGrassColor", "(DDI)I", true)
+                    modifyColorMethod.visitInsn(Opcodes.IRETURN)
+
+                    modifyColorMethod.visitLabel(label1)
+                    modifyColorMethod.visitLocalVariable("this", "L$grassColorModifierMapped;", null, label0, label1, 0)
+                    modifyColorMethod.visitLocalVariable("x", "D", null, label0, label1, 1)
+                    modifyColorMethod.visitLocalVariable("z", "D", null, label0, label1, 3)
+                    modifyColorMethod.visitLocalVariable("grassColor", "I", null, label0, label1, 5)
+
+                    modifyColorMethod.visitMaxs(6, 6)
+                    modifyColorMethod.visitEnd()
+                }
+            }
+
+            ClassTinkerers.addTransformation(biomeSpecialEffectsMapped) { classNode ->
+                classNode.visitNestMember(colorModifierName)
+                classNode.visitInnerClass(colorModifierName, grassColorModifierMapped, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+            }
+        }
+
+        DeltaTimeProfiler.push("preLaunch")
+        try {
+            Kilt.loader.preloadMods()
+            KiltMixinLoader.init(Kilt.loader.modLoadingQueue.stream().toList())
+            AccessTransformerLoader.runTransformers()
+        } catch (e: Exception) {
+            Kilt.logger.error("Kilt failed to preload mods!")
+            Kilt.logger.error("The following error may yell at Fabric-ASM/\"mm\", which is NOT the reason behind this crash.")
+
+            throw e
+        }
+        DeltaTimeProfiler.pop()
     }
 
     private val ignoredKeywords = listOf("kilt", "fml", "mixin")
@@ -290,10 +404,14 @@ class KiltEarlyRiser : Runnable {
             if (ignoredKeywords.any { classNode.name.lowercase().contains(it) })
                 return@forEach
 
+            if (classNode.name.contains("ForgeConfigSpec") || classNode.outerClass?.contains("ForgeConfigSpec") == true || classNode.name.lowercase().contains("coremod"))
+                return@forEach
+
             ClassTinkerers.addTransformation(classNode.name) {
                 EventClassVisibilityFixer.fixClass(it)
-                EventEmptyInitializerFixer.fixClass(it)
+                EventEmptyInitializerFixer.fixClass(it, classes)
                 ObjectHolderDefinalizer.processClass(it)
+                AnnotationWorkaroundFixer.fixClass(it)
             }
         }
     }

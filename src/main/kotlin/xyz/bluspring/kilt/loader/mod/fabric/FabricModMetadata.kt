@@ -18,7 +18,7 @@ class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetad
     )
 
     override fun getType(): String {
-        return "fabric"
+        return "forge"
     }
 
     override fun getId(): String {

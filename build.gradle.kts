@@ -2,13 +2,12 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.ajoberstar.grgit.Grgit
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.2-SNAPSHOT"
+    id ("fabric-loom") version "1.9-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
     id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
@@ -16,7 +15,9 @@ plugins {
 
 version = "${property("mod_version")}+mc${property("minecraft_version")}${getVersionMetadata()}"
 group = property("maven_group")!!
-archivesName.set(property("archives_base_name")!! as String)
+base {
+    archivesName.set(property("archives_base_name")!! as String)
+}
 
 sourceSets {
     getByName("main") {
@@ -137,6 +138,10 @@ dependencies {
     modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("net.minecraftforge:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
+    include(implementation("com.moulberry:mixinconstraints:${property("mixinconstraints_version")}") {
+        exclude("org.spongepowered", "mixin")
+    })
+    include(modImplementation("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
 
     // required by Forge Config API Port
     implementation("com.electronwill.night-config:core:3.6.5")
@@ -155,8 +160,8 @@ dependencies {
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
 
-    // Use Sinytra Connector's fork of ForgeAutoRenamingTool
-    implementation(include("dev.su5ed.sinytra:ForgeAutoRenamingTool:${property("forgerenamer_version")}")!!)
+    // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
+    implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)
 
     // Runtime mods for testing
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0") {

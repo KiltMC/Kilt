@@ -18,7 +18,9 @@ import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
+import xyz.bluspring.kilt.loader.asm.CoreMod
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 import java.nio.file.Path
 import java.util.*
@@ -48,7 +50,9 @@ class ForgeMod(
     private val updateURL: URL? = null,
 
     val authors: String = "",
-    val credits: String = ""
+    val credits: String = "",
+
+    val shouldScan: Boolean = true
 ) : IModInfo {
     val container = KiltModContainer(this)
 
@@ -59,6 +63,8 @@ class ForgeMod(
     var parent: ForgeMod? = null
     var manifest: Manifest? = null
 
+    private lateinit var secureJar: SecureJar
+
     val jar: JarFile
         get() {
             return if (this@ForgeMod::remappedModFile.isInitialized)
@@ -66,6 +72,8 @@ class ForgeMod(
             else
                 JarFile(modFile)
         }
+
+    val coreMods = mutableListOf<CoreMod>()
 
     fun isRemapped(): Boolean {
         return this@ForgeMod::remappedModFile.isInitialized
@@ -81,10 +89,23 @@ class ForgeMod(
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {
-            if (this@ForgeMod::remappedModFile.isInitialized)
-                SecureJar.from(remappedModFile.toPath())
-            else
-                SecureJar.from(modFile?.toPath())
+            if (!this@ForgeMod::secureJar.isInitialized) {
+                secureJar = if (this@ForgeMod::remappedModFile.isInitialized)
+                    SecureJar.from(remappedModFile.toPath())
+                else
+                    SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
+            }
+
+            return@Supplier secureJar
+        }
+    }
+
+    fun getFile(name: String): InputStream? {
+        return if (modFile == null)
+            this::class.java.getResourceAsStream("/$name")
+        else {
+            val entry = jar.getJarEntry(name) ?: return null
+            jar.getInputStream(entry)
         }
     }
 

@@ -2,16 +2,21 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
+import net.fabricmc.loader.impl.lib.accesswidener.AccessWidenerReader
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
+import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.regex.Pattern
 
 // A reimplementation of Forge's Access Transformers.
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
-    private const val debug = false
+    private val debug = KiltFlags.ENABLE_ACCESS_TRANSFORMER_DEBUG
     private var hasLoaded = false
 
     private val whitespace = Pattern.compile("[ \t]+")
@@ -22,9 +27,55 @@ object AccessTransformerLoader {
     private fun println(info: String) {
         if (debug)
             logger.info(info)
+        else
+            logger.debug(info)
+    }
+
+    val entryTripleClass = Class.forName("net.fabricmc.loader.impl.lib.accesswidener.EntryTriple")
+    val entryTripleInit = entryTripleClass.getDeclaredConstructor(String::class.java, String::class.java, String::class.java)
+    val enumNameMethod = Enum::class.java.getDeclaredMethod("name")
+    val classAccessMethod = AccessWidener::class.java.getDeclaredMethod("getClassAccess", String::class.java)
+    val methodAccessMethod = AccessWidener::class.java.getDeclaredMethod("getMethodAccess", entryTripleClass)
+
+    init {
+        entryTripleInit.isAccessible = true
+        methodAccessMethod.isAccessible = true
+        classAccessMethod.isAccessible = true
+    }
+
+    private fun getClassWidenedState(className: String): Pair<AccessType, Final> {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
+        val currentAccess = classAccessMethod.invoke(accessWidener, className.replace(".", "/"))
+        val accessName = enumNameMethod.invoke(currentAccess) as String
+
+        return getWidenedStatePair(accessName)
+    }
+
+    private fun getMethodWidenedState(owner: String, method: String, descriptor: String): Pair<AccessType, Final> {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
+        val entryTriple = entryTripleInit.newInstance(owner, method, descriptor)
+
+        val currentAccess = methodAccessMethod.invoke(accessWidener, entryTriple)
+        val accessName = enumNameMethod.invoke(currentAccess) as String
+
+        return getWidenedStatePair(accessName)
+    }
+
+    private fun getWidenedStatePair(accessName: String): Pair<AccessType, Final> {
+        return when (accessName) {
+            "DEFAULT" -> Pair(AccessType.DEFAULT, Final.DEFAULT)
+            "ACCESSIBLE" -> Pair(AccessType.PUBLIC, Final.REMOVE) // Fabric does Final.ADD, let's remove final.
+            "EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            "ACCESSIBLE_EXTENDABLE" -> Pair(AccessType.PUBLIC, Final.REMOVE)
+            else -> throw IllegalStateException("Too many access widener names!")
+        }
     }
 
     fun convertTransformers(data: ByteArray) {
+        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+
         val textData = String(data)
         val delimiter = if (textData.contains("\r\n")) "\r\n" else "\n"
 
@@ -79,24 +130,50 @@ object AccessTransformerLoader {
                     val intermediaryDescriptor = KiltRemapper.remapDescriptor(descriptor, toIntermediary = true)
                     val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
-                    val methodName = mappingResolver.mapMethodName("intermediary", intermediaryClassName.replace("/", "."), KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: name, intermediaryDescriptor)
+                    val methodName = mappingResolver.mapMethodName("intermediary",
+                        intermediaryClassName.replace("/", "."),
+                        if (name.startsWith("f_") && name.endsWith("_"))
+                            KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapField(name) ?: KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapMethod(name, descriptor) ?: name
+                        else
+                            KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.remapMethod(name, descriptor) ?: name,
+                        intermediaryDescriptor
+                    )
                     val transformInfo = classTransformInfo[intermediaryClassName] ?: ClassTransformInfo(AccessType.DEFAULT, Final.DEFAULT)
                     val pair = Pair(methodName, mappedDescriptor)
+
+                    val fabricTransform = getMethodWidenedState(intermediaryClassName, methodName, mappedDescriptor)
+                    val fabricAccess = fabricTransform.first
+                    val fabricFinal = fabricTransform.second
+
+                    val priorityAccess = if (accessType.ordinal < fabricAccess.ordinal)
+                        accessType
+                    else
+                        fabricAccess
+
+                    val priorityFinal = if (finalType.ordinal < fabricFinal.ordinal)
+                        finalType
+                    else
+                        fabricFinal
 
                     if (transformInfo.methods.contains(pair)) {
                         val methodTransformInfo = transformInfo.methods[pair]!!
 
                         // promote access type
-                        if (accessType.ordinal < methodTransformInfo.currentAccessType.ordinal) {
-                            methodTransformInfo.currentAccessType = accessType
+                        if (priorityAccess.ordinal < methodTransformInfo.currentAccessType.ordinal) {
+                            methodTransformInfo.currentAccessType = priorityAccess
+
+                            // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
+                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                            // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
+                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
                         }
 
                         // promote final type
-                        if (finalType.ordinal < methodTransformInfo.final.ordinal) {
-                            methodTransformInfo.final = finalType
+                        if (priorityFinal.ordinal < methodTransformInfo.final.ordinal) {
+                            methodTransformInfo.final = priorityFinal
                         }
                     } else {
-                        transformInfo.methods[pair] = TransformInfo(accessType, finalType)
+                        transformInfo.methods[pair] = TransformInfo(priorityAccess, priorityFinal)
                     }
 
                     if (!classTransformInfo.contains(intermediaryClassName))
@@ -129,19 +206,33 @@ object AccessTransformerLoader {
                         classTransformInfo[intermediaryClassName] = transformInfo
                 }
             } else { // class
+                val fabricTransform = getClassWidenedState(intermediaryClassName)
                 val transformInfo = classTransformInfo[intermediaryClassName]
 
+                val fabricAccess = fabricTransform.first
+                val fabricFinal = fabricTransform.second
+
+                val priorityAccess = if (accessType.ordinal < fabricAccess.ordinal)
+                    accessType
+                else
+                    fabricAccess
+
+                val priorityFinal = if (finalType.ordinal < fabricFinal.ordinal)
+                    finalType
+                else
+                    fabricFinal
+
                 if (transformInfo == null) {
-                    classTransformInfo[intermediaryClassName] = ClassTransformInfo(accessType, finalType)
+                    classTransformInfo[intermediaryClassName] = ClassTransformInfo(priorityAccess, priorityFinal)
                 } else {
                     // Promote the access type if the level is higher than the current one
-                    if (accessType.ordinal < transformInfo.currentAccessType.ordinal) {
-                        transformInfo.currentAccessType = accessType
+                    if (priorityAccess.ordinal < transformInfo.currentAccessType.ordinal) {
+                        transformInfo.currentAccessType = priorityAccess
                     }
 
                     // Also promote the final type
-                    if (finalType.ordinal < transformInfo.final.ordinal) {
-                        transformInfo.final = finalType
+                    if (priorityFinal.ordinal < transformInfo.final.ordinal) {
+                        transformInfo.final = priorityFinal
                     }
                 }
             }
@@ -151,6 +242,8 @@ object AccessTransformerLoader {
     fun runTransformers() {
         if (hasLoaded)
             return
+
+        DeltaTimeProfiler.push("loadATs")
 
         val startTime = System.currentTimeMillis()
         logger.info("Adding access transformers to mixin")
@@ -251,6 +344,8 @@ object AccessTransformerLoader {
 
         logger.info("Finished loading access transformers (took ${System.currentTimeMillis() - startTime}ms)")
         hasLoaded = true
+
+        DeltaTimeProfiler.pop()
     }
 
     private enum class AccessType(val flag: Int) {
