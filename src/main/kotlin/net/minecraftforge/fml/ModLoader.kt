@@ -1,13 +1,20 @@
 package net.minecraftforge.fml
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.minecraftforge.api.fml.event.config.ModConfigEvents
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.event.IModBusEvent
+import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.concurrent.Executor
 import java.util.function.BiConsumer
+import java.util.function.Function
 
 class ModLoader {
     val warnings = mutableListOf<ModLoadingWarning>()
@@ -44,15 +51,65 @@ class ModLoader {
         })
     }
 
-    // TODO: these aren't used by Kilt, so no point really. these are only added to appease the Forge API's compile errors.
-    // right now it seems to be used by the ClientModLoader class, which appears to just load datapacks and resource packs and such?
-    // maybe it can be updated to use Kilt internals later.
-    fun gatherAndInitializeMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
-        ForgeFeature.registerFeature("java_version", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.SERVER, System.getProperty("java.version")))
+    fun <T> kiltPostEventWrappingModsBuildEvent(e: Function<ForgeMod, T>) where T : Event, T : IModBusEvent {
+        Kilt.loader.mods.forEach {
+            ModLoadingContext.kiltActiveModId = it.modId
+            it.eventBus.post(e.apply(it))
+            ModLoadingContext.kiltActiveModId = null
+        }
     }
 
-    fun loadMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {}
-    fun finishMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {}
+    fun <T> postEventWrapContainerInModOrder(e: T) where T : Event, T : IModBusEvent {
+        kiltPostEventWrappingMods(e)
+    }
+
+    fun gatherAndInitializeMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
+        ForgeFeature.registerFeature("javaVersion", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.BOTH, System.getProperty("java.version")))
+        ForgeFeature.registerFeature("openGLVersion", ForgeFeature.VersionFeatureTest.forVersionString(IModInfo.DependencySide.CLIENT, "3.2 Core")) // TODO: set this to the actual ver
+
+        // TODO: test mod bounds
+
+        Kilt.loader.loadMods()
+        Kilt.load(FabricLoader.getInstance().environmentType == EnvType.SERVER)
+
+        for (mod in Kilt.loader.mods) {
+            ModConfigEvents.loading(mod.modId).register {
+                val prevId = ModLoadingContext.kiltActiveModId
+                ModLoadingContext.kiltActiveModId = mod.modId
+                mod.eventBus.post(ModConfigEvent.Loading(it))
+                ModLoadingContext.kiltActiveModId = prevId
+            }
+
+            ModConfigEvents.reloading(mod.modId).register {
+                val prevId = ModLoadingContext.kiltActiveModId
+                ModLoadingContext.kiltActiveModId = mod.modId
+                mod.eventBus.post(ModConfigEvent.Reloading(it))
+                ModLoadingContext.kiltActiveModId = prevId
+            }
+
+            ModConfigEvents.unloading(mod.modId).register {
+                val prevId = ModLoadingContext.kiltActiveModId
+                ModLoadingContext.kiltActiveModId = mod.modId
+                mod.eventBus.post(ModConfigEvent.Unloading(it))
+                ModLoadingContext.kiltActiveModId = prevId
+            }
+        }
+
+        Kilt.loader.runPhaseExecutors(ModLoadingPhase.GATHER)
+    }
+
+    fun loadMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
+        try {
+            Kilt.loader.runPhaseExecutors(ModLoadingPhase.LOAD)
+        } catch (e: Exception) {
+            DeltaTimeProfiler.popAll()
+            throw e
+        }
+    }
+
+    fun finishMods(syncExecutor: ModWorkManager.DrivenExecutor, parallelExecutor: Executor, periodicTask: Runnable) {
+        Kilt.loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
+    }
 
     companion object {
         private lateinit var instance: ModLoader

@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext
 import io.github.fabricators_of_create.porting_lib.model.geometry.IGeometryBakingContext as FabricGeometryBakingContext
 
-class GeometryBakingContextWrapper(private val deferred: FabricGeometryBakingContext) : IGeometryBakingContext {
+class FabricGeometryBakingContextWrapper(private val deferred: FabricGeometryBakingContext) : IGeometryBakingContext {
     override fun getModelName(): String {
         return deferred.modelName
     }

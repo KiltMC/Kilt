@@ -1,100 +1,86 @@
 package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
+import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
+import dev.architectury.event.events.common.InteractionEvent
 import dev.architectury.event.events.common.TickEvent.ServerLevelTick
-import io.github.fabricators_of_create.porting_lib.event.client.InteractEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
-import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.Mob
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.phys.EntityHitResult
-import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec3
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.event.entity.EntityJoinLevelEvent
-import net.minecraftforge.event.entity.living.LivingDropsEvent
+import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.fml.ModLoadingPhase
-import net.minecraftforge.fml.ModLoadingStage
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.bluspring.kilt.client.ClientStartingCallback
 import xyz.bluspring.kilt.client.KiltClient
+import xyz.bluspring.kilt.interop.transfer.TransferInterop
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
-        MinecraftForge.EVENT_BUS.start()
-
         registerFabricEvents()
 
-        ClientStartingCallback.EVENT.register {
-            load(false)
-        }
-
-        val dist = FabricLoader.getInstance().environmentType
-
-        ServerLifecycleEvents.SERVER_STARTING.register {
-            if (dist != EnvType.SERVER)
-                return@register
-
-            load(true)
-        }
+        TransferInterop.init()
+        DeltaTimeProfiler.popAll()
     }
 
-    fun load(onServer: Boolean) {
-        loader.initMods()
-
-        loader.runPhaseExecutors(ModLoadingPhase.GATHER)
-
-        // config load should be here
-        loader.runPhaseExecutors(ModLoadingPhase.LOAD)
-
-        loader.mods.forEach { mod ->
-            mod.eventBus.post(FMLCommonSetupEvent(mod, ModLoadingStage.COMMON_SETUP))
-        }
-
-        loader.mods.forEach { mod ->
-            mod.eventBus.post(
-                if (onServer)
-                    FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
-                else {
-                    FMLClientSetupEvent(mod, ModLoadingStage.SIDED_SETUP)
-                }
-            )
-        }
-
-        if (!onServer) {
-            KiltClient.lateRegisterEvents()
-        }
-
-        loader.runPhaseExecutors(ModLoadingPhase.COMPLETE)
-    }
-
+    @Suppress("removal")
     private fun registerFabricEvents() {
-        LivingEntityEvents.DROPS_WITH_LEVEL.register { entity, source, drops, level, recentlyHit ->
-            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
+        InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
+            val event = ForgeHooks.onRightClickBlock(player, hand, pos, BlockHitResult(Vec3.atCenterOf(pos), direction, pos, false))
+            eventBusToArchitectury(event.result)
         }
 
-        LivingEntityEvents.TICK.register {
-            ForgeHooks.onLivingTick(it)
+        InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
+            val result = ForgeHooks.onItemRightClick(player, hand) ?: return@register CompoundEventResult.pass()
+
+            when (result) {
+                InteractionResult.PASS -> CompoundEventResult.pass()
+                InteractionResult.FAIL -> CompoundEventResult.interruptFalse(player.getItemInHand(hand))
+                InteractionResult.SUCCESS -> CompoundEventResult.interruptTrue(player.getItemInHand(hand))
+                else -> CompoundEventResult.interruptDefault(player.getItemInHand(hand))
+            }
+        }
+
+        InteractionEvent.INTERACT_ENTITY.register { player, entity, hand ->
+            val result = ForgeHooks.onInteractEntity(player, entity, hand) ?: return@register EventResult.pass()
+            vanillaToArchitectury(result)
+        }
+
+        InteractionEvent.LEFT_CLICK_BLOCK.register { player, hand, pos, direction ->
+            val event = ForgeHooks.onLeftClickBlock(player, pos, direction)
+            eventBusToArchitectury(event.result)
+        }
+
+        InteractionEvent.CLIENT_LEFT_CLICK_AIR.register { player, hand ->
+            ForgeHooks.onEmptyLeftClick(player)
+        }
+
+        InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
+            ForgeHooks.onEmptyClick(player, hand)
+        }
+
+        LivingEntityEvents.TICK.register { entity ->
+            //if (ForgeHooks.onLivingTick(entity))
+                //event.isCanceled = true
+            ForgeHooks.onLivingTick(entity)
         }
 
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
@@ -135,70 +121,6 @@ class Kilt : ModInitializer {
             ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter)
         }
 
-        InteractEvents.USE.register { minecraft, hit, hand ->
-            val player = minecraft.player
-
-            when (hit.type) {
-                HitResult.Type.BLOCK -> {
-                    val result = ForgeHooks.onRightClickBlock(player, hand, (hit as BlockHitResult).blockPos, hit)
-
-                    result.cancellationResult
-                }
-
-                HitResult.Type.MISS -> {
-                    ForgeHooks.onItemRightClick(player, hand) ?: InteractionResult.PASS
-                }
-
-                HitResult.Type.ENTITY -> {
-                    ForgeHooks.onInteractEntity(player, (hit as EntityHitResult).entity, hand) ?: InteractionResult.PASS
-                }
-
-                else -> throw IllegalStateException("this should be impossible.")
-            }
-        }
-
-        InteractEvents.ATTACK.register { minecraft, hit ->
-            val player = minecraft.player
-
-            when (hit.type) {
-                HitResult.Type.BLOCK -> {
-                    val result = ForgeHooks.onLeftClickBlock(player, (hit as BlockHitResult).blockPos, hit.direction)
-
-                    result.cancellationResult
-                }
-
-                HitResult.Type.ENTITY -> {
-                    val result = ForgeHooks.onPlayerAttackTarget(minecraft.player, (hit as EntityHitResult).entity)
-
-                    if (!result)
-                        InteractionResult.FAIL
-                    else
-                        InteractionResult.PASS
-                }
-
-                HitResult.Type.MISS -> {
-                    ForgeHooks.onEmptyLeftClick(player)
-
-                    InteractionResult.PASS
-                }
-
-                else -> throw IllegalStateException("impossible")
-            }
-        }
-
-        InteractEvents.PICK.register { minecraft, hit ->
-            val player = minecraft.player
-
-            ForgeHooks.onPickBlock(hit, player, minecraft.level)
-        }
-
-        EntityEvent.LIVING_CHECK_SPAWN.register { entity, level, x, y, z, spawnType, spawner ->
-            if (entity is Mob)
-                eventBusToArchitectury(ForgeEventFactory.canEntitySpawn(entity, level, x, y, z, spawner, spawnType))
-            else
-                EventResult.pass()
-        }
-
         EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->
             ForgeHooks.onEntityEnterSection(entity, ChunkPos.asLong(BlockPos(sectionX, sectionY, sectionZ)), ChunkPos.asLong(
                 BlockPos(prevX, prevY, prevZ)
@@ -207,13 +129,6 @@ class Kilt : ModInitializer {
 
         EntityEvent.ANIMAL_TAME.register { animal, player ->
             if (ForgeEventFactory.onAnimalTame(animal, player))
-                EventResult.interruptDefault()
-            else
-                EventResult.pass()
-        }
-
-        EntityEvent.LIVING_DEATH.register { entity, source ->
-            if (ForgeHooks.onLivingDeath(entity, source))
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
@@ -260,22 +175,59 @@ class Kilt : ModInitializer {
         ServerLevelTick.PLAYER_POST.register {
             ForgeEventFactory.onPlayerPostTick(it)
         }
-    }
 
-    private fun eventBusToArchitectury(result: Event.Result): EventResult {
-        return when (result) {
-            Event.Result.ALLOW -> EventResult.interruptTrue()
-            Event.Result.DEFAULT -> EventResult.pass()
-            Event.Result.DENY -> EventResult.interruptFalse()
-            else -> EventResult.pass()
+        ServerWorldEvents.LOAD.register { server, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
+        }
+
+        ServerWorldEvents.UNLOAD.register { server, level ->
+            MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))
+        }
+
+        LivingEntityEvents.LOOTING_LEVEL.register { source, target, level, _ ->
+            ForgeHooks.getLootingLevel(target, source, level)
+        }
+
+        LivingEntityEvents.DROPS_WITH_LEVEL.register { target, source, drops, level, recentlyHit ->
+            ForgeHooks.onLivingDrops(target, source, drops, level, recentlyHit)
         }
     }
 
     companion object {
         const val MOD_ID = "kilt"
 
+        lateinit var instance: Kilt
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
-        val loader: KiltLoader = KiltLoader()
+        val loader: KiltLoader = KiltLoader.INSTANCE
         val gson = GsonBuilder().setPrettyPrinting().create()
+
+        fun load(onServer: Boolean) {
+            loader.initMods()
+
+            // config load should be here
+            var loaded = false
+
+            if (!onServer) {
+                KiltClient.lateRegisterEvents()
+            }
+        }
+
+        fun eventBusToArchitectury(result: Event.Result): EventResult {
+            return when (result) {
+                Event.Result.ALLOW -> EventResult.interruptTrue()
+                Event.Result.DEFAULT -> EventResult.pass()
+                Event.Result.DENY -> EventResult.interruptFalse()
+                else -> EventResult.pass()
+            }
+        }
+
+        fun vanillaToArchitectury(result: InteractionResult): EventResult {
+            return when (result) {
+                InteractionResult.PASS -> EventResult.pass()
+                InteractionResult.FAIL -> EventResult.interruptFalse()
+                InteractionResult.SUCCESS -> EventResult.interruptTrue()
+                else -> EventResult.interruptDefault()
+            }
+        }
     }
 }

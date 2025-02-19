@@ -53,10 +53,22 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
     }
 
     public ArrayList<BlockSnapshot> capturedBlockSnapshots = new ArrayList<>();
+    public boolean captureBlockSnapshots = false;
+    public boolean restoringBlockSnapshots = false;
 
     @Override
-    public ArrayList<BlockSnapshot> getCapturedBlockSnapshots() {
+    public ArrayList<BlockSnapshot> kilt$getCapturedBlockSnapshots() {
         return capturedBlockSnapshots;
+    }
+
+    @Override
+    public void kilt$setCaptureBlockSnapshots(boolean value) {
+        captureBlockSnapshots = value;
+    }
+
+    @Override
+    public void kilt$setRestoringBlockSnapshots(boolean value) {
+        restoringBlockSnapshots = value;
     }
 
     @Redirect(method = "getSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isRedstoneConductor(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"))

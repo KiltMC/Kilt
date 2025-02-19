@@ -17,12 +17,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.include.com.google.common.base.Preconditions;
+import xyz.bluspring.kilt.injections.client.resources.model.ModelManagerInjection;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(ModelManager.class)
-public class ModelManagerInject {
+public abstract class ModelManagerInject implements ModelManagerInjection {
     @Shadow private Map<ResourceLocation, BakedModel> bakedRegistry;
 
     @Shadow private BakedModel missingModel;
@@ -34,6 +35,7 @@ public class ModelManagerInject {
         this.bakedRegistry = new HashMap<>();
     }
 
+    @Override
     public BakedModel getModel(ResourceLocation modelLocation) {
         return this.bakedRegistry.getOrDefault(modelLocation, this.missingModel);
     }

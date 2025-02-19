@@ -1,10 +1,8 @@
 package net.minecraftforge.fml
 
 import com.electronwill.nightconfig.toml.TomlParser
-import net.minecraftforge.api.fml.event.config.ModConfigEvents
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
-import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import org.apache.commons.codec.digest.DigestUtils
@@ -12,33 +10,18 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiPredicate
 import java.util.function.Supplier
 
-class ModLoadingContext(private val mod: ForgeMod) {
+open class ModLoadingContext(protected val mod: ForgeMod) {
     // this should be Any, but we're only handling Java mods here so
-    private var languageExtension: FMLJavaModLoadingContext = FMLJavaModLoadingContext(mod)
+    private var languageExtension: FMLJavaModLoadingContext = if (this is FMLJavaModLoadingContext) this else FMLJavaModLoadingContext(mod)
 
     val activeContainer: ModContainer = KiltModContainer(mod)
     val activeNamespace: String
         get() {
             return mod.modId
         }
-
-    init {
-        ModConfigEvents.loading(mod.modId).register {
-            val prevId = kiltActiveModId
-            kiltActiveModId = mod.modId
-            mod.eventBus.post(ModConfigEvent.Loading(it))
-            kiltActiveModId = prevId
-        }
-
-        ModConfigEvents.reloading(mod.modId).register {
-            val prevId = kiltActiveModId
-            kiltActiveModId = mod.modId
-            mod.eventBus.post(ModConfigEvent.Reloading(it))
-            kiltActiveModId = prevId
-        }
-    }
 
     fun extension(): FMLJavaModLoadingContext {
         return languageExtension
@@ -60,16 +43,37 @@ class ModLoadingContext(private val mod: ForgeMod) {
         net.minecraftforge.api.ModLoadingContext.registerConfig(modId, type, spec)
     }
 
+    // TODO: properly implement display tests?
+    fun registerDisplayTest(displayTest: IExtensionPoint.DisplayTest) {
+    }
+
+    fun registerDisplayTest(displayTest: Supplier<IExtensionPoint.DisplayTest>) {
+    }
+
+    fun registerDisplayTest(version: String, remoteVersion: BiPredicate<String, Boolean>) {
+    }
+
+    fun registerDisplayTest(suppliedVersion: Supplier<String>, remoteVersion: BiPredicate<String, Boolean>) {
+    }
+
     companion object {
         // Mapped from Mod ID to ModLoadingContext
-        private val contexts = ConcurrentHashMap<String, ModLoadingContext>()
+        internal val contexts = ConcurrentHashMap<String, ModLoadingContext>()
         // Mapped from MD5 hash of mods.toml to Mod ID, makes things faster.
         private val tomlCache = ConcurrentHashMap<String, String>()
 
         private val tomlParser = TomlParser()
 
         // oh so that's why they did it like that
-        var kiltActiveModId: String? = null
+        private val activeModId = ThreadLocal.withInitial<String?> { null }
+
+        var kiltActiveModId: String?
+            get() {
+                return activeModId.get()
+            }
+            set(value) {
+                activeModId.set(value)
+            }
 
         val activeContainer: ModContainer
             get() {
@@ -84,25 +88,19 @@ class ModLoadingContext(private val mod: ForgeMod) {
 
         @JvmStatic
         fun get(): ModLoadingContext {
-            if (kiltActiveModId != null) {
-                if (!contexts.contains(kiltActiveModId)) {
-                    val mod = Kilt.loader.getMod(kiltActiveModId!!) ?: throw Exception("Kilt has not finished loading mods yet!")
-                    contexts[kiltActiveModId!!] = ModLoadingContext(mod)
+            // ensure the mod ID doesn't get overwritten at the exact same time
+            val modId = kiltActiveModId
+
+            if (modId != null) {
+                if (!contexts.contains(modId)) {
+                    val mod = Kilt.loader.getMod(modId) ?: throw Exception("Kilt has not finished loading mods yet!")
+                    contexts[modId] = ModLoadingContext(mod)
                 }
 
-                return contexts[kiltActiveModId]!!
+                return contexts[modId]!!
             }
 
-            // Apparently this is possible, and this seems a lot better to do.
-            val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-            val source = stackWalker.callerClass ?: return getForgeContext()
-
-            return try {
-                get(source)
-            } catch (e: Exception) {
-                println("Error occurred in ${source.canonicalName ?: source}")
-                throw e
-            }
+            return getForgeContext()
         }
 
         private fun getForgeContext(): ModLoadingContext {
@@ -117,7 +115,7 @@ class ModLoadingContext(private val mod: ForgeMod) {
         // Put this here so ModLoadingContext can be called from a Forge method
         @JvmStatic
         fun get(source: Class<*>): ModLoadingContext {
-            val tomlText = source.getResource("/META-INF/mods.toml")?.readText() ?: return getForgeContext()
+            val tomlText = source.getResource("/META-INF/mods.toml")?.readText() ?: source.getResource("/META-INF/forge.mods.toml")?.readText() ?: return getForgeContext()
             val tomlStream = tomlText.byteInputStream()
 
             val hash = DigestUtils.md5Hex(tomlStream)

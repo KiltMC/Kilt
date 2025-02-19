@@ -58,7 +58,7 @@ public abstract class TagsProviderInject<T> implements TagsProviderInjection {
     }
 
     @Mixin(TagsProvider.TagAppender.class)
-    public static class TagAppenderInject<T> implements IForgeTagAppender<T> {
+    public static class TagAppenderInject<T> implements IForgeTagAppender<T>, TagsProviderInjection.TagAppenderInjection {
         @Shadow @Final private TagBuilder builder;
         @Unique
         private String modId;

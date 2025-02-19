@@ -1,16 +1,10 @@
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import org.ajoberstar.grgit.Grgit
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
 
 plugins {
     kotlin("jvm")
     id ("fabric-loom") version "1.9-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
-    id ("com.brambolt.gradle.patching") version "2022.05.01-7057"
 }
 
 version = "${property("mod_version")}+mc${property("minecraft_version")}${getVersionMetadata()}"
@@ -23,9 +17,10 @@ sourceSets {
     getByName("main") {
         java.srcDir("src/main/java")
         java.srcDir("src/main/kotlin")
-        java.srcDir("src/forge/java")
+        java.srcDir("forge/src/main/java")
 
-        resources.srcDir("src/forge/resources")
+        resources.srcDir("forge/src/generated/resources")
+        resources.srcDir("forge/src/main/resources")
     }
 }
 
@@ -131,9 +126,9 @@ dependencies {
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
-    implementation(include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")!!)
+    implementation(include(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")!!)!!)
     implementation(include("com.github.thecatcore:CursedMixinExtensions:${property("cursedmixinextensions_version")}")!!)
-    annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${property("mixinextras_version")}")
+    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${property("mixin_squared_version")}")!!)!!)
     modImplementation(include("com.github.Chocohead:Fabric-ASM:${property("fabric_asm_version")}")!!)
     modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
@@ -156,9 +151,12 @@ dependencies {
     implementation(include("net.minecraftforge:unsafe:0.2.+")!!)
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
+    implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
     // Remapping SRG to Intermediary
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
+
+    modImplementation(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)
@@ -197,7 +195,6 @@ configurations.all {
 }
 
 val targetJavaVersion = "17"
-val forgeCommitHash = property("forge_commit_hash")
 
 tasks {
     register("countPatchProgress") {
@@ -232,163 +229,58 @@ tasks {
         }
     }
 
-    register("cloneForgeApi") {
-        description = "Clones the Forge repository. It's best you use :getForgeApi."
-        group = "kilt"
-
-        doFirst {
-            println("Cloning MinecraftForge repository to commit hash $forgeCommitHash..")
-            val forgeSrcDir = File("$buildDir/forge")
-
-            val grgit = if (!forgeSrcDir.exists())
-                Grgit.clone(mutableMapOf<String, Any?>(
-                    "uri" to "https://github.com/MinecraftForge/MinecraftForge.git",
-                    "dir" to forgeSrcDir
-                ))
-            else
-                Grgit.open(mutableMapOf<String, Any?>(
-                    "dir" to forgeSrcDir
-                ))
-
-            grgit.fetch()
-            grgit.checkout(mutableMapOf<String, Any?>(
-                "branch" to forgeCommitHash
-            ))
-
-            println(grgit.describe())
-        }
-    }
-
-    register("getForgeApi") {
-        dependsOn("cloneForgeApi")
-        finalizedBy("processPatches")
-        description = "Clones the Forge repository, and places the API code into the 'forge' source set."
-        group = "kilt"
-
-        doFirst {
-            println("Copying Forge API-specific files into Kilt source dir...")
-
-            val file = File("$projectDir/src/forge")
-            if (file.exists()) {
-                println("Found that Forge API already exists in a directory, replacing..")
-                file.deleteRecursively()
-            }
-        }
-    }
-
-    createPatches {
-        dependsOn("cloneForgeApi")
-        content = "$buildDir/forge/src/main/java"
-        modified = "$projectDir/src/forge/java"
-        destination = "$projectDir/patches"
-        group = "kilt"
-        doNotTrackState("The up-to-date patch track is entirely unreliable, and it's fast enough anyway to not have to bother about it.")
-
-        doFirst {
-            val patchesDir = File("$projectDir/patches")
-            if (patchesDir.exists()) {
-                println("Removing old patches before creating new patches...")
-                patchesDir.deleteRecursively()
-            }
-        }
-
-        doLast {
-            println("Removing empty patches...")
-
-            fun readDir(file: File): Boolean {
-                val files = file.listFiles()!!
-
-                if (files.isEmpty()) {
-                    file.delete()
-                    return true
-                }
-
-                var deletedCount = 0
-                files.forEach {
-                    if (it.isDirectory) {
-                        if (readDir(it))
-                            deletedCount++
-                    } else {
-                        if (it.readText().isBlank()) {
-                            it.delete()
-                            deletedCount++
-                        }
-                    }
-                }
-
-                if (deletedCount == files.size) {
-                    file.delete()
-                    return true
-                }
-                return false
-            }
-
-            readDir(File("$projectDir/patches"))
-            readDir(File("$projectDir/patches")) // run again to clear empty dirs
-        }
-    }
-
-    register<Copy>("copyForgeResources") {
-        group = "kilt"
-        from("$buildDir/forge/src/main/resources")
-        into("$projectDir/src/forge/resources")
-    }
-
-    register<Copy>("copyForgeGeneratedResources") {
-        group = "kilt"
-        from("$buildDir/forge/src/generated/resources")
-        into("$projectDir/src/forge/resources")
-    }
-
-    processPatches {
-        content = "$buildDir/forge/src/main/java"
-        patches = "$projectDir/patches"
-        destination = "$projectDir/src/forge/java"
-        group = "kilt"
-
-        finalizedBy("copyForgeResources", "copyForgeGeneratedResources")
-
-        doLast {
-            println("Removing reimplemented Forge API sources...")
-
-            val reimplemented = listOf(
-                "net/minecraftforge/registries/DeferredRegister",
-                "net/minecraftforge/registries/ForgeRegistries",
-                "net/minecraftforge/registries/ForgeRegistry",
-                "net/minecraftforge/registries/ForgeRegistryTag",
-                "net/minecraftforge/registries/ForgeRegistryTagManager",
-                "net/minecraftforge/registries/IForgeRegistry",
-                "net/minecraftforge/registries/NewRegistryEvent",
-                "net/minecraftforge/registries/RegisterEvent",
-                "net/minecraftforge/registries/RegistryManager",
-                "net/minecraftforge/registries/RegistryObject",
-            )
-
-            reimplemented.forEach {
-                val file = File("$projectDir/src/forge/java/$it.java")
-                file.delete()
-            }
-        }
-    }
-
-    processResources {
-        dependsOn("copyForgeResources", "copyForgeGeneratedResources")
-        inputs.property("version", project.version)
-        filteringCharset = "UTF-8"
-
-        filesMatching("fabric.mod.json") {
-            expand(mutableMapOf("version" to project.version))
-        }
-    }
-
     compileKotlin {
         kotlinOptions.jvmTarget = targetJavaVersion
-        dependsOn("processPatches")
     }
 
     jar {
         from("LICENSE") {
             rename { "${it}_${archiveBaseName.get()}" }
+        }
+    }
+
+    processResources {
+        val properties = mutableMapOf(
+            "version" to project.version,
+            "loader_version" to project.property("loader_version"),
+            "fabric_version" to project.property("fabric_version"),
+            "minecraft_version" to project.property("minecraft_version"),
+            "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
+            "fabric_asm_version" to project.property("fabric_asm_version"),
+            "forge_config_version" to project.property("forgeconfigapiport_version"),
+            "architectury_version" to project.property("architectury_version"),
+        )
+
+        inputs.property("version", project.version)
+        inputs.property("loader_version", project.property("loader_version"))
+        inputs.property("fabric_version", project.property("fabric_version"))
+        inputs.property("minecraft_version", project.property("minecraft_version"))
+        inputs.property("fabric_kotlin_version", project.property("fabric_kotlin_version"))
+        inputs.property("fabric_asm_version", project.property("fabric_asm_version"))
+        inputs.property("forge_config_version", project.property("forgeconfigapiport_version"))
+        inputs.property("architectury_version", project.property("architectury_version"))
+        filteringCharset = "UTF-8"
+
+        filesMatching("fabric.mod.json") {
+            // Use this instead of expand, as otherwise Gradle hard-errors when finding unknown $ names, and treats them as properties.
+            this.filter {
+                if (it.contains("\${")) {
+                    var newString = it
+
+                    for ((name, property) in properties) {
+                        newString = newString.replace("\${$name}", property.toString())
+                    }
+
+                    return@filter newString
+                }
+
+                it
+            }
+        }
+
+        // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
+        filesMatching("META-INF/mods.toml") {
+            this.name = "forge.mods.toml"
         }
     }
 
@@ -415,7 +307,6 @@ tasks {
     }
 
     register("setupDevEnvironment") {
-        dependsOn("getForgeApi")
         group = "kilt"
 
         doLast {
@@ -445,116 +336,6 @@ tasks {
                     "    }\n" +
                     "  }\n" +
                     "}")
-
-            val ferriteMixinPropsFile = File(configDir, "ferritecore.mixin.properties")
-
-            if (!ferriteMixinPropsFile.exists())
-                ferriteMixinPropsFile.createNewFile()
-
-            ferriteMixinPropsFile.writeText("# Replace the blockstate neighbor table\n" +
-                    "replaceNeighborLookup = true\n" +
-                    "# Do not store the properties of a state explicitly and read themfrom the replace neighbor table instead. Requires replaceNeighborLookup to be enabled\n" +
-                    "replacePropertyMap = true\n" +
-                    "# Cache the predicate instances used in multipart models\n" +
-                    "cacheMultipartPredicates = true\n" +
-                    "# Avoid creation of new strings when creating ModelResourceLocations\n" +
-                    "modelResourceLocations = false\n" + // this is the most important part
-                    "# Do not create a new MultipartBakedModel instance for each block state using the same multipartmodel. Requires cacheMultipartPredicates to be enabled\n" +
-                    "multipartDeduplication = true\n" +
-                    "# Deduplicate cached data for blockstates, most importantly collision and render shapes\n" +
-                    "blockstateCacheDeduplication = true\n" +
-                    "# Deduplicate vertex data of baked quads in the basic model implementations\n" +
-                    "bakedQuadDeduplication = true\n" +
-                    "# Replace objects used to detect multi-threaded access to chunks by a much smaller field. This option is disabled by default due to very rare and very hard-to-reproduce crashes, use at your own risk!\n" +
-                    "useSmallThreadingDetector = false\n" +
-                    "# Use a slightly more compact, but also slightly slower representation for block states\n" +
-                    "compactFastMap = false\n" +
-                    "# Populate the neighbor table used by vanilla. Enabling this slightly increases memory usage, but can help with issues in the rare case where mods access it directly.\n" +
-                    "populateNeighborTable = false\n")
-        }
-    }
-
-    remapJar {
-        val originalName = archiveBaseName.get()
-        archiveBaseName.set("temp_$originalName")
-
-        doLast {
-            println("Modifying Kilt's refmap to add enum extension mixins' missing fields...")
-
-            val file = archiveFile.get().asFile
-            val jar = JarFile(file)
-
-            // Adds $VALUES to the mixin refmaps manually.
-            // I hope to god this is a temporary solution.
-
-            val refmap = jar.getJarEntry("Kilt-refmap.json")
-            val json = JsonParser.parseString(String(jar.getInputStream(refmap).readAllBytes())).asJsonObject
-
-            val mappings = json.getAsJsonObject("mappings")
-            val namedIntermediaryMappingData = json.getAsJsonObject("data").getAsJsonObject("named:intermediary")
-
-            val pkg = "xyz/bluspring/kilt/mixin"
-            val enumExtenderAccessors = mapOf(
-                "ArmPoseAccessor" to "field_3404:[Lnet/minecraft/class_572\$class_573;",
-                "BlockPathTypesAccessor" to "field_24:[Lnet/minecraft/class_7;",
-                "EnchantmentCategoryAccessor" to "field_9077:[Lnet/minecraft/class_1886;",
-                "GrassColorModifierAccessor" to "field_26432:[Lnet/minecraft/class_4763\$class_5486;",
-                "MobCategoryAccessor" to "field_6301:[Lnet/minecraft/class_1311;",
-                "RaiderTypeAccessor" to "field_16632:[Lnet/minecraft/class_3765\$class_3766;",
-                "RarityAccessor" to "field_8905:[Lnet/minecraft/class_1814;",
-                "RecipeBookCategoriesAccessor" to "field_1805:[Lnet/minecraft/class_314;",
-                "RecipeBookTypeAccessor" to "field_25767:[Lnet/minecraft/class_5421;",
-                "TransformTypeAccessor" to "field_4314:[Lnet/minecraft/class_809\$class_811",
-                "TypeAccessor" to "field_6319:[Lnet/minecraft/class_1317\$class_1319"
-            )
-
-            enumExtenderAccessors.forEach { (className, fieldMapping) ->
-                val fullName = "$pkg/$className"
-
-                val mappingObj = if (!mappings.has(fullName))
-                    JsonObject()
-                else
-                    mappings.getAsJsonObject(fullName)
-
-                val dataObj = if (!namedIntermediaryMappingData.has(fullName))
-                    JsonObject()
-                else
-                    namedIntermediaryMappingData.getAsJsonObject(fullName)
-
-                mappingObj.addProperty("\$VALUES", fieldMapping)
-                dataObj.addProperty("\$VALUES", fieldMapping)
-
-                mappings.add(fullName, mappingObj)
-                namedIntermediaryMappingData.add(fullName, dataObj)
-            }
-
-            json.add("mappings", mappings)
-
-            val data = JsonObject()
-            data.add("named:intermediary", namedIntermediaryMappingData)
-
-            json.add("data", data)
-
-            val outputFile = File(file.parentFile, file.name.replace("temp_", ""))
-            val output = JarOutputStream(outputFile.outputStream())
-
-            for (entry in jar.entries()) {
-                if (entry.name == "Kilt-refmap.json") {
-                    output.putNextEntry(entry)
-                    output.write(GsonBuilder().setPrettyPrinting().create().toJson(json).toByteArray())
-                    output.closeEntry()
-
-                    continue
-                }
-
-                output.putNextEntry(entry)
-                output.write(jar.getInputStream(entry).readAllBytes())
-                output.closeEntry()
-            }
-
-            output.close()
-
-            file.delete()
         }
     }
 }

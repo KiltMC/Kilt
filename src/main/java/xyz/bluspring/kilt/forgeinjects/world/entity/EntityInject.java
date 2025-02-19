@@ -4,7 +4,9 @@ import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -20,12 +22,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
+import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 
 import java.util.function.BiPredicate;
 
 @Mixin(Entity.class)
 @Extends(CapabilityProvider.class)
-public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, EntityCapabilityProviderImpl, EntityExtensions {
+public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, EntityCapabilityProviderImpl, EntityExtensions, EntityInjection {
     @Shadow public Level level;
 
     @Shadow public abstract float getBbWidth();
@@ -33,6 +36,8 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Shadow public abstract float getBbHeight();
 
     @Shadow protected abstract void unsetRemoved();
+
+    @Shadow protected abstract float getEyeHeight(Pose pose, EntityDimensions dimensions);
 
     private boolean canUpdate = true;
 
@@ -112,6 +117,11 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Override
     public FluidType getEyeInFluidType() {
         return null;
+    }
+
+    @Override
+    public float getEyeHeightAccess(Pose pose, EntityDimensions dimensions) {
+        return this.getEyeHeight(pose, dimensions);
     }
 
     @Redirect(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))

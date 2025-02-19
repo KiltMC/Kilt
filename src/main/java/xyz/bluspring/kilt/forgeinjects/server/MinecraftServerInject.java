@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.injections.server.MinecraftServerInjection;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerInject implements MinecraftServerInjection {
+    @Shadow private MinecraftServer.ReloadableResources resources;
     private Map<ResourceKey<Level>, long[]> perWorldTickTimes = Maps.newIdentityHashMap();
 
     @Override
@@ -24,6 +26,11 @@ public class MinecraftServerInject implements MinecraftServerInjection {
     @Redirect(method = "spin", at = @At(value = "NEW", target = "java/lang/Thread"))
     private static Thread kilt$setThreadGroup(Runnable target, String name) {
         return new Thread(SidedThreadGroups.SERVER, target, name);
+    }
+
+    @Override
+    public MinecraftServer.ReloadableResources getServerResources() {
+        return this.resources;
     }
 
     // Tick Events implemented via Architectury

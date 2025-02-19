@@ -14,4 +14,7 @@ open class ModConfigEvent(override val config: ModConfig?) : Event(), IModBusEve
     class Reloading(config: ModConfig?) : ModConfigEvent(config) {
         constructor() : this(null)
     }
+    class Unloading(config: ModConfig?) : ModConfigEvent(config) {
+        constructor() : this(null)
+    }
 }

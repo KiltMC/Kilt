@@ -12,11 +12,12 @@ import net.minecraftforge.client.model.geometry.BlockGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.injections.client.renderer.block.model.BlockModelInjection;
 
 import java.util.function.Function;
 
 @Mixin(BlockModel.class)
-public abstract class BlockModelInject {
+public abstract class BlockModelInject implements BlockModelInjection {
     public final BlockGeometryBakingContext customData = new BlockGeometryBakingContext((BlockModel) (Object) this);
 
     @Shadow public abstract BakedModel bake(ModelBakery modelBakery, BlockModel blockModel, Function<Material, TextureAtlasSprite> function, ModelState modelState, ResourceLocation resourceLocation, boolean bl);
@@ -28,5 +29,10 @@ public abstract class BlockModelInject {
 
     public BakedModel bakeVanilla(ModelBakery modelBakery, BlockModel blockModel, Function<Material, TextureAtlasSprite> function, ModelState modelState, ResourceLocation resourceLocation, boolean bl, RenderTypeGroup renderTypes) {
         return UnbakedGeometryHelper.bakeVanilla((BlockModel) (Object) this, modelBakery, blockModel, function, modelState, resourceLocation);
+    }
+
+    @Override
+    public BlockGeometryBakingContext kilt$getCustomData() {
+        return customData;
     }
 }
