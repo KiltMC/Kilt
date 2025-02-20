@@ -95,10 +95,6 @@ class KiltClient : ClientModInitializer {
                 EventResult.pass()
         }
 
-        // Have the Forge GUI sitting here, because one of the methods depends on it.
-        // we're not using it properly though.
-        forgeGui = ForgeGui(mc)
-
         ClientGuiEvent.RENDER_HUD.register { poseStack, delta ->
             val overlays = GuiOverlayManager.getOverlays()
 

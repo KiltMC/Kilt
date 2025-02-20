@@ -143,7 +143,7 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.6.5")
 
     // Forge stuff
-    implementation(include("net.minecraftforge:eventbus:${property("eventbus_version")}")!!)
+    implementation(include("xyz.bluspring:eventbus:${property("eventbus_version")}")!!)
     implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}")!!)
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
     implementation(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
@@ -356,7 +356,7 @@ fun getVersionMetadata(): String {
         "dir" to File("$projectDir")
     ))
     val commitHash =
-        System.getenv("GITHUB_SHA") ?: (grgit.head().abbreviatedId + if (!grgit.status().isClean) "-dirty" else "")
+        System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "+build.${commitHash.subSequence(0, 6)}"
+    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
 }

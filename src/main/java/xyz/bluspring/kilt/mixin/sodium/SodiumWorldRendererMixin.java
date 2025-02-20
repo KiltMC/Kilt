@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.mixin.sodium;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -14,6 +15,7 @@ import xyz.bluspring.kilt.injections.client.render.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 
 @Mixin(value = SodiumWorldRenderer.class, remap = false)
+@IfModLoaded("sodium")
 public class SodiumWorldRendererMixin {
     @Inject(method = "drawChunkLayer", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/passes/BlockRenderPass;endDrawing()V", shift = At.Shift.BEFORE, remap = false), remap = false)
     public void kilt$sodiumDispatchRenderEventBasedOnType(RenderType renderLayer, PoseStack matrixStack, double x, double y, double z, CallbackInfo ci) {

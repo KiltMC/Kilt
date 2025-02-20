@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Mixin(MappedRegistry.class)
-public class MappedRegistryInject<T> implements MappedRegistryInjection {
+public abstract class MappedRegistryInject<T> implements MappedRegistryInjection {
     @Shadow public boolean frozen;
 
     @Shadow @Final @Nullable private Function<T, Holder.Reference<T>> customHolderProvider;
@@ -44,7 +44,7 @@ public class MappedRegistryInject<T> implements MappedRegistryInjection {
 
     @Override
     public void markKnown() {
-        MappedRegistryInjection.getKnownRegistries().add(((Registry) (Object) this).key().location());
+        MappedRegistryInjection.knownRegistries.add(((Registry) (Object) this).key().location());
     }
 
     @Override

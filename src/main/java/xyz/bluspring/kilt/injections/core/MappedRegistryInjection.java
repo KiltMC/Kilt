@@ -2,14 +2,15 @@ package xyz.bluspring.kilt.injections.core;
 
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public interface MappedRegistryInjection {
-    Set<ResourceLocation> knownRegistries = new HashSet<>();
+    Set<ResourceLocation> knownRegistries = new LinkedHashSet<>();
 
     static Set<ResourceLocation> getKnownRegistries() {
-        return knownRegistries;
+        return Collections.unmodifiableSet(knownRegistries);
     }
 
     default void markKnown() {

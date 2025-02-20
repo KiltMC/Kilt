@@ -1,12 +1,16 @@
 package xyz.bluspring.kilt.forgeinjects.client;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Timer;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.ClientPackSource;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -17,6 +21,7 @@ import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.ClientTooltipComponentManager;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.client.textures.TextureAtlasSpriteLoaderManager;
@@ -29,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
+import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 
 @Mixin(Minecraft.class)
@@ -52,6 +58,24 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Shadow @Final private BlockColors blockColors;
     @Unique
     private float realPartialTick;
+
+    @Unique private ForgeGui kilt$forgeGui;
+
+    // We're not using the Forge GUI system properly, but we're gonna make this incredibly mod compatible if we can.
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/entity/ItemRenderer;)Lnet/minecraft/client/gui/Gui;"))
+    private Gui kilt$initForgeGui(Minecraft minecraft, ItemRenderer itemRenderer, Operation<Gui> original) {
+        var gui = original.call(minecraft, itemRenderer);
+
+        this.kilt$forgeGui = new ForgeGui(minecraft);
+        KiltClient.Companion.setForgeGui(this.kilt$getForgeGui());
+
+        return gui;
+    }
+
+    @Override
+    public ForgeGui kilt$getForgeGui() {
+        return this.kilt$forgeGui;
+    }
 
     @Override
     public float getPartialTick() {
@@ -103,6 +127,11 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;reload()V"), method = "<init>")
     public void kilt$initializeClientModLoader(GameConfig gameConfig, CallbackInfo ci) {
         ClientModLoader.begin((Minecraft) (Object) this, this.resourcePackRepository, this.resourceManager, this.clientPackSource);
+    }
+
+    @Inject(method = "method_29338", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/ResourceLoadStateTracker;finishReload()V"))
+    private void kilt$finishModLoading(CallbackInfo ci) {
+        ClientModLoader.completeModLoading();
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.BEFORE), method = "runTick")

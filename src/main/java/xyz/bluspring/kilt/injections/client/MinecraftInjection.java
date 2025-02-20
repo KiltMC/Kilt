@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.injections.client;
 
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.searchtree.SearchRegistry;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 public interface MinecraftInjection {
     default ItemColors getItemColors() {
@@ -11,6 +12,9 @@ public interface MinecraftInjection {
         throw new IllegalStateException();
     }
     default SearchRegistry getSearchTreeManager() {
+        throw new IllegalStateException();
+    }
+    default ForgeGui kilt$getForgeGui() {
         throw new IllegalStateException();
     }
 }
