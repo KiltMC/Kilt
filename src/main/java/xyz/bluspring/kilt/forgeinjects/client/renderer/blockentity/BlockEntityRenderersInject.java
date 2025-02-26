@@ -21,6 +21,6 @@ public abstract class BlockEntityRenderersInject {
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void kilt$useConcurrentHashMap(CallbackInfo ci) {
-        PROVIDERS = new ConcurrentHashMap<>();
+        PROVIDERS = new ConcurrentHashMap<>(PROVIDERS);
     }
 }
