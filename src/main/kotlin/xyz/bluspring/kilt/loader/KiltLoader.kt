@@ -547,8 +547,8 @@ class KiltLoader {
                 version = modVersion,
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
                 updateURL = metadata.getConfigElement<String>("updateJSONURL").run {
-                    return@run if (this.isPresent)
-                        URL(this.get())
+                    return@run if (this.isPresent && this.get().isNotBlank())
+                        try { URL(this.get()) } catch (_: Throwable) { null }
                     else
                         null
                 },
