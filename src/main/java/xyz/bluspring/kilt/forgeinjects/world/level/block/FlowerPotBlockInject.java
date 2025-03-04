@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.FlowerPotBlockInjection;
@@ -57,6 +59,12 @@ public abstract class FlowerPotBlockInject extends Block implements FlowerPotBlo
             this.fullPots = Collections.emptyMap();
             this.emptyPot = emptyPot;
         }
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$initPotsData(Block content, Properties properties, CallbackInfo ci) {
+        this.fullPots = Maps.newHashMap();
+        this.emptyPot = Blocks.FLOWER_POT == null ? null : () -> (FlowerPotBlock) Blocks.FLOWER_POT;
     }
 
     // This isn't a part of Forge itself (coremods aside), but it needs to be done in order to
