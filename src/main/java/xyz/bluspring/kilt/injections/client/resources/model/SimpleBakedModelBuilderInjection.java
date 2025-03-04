@@ -5,6 +5,10 @@ import net.minecraftforge.client.RenderTypeGroup;
 
 public interface SimpleBakedModelBuilderInjection {
     default BakedModel build(RenderTypeGroup renderTypeGroup) {
+        return build(renderTypeGroup, RenderTypeGroup.EMPTY);
+    }
+
+    default BakedModel build(RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypesFast) {
         throw new IllegalStateException();
     }
 }

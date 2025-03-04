@@ -137,14 +137,25 @@ dependencies {
         exclude("org.spongepowered", "mixin")
     })
     include(modImplementation("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
+    include(implementation("com.google.code.gson:gson:2.12.1")!!) // ASMFabricLoader relies on GSON being on a newer version
 
     // required by Forge Config API Port
     implementation("com.electronwill.night-config:core:3.6.5")
     implementation("com.electronwill.night-config:toml:3.6.5")
 
     // Forge stuff
-    implementation(include("xyz.bluspring:eventbus:${property("eventbus_version")}")!!)
-    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}")!!)
+    implementation(include("xyz.bluspring:eventbus:${property("eventbus_version")}") {
+        exclude("cpw.mods", "modlauncher")
+        exclude("cpw.mods", "securejarhandler")
+        exclude("net.minecraftforge", "modlauncher")
+        exclude("net.minecraftforge", "securemodules")
+    })
+    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}") {
+        exclude("cpw.mods", "modlauncher")
+        exclude("cpw.mods", "securejarhandler")
+        exclude("net.minecraftforge", "modlauncher")
+        exclude("net.minecraftforge", "securemodules")
+    })
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
     implementation(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)

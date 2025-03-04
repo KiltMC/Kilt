@@ -13,13 +13,22 @@ import java.util.Map;
 
 public interface SimpleBakedModelInjection {
     static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
+        return create(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides, renderTypeGroup, RenderTypeGroup.EMPTY);
+    }
+
+    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypesFast) {
         var model = new SimpleBakedModel(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
-        ((SimpleBakedModelInjection) model).addRenderTypes(renderTypeGroup);
+        ((SimpleBakedModelInjection) model).kilt$addRenderTypes(renderTypeGroup);
+        ((SimpleBakedModelInjection) model).kilt$addRenderTypesFast(renderTypeGroup);
 
         return model;
     }
 
-    default void addRenderTypes(RenderTypeGroup renderTypeGroup) {
+    default void kilt$addRenderTypes(RenderTypeGroup renderTypeGroup) {
+        throw new IllegalStateException();
+    }
+
+    default void kilt$addRenderTypesFast(RenderTypeGroup renderTypeGroup) {
         throw new IllegalStateException();
     }
 }

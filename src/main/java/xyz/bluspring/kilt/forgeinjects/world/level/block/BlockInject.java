@@ -30,6 +30,11 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @Unique
     private Object renderProperties;
 
+    @Inject(method = "<clinit>", at = @At("TAIL"))
+    private static void kilt$useGameDataStateIdMap(CallbackInfo ci) {
+        BLOCK_STATE_REGISTRY = GameData.getBlockStateIDMap();
+    }
+
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$initClient(BlockBehaviour.Properties properties, CallbackInfo ci) {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {

@@ -37,6 +37,11 @@ object FMLLoader {
     }
 
     @JvmStatic
+    fun getGameLayer(): ModuleLayer {
+        throw IllegalStateException("Tried accessing module layer, but none exist!")
+    }
+
+    @JvmStatic
     val gamePath: Path
         get() = FMLPaths.GAMEDIR.get()
 }

@@ -32,6 +32,9 @@
     ],
     "afl:prePrePreLaunch": [
       "xyz.bluspring.kilt.loader.KiltEarlierInitializer"
+    ],
+    "mixinsquared": [
+      "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
     ]
   },
   "mixins": [

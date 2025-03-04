@@ -1,5 +1,6 @@
 package net.minecraftforge.fml
 
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraftforge.fml.loading.moddiscovery.ModFile
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo
 import net.minecraftforge.forgespi.language.IModFileInfo
@@ -9,6 +10,7 @@ import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
@@ -38,7 +40,7 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     }
 
     fun isLoaded(modTarget: String): Boolean {
-        return kiltMods.any { it.modId == modTarget }
+        return Kilt.loader.hasMod(modTarget)
     }
 
     fun size(): Int {
@@ -49,7 +51,9 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
         get() = kiltMods.map { it.scanData }
 
     fun getModFileById(modid: String): IModFileInfo? {
-        return kiltMods.firstOrNull { it.modId == modid }?.owningFile
+        return kiltMods.firstOrNull { it.modId == modid }?.owningFile ?: if (FabricLoader.getInstance().isModLoaded(modid))
+            FabricModFileInfoWrapper(FabricLoader.getInstance().getModContainer(modid).orElseThrow()) // support MixinConstraints
+        else null
     }
 
     fun forEachModFile(fileConsumer: Consumer<IModFile>) {
