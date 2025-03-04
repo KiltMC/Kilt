@@ -19,6 +19,7 @@ import net.minecraftforge.client.ColorResolverManager;
 import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.client.model.lighting.QuadLighter;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeLevel;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.Supplier;
 
 @Mixin(ClientLevel.class)
-public abstract class ClientLevelInject extends Level {
+public abstract class ClientLevelInject extends Level implements IForgeLevel {
     private final ModelDataManager modelDataManager = new ModelDataManager((ClientLevel) (Object) this);
 
     @Shadow public abstract DimensionSpecialEffects effects();
