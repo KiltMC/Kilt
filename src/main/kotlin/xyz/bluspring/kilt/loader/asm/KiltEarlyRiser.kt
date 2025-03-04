@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -19,6 +20,7 @@ import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
+import java.net.URL
 
 class KiltEarlyRiser : Runnable {
     override fun run() {
@@ -298,6 +300,21 @@ class KiltEarlyRiser : Runnable {
             classWriter.visitEnd()
 
             ClassTinkerers.define("$grassColorModifierMapped\$ColorModifier", classWriter.toByteArray())
+
+            // By default it loads ForgeConfigAPIPort's. Let's force using Kilt's.
+            ClassTinkerers.addReplacement("net.minecraftforge.client.ForgeHooksClient") { classNode ->
+                classNode.methods.first { it.name == "handleClientLevelClosing" }.name = "handleClientLevelClosing2"
+                classNode.methods.removeIf { it.name == "<init>" && it.desc == "()V" }
+
+                // lord forgive me for what i have done here
+                val kiltUrl = Kilt::class.java.getResource("/xyz/bluspring/kilt/loader/KiltLoader.class")!!
+                val url = URL(kiltUrl.protocol, kiltUrl.host, kiltUrl.port, kiltUrl.file
+                    .replace("/kotlin/", "/java/")
+                    .replace("xyz/bluspring/kilt/loader/KiltLoader", "net/minecraftforge/client/ForgeHooksClient")
+                )
+                val classReader = ClassReader(url.readBytes())
+                classReader.accept(classNode, 0)
+            }
 
             ClassTinkerers.addTransformation(grassColorModifierMapped) { classNode ->
                 classNode.access = Opcodes.ACC_PUBLIC or Opcodes.ACC_ENUM // why the fuck is this needed????

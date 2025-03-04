@@ -201,6 +201,8 @@ class KiltClient : ClientModInitializer {
 
                 GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
                 GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })
+
+                shouldPostGeoLoaders = false
             }
         }
     }
