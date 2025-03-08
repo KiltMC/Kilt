@@ -45,7 +45,7 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         markKnown();
     }
 
-    @WrapWithCondition(method = "registerMapping(ILnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lcom/mojang/serialization/Lifecycle;Z)Lnet/minecraft/core/Holder;", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"))
+    @WrapWithCondition(method = "containsKey(Lnet/minecraft/resources/ResourceKey;)Z", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"))
     private boolean kilt$checkIsBound(Map<ResourceKey<T>, Holder.Reference<T>> instance, Object o, @Local(argsOnly = true) ResourceKey<T> resourceKey) {
         return this.byKey.get(resourceKey).isBound();
     }
