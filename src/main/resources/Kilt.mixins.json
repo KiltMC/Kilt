@@ -29,6 +29,7 @@
     "ItemRendererAccessor",
     "LazyRegistrarAccessor",
     "LevelRendererAccessor",
+    "LevelStorageSourceAccessor",
     "LocalPlayerAccessor",
     "LootPoolEntryContainerAccessor",
     "MappedRegistryAccessor",

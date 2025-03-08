@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.core;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
@@ -29,8 +31,9 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
 
     @Shadow @Nullable private Map<T, Holder.Reference<T>> intrusiveHolderCache;
 
+    @Shadow @Final private Map<ResourceKey<T>, Holder.Reference<T>> byKey;
     @CreateStatic
-    private static final Set<ResourceLocation> knownRegistries = MappedRegistryInjection.knownRegistries;
+    private static final Set<ResourceLocation> KNOWN = MappedRegistryInjection.knownRegistries;
 
     @CreateStatic
     private static Set<ResourceLocation> getKnownRegistries() {
@@ -42,9 +45,14 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         markKnown();
     }
 
+    @WrapWithCondition(method = "registerMapping(ILnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lcom/mojang/serialization/Lifecycle;Z)Lnet/minecraft/core/Holder;", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"))
+    private boolean kilt$checkIsBound(Map<ResourceKey<T>, Holder.Reference<T>> instance, Object o, @Local(argsOnly = true) ResourceKey<T> resourceKey) {
+        return this.byKey.get(resourceKey).isBound();
+    }
+
     @Override
     public void markKnown() {
-        MappedRegistryInjection.knownRegistries.add(((Registry) (Object) this).key().location());
+        KNOWN.add(((Registry) (Object) this).key().location());
     }
 
     @Override
