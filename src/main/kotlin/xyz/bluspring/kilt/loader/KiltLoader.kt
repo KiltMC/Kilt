@@ -654,7 +654,7 @@ class KiltLoader {
                                     val visitor = ModClassVisitor()
                                     val classReader = ClassReader(it)
 
-                                    classReader.accept(visitor, 0)
+                                    classReader.accept(visitor, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
                                     visitor.buildData(scanData.classes, scanData.annotations)
                                 }
 
