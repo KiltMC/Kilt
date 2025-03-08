@@ -40,6 +40,8 @@ transitive-mutable field net/minecraft/core/MappedRegistry frozen Z
 transitive-accessible field net/minecraft/commands/synchronization/ArgumentTypeInfos BY_CLASS Ljava/util/Map;
 transitive-accessible field net/minecraft/world/entity/SpawnPlacements DATA_BY_TYPE Ljava/util/Map;
 
+transitive-accessible class net/minecraft/data/BuiltinRegistries$RegistryBootstrap
+
 # Directly from Forge's Access Transformers, ported to Access Wideners.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger; # m_10595_
