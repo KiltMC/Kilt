@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.forgeinjects.core;
 
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.DefaultedRegistry;
@@ -28,8 +27,4 @@ public abstract class RegistryInject {
             return wrapper;
     }
 
-    @WrapWithCondition(method = "freezeBuiltins", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/Registry;freeze()Lnet/minecraft/core/Registry;"))
-    private static boolean kilt$avoidEarlyFreezingRegistry(Registry<?> instance) {
-        return false;
-    }
 }
