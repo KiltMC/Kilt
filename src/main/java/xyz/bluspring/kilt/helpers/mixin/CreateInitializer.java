@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Used internally by Kilt to create new initializers out of the annotated method in a mixin.
  */
-@Target(ElementType.CONSTRUCTOR)
+@Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CreateInitializer {
 }

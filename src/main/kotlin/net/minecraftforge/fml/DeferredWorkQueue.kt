@@ -17,7 +17,7 @@ class DeferredWorkQueue(private val stage: ModLoadingStage) {
         if (tasks.isEmpty())
             return
 
-        val exception = RuntimeException()
+        val exception = RuntimeException("Kilt encountered errors in the deferred work queue for stage $stage!")
 
         for (task in tasks) {
             ModLoadingContext.kiltActiveModId = task.owner.modId

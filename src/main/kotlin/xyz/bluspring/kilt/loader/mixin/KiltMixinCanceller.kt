@@ -4,7 +4,8 @@ import com.bawnorton.mixinsquared.api.MixinCanceller
 
 class KiltMixinCanceller : MixinCanceller {
     private val cancelledMixins = listOf(
-        "de.florianmichael.asmfabricloader.hook.mixin.MixinTitleScreen"
+        "de.florianmichael.asmfabricloader.hook.mixin.MixinTitleScreen",
+        "com.anthonyhilyard.iceberg.mixin.MinecraftMixin"
     )
 
     override fun shouldCancel(targetClasses: List<String>, mixinClassName: String): Boolean {

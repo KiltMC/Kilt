@@ -89,6 +89,8 @@ public final class MixinExtensionHelper {
                             } else { // super()
                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
                             }
+                        } else if (insnNode.getOpcode() == Opcodes.INVOKEVIRTUAL && methodInsn.name.equals("kilt$mixin$superCall")) { // super()
+                            initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), "<init>", methodInsn.desc, false);
                         } else {
                             if (methodInsn.owner.equals(slashedMixinClassName)) {
                                 methodInsn.owner = slashedTargetClassName;

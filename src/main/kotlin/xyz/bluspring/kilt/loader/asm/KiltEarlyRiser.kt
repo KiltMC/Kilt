@@ -228,6 +228,55 @@ class KiltEarlyRiser : Runnable {
                         initializer.visitEnd()
                     }
                 }
+
+                val geoItemRenderer = "software.bernie.geckolib3.renderers.geo.GeoItemRenderer".replace(".", "/")
+                ClassTinkerers.addTransformation(geoItemRenderer) {  classNode ->
+                    /*
+                    public GeoItemRenderer(AnimatedGeoModel<T> modelProvider) {
+                        this(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels(), modelProvider);
+                    }
+                     */
+                    run {
+                        val animatedGeoModel = "software/bernie/geckolib3/model/AnimatedGeoModel"
+                        val mcClassIm = "net.minecraft.class_310"
+                        val mcClass = mappingResolver.mapClassName("intermediary", mcClassIm).replace(".", "/")
+                        val berdClassIm = "net.minecraft.class_824"
+                        val berdClass = mappingResolver.mapClassName("intermediary", berdClassIm).replace(".", "/")
+                        val emClassIm = "net.minecraft.class_5599"
+                        val emClass = mappingResolver.mapClassName("intermediary", emClassIm).replace(".", "/")
+
+                        val instanceMethod = mappingResolver.mapMethodName("intermediary", mcClassIm, "method_1551", "()L${mcClassIm.replace(".", "/")};")
+                        val berdMethod = mappingResolver.mapMethodName("intermediary", mcClassIm, "method_31975", "()L${berdClassIm.replace(".", "/")};")
+                        val emMethod = mappingResolver.mapMethodName("intermediary", mcClassIm, "method_31974", "()L${emClassIm.replace(".", "/")};")
+
+                        classNode.methods.removeIf { it.name == "<init>" && it.desc == "(L$animatedGeoModel;)V" }
+                        val initializer = classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(L$animatedGeoModel;)V", "(L$animatedGeoModel<TT;>;)V", null)
+                        initializer.visitCode()
+
+                        val label0 = Label()
+                        val label1 = Label()
+                        val label2 = Label()
+
+                        initializer.visitLabel(label0)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 0)
+                        initializer.visitMethodInsn(Opcodes.INVOKESTATIC, mcClass, instanceMethod, "()L$mcClass;", false)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, mcClass, berdMethod, "()L$berdClass;", false)
+                        initializer.visitMethodInsn(Opcodes.INVOKESTATIC, mcClass, instanceMethod, "()L$mcClass;", false)
+                        initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, mcClass, emMethod, "()L$emClass;", false)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 1)
+                        initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, geoItemRenderer, "<init>", "(L$berdClass;L$emClass;L$animatedGeoModel;)V", false)
+
+                        initializer.visitLabel(label1)
+                        initializer.visitInsn(Opcodes.RETURN)
+
+                        initializer.visitLabel(label2)
+                        initializer.visitLocalVariable("this", "L$geoItemRenderer;", "L$geoItemRenderer<TT;>;", label0, label2, 0)
+                        initializer.visitLocalVariable("modelProvider", "L$animatedGeoModel;", "L$animatedGeoModel<TT;>;", label0, label2, 0)
+
+                        initializer.visitMaxs(0, 0)
+                        initializer.visitEnd()
+                    }
+                }
             }
         }
 

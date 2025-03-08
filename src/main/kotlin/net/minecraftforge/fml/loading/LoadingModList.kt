@@ -2,10 +2,35 @@ package net.minecraftforge.fml.loading
 
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 
 class LoadingModList {
+    fun getMods(): List<ModInfo> {
+        val mods = mutableListOf<ModInfo>()
+
+        for (container in FabricLoader.getInstance().allMods) {
+            mods.add(ModInfo(null, container))
+        }
+
+        for (mod in Kilt.loader.mods) {
+            if (mod == null)
+                continue
+
+            mods.add(ModInfo(mod))
+        }
+
+        for (mod in Kilt.loader.modLoadingQueue) {
+            if (mod == null)
+                continue
+
+            mods.add(ModInfo(mod))
+        }
+
+        return mods
+    }
+
     fun getModFileById(modid: String): ModFileInfo? {
         val kiltMod = Kilt.loader.getMod(modid)
 

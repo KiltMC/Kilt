@@ -8,8 +8,7 @@ import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -44,7 +43,7 @@ public abstract class ModelManagerInject implements ModelManagerInjection {
     public void kilt$addModelBakery(ModelBakery object, ResourceManager resourceManager, ProfilerFiller profiler, CallbackInfo ci) {
         this.modelBakery = object;
         // ForgeHooksClient.onModelBake
-        ModLoader.get().postEvent(new ModelEvent.BakingCompleted((ModelManager) (Object) this, this.bakedRegistry, object));
+        ForgeHooksClient.onModelBake((ModelManager) (Object) this, this.bakedRegistry, object);
     }
 
     public ModelBakery getModelBakery() {

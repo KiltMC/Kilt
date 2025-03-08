@@ -97,6 +97,10 @@ repositories {
     maven("https://maven.su5ed.dev/releases") {
         name = "Su5ed"
     }
+
+    maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
+        name = "GeckoLib"
+    }
 }
 
 dependencies {
@@ -168,6 +172,9 @@ dependencies {
     implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
 
     modImplementation(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
+
+    // Compatibility
+    modImplementation("software.bernie.geckolib:geckolib-fabric-1.19:${property("geckolib_version")}")
 
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)

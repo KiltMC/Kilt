@@ -2,8 +2,12 @@ package xyz.bluspring.kilt;
 
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -93,6 +97,16 @@ public class TestingMoreShit {
 
         public boolean wow(Item item) {
             return ((EnchantmentCategoryInjection) (Object) this).getDelegate() != null && ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
+        }
+    }
+
+    public static class ThisIsAGreatClass extends BlockEntityWithoutLevelRenderer {
+        public ThisIsAGreatClass(Block lmao) {
+            this(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels(), lmao);
+        }
+
+        public ThisIsAGreatClass(BlockEntityRenderDispatcher blockEntityRenderDispatcher, EntityModelSet entityModelSet, Block lmao) {
+            super(blockEntityRenderDispatcher, entityModelSet);
         }
     }
 
