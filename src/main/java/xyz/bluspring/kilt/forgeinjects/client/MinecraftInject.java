@@ -59,7 +59,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Unique
     private float realPartialTick;
 
-    @Unique private ForgeGui kilt$forgeGui;
+    public ForgeGui kilt$forgeGui;
 
     // We're not using the Forge GUI system properly, but we're gonna make this incredibly mod compatible if we can.
     @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/entity/ItemRenderer;)Lnet/minecraft/client/gui/Gui;"))

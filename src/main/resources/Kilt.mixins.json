@@ -52,6 +52,7 @@
     "TransformTypeAccessor",
     "TypeAccessor",
     "WoodTypeAccessor",
+    "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
     "porting_lib.ConditionalRecipeSerializerMixin",
     "porting_lib.RegistryObjectAccessor",

@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.forgeinjects.world.entity.living;
+package xyz.bluspring.kilt.forgeinjects.world.entity;
 
 import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.Direction;
@@ -51,7 +51,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
                 return handlers[1].cast();
         }
 
-        return this.getCapability(cap, side);
+        return super.getCapability(cap, side);
     }
 
     @Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)V"))
