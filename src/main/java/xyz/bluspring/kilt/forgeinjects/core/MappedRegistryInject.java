@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.core;
 
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
@@ -45,9 +46,9 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         markKnown();
     }
 
-    @WrapWithCondition(method = "containsKey(Lnet/minecraft/resources/ResourceKey;)Z", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"))
-    private boolean kilt$checkIsBound(Map<ResourceKey<T>, Holder.Reference<T>> instance, Object o, @Local(argsOnly = true) ResourceKey<T> resourceKey) {
-        return this.byKey.get(resourceKey).isBound();
+    @WrapOperation(method = "containsKey(Lnet/minecraft/resources/ResourceKey;)Z", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"))
+    private boolean kilt$checkIsBound(Map instance, Object o, Operation<Boolean> original, @Local(argsOnly = true) ResourceKey<T> resourceKey) {
+        return original.call(instance, o) && this.byKey.get(resourceKey).isBound();
     }
 
     @Override
