@@ -37,7 +37,9 @@ class DeferredWorkQueue(private val stage: ModLoadingStage) {
         }
 
         if (exception.suppressed.isNotEmpty()) {
-            throw exception
+            //throw exception
+            Kilt.logger.warn("Errors were encountered in a deferred task, but Kilt will be ignoring them, because apparently Forge does that.")
+            exception.printStackTrace()
         }
     }
 
