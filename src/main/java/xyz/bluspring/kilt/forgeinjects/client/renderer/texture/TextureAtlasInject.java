@@ -1,34 +1,27 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer.texture;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.texture.Stitcher;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.textures.ForgeTextureMetadata;
+import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.StartupMessageManager;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -36,17 +29,16 @@ import java.util.stream.Stream;
 public abstract class TextureAtlasInject {
     @Shadow protected abstract ResourceLocation getResourceLocation(ResourceLocation resourceLocation);
 
-    @Inject(method = "prepareToStitch", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void kilt$runPreStitchEvent(ResourceManager resourceManager, Stream<ResourceLocation> stream, ProfilerFiller profilerFiller, int i, CallbackInfoReturnable<TextureAtlas.Preparations> cir, Set<ResourceLocation> set, int j, Stitcher stitcher, int k, int l) {
-        var map = (TextureAtlas) (Object) this;
+    @Inject(method = "prepareToStitch", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 1, shift = At.Shift.BEFORE))
+    private void kilt$disableMipLowering(ResourceManager resourceManager, Stream<ResourceLocation> spriteNames, ProfilerFiller profiler, int mipLevel, CallbackInfoReturnable<TextureAtlas.Preparations> cir, @Local(ordinal = 6) LocalIntRef currentLevel) {
+        if (!ForgeConfig.CLIENT.allowMipmapLowering()) {
+            currentLevel.set(mipLevel);
+        }
+    }
 
-        StartupMessageManager.mcLoaderConsumer().ifPresent((c) -> {
-            c.accept("Atlas Stitching : " + map.location().toString());
-        });
-        ModLoader.get().postEvent(new TextureStitchEvent.Pre(map, set));
-        Sheets.SIGN_MATERIALS.values().stream().filter((rm) -> rm.atlasLocation().equals(map.location())).forEach((rm) -> {
-            set.add(rm.texture());
-        });
+    @Inject(method = "prepareToStitch", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.AFTER))
+    public void kilt$runPreStitchEvent(ResourceManager resourceManager, Stream<ResourceLocation> stream, ProfilerFiller profilerFiller, int i, CallbackInfoReturnable<TextureAtlas.Preparations> cir, @Local Set<ResourceLocation> set) {
+        ForgeHooksClient.onTextureStitchedPre((TextureAtlas) (Object) this, set);
     }
 
     @Inject(at = @At("TAIL"), method = "reload")
