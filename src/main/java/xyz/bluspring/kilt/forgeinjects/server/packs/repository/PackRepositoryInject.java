@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.server.PackRepositoryInjection;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Mixin(PackRepository.class)
@@ -26,7 +26,7 @@ public class PackRepositoryInject implements PackRepositoryInjection {
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/packs/repository/Pack$PackConstructor;[Lnet/minecraft/server/packs/repository/RepositorySource;)V")
     public void kilt$makeSourcesMutable(Pack.PackConstructor packConstructor, RepositorySource[] repositorySources, CallbackInfo ci) {
-        this.sources = new HashSet<>(Arrays.asList(repositorySources));
+        this.sources = new LinkedHashSet<>(Arrays.asList(repositorySources));
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/server/packs/PackType;[Lnet/minecraft/server/packs/repository/RepositorySource;)V")
