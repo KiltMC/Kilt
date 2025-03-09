@@ -1,14 +1,19 @@
 package xyz.bluspring.kilt.forgeinjects.server;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.ServerAdvancementManager;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagManager;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.conditions.ConditionContext;
 import net.minecraftforge.common.crafting.conditions.ICondition;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
@@ -21,6 +26,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection;
 import xyz.bluspring.kilt.injections.item.crafting.RecipeManagerInjection;
 import xyz.bluspring.kilt.injections.server.ServerAdvancementManagerInjection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(ReloadableServerResources.class)
 public class ReloadableServerResourcesInject implements ReloadableServerResourcesInjection {
@@ -35,6 +43,14 @@ public class ReloadableServerResourcesInject implements ReloadableServerResource
         this.kilt$context = new ConditionContext(this.tagManager);
         ((RecipeManagerInjection) this.recipes).setContext(this.kilt$context);
         ((ServerAdvancementManagerInjection) this.advancements).kilt$setContext(this.kilt$context);
+    }
+
+    @WrapOperation(method = "loadResources", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ReloadableServerResources;listeners()Ljava/util/List;"))
+    private static List<PreparableReloadListener> kilt$addForgeResourceReload(ReloadableServerResources instance, Operation<List<PreparableReloadListener>> original, @Local ReloadableServerResources serverResources) {
+        var listeners = new ArrayList<>(original.call(instance));
+        listeners.addAll(ForgeEventFactory.onResourceReload(serverResources));
+
+        return listeners;
     }
 
     @Inject(method = "updateRegistryTags(Lnet/minecraft/core/RegistryAccess;)V", at = @At("TAIL"))

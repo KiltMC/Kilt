@@ -56,7 +56,7 @@ public abstract class PlayerAdvancementsInject {
         ForgeEventFactory.onAdvancementProgressedEvent(this.player, advancement, advancementProgress, criterionKey, AdvancementEvent.AdvancementProgressEvent.ProgressType.GRANT);
     }
 
-    @Inject(method = "award", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastSystemMessage(Lnet/minecraft/network/chat/Component;Z)V", shift = At.Shift.BY, by = 2))
+    @Inject(method = "award", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/AdvancementRewards;grant(Lnet/minecraft/server/level/ServerPlayer;)V", shift = At.Shift.AFTER))
     private void kilt$callAdvancementEarned(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
         ForgeHooks.onAdvancement(this.player, advancement);
         ForgeEventFactory.onAdvancementEarnedEvent(this.player, advancement);

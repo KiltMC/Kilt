@@ -23,6 +23,11 @@ import java.util.function.Function;
 
 @Mixin(ItemPredicate.class)
 public class ItemPredicateInject implements ItemPredicateInjection {
+    @CreateStatic
+    private static final Map<ResourceLocation, Function<JsonObject, ItemPredicate>> custom_predicates = ItemPredicateInjection.customPredicates;
+    @CreateStatic
+    private static final Map<ResourceLocation, Function<JsonObject, ItemPredicate>> unmod_predicates = ItemPredicateInjection.unmodPredicates;
+
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;deserializeEnchantments(Lnet/minecraft/nbt/ListTag;)Ljava/util/Map;", ordinal = 0), method = "matches")
     public Map<Enchantment, Integer> kilt$getAllForgeEnchantments(ListTag listTag, ItemStack itemStack) {
         return itemStack.getAllEnchantments();
@@ -40,15 +45,12 @@ public class ItemPredicateInject implements ItemPredicateInjection {
     }
 
     @CreateStatic
-    private static final Map<ResourceLocation, Function<JsonObject, ItemPredicate>> customPredicates = ItemPredicateInjection.customPredicates;
-
-    @CreateStatic
     private static void register(ResourceLocation name, Function<JsonObject, ItemPredicate> deserializer) {
         ItemPredicateInjection.customPredicates.put(name, deserializer);
     }
 
     @CreateStatic
     private static Map<ResourceLocation, Function<JsonObject, ItemPredicate>> getPredicates() {
-        return ItemPredicateInjection.customPredicates;
+        return ItemPredicateInjection.unmodPredicates;
     }
 }
