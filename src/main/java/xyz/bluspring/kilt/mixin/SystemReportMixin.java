@@ -25,7 +25,7 @@ public abstract class SystemReportMixin {
     private void kilt$appendForgeMods(CallbackInfo ci) {
         this.setDetail("Forge Mods (Kilt)", () -> {
             var modString = new StringBuilder();
-            var mods = Kilt.Companion.getLoader().getMods();
+            var mods = new ArrayList<>(Kilt.Companion.getLoader().getModLoadingQueue$Kilt().isEmpty() ? Kilt.Companion.getLoader().getMods() : Kilt.Companion.getLoader().getModLoadingQueue$Kilt());
             mods.sort(Comparator.comparing(ForgeMod::getModId));
 
             // TODO: Try handling JiJ'd mods?
