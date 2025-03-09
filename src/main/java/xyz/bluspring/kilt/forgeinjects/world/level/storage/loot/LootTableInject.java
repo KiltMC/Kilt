@@ -15,11 +15,9 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraftforge.common.ForgeHooks;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.world.level.storage.loot.LootPoolInjection;
 import xyz.bluspring.kilt.injections.world.level.storage.loot.LootTableInjection;
@@ -42,9 +40,10 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
         return ForgeHooks.modifyLoot(this.getLootTableId(), original, context);
     }
 
-    @Redirect(method = "validate", at = @At(value = "JUMP", opcode = Opcodes.ARRAYLENGTH, ordinal = 0))
-    private int kilt$useListSize(LootPool[] instance) {
-        return this.kilt$pools.size();
+    @WrapOperation(method = "validate", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/storage/loot/LootTable;pools:[Lnet/minecraft/world/level/storage/loot/LootPool;"))
+    private LootPool[] kilt$useListSize(LootTable instance, Operation<LootPool[]> original) {
+        this.kilt$setPoolsArray();
+        return original.call(instance);
     }
 
     @WrapOperation(method = "validate", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootPool;validate(Lnet/minecraft/world/level/storage/loot/ValidationContext;)V"))
@@ -68,6 +67,10 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
             throw new RuntimeException("Attempted to modify LootTable after being finalized!");
     }
 
+    private void kilt$setPoolsArray() {
+        this.pools = this.kilt$pools.toArray(new LootPool[0]);
+    }
+
     @Override
     public LootPool getPool(String name) {
         return this.kilt$pools.stream().filter(e -> name.equals(e.getName())).findFirst().orElse(null);
@@ -79,7 +82,7 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
         for (LootPool pool : this.kilt$pools) {
             if (name.equals(pool.getName())) {
                 this.kilt$pools.remove(pool);
-                this.pools = this.kilt$pools.toArray(new LootPool[0]);
+                this.kilt$setPoolsArray();
                 return pool;
             }
         }
@@ -93,6 +96,6 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
             throw new RuntimeException("Attempted to add a duplicate pool to loot table: " + pool.getName());
 
         this.kilt$pools.add(pool);
-        this.pools = this.kilt$pools.toArray(new LootPool[0]);
+        this.kilt$setPoolsArray();
     }
 }
