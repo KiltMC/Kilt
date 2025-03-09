@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CrashReportCategoryInject",
+    "CrashReportInject",
     "advancements.AdvancementBuilderInject",
     "advancements.AdvancementListInject",
     "advancements.AdvancementRewardsInject",

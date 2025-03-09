@@ -48,6 +48,7 @@
     "ScreenAccessor",
     "ScreenEffectRendererAccessor",
     "SpawnPlacementsAccessor",
+    "SystemReportMixin",
     "TagAppenderAccessor",
     "TagsProviderAccessor",
     "TransformTypeAccessor",
