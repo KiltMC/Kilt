@@ -70,6 +70,7 @@ class KiltClient : ClientModInitializer {
                 (screen as ScreenAccessor).children.add(it)
             })
 
+            forgeGui.`kilt$setFont`(mc.font)
             if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add.get(), screen::callRemoveWidget)))
                 EventResult.interruptFalse()
             else EventResult.pass()
@@ -103,6 +104,7 @@ class KiltClient : ClientModInitializer {
 
             val window = mc.window
 
+            forgeGui.`kilt$setFont`(mc.font)
             forgeGui.screenWidth = window.screenWidth
             forgeGui.screenHeight = window.screenHeight
             forgeGui.random.setSeed(forgeGui.tickCount * 312871L)

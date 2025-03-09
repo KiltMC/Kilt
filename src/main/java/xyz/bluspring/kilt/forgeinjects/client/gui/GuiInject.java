@@ -66,7 +66,9 @@ public class GuiInject {
                 if (pre(window, stack, delta, overlay))
                     continue;
 
-                overlay.overlay().render(this.getGui(), stack, delta, this.screenWidth, this.screenHeight);
+                if (!overlay.id().getNamespace().equals("minecraft")) {
+                    overlay.overlay().render(this.getGui(), stack, delta, this.screenWidth, this.screenHeight);
+                }
 
                 post(stack, delta, overlay);
             } catch (Exception e) {
