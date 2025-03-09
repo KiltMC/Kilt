@@ -58,6 +58,7 @@
     "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
     "porting_lib.ConditionalRecipeSerializerMixin",
+    "porting_lib.LootContextExtensionsMixin",
     "porting_lib.RegistryObjectAccessor",
     "porting_lib.RegistryObjectMixin",
     "porting_lib.StringsMixin",

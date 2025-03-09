@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.storage.loot;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -7,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.LootTables;
 import net.minecraftforge.common.ForgeHooks;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,5 +46,11 @@ public abstract class LootTablesInject extends SimpleJsonResourceReloadListener 
     private static <T> T kilt$forgeLoadLootTable(Gson instance, JsonElement json, Class<T> classOfT, @Local(argsOnly = true) ResourceLocation location) {
         var resource = kilt$resourceManager.get().getResource(((SimpleJsonResourceReloadListenerInjection) kilt$instance.get()).getPreparedPath(location)).orElse(null);
         return (T) ForgeHooks.loadLootTable(instance, location, json, resource == null || !resource.sourcePackId().equals("Default"), kilt$instance.get());
+    }
+
+    // this is supposed to be Porting Lib's job
+    @Inject(method = "method_20711", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;put(Ljava/lang/Object;Ljava/lang/Object;)Lcom/google/common/collect/ImmutableMap$Builder;"))
+    private static void port_lib$setName(ImmutableMap.Builder builder, ResourceLocation id, JsonElement json, CallbackInfo ci, @Local LootTable lootTable) {
+        lootTable.setLootTableId(id);
     }
 }

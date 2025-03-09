@@ -1,6 +1,8 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.storage.loot;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import io.github.fabricators_of_create.porting_lib.loot.LootTableIdCondition;
+import io.github.fabricators_of_create.porting_lib.loot.extensions.LootContextExtensions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -22,10 +24,26 @@ import java.util.Map;
 import java.util.Set;
 
 @Mixin(value = LootContext.class, priority = 1050)
-public abstract class LootContextInject {
+public abstract class LootContextInject implements LootContextExtensions {
     @Shadow @Nullable public abstract <T> T getParamOrNull(LootContextParam<T> parameter);
 
+    // Not sure why, but these aren't getting implemented, so.
+    private ResourceLocation queriedLootTableId;
+
+    @Override
+    public void setQueriedLootTableId(ResourceLocation queriedLootTableId) {
+        if (this.queriedLootTableId == null && queriedLootTableId != null) {
+            this.queriedLootTableId = queriedLootTableId;
+        }
+    }
+
+    @Override
+    public ResourceLocation getQueriedLootTableId() {
+        return this.queriedLootTableId == null ? LootTableIdCondition.UNKNOWN_LOOT_TABLE : this.queriedLootTableId;
+    }
+
     // Overwrite Porting Lib's
+    @Override
     public int getLootingModifier() {
         return ForgeHooks.getLootingLevel(this.getParamOrNull(LootContextParams.THIS_ENTITY), this.getParamOrNull(LootContextParams.KILLER_ENTITY), this.getParamOrNull(LootContextParams.DAMAGE_SOURCE));
     }
@@ -55,7 +73,7 @@ public abstract class LootContextInject {
 
         @ModifyReturnValue(method = "create", at = @At("RETURN"))
         private LootContext kilt$addQueriedLootTableId(LootContext original) {
-            original.setQueriedLootTableId(this.queriedLootTableId);
+            original.setQueriedLootTableId(this.queriedLootTableId); // ??
             return original;
         }
     }

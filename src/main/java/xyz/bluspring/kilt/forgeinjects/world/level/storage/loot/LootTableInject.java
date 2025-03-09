@@ -5,8 +5,10 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import io.github.fabricators_of_create.porting_lib.loot.LootHooks;
 import io.github.fabricators_of_create.porting_lib.loot.extensions.LootTableExtensions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -23,6 +25,7 @@ import xyz.bluspring.kilt.injections.world.level.storage.loot.LootPoolInjection;
 import xyz.bluspring.kilt.injections.world.level.storage.loot.LootTableInjection;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(LootTable.class)
 public abstract class LootTableInject implements LootTableInjection, LootTableExtensions {
@@ -97,5 +100,28 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
 
         this.kilt$pools.add(pool);
         this.kilt$setPoolsArray();
+    }
+
+    // These are supposed to be implemented by Porting Lib, but they're not kicking in for some reason??
+    @Unique private ResourceLocation lootTableId;
+
+    public void setLootTableId(ResourceLocation id) {
+        if (this.lootTableId != null) {
+            throw new IllegalStateException("Attempted to rename loot table from '" + this.lootTableId + "' to '" + id + "': this is not supported");
+        } else {
+            this.lootTableId = Objects.requireNonNull(id);
+        }
+    }
+
+    public ResourceLocation getLootTableId() {
+        return this.lootTableId;
+    }
+
+    @ModifyReturnValue(
+        method = "getRandomItems(Lnet/minecraft/world/level/storage/loot/LootContext;)Lit/unimi/dsi/fastutil/objects/ObjectArrayList;",
+        at = @At("RETURN")
+    )
+    public ObjectArrayList<ItemStack> port_lib$modifyGlobalLootTable(ObjectArrayList<ItemStack> list, LootContext context) {
+        return LootHooks.modifyLoot(this.getLootTableId(), list, context);
     }
 }
