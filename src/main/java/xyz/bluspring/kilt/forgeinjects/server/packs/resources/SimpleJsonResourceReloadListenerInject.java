@@ -5,14 +5,14 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import xyz.bluspring.kilt.injections.server.packs.resources.SimpleJsonResourceReloadListenerInjection;
 
 @Mixin(SimpleJsonResourceReloadListener.class)
-public class SimpleJsonResourceReloadListenerInject {
+public abstract class SimpleJsonResourceReloadListenerInject implements SimpleJsonResourceReloadListenerInjection {
     @Shadow @Final private String directory;
 
-    @Unique
-    protected ResourceLocation getPreparedPath(ResourceLocation rl) {
+    @Override
+    public ResourceLocation getPreparedPath(ResourceLocation rl) {
         return new ResourceLocation(rl.getNamespace(), this.directory + "/" + rl.getPath() + ".json");
     }
 }

@@ -173,7 +173,17 @@
     "world.level.storage.LevelStorageSourceInject$LevelStorageAccessInject",
     "world.level.storage.PlayerDataStorageInject",
     "world.level.storage.PrimaryLevelDataInject",
-    "world.level.storage.loot.LootTableInject"
+    "world.level.storage.loot.LootContextInject",
+    "world.level.storage.loot.LootContextInject$BuilderInject",
+    "world.level.storage.loot.LootContextInject$EntityTargetInject",
+    "world.level.storage.loot.LootPoolInject",
+    "world.level.storage.loot.LootPoolInject$SerializerInject",
+    "world.level.storage.loot.LootTableInject",
+    "world.level.storage.loot.LootTablesInject",
+    "world.level.storage.loot.functions.LootingEnchantFunctionInject",
+    "world.level.storage.loot.functions.SmeltItemFunctionInject",
+    "world.level.storage.loot.parameters.LootContextParamSetsInject",
+    "world.level.storage.loot.predicates.LootItemRandomChanceWithLootingConditionInject"
   ],
   "client": [
     "blaze3d.platform.GlStateManagerInject",
