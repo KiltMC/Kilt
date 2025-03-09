@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
-import com.mojang.blaze3d.systems.RenderSystem
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientTooltipEvent
@@ -22,7 +21,6 @@ import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.ModLoader
@@ -60,7 +58,22 @@ class KiltClient : ClientModInitializer {
         val add = AtomicReference<Consumer<GuiEventListener>>()
 
         ClientGuiEvent.INIT_PRE.register { screen, access ->
-            add.set(Consumer<GuiEventListener> {
+            forgeGui.`kilt$setFont`(mc.font)
+            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, Consumer<GuiEventListener> {
+                    if (it is Widget)
+                        access.renderables.add(it)
+
+                    if (it is NarratableEntry)
+                        access.narratables.add(it)
+
+                    (screen as ScreenAccessor).children.add(it)
+                }, screen::callRemoveWidget)))
+                EventResult.interruptFalse()
+            else EventResult.pass()
+        }
+
+        ClientGuiEvent.INIT_POST.register { screen, access ->
+            MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).children, Consumer<GuiEventListener> {
                 if (it is Widget)
                     access.renderables.add(it)
 
@@ -68,16 +81,7 @@ class KiltClient : ClientModInitializer {
                     access.narratables.add(it)
 
                 (screen as ScreenAccessor).children.add(it)
-            })
-
-            forgeGui.`kilt$setFont`(mc.font)
-            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add.get(), screen::callRemoveWidget)))
-                EventResult.interruptFalse()
-            else EventResult.pass()
-        }
-
-        ClientGuiEvent.INIT_POST.register { screen, _ ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).children, add.get(), screen::callRemoveWidget))
+            }, screen::callRemoveWidget))
             add.set(null)
         }
 
@@ -97,34 +101,7 @@ class KiltClient : ClientModInitializer {
         }
 
         ClientGuiEvent.RENDER_HUD.register { poseStack, delta ->
-            val overlays = GuiOverlayManager.getOverlays()
-
-            if (overlays.isEmpty())
-                return@register
-
-            val window = mc.window
-
-            forgeGui.`kilt$setFont`(mc.font)
-            forgeGui.screenWidth = window.screenWidth
-            forgeGui.screenHeight = window.screenHeight
-            forgeGui.random.setSeed(forgeGui.tickCount * 312871L)
-
-            overlays.forEach { entry ->
-                try {
-                    val overlay = entry.overlay
-                    if (MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Pre(window, poseStack, delta, entry)))
-                        return@forEach
-
-                    overlay.render(forgeGui, poseStack, delta, forgeGui.screenWidth, forgeGui.screenHeight)
-
-                    MinecraftForge.EVENT_BUS.post(RenderGuiOverlayEvent.Post(window, poseStack, delta, entry))
-                } catch (e: Exception) {
-                    Kilt.logger.error("Failed to render overlay ${entry.id}")
-                    e.printStackTrace()
-                }
-            }
-
-            RenderSystem.setShaderColor(1F, 1F, 1F, 1F)
+            forgeGui.render(poseStack, delta)
         }
 
         ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
