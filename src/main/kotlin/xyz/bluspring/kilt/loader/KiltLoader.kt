@@ -359,7 +359,8 @@ class KiltLoader {
             description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway.",
             DefaultArtifactVersion("0.0.0"),
             modFile = modFile.toFile(),
-            modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml")))
+            modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml"))),
+            shouldScan = false // no point scanning JiJ'd files
         )
     }
 
@@ -825,7 +826,7 @@ class KiltLoader {
                 }
             }
 
-        if (!hasInitialized) {
+        if (!hasInitialized && mod.shouldScan) {
             val exception = IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!")
             exception.printStackTrace()
             exceptions.add(exception)
