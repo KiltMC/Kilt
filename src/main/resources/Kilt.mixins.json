@@ -55,7 +55,6 @@
     "TransformTypeAccessor",
     "TypeAccessor",
     "WoodTypeAccessor",
-    "compat.forge.l2library.LazyExcMixin",
     "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
     "porting_lib.ConditionalRecipeSerializerMixin",

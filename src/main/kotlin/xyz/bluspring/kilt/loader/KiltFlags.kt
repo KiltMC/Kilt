@@ -21,6 +21,11 @@ object KiltFlags {
     // By default, AT info is logged under the DEBUG level, so it may still be found there.
     @JvmField val ENABLE_ACCESS_TRANSFORMER_DEBUG = "kilt.printATDebug".checkPropertyBoolean()
 
+    // Only available in developer environments, used for disabling assertions directly if needed.
+    // This is useful for mods that have broken assertions, because otherwise I cannot properly
+    // test Kilt in debug mode.
+    @JvmField val ENABLE_ASSERTIONS = "kilt.enableAssertions".checkPropertyBoolean()
+
     private fun String.checkPropertyBoolean(): Boolean {
         return System.getProperty(this)?.lowercase() == "true"
     }
