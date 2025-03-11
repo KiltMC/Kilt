@@ -16,7 +16,8 @@ public class FluidRenderHandlerRegistryImplMixin {
         try {
             var fluidType = fluid.getFluidType();
 
-            cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
+            if (!fluidType.kilt$isWrapped)
+                cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
         } catch (Exception ignored) {}
     }
 
@@ -25,7 +26,8 @@ public class FluidRenderHandlerRegistryImplMixin {
         try {
             var fluidType = fluid.getFluidType();
 
-            cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
+            if (!fluidType.kilt$isWrapped)
+                cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
         } catch (Exception ignored) {}
     }
 }

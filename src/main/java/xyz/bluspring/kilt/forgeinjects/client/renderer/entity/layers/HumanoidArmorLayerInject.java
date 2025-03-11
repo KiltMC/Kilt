@@ -17,6 +17,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.bluspring.kilt.workarounds.ForgeHooksClientWorkaround;
 
 import javax.annotation.Nullable;
 import java.util.Locale;
@@ -38,7 +38,7 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
     @Shadow @Final private static Map<String, ResourceLocation> ARMOR_LOCATION_CACHE;
 
     protected Model getArmorModelHook(T entity, ItemStack itemStack, EquipmentSlot slot, A model) {
-        return ForgeHooksClientWorkaround.getArmorModel(entity, itemStack, slot, model);
+        return ForgeHooksClient.getArmorModel(entity, itemStack, slot, model);
     }
 
     public ResourceLocation getArmorResource(Entity entity, ItemStack stack, EquipmentSlot slot, @Nullable String type) {
@@ -59,7 +59,7 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
                 type == null ? "" : String.format(Locale.ROOT, "_%s", type)
         );
 
-        path = ForgeHooksClientWorkaround.getArmorTexture(entity, stack, path, slot, type);
+        path = ForgeHooksClient.getArmorTexture(entity, stack, path, slot, type);
         var loc = ARMOR_LOCATION_CACHE.get(path);
 
         if (loc == null) {

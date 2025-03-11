@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.material.FluidState
+import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions
 
 class ForgeFluidRenderHandler : FluidRenderHandler {
@@ -13,7 +14,7 @@ class ForgeFluidRenderHandler : FluidRenderHandler {
         pos: BlockPos?,
         state: FluidState?
     ): Array<TextureAtlasSprite?> {
-        return ForgeHooksClientWorkaround.getFluidSprites(view, pos, state)
+        return ForgeHooksClient.getFluidSprites(view, pos, state)
     }
 
     override fun getFluidColor(view: BlockAndTintGetter?, pos: BlockPos?, state: FluidState?): Int {
