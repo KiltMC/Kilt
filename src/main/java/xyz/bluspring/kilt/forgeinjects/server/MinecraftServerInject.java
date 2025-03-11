@@ -29,7 +29,7 @@ public class MinecraftServerInject implements MinecraftServerInjection {
         return new Thread(SidedThreadGroups.SERVER, target, name);
     }
 
-    @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"))
+    @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"), remap = false)
     private String kilt$appendKiltToServerBranding(String original) {
         return original + " + kilt";
     }
