@@ -41,7 +41,12 @@ public interface ItemBlockRenderTypesInjection {
             return ItemBlockRenderTypesAccessor.isRenderCutout() ? CUTOUT_MIPPED : SOLID;
         }
 
-        return BLOCK_RENDER_TYPES.get(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()));
+        var delegate = ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock());
+        if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
+            BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
+        }
+
+        return BLOCK_RENDER_TYPES.get(delegate);
     }
 
     static void setRenderLayer(Block block, RenderType type) {
