@@ -175,6 +175,7 @@ dependencies {
 
     // Compatibility
     modImplementation("software.bernie.geckolib:geckolib-fabric-1.19:${property("geckolib_version")}")
+    modCompileOnly("maven.modrinth:moonlight:${property("moonlight_version")}")
 
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)

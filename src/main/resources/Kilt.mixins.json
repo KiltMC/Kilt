@@ -55,6 +55,7 @@
     "TransformTypeAccessor",
     "TypeAccessor",
     "WoodTypeAccessor",
+    "compat.forge.moonlight.FireBlockMixin",
     "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
     "porting_lib.ConditionalRecipeSerializerMixin",
