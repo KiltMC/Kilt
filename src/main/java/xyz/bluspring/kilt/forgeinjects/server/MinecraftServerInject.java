@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.server;
 
 import com.google.common.collect.Maps;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -26,6 +27,11 @@ public class MinecraftServerInject implements MinecraftServerInjection {
     @Redirect(method = "spin", at = @At(value = "NEW", target = "java/lang/Thread"))
     private static Thread kilt$setThreadGroup(Runnable target, String name) {
         return new Thread(SidedThreadGroups.SERVER, target, name);
+    }
+
+    @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"))
+    private String kilt$appendKiltToServerBranding(String original) {
+        return original + " + kilt";
     }
 
     @Override

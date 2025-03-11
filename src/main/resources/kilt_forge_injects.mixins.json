@@ -48,6 +48,7 @@
     "resources.RegistryLoaderInject",
     "resources.ResourceLocationInject",
     "server.BootstrapInject",
+    "server.MainInject",
     "server.MinecraftServerInject",
     "server.PlayerAdvancementsInject",
     "server.ReloadableServerResourcesInject",
