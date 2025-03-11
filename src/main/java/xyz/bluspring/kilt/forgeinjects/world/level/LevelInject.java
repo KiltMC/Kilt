@@ -67,6 +67,11 @@ public abstract class LevelInject implements CapabilityProviderInjection, LevelC
     }
 
     @Override
+    public boolean kilt$getRestoringBlockSnapshots() {
+        return restoringBlockSnapshots;
+    }
+
+    @Override
     public void kilt$setRestoringBlockSnapshots(boolean value) {
         restoringBlockSnapshots = value;
     }

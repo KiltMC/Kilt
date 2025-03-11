@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
@@ -12,16 +14,15 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.common.extensions.IForgeBlock;
-import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.client.render.RenderPropertiesInjection;
+import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 
 @Mixin(Block.class)
 public abstract class BlockInject implements IForgeBlock, RenderPropertiesInjection<IClientBlockExtensions> {
@@ -48,14 +49,13 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     private static void kilt$handleRenderFace(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, Direction direction, BlockPos blockPos2, CallbackInfoReturnable<Boolean> cir, BlockState blockState2) {
         if (blockState.skipRendering(blockState2, direction))
             cir.setReturnValue(false);
-        else if (((IForgeBlockState) blockState).supportsExternalFaceHiding() && ((IForgeBlockState) blockState2).hidesNeighborFace(blockGetter, blockPos, blockState, direction))
+        else if (blockState.supportsExternalFaceHiding() && blockState2.hidesNeighborFace(blockGetter, blockPos, blockState, direction))
             cir.setReturnValue(false);
     }
 
-    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"), method = "popResource(Lnet/minecraft/world/level/Level;Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;)V")
-    private static boolean kilt$checkRestoringBlockSnapshots(Level instance) {
-        // TODO: how do i inject fields into stuff
-        return instance.isClientSide; //&& !((IForgeLevel) instance).restoringBlockSnapshots;
+    @WrapOperation(at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"), method = "popResource(Lnet/minecraft/world/level/Level;Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;)V")
+    private static boolean kilt$checkRestoringBlockSnapshots(Level instance, Operation<Boolean> original) {
+        return original.call(instance) && ((LevelInjection) instance).kilt$getRestoringBlockSnapshots(); //&& !((IForgeLevel) instance).restoringBlockSnapshots;
     }
 
     @Override

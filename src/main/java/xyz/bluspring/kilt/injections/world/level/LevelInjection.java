@@ -11,6 +11,9 @@ public interface LevelInjection {
     default void kilt$setCaptureBlockSnapshots(boolean value) {
         throw new IllegalStateException();
     }
+    default boolean kilt$getRestoringBlockSnapshots() {
+        throw new IllegalStateException();
+    }
     default void kilt$setRestoringBlockSnapshots(boolean value) {
         throw new IllegalStateException();
     }
