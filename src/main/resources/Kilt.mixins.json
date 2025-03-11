@@ -56,6 +56,8 @@
     "TypeAccessor",
     "WoodTypeAccessor",
     "compat.forge.moonlight.FireBlockMixin",
+    "compat.forgeconfigapiport.ForgeConfigSpecMixin",
+    "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
     "compat.forgeconfigapiport.ModConfigMixin",
     "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
