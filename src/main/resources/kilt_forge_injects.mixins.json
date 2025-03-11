@@ -65,6 +65,8 @@
     "server.network.ServerLoginPacketListenerImplInject$ThreadInject",
     "server.packs.PackResourcesInject",
     "server.packs.VanillaPackResourcesInject",
+    "server.packs.repository.PackInject",
+    "server.packs.repository.PackInject$PackConstructorInject",
     "server.packs.repository.PackRepositoryInject",
     "server.packs.resources.MultiPackResourceManagerInject",
     "server.packs.resources.ReloadableResourceManagerInject",
