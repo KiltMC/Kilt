@@ -1,6 +1,7 @@
 // TRACKED HASH: ce9de4ebd17cd2e93a7249669656671c642e5307
 package xyz.bluspring.kilt.forgeinjects.server.dedicated;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -29,10 +30,12 @@ public abstract class DedicatedServerInject extends MinecraftServer {
             cir.setReturnValue(false);
     }
 
-    @Inject(method = "initServer", at = @At("RETURN"), cancellable = true)
-    public void kilt$handleServerStarting(CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValue()) {
-            cir.setReturnValue(ServerLifecycleHooks.handleServerStarting(this));
+    @ModifyReturnValue(method = "initServer", at = @At("RETURN"))
+    public boolean kilt$handleServerStarting(boolean original) {
+        if (original) {
+            return ServerLifecycleHooks.handleServerStarting(this);
         }
+
+        return original;
     }
 }

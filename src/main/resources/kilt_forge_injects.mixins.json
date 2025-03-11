@@ -72,6 +72,7 @@
         "resources.ResourceKeyInject",
         "resources.ResourceLocationInject",
         "server.BootstrapInject",
+        "server.MainInject",
         "server.MinecraftServerInject",
         "server.ReloadableServerResourcesInject",
         "server.WorldLoaderInject",
