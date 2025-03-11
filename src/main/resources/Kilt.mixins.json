@@ -59,12 +59,16 @@
     "compat.forgeconfigapiport.ModConfigMixin",
     "compat.geckolib.GeoBlockRendererMixin",
     "compat.geckolib.GeoItemRendererMixin",
+    "compat.sodium.BakedChunkModelBuilderMixin",
+    "compat.sodium.BlockRendererMixin",
+    "compat.sodium.ChunkRenderRebuildTaskMixin",
+    "compat.sodium.SodiumWorldRendererMixin",
+    "compat.sodium.WorldSliceMixin",
     "porting_lib.ConditionalRecipeSerializerMixin",
     "porting_lib.LootContextExtensionsMixin",
     "porting_lib.RegistryObjectAccessor",
     "porting_lib.RegistryObjectMixin",
-    "porting_lib.StringsMixin",
-    "sodium.SodiumWorldRendererMixin"
+    "porting_lib.StringsMixin"
   ],
   "client": [
     "DebugScreenOverlayMixin",

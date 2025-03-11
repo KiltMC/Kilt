@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.sodium;
+package xyz.bluspring.kilt.mixin.compat.sodium;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;

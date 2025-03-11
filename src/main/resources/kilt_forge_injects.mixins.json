@@ -242,6 +242,7 @@
     "client.renderer.block.model.BakedQuadInject",
     "client.renderer.block.model.BlockElementFaceInject",
     "client.renderer.block.model.BlockModelInject",
+    "client.renderer.block.model.BlockModelInject$DeserializerInject",
     "client.renderer.block.model.ItemTransformInject",
     "client.renderer.block.model.ItemTransformsInject",
     "client.renderer.block.model.ItemTransformsInject$TransformTypeInject",
