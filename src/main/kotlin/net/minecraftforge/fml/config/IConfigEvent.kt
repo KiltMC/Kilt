@@ -18,5 +18,15 @@ interface IConfigEvent {
     companion object {
         @JvmField
         val CONFIGCONFIG = Bindings.getConfigConfiguration().get()
+
+        @JvmStatic
+        fun loading(modConfig: ModConfig): IConfigEvent {
+            return CONFIGCONFIG.loading.apply(modConfig)
+        }
+
+        @JvmStatic
+        fun reloading(modConfig: ModConfig): IConfigEvent {
+            return CONFIGCONFIG.reloading.apply(modConfig)
+        }
     }
 }
