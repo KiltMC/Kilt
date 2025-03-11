@@ -54,6 +54,8 @@
     "server.ReloadableServerResourcesInject",
     "server.ServerAdvancementManagerInject",
     "server.dedicated.DedicatedServerInject",
+    "server.level.ChunkHolderInject",
+    "server.level.ChunkMapInject",
     "server.level.ServerChunkCacheInject",
     "server.level.ServerLevelInject",
     "server.level.ServerPlayerGameModeInject",
