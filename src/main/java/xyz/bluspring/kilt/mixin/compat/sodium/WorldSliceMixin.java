@@ -2,8 +2,8 @@ package xyz.bluspring.kilt.mixin.compat.sodium;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import me.jellysquid.mods.sodium.client.world.WorldSlice;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.common.extensions.IForgeBlockGetter;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 @IfModLoaded("sodium")
 @Mixin(WorldSlice.class)
 public class WorldSliceMixin implements IForgeBlockGetter {
-    @Shadow @Final private ClientLevel world;
+    @Shadow @Final private Level world;
 
     @Override
     public @Nullable BlockEntity getExistingBlockEntity(BlockPos pos) {
