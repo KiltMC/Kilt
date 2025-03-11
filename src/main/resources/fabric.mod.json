@@ -47,8 +47,7 @@
     "minecraft": "${minecraft_version}",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "forgeconfigapiport": ">=${forge_config_version}",
-    "architectury": ">=${architectury_version}",
-    "sodium": "*"
+    "architectury": ">=${architectury_version}"
   },
   "custom": {
     "loom:injected_interfaces": {
