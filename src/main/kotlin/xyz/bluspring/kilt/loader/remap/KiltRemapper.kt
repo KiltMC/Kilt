@@ -13,7 +13,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
-import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.minecraftforge.fart.api.ClassProvider
 import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper
@@ -79,8 +78,8 @@ object KiltRemapper {
 
     // Some workaround mappings, to remap some names to Kilt equivalents.
     // This fixes some compatibility issues.
-    private val kiltWorkaroundTree = TinyMappingFactory.load(
-        this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
+    private val kiltWorkaroundTree = IMappingFile.load(
+        this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.buffered()
     )
 
     private val mappingResolver = if (forceProductionRemap)
@@ -696,7 +695,7 @@ object KiltRemapper {
 
     fun remapClass(name: String, toIntermediary: Boolean = false, ignoreWorkaround: Boolean = false): String {
         val workaround = if (!ignoreWorkaround)
-            kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
+            kiltWorkaroundTree.classes.firstOrNull { it.original == name }?.mapped
         else null
         val intermediary = srgIntermediaryMapping.remapClass(name.replace(".", "/"))
         if (toIntermediary) {
