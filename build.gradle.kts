@@ -34,6 +34,7 @@ loom {
 }
 
 repositories {
+    mavenLocal()
     maven("https://mvn.devos.one/snapshots/") {
         name = "DevOS One"
     }
