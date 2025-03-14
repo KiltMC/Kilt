@@ -141,8 +141,7 @@ dependencies {
     include(implementation("com.moulberry:mixinconstraints:${property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     })
-    //include(modImplementation("xyz.bluspring.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
-    include(implementation(":AsmFabricLoader-1.1.8-SNAPSHOT-dev")!!)
+    include(modImplementation("xyz.bluspring.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
 
     // required by Forge Config API Port
     implementation("com.electronwill.night-config:core:3.6.5")
