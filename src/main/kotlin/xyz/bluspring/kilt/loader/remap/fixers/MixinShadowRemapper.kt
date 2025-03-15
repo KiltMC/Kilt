@@ -69,7 +69,7 @@ object MixinShadowRemapper {
             var remapped = ""
 
             for (className in targetClassNames) {
-                remapped = remapper.mapFieldName(className, method.name, method.desc)
+                remapped = remapper.mapMethodName(className, method.name, method.desc)
 
                 if (remapped != method.name)
                     break

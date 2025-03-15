@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 147
+    const val REMAPPER_VERSION = 148
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -260,8 +260,6 @@ object KiltRemapper {
             ).collect { addLibrary(it) }
         }.build()
 
-        val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer)
-
         suspend fun remapMod(file: Path, mod: ForgeMod): List<Exception> {
             val exceptions = mutableListOf<Exception>()
 
@@ -281,6 +279,7 @@ object KiltRemapper {
 
             val mixinClasses = ClassNameHashSet()
             val refmaps = CaseInsensitiveStringHashSet()
+            val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, mixinClasses)
 
             suspend fun processManifest(
                 jar: JarFile,
