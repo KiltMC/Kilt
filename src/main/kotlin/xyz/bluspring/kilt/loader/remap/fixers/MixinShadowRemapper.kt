@@ -31,9 +31,9 @@ object MixinShadowRemapper {
 
         if (values.contains("targets")) {
             if (values["targets"] is List<*>) {
-                targetClassNames.addAll((values["targets"] as List<String>))
+                targetClassNames.addAll((values["targets"] as List<String>).map { it.replace(".", "/").removeSurrounding("L", ";") })
             } else if (values["targets"] is String) {
-                targetClassNames.add((values["targets"] as String))
+                targetClassNames.add((values["targets"] as String).replace(".", "/").removeSurrounding("L", ";"))
             }
         }
 
