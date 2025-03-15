@@ -23,9 +23,9 @@ object MixinShadowRemapper {
 
         if (values.contains("value")) {
             if (values["value"] is List<*>) {
-                targetClassNames.addAll((values["value"] as List<Class<*>>).map { it.typeName.replace(".", "/") })
-            } else if (values["value"] is Class<*>) {
-                targetClassNames.add((values["value"] as Class<*>).typeName.replace(".", "/"))
+                targetClassNames.addAll((values["value"] as List<Type>).map { it.internalName })
+            } else if (values["value"] is Type) {
+                targetClassNames.add((values["value"] as Type).internalName)
             }
         }
 
