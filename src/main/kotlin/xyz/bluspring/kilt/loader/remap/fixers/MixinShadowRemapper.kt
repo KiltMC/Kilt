@@ -1,14 +1,40 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import org.spongepowered.asm.mixin.Mixin
+import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 
 object MixinShadowRemapper {
-    fun remapClass(classNode: ClassNode) {
+    val MIXIN_TYPE = Type.getType(Mixin::class.java)
+
+    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
         val remappedFields = mutableMapOf<String, String>()
         val remappedMethods = mutableMapOf<String, String>()
+
+        val mixinAnnotation = classNode.visibleAnnotations.first { it.desc == MIXIN_TYPE.descriptor }
+        val targetClassNames = mutableListOf<String>()
+
+        val values = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+
+        if (values.contains("value")) {
+            if (values["value"] is List<*>) {
+                targetClassNames.addAll((values["value"] as List<Class<*>>).map { it.typeName.replace(".", "/") })
+            } else if (values["value"] is Class<*>) {
+                targetClassNames.add((values["value"] as Class<*>).typeName.replace(".", "/"))
+            }
+        }
+
+        if (values.contains("targets")) {
+            if (values["targets"] is List<*>) {
+                targetClassNames.addAll((values["targets"] as List<String>))
+            } else if (values["targets"] is String) {
+                targetClassNames.add((values["targets"] as String))
+            }
+        }
 
         // Collect all shadow fields
         for (field in classNode.fields) {
@@ -18,7 +44,15 @@ object MixinShadowRemapper {
             if (field.visibleAnnotations.none { it.desc.contains("org/spongepowered/asm/mixin/Shadow") })
                 continue
 
-            val remapped = KiltRemapper.srgMappedFields[field.name]?.second ?: continue
+            var remapped = ""
+
+            for (className in targetClassNames) {
+                remapped = remapper.mapFieldName(className, field.name, field.desc)
+
+                if (remapped != field.name)
+                    break
+            }
+
             remappedFields[field.name] = remapped
             field.name = remapped
         }
@@ -31,7 +65,15 @@ object MixinShadowRemapper {
             if (method.visibleAnnotations.none { it.desc.contains("org/spongepowered/asm/mixin/Shadow") })
                 continue
 
-            val remapped = KiltRemapper.srgMappedMethods[method.name]?.get(classNode.name.replace(".", "/")) ?: KiltRemapper.srgMappedMethods[method.name]?.values?.firstOrNull() ?: continue
+            var remapped = ""
+
+            for (className in targetClassNames) {
+                remapped = remapper.mapFieldName(className, method.name, method.desc)
+
+                if (remapped != method.name)
+                    break
+            }
+
             remappedMethods[method.name] = remapped
             method.name = remapped
         }
