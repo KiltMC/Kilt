@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
@@ -39,10 +40,9 @@ object MixinShadowRemapper {
 
         // Collect all shadow fields
         for (field in classNode.fields) {
-            if (field.visibleAnnotations == null)
-                continue
+            val annotations = field.visibleAnnotations ?: field.invisibleAnnotations ?: continue
 
-            if (field.visibleAnnotations.none { it.desc.contains("org/spongepowered/asm/mixin/Shadow") })
+            if (annotations.none { isTargeted(it) })
                 continue
 
             var remapped = ""
@@ -60,10 +60,9 @@ object MixinShadowRemapper {
 
         // Collect all shadow methods
         for (method in classNode.methods) {
-            if (method.visibleAnnotations == null)
-                continue
+            val annotations = method.visibleAnnotations ?: method.invisibleAnnotations ?: continue
 
-            if (method.visibleAnnotations.none { it.desc.contains("org/spongepowered/asm/mixin/Shadow") })
+            if (annotations.none { isTargeted(it) })
                 continue
 
             var remapped = ""
@@ -91,5 +90,9 @@ object MixinShadowRemapper {
                 }
             }
         }
+    }
+
+    private fun isTargeted(node: AnnotationNode): Boolean {
+        return node.desc.contains("org/spongepowered/asm/mixin/Shadow") || node.desc.contains("org/spongepowered/asm/mixin/Overwrite")
     }
 }
