@@ -64,7 +64,11 @@ object ObfuscationReflectionHelper {
     @JvmStatic
     fun findMethod(clazz: Class<*>, methodName: String, vararg parameterTypes: Class<*>): Method {
         return try {
-            val m = clazz.getDeclaredMethod(remapName(INameMappingService.Domain.METHOD, methodName), *parameterTypes)
+            val remappedName = if (KiltRemapper.srgMappedMethods.contains(methodName))
+                KiltRemapper.enhancedRemapper.tryFindMethodName(clazz.typeName.replace(".", "/"), KiltRemapper.srgMappedMethods[methodName]!!) ?: methodName
+            else methodName
+
+            val m = clazz.getDeclaredMethod(remappedName, *parameterTypes)
             m.isAccessible = true
             m
         } catch (e: Exception) {

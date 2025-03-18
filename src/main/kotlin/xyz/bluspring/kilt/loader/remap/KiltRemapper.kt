@@ -89,6 +89,8 @@ object KiltRemapper {
 
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
+    lateinit var enhancedRemapper: KiltEnhancedRemapper
+
     private lateinit var remappedModsDir: Path
 
     // SRG name -> (parent class name, intermediary/mapped name)
@@ -278,6 +280,7 @@ object KiltRemapper {
             val mixinClasses = ClassNameHashSet()
             val refmaps = CaseInsensitiveStringHashSet()
             val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, mixinClasses)
+            enhancedRemapper = remapper
 
             suspend fun processManifest(
                 jar: JarFile,
