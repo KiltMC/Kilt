@@ -27,7 +27,7 @@ class KiltEnhancedRemapper(provider: ClassProvider, file: IMappingFile, log: Con
         return super.mapMethodName(owner, name, descriptor)
     }
 
-    private fun tryFindMethodName(owner: String, mappedNames: Map<String, String>): String? {
+    fun tryFindMethodName(owner: String, mappedNames: Map<String, String>): String? {
         val actualOwnerName = if (owner.startsWith("net/minecraft/class_"))
             KiltRemapper.unmapClass(owner)
         else owner
