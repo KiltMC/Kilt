@@ -262,6 +262,9 @@ object KiltRemapper {
             ).collect { addLibrary(it) }
         }.build()
 
+        // Initialize a global remapper state
+        enhancedRemapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, ClassNameHashSet())
+
         suspend fun remapMod(file: Path, mod: ForgeMod): List<Exception> {
             val exceptions = mutableListOf<Exception>()
 
