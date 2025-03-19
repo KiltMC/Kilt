@@ -43,10 +43,13 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
         tracked = null
         loaded = true
 
+        logger.debug("Loading coremod $id from mod ${mod.displayName} (${mod.modId})")
         for ((name, data) in bindings) {
             val targetData = data["target"] as Map<String, Any?>
             val type = TargetType.byName(targetData["type"] as String)
             val function = data["transformer"] as Bindings
+
+            logger.debug("Loading binding $name")
 
             when (type) {
                 TargetType.CLASS -> {
@@ -58,6 +61,8 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     }
 
                     for (target in targets) {
+                        logger.debug("Binding $name: Added class $target as target")
+
                         ClassTinkerers.addTransformation(KiltRemapper.remapClass(target, ignoreWorkaround = true)) {
                             NashornHelper.getFunction<ClassNode, ClassNode>(function).apply(it)
                         }
@@ -69,6 +74,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     val fieldName = targetData["fieldName"] as String
                     val mappedFieldName = KiltRemapper.srgMappedFields[fieldName]?.second ?: fieldName
 
+                    logger.debug("Binding $name: Added field $fieldName / $mappedFieldName from class $className as target")
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
                         val field = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@addTransformation
                         NashornHelper.getFunction<FieldNode, FieldNode>(function).apply(field)
@@ -83,6 +89,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     val mappedMethodName = KiltRemapper.srgMappedMethods[methodName]?.get(className) ?: KiltRemapper.srgMappedMethods[methodName]?.values?.firstOrNull() ?: methodName
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
+                    logger.debug("Binding $name: Added method $methodName$mappedDescName / $mappedMethodName$mappedDescName from class $className as target")
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
                         val method = classNode.methods.firstOrNull { it.name == mappedMethodName && it.desc == mappedDescName } ?: return@addTransformation
                         NashornHelper.getFunction<MethodNode, MethodNode>(function).apply(method)
