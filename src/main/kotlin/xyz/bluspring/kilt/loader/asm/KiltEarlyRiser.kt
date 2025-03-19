@@ -279,22 +279,58 @@ class KiltEarlyRiser : Runnable {
         }
 
         run {
-            val biomeSpecialEffectsMapped = KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects")
-            val grassColorModifierMapped = KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
-            val biomeInjectionName = "xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection"
+            val biomeSpecialEffectsMapped =
+                KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects")
+            val grassColorModifierMapped =
+                KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
+            val biomeInjectionName =
+                "xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection"
             val colorModifierName = "$grassColorModifierMapped\$ColorModifier"
-            val modifyColor = mappingResolver.mapMethodName("intermediary", "net.minecraft.class_4763\$class_5486", "method_30823", "(DDI)I")
+            val modifyColor = mappingResolver.mapMethodName(
+                "intermediary",
+                "net.minecraft.class_4763\$class_5486",
+                "method_30823",
+                "(DDI)I"
+            )
 
             val classWriter = ClassWriter(Opcodes.ASM9)
-            classWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT, colorModifierName, null, "java/lang/Object", arrayOf("$biomeInjectionName\$ColorModifier"))
+            classWriter.visit(
+                Opcodes.V17,
+                Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT,
+                colorModifierName,
+                null,
+                "java/lang/Object",
+                arrayOf("$biomeInjectionName\$ColorModifier")
+            )
 
             classWriter.visitNestHost(biomeSpecialEffectsMapped)
             classWriter.visitAnnotation("Ljava/lang/FunctionalInterface;", true)
-            classWriter.visitInnerClass(grassColorModifierMapped, biomeSpecialEffectsMapped, grassColorModifierMapped.removePrefix(biomeSpecialEffectsMapped).removePrefix("\$"), Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_ENUM)
-            classWriter.visitInnerClass(colorModifierName, grassColorModifierMapped, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
-            classWriter.visitInnerClass("$biomeInjectionName\$ColorModifier", biomeInjectionName, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+            classWriter.visitInnerClass(
+                grassColorModifierMapped,
+                biomeSpecialEffectsMapped,
+                grassColorModifierMapped.removePrefix(biomeSpecialEffectsMapped).removePrefix("\$"),
+                Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_ENUM
+            )
+            classWriter.visitInnerClass(
+                colorModifierName,
+                grassColorModifierMapped,
+                "ColorModifier",
+                Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT
+            )
+            classWriter.visitInnerClass(
+                "$biomeInjectionName\$ColorModifier",
+                biomeInjectionName,
+                "ColorModifier",
+                Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT
+            )
 
-            classWriter.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT, "modifyGrassColor", "(DDI)I", null, null)
+            classWriter.visitMethod(
+                Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT,
+                "modifyGrassColor",
+                "(DDI)I",
+                null,
+                null
+            )
             classWriter.visitEnd()
 
             ClassTinkerers.define("$grassColorModifierMapped\$ColorModifier", classWriter.toByteArray())
@@ -376,6 +412,31 @@ class KiltEarlyRiser : Runnable {
             ClassTinkerers.addTransformation(biomeSpecialEffectsMapped) { classNode ->
                 classNode.visitNestMember(colorModifierName)
                 classNode.visitInnerClass(colorModifierName, grassColorModifierMapped, "ColorModifier", Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT)
+            }
+        }
+
+        run {
+            ClassTinkerers.addTransformation("joptsimple.internal.Strings") { classNode ->
+                // What the fuck, why
+                if (classNode.methods.none { it.name == "join" && it.desc == "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;" }) {
+                    val joinMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "join", "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", null, null)
+                    joinMethod.visitCode()
+                    val label0 = Label()
+                    val label1 = Label()
+
+                    joinMethod.visitLabel(label0)
+                    joinMethod.visitFieldInsn(Opcodes.GETSTATIC, "xyz/bluspring/kilt/util/KiltHelper", "INSTANCE", "Lxyz/bluspring/kilt/util/KiltHelper;")
+                    joinMethod.visitVarInsn(Opcodes.ALOAD, 0)
+                    joinMethod.visitVarInsn(Opcodes.ALOAD, 1)
+                    joinMethod.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "xyz/bluspring/kilt/util/KiltHelper", "joinToString", "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false)
+                    joinMethod.visitInsn(Opcodes.ARETURN)
+
+                    joinMethod.visitLabel(label1)
+                    joinMethod.visitLocalVariable("pieces", "[Ljava/lang/String;", null, label0, label1, 0)
+                    joinMethod.visitLocalVariable("separator", "Ljava/lang/String;", null, label0, label1, 1)
+                    joinMethod.visitMaxs(3, 2)
+                    joinMethod.visitEnd()
+                }
             }
         }
 
