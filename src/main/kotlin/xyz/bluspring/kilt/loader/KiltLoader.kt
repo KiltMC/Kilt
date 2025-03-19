@@ -657,16 +657,16 @@ class KiltLoader {
                                     classReader.accept(visitor, 0)
                                     visitor.buildData(scanData.classes, scanData.annotations)
                                 }
-
-                            // Follow the exact order the mod loading queue was sorted.
-                            mods[index] = mod
-
-                            // Avoid `ConcurrentModificationException`
-                            // when register the event for mods that need to find the context by `getMod`
-                            ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
-
-                            exceptions.addAll(registerAnnotations(mod, scanData))
                         }.join()
+
+                        // Follow the exact order the mod loading queue was sorted.
+                        mods[index] = mod
+
+                        // Avoid `ConcurrentModificationException`
+                        // when register the event for mods that need to find the context by `getMod`
+                        ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
+
+                        exceptions.addAll(registerAnnotations(mod, scanData))
                     } catch (e: Exception) {
                         e.printStackTrace()
                         exceptions.add(e)
