@@ -16,8 +16,9 @@ object MixinShadowRemapper {
         val remappedFields = mutableMapOf<String, String>()
         val remappedMethods = mutableMapOf<String, String>()
 
-        val annotations = classNode.visibleAnnotations ?: classNode.invisibleAnnotations ?: throw IllegalStateException("Failed to locate mixin annotations!")
-        val mixinAnnotation = annotations.first { it.desc == MIXIN_TYPE.descriptor }
+        val mixinAnnotation = classNode.visibleAnnotations.firstOrNull { it.desc == MIXIN_TYPE.descriptor }
+            ?: classNode.invisibleAnnotations?.firstOrNull { it.desc == MIXIN_TYPE.descriptor }
+            ?: throw IllegalStateException("Failed to locate mixin annotations!")
         val targetClassNames = mutableListOf<String>()
 
         val values = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
