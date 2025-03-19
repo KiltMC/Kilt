@@ -41,7 +41,6 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 import kotlin.io.path.*
-import kotlin.io.path.Path
 import kotlin.time.measureTime
 
 
@@ -49,7 +48,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 151
+    const val REMAPPER_VERSION = 152
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
