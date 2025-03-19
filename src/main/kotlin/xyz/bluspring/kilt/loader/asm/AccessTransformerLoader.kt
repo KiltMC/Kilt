@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.asm
 
-import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
@@ -9,7 +8,6 @@ import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.regex.Pattern
 
 // A reimplementation of Forge's Access Transformers.
@@ -161,11 +159,6 @@ object AccessTransformerLoader {
                         // promote access type
                         if (priorityAccess.ordinal < methodTransformInfo.currentAccessType.ordinal) {
                             methodTransformInfo.currentAccessType = priorityAccess
-
-                            // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                            // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                            accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
                         }
 
                         // promote final type
@@ -175,6 +168,11 @@ object AccessTransformerLoader {
                     } else {
                         transformInfo.methods[pair] = TransformInfo(priorityAccess, priorityFinal)
                     }
+
+                    // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
+                    accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                    // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
+                    accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
 
                     if (!classTransformInfo.contains(intermediaryClassName))
                         classTransformInfo[intermediaryClassName] = transformInfo
@@ -201,6 +199,9 @@ object AccessTransformerLoader {
                     } else {
                         transformInfo.fields[fieldName] = TransformInfo(accessType, finalType)
                     }
+
+                    accessWidener.visitField(intermediaryClassName, fieldName, fieldInfo.mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                    accessWidener.visitField(intermediaryClassName, fieldName, fieldInfo.mappedDescriptor, AccessWidenerReader.AccessType.MUTABLE, true)
 
                     if (!classTransformInfo.contains(intermediaryClassName))
                         classTransformInfo[intermediaryClassName] = transformInfo
@@ -235,6 +236,9 @@ object AccessTransformerLoader {
                         transformInfo.final = priorityFinal
                     }
                 }
+
+                accessWidener.visitClass(intermediaryClassName, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                accessWidener.visitClass(intermediaryClassName, AccessWidenerReader.AccessType.EXTENDABLE, true)
             }
         }
     }
@@ -243,7 +247,7 @@ object AccessTransformerLoader {
         if (hasLoaded)
             return
 
-        DeltaTimeProfiler.push("loadATs")
+        /*DeltaTimeProfiler.push("loadATs")
 
         val startTime = System.currentTimeMillis()
         logger.info("Adding access transformers to mixin")
@@ -345,7 +349,7 @@ object AccessTransformerLoader {
         logger.info("Finished loading access transformers (took ${System.currentTimeMillis() - startTime}ms)")
         hasLoaded = true
 
-        DeltaTimeProfiler.pop()
+        DeltaTimeProfiler.pop()*/
     }
 
     private enum class AccessType(val flag: Int) {

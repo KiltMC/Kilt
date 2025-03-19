@@ -18,6 +18,10 @@ object KiltHelper {
         return cachedForgeClassNodes
     }
 
+    fun joinToString(array: Array<String>, separator: String): String {
+        return array.joinToString(separator)
+    }
+
     fun getKiltPaths(): List<Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
             //listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
