@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.injections.client.renderer;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -15,22 +14,24 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.registries.ForgeRegistries;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.mixin.ItemBlockRenderTypesAccessor;
+import xyz.bluspring.kilt.util.DefaultedHashMap;
 
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public interface ItemBlockRenderTypesInjection {
     ChunkRenderTypeSet CUTOUT_MIPPED = ChunkRenderTypeSet.of(RenderType.cutoutMipped());
     ChunkRenderTypeSet SOLID = ChunkRenderTypeSet.of(RenderType.solid());
-    Object2ObjectOpenHashMap<Holder.Reference<Block>, ChunkRenderTypeSet> BLOCK_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_BLOCK.size(), .5F), (it) -> {
-        it.defaultReturnValue(SOLID);
+    Map<Holder.Reference<Block>, ChunkRenderTypeSet> BLOCK_RENDER_TYPES = Util.make(new DefaultedHashMap<>(ItemBlockRenderTypes.TYPE_BY_BLOCK.size(), .5F), (it) -> {
+        it.setDefaultValue(SOLID);
         ItemBlockRenderTypes.TYPE_BY_BLOCK.forEach((key, value) -> {
                 it.put(ForgeRegistries.BLOCKS.getDelegateOrThrow(key), ChunkRenderTypeSet.of(value));
         });
     });
     // why does this feel utterly pointless
-    Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new Object2ObjectOpenHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
-        it.defaultReturnValue(RenderType.solid());
+    Map<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = Util.make(new DefaultedHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
+        it.setDefaultValue(RenderType.solid());
         ItemBlockRenderTypes.TYPE_BY_FLUID.forEach((key, value) -> {
                 it.put(ForgeRegistries.FLUIDS.getDelegateOrThrow(key), value);
         });
@@ -43,11 +44,7 @@ public interface ItemBlockRenderTypesInjection {
 
         // Kilt: Handle Fabric mods' render types
         var delegate = ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock());
-        try {
-            if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
-                BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
-            }
-        } catch (ArrayIndexOutOfBoundsException ignored) { // what in the fuck. why. I'M TRYING TO CHECK IN THE BOUNDS. WHAT THE FUCK FASTUTIL.
+        if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
             BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
         }
 
