@@ -6,6 +6,8 @@ import dev.architectury.event.EventResult
 import dev.architectury.event.events.common.EntityEvent
 import dev.architectury.event.events.common.InteractionEvent
 import dev.architectury.event.events.common.TickEvent.ServerLevelTick
+import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
@@ -73,6 +75,19 @@ class Kilt : ModInitializer {
             ForgeHooks.onEmptyLeftClick(player)
         }
 
+        CriticalHitEvent.CRITICAL_HIT.register { event ->
+            val forgeEvent = ForgeHooks.getCriticalHit(event.player, event.entity, event.isVanillaCritical, event.oldDamageModifier)
+
+            if (forgeEvent == null) {
+                event.result = BaseEvent.Result.DENY
+            } else {
+                event.result = BaseEvent.Result.valueOf(forgeEvent.result.name)
+
+                if (forgeEvent.damageModifier != forgeEvent.oldDamageModifier)
+                    event.damageModifier = forgeEvent.damageModifier
+            }
+        }
+
         InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
             ForgeHooks.onEmptyClick(player, hand)
         }
@@ -135,17 +150,6 @@ class Kilt : ModInitializer {
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
-        }
-
-        EntityEvent.LIVING_HURT.register { entity, source, amount ->
-            val newAmount = ForgeHooks.onLivingHurt(entity, source, amount)
-
-            // TODO: set amount
-            if (newAmount != 0F) {
-                EventResult.interruptDefault()
-            } else {
-                EventResult.pass()
-            }
         }
 
         EntityEvent.ADD.register { entity, level ->
