@@ -23,7 +23,7 @@ public class MinecraftServerInject implements MinecraftServerInjection {
         return perWorldTickTimes.get(dim);
     }
 
-    @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"))
+    @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"), remap = false)
     private String kilt$appendKiltToServerBranding(String original) {
         return original + " + kilt";
     }
