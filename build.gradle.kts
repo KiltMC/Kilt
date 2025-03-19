@@ -112,6 +112,10 @@ repositories {
     maven("https://maven.su5ed.dev/releases") {
         name = "Su5ed"
     }
+
+    maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
+        name = "GeckoLib"
+    }
 }
 
 dependencies {
@@ -194,6 +198,9 @@ dependencies {
             modCompileOnly(dependencyNotation, configuration)
         }
     }
+
+    // Compatibility
+    modImplementation("software.bernie.geckolib:geckolib-fabric-${property("minecraft_version")}:${property("geckolib_version")}")
 
     val runSodium = true
 

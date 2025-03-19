@@ -105,5 +105,8 @@
   },
   "overwrites": {
     "conformVisibility": true
+  },
+  "mixinextras": {
+    "minVersion": "0.5.0-beta.5"
   }
 }
