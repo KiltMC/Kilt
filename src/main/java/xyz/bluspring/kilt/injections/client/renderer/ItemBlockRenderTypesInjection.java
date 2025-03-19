@@ -42,15 +42,12 @@ public interface ItemBlockRenderTypesInjection {
         }
 
         // Kilt: Handle Fabric mods' render types
-        var forgeLayers = BLOCK_RENDER_TYPES.getOrDefault(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()), ChunkRenderTypeSet.none());
-        if (forgeLayers.isEmpty()) {
-            var vanillaLayer = ItemBlockRenderTypes.TYPE_BY_BLOCK.getOrDefault(state.getBlock(), RenderType.solid());
-            forgeLayers = ChunkRenderTypeSet.of(vanillaLayer);
-
-            BLOCK_RENDER_TYPES.put(ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock()), forgeLayers);
+        var delegate = ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock());
+        if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
+            BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
         }
 
-        return forgeLayers;
+        return BLOCK_RENDER_TYPES.get(delegate);
     }
 
     static void setRenderLayer(Block block, RenderType type) {
