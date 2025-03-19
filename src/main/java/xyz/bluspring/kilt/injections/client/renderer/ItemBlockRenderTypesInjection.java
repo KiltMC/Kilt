@@ -43,7 +43,11 @@ public interface ItemBlockRenderTypesInjection {
 
         // Kilt: Handle Fabric mods' render types
         var delegate = ForgeRegistries.BLOCKS.getDelegateOrThrow(state.getBlock());
-        if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
+        try {
+            if (!BLOCK_RENDER_TYPES.containsKey(delegate)) {
+                BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
+            }
+        } catch (ArrayIndexOutOfBoundsException ignored) { // what in the fuck. why. I'M TRYING TO CHECK IN THE BOUNDS. WHAT THE FUCK FASTUTIL.
             BLOCK_RENDER_TYPES.put(delegate, ChunkRenderTypeSet.of(ItemBlockRenderTypes.getChunkRenderType(state)));
         }
 
