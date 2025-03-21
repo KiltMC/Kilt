@@ -1,7 +1,6 @@
 // TRACKED HASH: 447c2971f05b4f59ff0d6999b808ec34f403b802
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
@@ -13,6 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
 @Mixin(ItemBlockRenderTypes.class)
@@ -24,11 +24,11 @@ public class ItemBlockRenderTypesInject implements ItemBlockRenderTypesInjection
     private static ChunkRenderTypeSet SOLID = ChunkRenderTypeSet.of(RenderType.solid());
 
     @CreateStatic
-    private static Object2ObjectOpenHashMap<Holder.Reference<Block>, ChunkRenderTypeSet> BLOCK_RENDER_TYPES = ItemBlockRenderTypesInjection.BLOCK_RENDER_TYPES;
+    private static Map<Holder.Reference<Block>, ChunkRenderTypeSet> BLOCK_RENDER_TYPES = ItemBlockRenderTypesInjection.BLOCK_RENDER_TYPES;
 
     // why does this feel utterly pointless
     @CreateStatic
-    private static Object2ObjectOpenHashMap<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = ItemBlockRenderTypesInjection.FLUID_RENDER_TYPES;
+    private static Map<Holder.Reference<Fluid>, RenderType> FLUID_RENDER_TYPES = ItemBlockRenderTypesInjection.FLUID_RENDER_TYPES;
 
     @CreateStatic
     private static ChunkRenderTypeSet getRenderLayers(BlockState state) {
