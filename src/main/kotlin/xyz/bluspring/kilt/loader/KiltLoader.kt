@@ -700,7 +700,7 @@ class KiltLoader {
                     busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
                     ModLoadingContext.kiltActiveModId = null
 
-                    Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
+                    Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Exception) {
                     Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
