@@ -383,6 +383,11 @@ class KiltLoader {
             throw Exception("Sinytra Connector was detected! I know I said \"Isn't it reasonable to have both?\", but come on!")
         }
 
+        // Avoid loading JiJ'd MixinExtras, we already provide a modern version of it.
+        if (jarFile.getEntry("com/llamalad7/mixinextras/injector/ModifyExpressionValue.class") != null) {
+            return mapOf()
+        }
+
         val thrownExceptions = mutableMapOf<String, Exception>()
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
 
