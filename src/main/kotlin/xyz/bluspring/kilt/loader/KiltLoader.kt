@@ -757,25 +757,32 @@ class KiltLoader {
 
     fun initMods() {
         DeltaTimeProfiler.push("initMods")
-        val exceptions = mutableListOf<Exception>()
+        val exception = RuntimeException("Failed to load Kilt mods!")
 
-        for (mod in mods) {
-            exceptions.addAll(initMod(mod, mod.scanData))
+        runBlocking {
+            mods.asFlow()
+                .collect { mod ->
+                    try {
+                        initMod(mod, mod.scanData)
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                        exception.addSuppressed(e)
+                    }
+                }
         }
 
         try {
             ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
         } catch (e: Exception) {
-            exceptions.add(e)
+            e.printStackTrace()
+            exception.addSuppressed(e)
         }
 
-        if (exceptions.isNotEmpty()) {
-            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", null, {
+        if (exception.suppressed.isNotEmpty()) {
+            exception.printStackTrace()
+            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {
                 val tab = it.addTab("Kilt Error")
-
-                exceptions.forEach { e ->
-                    tab.node.addCleanedException(e)
-                }
+                tab.node.addCleanedException(exception)
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
@@ -783,16 +790,16 @@ class KiltLoader {
         DeltaTimeProfiler.pop()
     }
 
-    fun initMod(mod: ForgeMod, scanData: ModFileScanData): List<Exception> {
+    suspend fun initMod(mod: ForgeMod, scanData: ModFileScanData) {
         DeltaTimeProfiler.push(mod.modId)
-        val exceptions = mutableListOf<Exception>()
+        val exception = RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})!")
 
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         var hasInitialized = false
-        scanData.annotations
+        scanData.annotations.asFlow()
             .filter { it.annotationType == MOD_ANNOTATION }
-            .forEach {
+            .collect {
                 // it.clazz.className - Class
                 // it.annotationData["value"] as String - Mod ID
 
@@ -800,7 +807,7 @@ class KiltLoader {
                     val modId = it.annotationData["value"] as String
 
                     if (modId != mod.modId)
-                        return@forEach
+                        return@collect
 
                     ModLoadingContext.kiltActiveModId = modId
 
@@ -822,20 +829,21 @@ class KiltLoader {
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    exceptions.add(e)
+                    exception.addSuppressed(e)
                 }
             }
 
         if (!hasInitialized && mod.shouldScan) {
-            val exception = IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!")
-            exception.printStackTrace()
-            exceptions.add(exception)
+            exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
+        }
+
+        if (exception.suppressed.isNotEmpty()) {
+            throw exception
         }
 
         mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
 
         DeltaTimeProfiler.pop()
-        return exceptions
     }
 
     private fun loadTransformers(mod: ForgeMod?) {
