@@ -156,7 +156,7 @@ object KiltRemapper {
 
     fun init() {}
 
-    suspend fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: Path): List<Exception> {
+    suspend fun remapMods(modLoadingQueue: ConcurrentLinkedQueue<ForgeMod>, remappedModsDir: Path) {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
             logger.warn("Only have this enabled if you know what you're doing!")
@@ -166,7 +166,7 @@ object KiltRemapper {
                     it.remappedModFile = it.modFile
             }
 
-            return listOf()
+            return
         }
 
         this.remappedModsDir = remappedModsDir
@@ -237,7 +237,7 @@ object KiltRemapper {
 
         srgGamePath = remapMinecraft()
 
-        val exceptions = mutableListOf<Exception>()
+        val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
         logger.info("Remapping Forge mods...")
 
@@ -264,15 +264,15 @@ object KiltRemapper {
         // Initialize a global remapper state
         enhancedRemapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, ClassNameHashSet())
 
-        suspend fun remapMod(file: Path, mod: ForgeMod): List<Exception> {
-            val exceptions = mutableListOf<Exception>()
+        suspend fun remapMod(file: Path, mod: ForgeMod) {
+            val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.modId})!")
 
             val hash = withContext(Dispatchers.IO) { DigestUtils.md5Hex(file.inputStream()) }
             val modifiedJarFile = KiltRemapper.remappedModsDir / "${mod.modId}_${REMAPPER_VERSION}_$hash.jar"
 
             if (modifiedJarFile.exists() && !forceRemap) {
                 mod.remappedModFile = modifiedJarFile.toFile()
-                return emptyList()
+                return
             }
 
             val jar = withContext(Dispatchers.IO) { JarFile(file.toFile()) }
@@ -612,8 +612,7 @@ object KiltRemapper {
                 mixinClasses: ClassNameHashSet,
                 classesToProcess: List<ClassNode>,
                 jarOutput: JarOutputStream,
-                entry: JarEntry,
-                exceptions: MutableList<Exception>
+                entry: JarEntry
             ) {
                 try {
                     val remappedNode = ClassNode(Opcodes.ASM9)
@@ -645,27 +644,33 @@ object KiltRemapper {
                     }
                 } catch (e: Exception) {
                     logger.error("Failed to remap class ${entry.name}!", e)
-                    exceptions.add(e)
+                    throw RuntimeException("Failed to remap class ${entry.name}!", e)
                 }
             }
 
             entryToClassNodes.forEach { (entry, originalNode) ->
-                remapClass(
-                    remapper,
-                    originalNode,
-                    mixinClasses,
-                    classesToProcess,
-                    jarOutput,
-                    entry,
-                    exceptions
-                )
+                try {
+                    remapClass(
+                        remapper,
+                        originalNode,
+                        mixinClasses,
+                        classesToProcess,
+                        jarOutput,
+                        entry
+                    )
+                } catch (e: Throwable) {
+                    exception.addSuppressed(e)
+                }
             }
+
+            if (exception.suppressed.isNotEmpty())
+                throw exception
 
             mod.remappedModFile = modifiedJarFile.toFile()
             jarOutput.close()
             jar.close()
 
-            return exceptions
+            return
         }
 
         coroutineScope {
@@ -674,13 +679,13 @@ object KiltRemapper {
                     runCatching {
                         logger.info("Remapping ${mod.displayName} (${mod.modId})")
                         val ms = measureTime {
-                            exceptions.addAll(remapMod(mod.modFile!!.toPath(), mod))
+                            remapMod(mod.modFile!!.toPath(), mod)
                         }.inWholeMilliseconds
                         logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${ms}ms]")
                     }.onFailure {
                         logger.error("Failed to remap ${mod.displayName} (${mod.modId})", it)
                         if (it is Exception) {
-                            exceptions.add(it)
+                            exception.addSuppressed(it)
                         }
                     }
                 }.launchIn(this).join()
@@ -690,11 +695,10 @@ object KiltRemapper {
 
         logger.info("Finished remapping mods!")
 
-        if (exceptions.isNotEmpty()) {
+        if (exception.suppressed.isNotEmpty()) {
             logger.error("Ran into some errors, we're not going to continue with the repairing process.")
+            throw exception
         }
-
-        return exceptions
     }
 
     private val nameMappingCache = mutableMapOf<String, MutableMap<String, String>>()
