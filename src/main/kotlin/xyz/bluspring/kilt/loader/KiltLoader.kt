@@ -6,7 +6,6 @@ import com.google.gson.JsonParser
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.stream.consumeAsFlow
@@ -676,7 +675,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
 
         // Automatically subscribe events
-        scanData.annotations.asFlow()
+        scanData.annotations.asFlow().concurrent()
             .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
             .collect {
                 // it.annotationData["modid"] as String
@@ -739,7 +738,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to load Kilt mods!")
 
         runBlocking {
-            mods.asFlow()
+            mods.asFlow().concurrent()
                 .collect { mod ->
                     try {
                         initMod(mod, mod.scanData)
@@ -771,7 +770,7 @@ class KiltLoader {
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         var hasInitialized = false
-        scanData.annotations.asFlow()
+        scanData.annotations.asFlow().concurrent()
             .filter { it.annotationType == MOD_ANNOTATION }
             .collect {
                 // it.clazz.className - Class
