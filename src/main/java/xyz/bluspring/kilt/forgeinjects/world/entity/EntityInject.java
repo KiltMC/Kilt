@@ -1,24 +1,27 @@
 package xyz.bluspring.kilt.forgeinjects.world.entity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
@@ -38,6 +41,27 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Shadow protected abstract void unsetRemoved();
 
     @Shadow protected abstract float getEyeHeight(Pose pose, EntityDimensions dimensions);
+
+    @Shadow private EntityDimensions dimensions;
+
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
+    private float kilt$useSizesFromEvent(Entity instance, Pose pose, EntityDimensions dimensions, Operation<Float> original) {
+        var event = ForgeEventFactory.getEntitySizeForge(instance, pose, dimensions, original.call(instance, pose, dimensions));
+
+        this.dimensions = event.getNewSize();
+        return event.getNewEyeHeight();
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$callForgeEntityInitEvents(EntityType<?> entityType, Level level, CallbackInfo ci) {
+        MinecraftForge.EVENT_BUS.post(new EntityEvent.EntityConstructing((Entity) (Object) this));
+        this.gatherCapabilities();
+    }
+
+    @Inject(method = "remove", at = @At("TAIL"))
+    private void kilt$invalidateEntityCapabilities(Entity.RemovalReason reason, CallbackInfo ci) {
+        this.invalidateCaps();
+    }
 
     private boolean canUpdate = true;
 
