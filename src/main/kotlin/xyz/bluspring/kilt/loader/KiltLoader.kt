@@ -303,9 +303,9 @@ class KiltLoader {
         environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { throw IllegalStateException("Wait, people actually use this?") }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { Path(FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("assetsDir", FabricLoader.getInstance().gameDir.absolutePathString())) }
         environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { throw IllegalStateException("Wait, people actually use this?") }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
 
         loadForgeBuiltinMod() // fuck you
