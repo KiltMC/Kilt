@@ -21,6 +21,7 @@ import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.*
@@ -40,6 +41,7 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.IModInfo.DependencySide
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
+import net.minecraftforge.forgespi.locating.ModFileFactory
 import net.minecraftforge.registries.ForgeRegistries
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
@@ -293,8 +295,11 @@ class KiltLoader {
     }
 
     fun preloadMods() {
-        environment.computePropertyIfAbsent(Environment.Keys.DIST.get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
-        environment.computePropertyIfAbsent(Environment.Keys.MODFILEFACTORY.get()) { KiltModFileFactory() }
+        // DON'T TRY TO MAKE THIS USE "Environment.Keys".
+        // OTHERWISE THE BUILD WILL FAIL.
+        environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
+        environment.computePropertyIfAbsent(IEnvironment.buildKey("MODFILEFACTORY", ModFileFactory::class.java).get()) { KiltModFileFactory() }
+
         environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
