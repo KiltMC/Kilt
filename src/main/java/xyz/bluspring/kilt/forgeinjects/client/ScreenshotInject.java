@@ -8,8 +8,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Screenshot;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.ScreenshotEvent;
-import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,8 +27,7 @@ public class ScreenshotInject {
 
     @Inject(method = "_grab", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/ExecutorService;execute(Ljava/lang/Runnable;)V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private static void kilt$runScreenshotEvent(File gameDirectory, String screenshotName, RenderTarget buffer, Consumer<Component> messageConsumer, CallbackInfo ci, NativeImage nativeImage, File file, File file2) {
-        var event = new ScreenshotEvent(nativeImage, file2);
-        MinecraftForge.EVENT_BUS.post(event);
+        var event = ForgeHooksClient.onScreenshot(nativeImage, file2);
 
         if (event.isCanceled()) {
             messageConsumer.accept(event.getCancelMessage());
@@ -63,7 +62,7 @@ public class ScreenshotInject {
     @SuppressWarnings("MixinExtrasOperationParameters") // shush
     @WrapOperation(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
     private static <T> void kilt$useForgeEventSuccess(Consumer<T> instance, T t, Operation<Void> original) {
-        if (kilt$target.get() != null)
+        if (kilt$target.get() != null && kilt$target.get().getResultMessage() != null)
             original.call(instance, kilt$target.get().getResultMessage());
         else
             original.call(instance, t);
