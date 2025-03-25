@@ -617,14 +617,12 @@ class KiltLoader {
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                for ((index, mod) in modLoadingQueue.withIndex()) {
-                    try {
+                modLoadingQueue.withIndex().asFlow().concurrent()
+                    .map { combined ->
+                        val (_, mod) = combined
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            mods[index] = mod
-                            registerAnnotations(mod, mod.scanData)
-
-                            continue
+                            return@map combined
                         }
 
                         val scanData = ModFileScanData()
@@ -633,32 +631,38 @@ class KiltLoader {
                         mod.scanData = scanData
 
                         // basically emulate how Forge loads stuff
-                        launch {
-                            mod.jar.stream().consumeAsFlow().concurrent()
-                                .filter { it.name.endsWith(".class") }
-                                .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
-                                .collect {
-                                    val visitor = ModClassVisitor()
-                                    val classReader = ClassReader(it)
+                        mod.jar.stream().consumeAsFlow().concurrent()
+                            .filter { it.name.endsWith(".class") }
+                            .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
+                            .collect {
+                                val visitor = ModClassVisitor()
+                                val classReader = ClassReader(it)
 
-                                    classReader.accept(visitor, 0)
-                                    visitor.buildData(scanData.classes, scanData.annotations)
-                                }
-                        }.join()
+                                classReader.accept(visitor, 0)
+                                visitor.buildData(scanData.classes, scanData.annotations)
+                            }
 
+                        combined
+                    }
+                    .map { (index, mod) ->
                         // Follow the exact order the mod loading queue was sorted.
                         mods[index] = mod
 
-                        // Avoid `ConcurrentModificationException`
-                        // when register the event for mods that need to find the context by `getMod`
-                        ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
-
-                        registerAnnotations(mod, scanData)
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                        exception.addSuppressed(e)
+                        mod
                     }
-                }
+                    .merge(true)
+                    .collect { mod ->
+                        try {
+                            // Avoid `ConcurrentModificationException`
+                            // when register the event for mods that need to find the context by `getMod`
+                            ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
+
+                            registerAnnotations(mod, mod.scanData)
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                            exception.addSuppressed(e)
+                        }
+                    }
             }.join()
         }
 
