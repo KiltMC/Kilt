@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -58,7 +57,11 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V")
     public void kilt$setFluidSupplier(FlowingFluid flowingFluid, BlockBehaviour.Properties properties, CallbackInfo ci) {
         fluidStateCacheInitialized = true;
-        supplier = ForgeRegistries.FLUIDS.getDelegate(flowingFluid).orElse(BuiltInRegistries.FLUID.getHolderOrThrow(BuiltInRegistries.FLUID.getResourceKey(flowingFluid).orElseThrow()));
+
+        @SuppressWarnings("SimplifyOptionalCallChains") var fluidSupplier = ForgeRegistries.FLUIDS.getDelegate(flowingFluid).orElse(null);
+
+        if (fluidSupplier != null)
+            supplier = fluidSupplier;
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", shift = At.Shift.BEFORE), method = "getFluidState")
