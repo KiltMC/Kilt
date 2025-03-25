@@ -6,11 +6,8 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class TypesafeMap {
-    private val maps = ConcurrentHashMap<Class<*>, TypesafeMap>()
     private val map = ConcurrentHashMap<Key<*>, Any>()
     private val keys = ConcurrentHashMap<String, Key<Any>>()
 
@@ -84,6 +81,7 @@ class TypesafeMap {
 
         companion object {
             private val idGenerator: AtomicLong = AtomicLong()
+            @JvmStatic
             fun <V> getOrCreate(owner: TypesafeMap, name: String, clazz: Class<in V>): Key<V> {
                 val result = owner.getKeyIdentifiers().computeIfAbsent(
                     name
@@ -97,6 +95,7 @@ class TypesafeMap {
                 return result
             }
 
+            @JvmStatic
             fun <V> getOrCreate(owner: Supplier<TypesafeMap>, name: String, clazz: Class<V>): Supplier<Key<V>> {
                 return Supplier<Key<V>> { getOrCreate(owner.get(), name, clazz) }
             }
@@ -107,7 +106,7 @@ class TypesafeMap {
         val keyBuilders: MutableMap<Class<*>, MutableList<KeyBuilder<*>?>> = HashMap()
     }
 
-    inner class KeyBuilder<T>(private val name: String, private val clazz: Class<in T>, private val owner: Class<*>) : Supplier<Key<T>?> {
+    class KeyBuilder<T>(private val name: String, private val clazz: Class<in T>, private val owner: Class<*>) : Supplier<Key<T>> {
         private var key: Key<T>? = null
 
         init {
@@ -130,5 +129,9 @@ class TypesafeMap {
 
             return key!!
         }
+    }
+
+    companion object {
+        private val maps = ConcurrentHashMap<Class<*>, TypesafeMap>()
     }
 }
