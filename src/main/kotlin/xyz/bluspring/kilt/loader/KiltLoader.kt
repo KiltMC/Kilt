@@ -50,6 +50,7 @@ import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.KiltEnvironment
+import xyz.bluspring.kilt.loader.mod.KiltModFileFactory
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -292,13 +293,15 @@ class KiltLoader {
     }
 
     fun preloadMods() {
-        Environment.build(environment) // Use Kilt's environment
+        environment.computePropertyIfAbsent(Environment.Keys.DIST.get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
+        environment.computePropertyIfAbsent(Environment.Keys.MODFILEFACTORY.get()) { KiltModFileFactory() }
         environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
         environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
         environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { throw IllegalStateException("Wait, people actually use this?") }
         environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { throw IllegalStateException("Wait, people actually use this?") }
+        Environment.build(environment) // Use Kilt's environment
 
         loadForgeBuiltinMod() // fuck you
     }
