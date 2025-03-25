@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import cpw.mods.modlauncher.Launcher
+import cpw.mods.modlauncher.api.IEnvironment
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
@@ -33,6 +35,7 @@ import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.fml.loading.toposort.TopologicalSort
+import net.minecraftforge.forgespi.Environment
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.IModInfo.DependencySide
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
@@ -46,6 +49,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -70,6 +74,8 @@ class KiltLoader {
     // However, I currently haven't found a way to link Kilt's mods into Quilt, so this is how it will
     // be for now.
     val modProvider: LoaderModProvider = FabricModProvider()
+
+    private val environment = KiltEnvironment()
 
     suspend fun scanMods() {
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
@@ -286,6 +292,14 @@ class KiltLoader {
     }
 
     fun preloadMods() {
+        Environment.build(environment) // Use Kilt's environment
+        environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
+        Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { throw IllegalStateException("Wait, people actually use this?") }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { throw IllegalStateException("Wait, people actually use this?") }
+
         loadForgeBuiltinMod() // fuck you
     }
 

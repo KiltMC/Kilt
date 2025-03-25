@@ -1,4 +1,4 @@
-package cpw.mods.modlauncher
+package xyz.bluspring.kilt.loader.mod
 
 import cpw.mods.modlauncher.api.IEnvironment
 import cpw.mods.modlauncher.api.ILaunchHandlerService
@@ -8,8 +8,8 @@ import cpw.mods.modlauncher.serviceapi.ILaunchPluginService
 import java.util.*
 import java.util.function.Function
 
-class Environment : IEnvironment {
-    private val environment = TypesafeMap()
+class KiltEnvironment : IEnvironment {
+    private val environment = TypesafeMap(IEnvironment::class.java)
 
     override fun <T> getProperty(key: TypesafeMap.Key<T>): Optional<T & Any> {
         return environment[key]
@@ -22,6 +22,7 @@ class Environment : IEnvironment {
         return environment.computeIfAbsent(key, valueFunction)
     }
 
+    // We implement like. none of these.
     override fun findLaunchPlugin(name: String): Optional<ILaunchPluginService> {
         return Optional.empty()
     }
@@ -33,4 +34,5 @@ class Environment : IEnvironment {
     override fun findModuleLayerManager(): Optional<IModuleLayerManager> {
         return Optional.empty()
     }
+
 }
