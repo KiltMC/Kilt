@@ -1,31 +1,31 @@
 package xyz.bluspring.kilt.mixin.compat.fabric_api;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.impl.client.rendering.fluid.FluidRenderHandlerRegistryImpl;
 import net.minecraft.world.level.material.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.workarounds.FluidHandlerWorkaround;
 
 @Mixin(value = FluidRenderHandlerRegistryImpl.class, remap = false)
 public class FluidRenderHandlerRegistryImplMixin {
-    @Inject(method = "get", at = @At("HEAD"), cancellable = true)
-    public void kilt$useForgeHandler(Fluid fluid, CallbackInfoReturnable<FluidRenderHandler> cir) {
-        try {
-            var fluidType = fluid.getFluidType();
+    @ModifyReturnValue(method = "get", at = @At("RETURN"))
+    public FluidRenderHandler kilt$useForgeHandler(FluidRenderHandler original, @Local(argsOnly = true) Fluid fluid) {
+        if (original != null)
+            return original;
 
-            cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
-        } catch (Exception ignored) {}
+        var fluidType = fluid.getFluidType();
+        return FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType);
     }
 
-    @Inject(method = "getOverride", at = @At("HEAD"), cancellable = true)
-    public void kilt$useForgeOverrides(Fluid fluid, CallbackInfoReturnable<FluidRenderHandler> cir) {
-        try {
-            var fluidType = fluid.getFluidType();
+    @ModifyReturnValue(method = "getOverride", at = @At("RETURN"))
+    public FluidRenderHandler kilt$useForgeOverrides(FluidRenderHandler original, @Local(argsOnly = true) Fluid fluid) {
+        if (original != null)
+            return original;
 
-            cir.setReturnValue(FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType));
-        } catch (Exception ignored) {}
+        var fluidType = fluid.getFluidType();
+        return FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType);
     }
 }
