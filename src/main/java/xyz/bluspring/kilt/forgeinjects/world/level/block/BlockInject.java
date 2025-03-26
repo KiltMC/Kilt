@@ -40,10 +40,6 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @Shadow @Final @Mutable
     public static IdMapper<BlockState> BLOCK_STATE_REGISTRY;
 
-    @Shadow public static void dropResources(BlockState state, Level level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool) {
-        throw new IllegalStateException();
-    }
-
     @Unique
     private Object renderProperties;
 
@@ -130,7 +126,7 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @CreateStatic
     private static void dropResources(BlockState state, Level level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool, boolean dropXp) {
         kilt$dropXp.set(dropXp);
-        dropResources(state, level, pos, blockEntity, entity, tool);
+        Block.dropResources(state, level, pos, blockEntity, entity, tool);
     }
 
     @ModifyArg(method = "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;spawnAfterBreak(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;Z)V"))
