@@ -8,12 +8,12 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.IdMapper;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -27,24 +27,23 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
 
-import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(Block.class)
 public abstract class BlockInject implements IForgeBlock, RenderPropertiesInjection<IClientBlockExtensions> {
     @Shadow @Final @Mutable
     public static IdMapper<BlockState> BLOCK_STATE_REGISTRY;
 
-    @Shadow public static List<ItemStack> getDrops(BlockState state, ServerLevel level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool) {
+    @Shadow public static void dropResources(BlockState state, LevelAccessor level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool) {
         throw new IllegalStateException();
     }
-
-    @Shadow public static void popResource(Level level, BlockPos pos, ItemStack stack) {}
 
     @Unique
     private Object renderProperties;
@@ -126,11 +125,20 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
         return false;
     }
 
+    @Unique
+    private static final AtomicBoolean kilt$dropXp = new AtomicBoolean(false);
+
     @CreateStatic
     private static void dropResources(BlockState state, Level level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool, boolean dropXp) {
-        if (level instanceof ServerLevel) {
-            Block.getDrops(state, (ServerLevel)level, pos, blockEntity, entity, tool).forEach(itemStack -> Block.popResource(level, pos, itemStack));
-            state.spawnAfterBreak((ServerLevel)level, pos, tool, dropXp);
-        }
+        kilt$dropXp.set(dropXp);
+        dropResources(state, level, pos, blockEntity, entity, tool);
+    }
+
+    @ModifyArg(method = "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;spawnAfterBreak(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;Z)V"))
+    private static boolean kilt$dropResourcesXp(boolean original) {
+        if (!original)
+            return true;
+
+        return kilt$dropXp.getAndSet(false);
     }
 }
