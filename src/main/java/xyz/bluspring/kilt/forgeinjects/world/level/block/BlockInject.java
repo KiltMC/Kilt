@@ -8,10 +8,14 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.IdMapper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
@@ -19,18 +23,29 @@ import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.registries.GameData;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
+
+import java.util.List;
 
 @Mixin(Block.class)
 public abstract class BlockInject implements IForgeBlock, RenderPropertiesInjection<IClientBlockExtensions> {
     @Shadow @Final @Mutable
     public static IdMapper<BlockState> BLOCK_STATE_REGISTRY;
+
+    @Shadow public static List<ItemStack> getDrops(BlockState state, ServerLevel level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool) {
+        throw new IllegalStateException();
+    }
+
+    @Shadow public static void popResource(Level level, BlockPos pos, ItemStack stack) {}
+
     @Unique
     private Object renderProperties;
 
@@ -109,5 +124,13 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
             return isBeach && hasWater;
         }
         return false;
+    }
+
+    @CreateStatic
+    private static void dropResources(BlockState state, Level level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool, boolean dropXp) {
+        if (level instanceof ServerLevel) {
+            getDrops(state, (ServerLevel)level, pos, blockEntity, entity, tool).forEach(itemStack -> popResource(level, pos, itemStack));
+            state.spawnAfterBreak((ServerLevel)level, pos, tool, dropXp);
+        }
     }
 }
