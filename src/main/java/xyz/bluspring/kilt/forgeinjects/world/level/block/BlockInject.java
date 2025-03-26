@@ -129,7 +129,7 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @CreateStatic
     private static void dropResources(BlockState state, Level level, BlockPos pos, @Nullable BlockEntity blockEntity, @Nullable Entity entity, ItemStack tool, boolean dropXp) {
         if (level instanceof ServerLevel) {
-            getDrops(state, (ServerLevel)level, pos, blockEntity, entity, tool).forEach(itemStack -> popResource(level, pos, itemStack));
+            Block.getDrops(state, (ServerLevel)level, pos, blockEntity, entity, tool).forEach(itemStack -> Block.popResource(level, pos, itemStack));
             state.spawnAfterBreak((ServerLevel)level, pos, tool, dropXp);
         }
     }
