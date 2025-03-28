@@ -92,7 +92,8 @@
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.UseAnimAccessor",
         "world.level.biome.BiomeClimateSettingsAccessor",
-        "world.level.block.entity.RandomizableContainerBlockEntityMixin"
+        "world.level.block.entity.RandomizableContainerBlockEntityMixin",
+        "world.level.storage.loot.LootContextAccessor"
     ],
     "client": [
         "client.gui.components.DebugScreenOverlayMixin",
