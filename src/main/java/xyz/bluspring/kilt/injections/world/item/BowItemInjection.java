@@ -1,9 +1,6 @@
 package xyz.bluspring.kilt.injections.world.item;
 
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import io.github.fabricators_of_create.porting_lib.item.CustomArrowItem;
 
-public interface BowItemInjection {
-    default AbstractArrow customArrow(AbstractArrow arrow) {
-        return arrow;
-    }
+public interface BowItemInjection extends CustomArrowItem {
 }
