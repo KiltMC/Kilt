@@ -84,6 +84,7 @@
         "compat.sodium.BlockRendererMixin",
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
+        "compat.wthit.WailaMixin",
         "data.registries.VanillaRegistriesAccessor",
         "debug.ChunkSkyLightSourcesMixin",
         "dev.MappedRegistryMixin",
