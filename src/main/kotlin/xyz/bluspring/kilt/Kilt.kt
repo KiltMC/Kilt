@@ -9,6 +9,7 @@ import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.LivingEntityEvents
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
@@ -46,6 +47,10 @@ class Kilt : ModInitializer {
         InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
             val event = ForgeHooks.onRightClickBlock(player, hand, pos, BlockHitResult(Vec3.atCenterOf(pos), direction, pos, false))
             eventBusToArchitectury(event.result)
+        }
+
+        CommandRegistrationCallback.EVENT.register { dispatcher, context, selection ->
+            ForgeEventFactory.onCommandRegister(dispatcher, selection, context)
         }
 
         InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
