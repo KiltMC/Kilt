@@ -21,7 +21,7 @@ import xyz.bluspring.kilt.compat.sodium.ChunkModelRenderTypeHolder;
 import java.util.List;
 
 @IfModLoaded("sodium")
-@Mixin(value = BlockRenderer.class, remap = false)
+@Mixin(BlockRenderer.class)
 public abstract class BlockRendererMixin {
     @WrapOperation(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
     private List<BakedQuad> kilt$getQuadsByRenderType(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(argsOnly = true) BlockAndTintGetter level, @Local(argsOnly = true) ChunkModelBuilder buffers, @Local(argsOnly = true, ordinal = 0) BlockPos pos) {
