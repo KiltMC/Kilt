@@ -50,6 +50,8 @@ public final class MixinExtensionHelper {
             extend.accept(visitor);
             var className = ((Type) visitor.values.get("value")).getClassName();
             targetClass.superName = className.replace(".", "/");
+            if (targetClass.signature != null)
+                targetClass.signature = targetClass.signature.replaceFirst("java/lang/Object", targetClass.superName);
         }
 
         for (FieldNode fieldNode : classNode.fields) {
