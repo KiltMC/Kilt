@@ -17,8 +17,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
-import software.bernie.geckolib3.util.EModelRenderCycle;
-import software.bernie.geckolib3.util.IRenderCycle;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 
@@ -28,19 +26,15 @@ import xyz.bluspring.kilt.helpers.mixin.Extends;
 public abstract class GeoItemRendererMixin<T extends Item & IAnimatable> {
     @Shadow public abstract void render(T animatable, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, ItemStack stack);
 
-    @Shadow private IRenderCycle currentModelRenderCycle;
-
-    @Shadow protected AnimatedGeoModel<T> modelProvider;
-
-    private void kilt$mixin$superCall(BlockEntityRenderDispatcher dispatcher, EntityModelSet modelSet) {
-        throw new IllegalStateException();
+    public GeoItemRendererMixin(AnimatedGeoModel<T> modelProvider) {
     }
 
     @CreateInitializer
-    public void kilt$mixin$initializer(BlockEntityRenderDispatcher dispatcher, EntityModelSet modelSet, AnimatedGeoModel<T> modelProvider) {
-        kilt$mixin$superCall(dispatcher, modelSet);
-        this.currentModelRenderCycle = EModelRenderCycle.INITIAL;
-        this.modelProvider = modelProvider;
+    public GeoItemRendererMixin(BlockEntityRenderDispatcher dispatcher, EntityModelSet modelSet, AnimatedGeoModel<T> modelProvider) {
+        this(modelProvider);
+
+        ((BlockEntityWithoutLevelRendererAccessor) this).setBlockEntityRenderDispatcher(dispatcher);
+        ((BlockEntityWithoutLevelRendererAccessor) this).setEntityModelSet(modelSet);
     }
 
     public void renderByItem(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
