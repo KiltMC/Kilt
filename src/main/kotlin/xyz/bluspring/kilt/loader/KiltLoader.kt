@@ -9,9 +9,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.stream.consumeAsFlow
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
@@ -53,7 +53,9 @@ import xyz.bluspring.kilt.loader.mod.KiltModFileFactory
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.util.*
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
+import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.buildGraph
 import java.net.URL
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -650,7 +652,7 @@ class KiltLoader {
                         mod.scanData = scanData
 
                         // basically emulate how Forge loads stuff
-                        mod.jar.stream().consumeAsFlow().concurrent()
+                        mod.jar.entries().asIterator().asFlow()
                             .filter { it.name.endsWith(".class") }
                             .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
                             .collect {
