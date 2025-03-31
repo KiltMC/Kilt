@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.server.level;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -53,7 +54,15 @@ public abstract class ChunkMapInject {
     @Inject(method = "method_17227", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;registerTickContainerInLevel(Lnet/minecraft/server/level/ServerLevel;)V", shift = At.Shift.AFTER))
     private void kilt$callChunkLoadEvent(ChunkHolder chunkHolder, ChunkAccess chunkAccess, CallbackInfoReturnable<ChunkAccess> cir) {
         MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(chunkAccess));
-        ((ChunkHolderInjection) chunkHolder).kilt$setCurrentlyLoading(null);
+    }
+
+    @WrapMethod(method = "method_17227")
+    private ChunkAccess kilt$wrapInTryFinally(ChunkHolder chunkHolder, ChunkAccess chunkAccess, Operation<ChunkAccess> original) {
+        try {
+            return original.call(chunkHolder, chunkAccess);
+        } finally {
+            ((ChunkHolderInjection) chunkHolder).kilt$setCurrentlyLoading(null);
+        }
     }
 
     @Inject(method = "save", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ChunkMap;write(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)V"))
