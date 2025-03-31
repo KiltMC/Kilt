@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ChunkAccessInjection;
 
 @Mixin(LevelChunk.class)
-public abstract class LevelChunkInject implements ChunkAccessInjection, IForgeLevelChunk {
+public abstract class LevelChunkInject extends ChunkAccessInject implements ChunkAccessInjection, IForgeLevelChunk {
     @Shadow public abstract Level getLevel();
 
     @Nullable
@@ -33,5 +33,10 @@ public abstract class LevelChunkInject implements ChunkAccessInjection, IForgeLe
     @Redirect(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
     public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag) {
         instance.handleUpdateTag(tag);
+    }
+
+    @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
+    private void kilt$unloadBlockEntityChunks(CallbackInfo ci) {
+        this.blockEntities.values().forEach(BlockEntity::onChunkUnloaded);
     }
 }
