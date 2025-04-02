@@ -160,7 +160,7 @@ object MixinAdditionalRemapper {
 
                                 val combined = value.removePrefix(owner)
 
-                                if (combined.startsWith("<init>") && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
+                                if ((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
                                     val methodName = combined.replaceBefore("(", "")
                                     val descriptor = combined.removePrefix(methodName)
 
