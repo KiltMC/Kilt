@@ -22,6 +22,18 @@ object KiltHelper {
         return array.joinToString(separator)
     }
 
+    fun <E> mergeNullableCollections(vararg collections: Collection<E>?): Collection<E> {
+        val merged = mutableListOf<E>()
+
+        for (collection in collections) {
+            if (collection != null) {
+                merged.addAll(collection)
+            }
+        }
+
+        return merged
+    }
+
     fun isNullOrEmpty(str: String?): Boolean {
         return str.isNullOrEmpty()
     }
@@ -93,24 +105,5 @@ object KiltHelper {
         }
 
         return list
-    }
-
-    // Slightly modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
-    @JvmStatic
-    fun hasMethodOverride(clazz: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
-        var current: Class<*>? = clazz
-
-        while (current != null && current != superClass && superClass.isAssignableFrom(current)) {
-            try {
-                clazz.getDeclaredMethod(methodName, *methodArgs)
-                return true
-            } catch (_: NoSuchMethodException) {
-                current = current.superclass
-            } catch (_: Throwable) {
-                return false
-            }
-        }
-
-        return false
     }
 }
