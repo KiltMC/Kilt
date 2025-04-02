@@ -121,7 +121,8 @@
     }
   },
   "breaks": {
-    "quilt-loader": "*"
+    "quilt-loader": "*",
+    "async": "*"
   },
   "accessWidener": "kilt.accesswidener"
 }
