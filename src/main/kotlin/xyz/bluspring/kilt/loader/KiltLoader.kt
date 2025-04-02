@@ -299,8 +299,12 @@ class KiltLoader {
         for (mod in mods) {
             Kilt.loader.addModToFabric(mod)
 
-            if (mod.modFile != null) // Avoid adding the Forge builtins
-                FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
+            if (mod.modFile != null) { // Avoid adding the Forge builtins
+                if (mod.isRemapped())
+                    FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
+                else // Still need to load JiJ'd libraries
+                    FabricLauncherBase.getLauncher().addToClassPath(mod.modFile.toURI().toPath())
+            }
         }
         DeltaTimeProfiler.pop()
     }

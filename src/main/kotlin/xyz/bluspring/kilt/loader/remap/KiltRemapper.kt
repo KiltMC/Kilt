@@ -273,6 +273,10 @@ object KiltRemapper {
                 return
             }
 
+            if (!mod.shouldScan) { // We don't need to remap non-Forge JiJ'd mods
+                return
+            }
+
             val jar = withContext(Dispatchers.IO) { JarFile(file.toFile()) }
             val output = modifiedJarFile.outputStream()
             val jarOutput = withContext(Dispatchers.IO) { JarOutputStream(output) }
