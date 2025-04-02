@@ -89,7 +89,7 @@ object MixinAdditionalRemapper {
                         break
 
                     // Second pass, try to remap with original names
-                    remapped = remapper.mapFieldName(KiltRemapper.unmapClass(className), method.name, KiltRemapper.remapDescriptor(method.desc, reverse = true))
+                    remapped = remapper.mapMethodName(KiltRemapper.unmapClass(className), method.name, KiltRemapper.remapDescriptor(method.desc, reverse = true))
 
                     if (remapped != method.name)
                         break
@@ -113,7 +113,7 @@ object MixinAdditionalRemapper {
             }
         }
 
-        // Remove explicit class target in method
+        // Remove explicit class target in method, and remap <init>
         run {
             for (method in classNode.methods) {
                 val annotations = KiltHelper.mergeNullableCollections(method.visibleAnnotations, method.invisibleAnnotations)
@@ -130,7 +130,17 @@ object MixinAdditionalRemapper {
 
                         if (methodValue is String) {
                             val owner = tryGetOwnerFromMethodValue(methodValue) ?: continue
-                            values["method"] = methodValue.removePrefix(owner)
+                            val combined = methodValue.removePrefix(owner)
+
+                            if (combined.startsWith("<init>") && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
+                                val methodName = combined.replaceBefore("(", "")
+                                val descriptor = combined.removePrefix(methodName)
+
+                                values["method"] = "$methodName${KiltRemapper.remapDescriptor(descriptor)}"
+                            } else {
+                                values["method"] = combined
+                            }
+
                             wasModified = true
                         } else if (methodValue is List<*>) {
                             val list = mutableListOf<Any?>()
@@ -148,7 +158,16 @@ object MixinAdditionalRemapper {
                                     continue
                                 }
 
-                                list.add(value.removePrefix(owner))
+                                val combined = value.removePrefix(owner)
+
+                                if (combined.startsWith("<init>") && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
+                                    val methodName = combined.replaceBefore("(", "")
+                                    val descriptor = combined.removePrefix(methodName)
+
+                                    list.add("$methodName${KiltRemapper.remapDescriptor(descriptor)}")
+                                } else {
+                                    list.add(combined)
+                                }
                                 wasModified = true
                             }
 
