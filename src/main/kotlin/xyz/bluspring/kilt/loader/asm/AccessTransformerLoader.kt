@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.asm
 
+import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
@@ -8,6 +9,7 @@ import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.regex.Pattern
 
 // A reimplementation of Forge's Access Transformers.
@@ -247,7 +249,10 @@ object AccessTransformerLoader {
         if (hasLoaded)
             return
 
-        /*DeltaTimeProfiler.push("loadATs")
+        if (FabricLoader.getInstance().isDevelopmentEnvironment) // I guess ATs don't like being in dev
+            return
+
+        DeltaTimeProfiler.push("loadATs")
 
         val startTime = System.currentTimeMillis()
         logger.info("Adding access transformers to mixin")
@@ -349,7 +354,7 @@ object AccessTransformerLoader {
         logger.info("Finished loading access transformers (took ${System.currentTimeMillis() - startTime}ms)")
         hasLoaded = true
 
-        DeltaTimeProfiler.pop()*/
+        DeltaTimeProfiler.pop()
     }
 
     private enum class AccessType(val flag: Int) {
