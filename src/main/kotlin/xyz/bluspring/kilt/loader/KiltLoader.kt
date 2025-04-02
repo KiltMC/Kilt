@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -17,8 +16,7 @@ import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
-import net.minecraft.SharedConstants
-import net.minecraft.server.Bootstrap
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.*
@@ -37,7 +35,7 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.IModInfo.DependencySide
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
-import net.minecraftforge.registries.ForgeRegistries
+import net.minecraftforge.forgespi.locating.ModFileFactory
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
@@ -46,12 +44,12 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.KiltEnvironment
+import xyz.bluspring.kilt.loader.mod.KiltModFileFactory
 import xyz.bluspring.kilt.loader.mod.LoaderModProvider
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.util.DeltaTimeProfiler
-import xyz.bluspring.kilt.util.KiltHelper
-import xyz.bluspring.kilt.util.buildGraph
+import xyz.bluspring.kilt.util.*
 import java.net.URL
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -73,6 +71,8 @@ class KiltLoader {
     // be for now.
     val modProvider: LoaderModProvider = FabricModProvider()
 
+    private val environment = KiltEnvironment()
+
     suspend fun scanMods() {
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
@@ -82,34 +82,24 @@ class KiltLoader {
         if (!modsDir.exists() || !modsDir.isDirectory())
             throw IllegalStateException("Mods directory doesn't exist! ...how did you even get to this point?")
 
-        val thrownExceptions = mutableMapOf<String, Exception>()
+        val exception = RuntimeException("Failed to load mods in Kilt!")
 
         DeltaTimeProfiler.push("preload")
         modsDir.forEachDirectoryEntry("*.jar") { modFile ->
-            thrownExceptions.putAll(preloadJarMod(modFile, ZipFile(modFile.toFile())))
+            try {
+                preloadJarMod(modFile, ZipFile(modFile.toFile()))
+            } catch (e: Throwable) {
+                exception.addSuppressed(e)
+            }
         }
         DeltaTimeProfiler.pop()
 
         // If exceptions had occurred during preloading, then create a window to show the exceptions.
-        if (thrownExceptions.isNotEmpty()) {
+        if (exception.suppressed.isNotEmpty()) {
             Kilt.logger.error("Failed to load Forge mods in Kilt!")
+            exception.printStackTrace()
 
-            for ((name, exception) in thrownExceptions) {
-                Kilt.logger.error("- $name failed to load! Exception:")
-                Kilt.logger.error(exception.stackTraceToString())
-            }
-
-            FabricGuiEntry.displayError("Exceptions occurred whilst loading Forge mods in Kilt!", null, {
-                val errorTab = it.addTab("Kilt Error")
-
-                thrownExceptions.forEach { (name, exception) ->
-                    errorTab.node.addMessage("$name failed to load!", FabricStatusTree.FabricTreeWarningLevel.ERROR)
-                        .addCleanedException(exception)
-                }
-
-                // Little workaround to show the custom tab
-                it.tabs.removeIf { tab -> tab != errorTab }
-            }, true)
+            FabricGuiEntry.displayError("Exceptions occurred whilst scanning Forge mods in Kilt!", exception, {}, true)
 
             exitProcess(1)
         }
@@ -259,11 +249,7 @@ class KiltLoader {
                 } catch (e: Exception) {
                     e.printStackTrace()
 
-                    FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {
-                        val tab = it.addTab("Kilt Error")
-
-                        it.tabs.removeIf { t -> t != tab }
-                    }, true)
+                    FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {}, true)
 
                     exitProcess(1)
                 }
@@ -302,6 +288,19 @@ class KiltLoader {
     }
 
     fun preloadMods() {
+        // DON'T TRY TO MAKE THIS USE "Environment.Keys".
+        // OTHERWISE THE BUILD WILL FAIL.
+        environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
+        environment.computePropertyIfAbsent(IEnvironment.buildKey("MODFILEFACTORY", ModFileFactory::class.java).get()) { KiltModFileFactory() }
+
+        environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
+        Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { Path(FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("assetsDir", FabricLoader.getInstance().gameDir.absolutePathString())) }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
+        environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
+        Environment.build(environment) // Use Kilt's environment
+
         loadForgeBuiltinMod() // fuck you
     }
 
@@ -370,7 +369,7 @@ class KiltLoader {
         modFile: Path,
         jarFile: ZipFile,
         nestedModUpdater: Consumer<ForgeMod>? = null
-    ): Map<String, Exception> {
+    ) {
         // Do NOT load Fabric mods.
         // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
         // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
@@ -378,14 +377,19 @@ class KiltLoader {
         if (
             jarFile.getEntry("fabric.mod.json") != null
         )
-            return mapOf()
+            return
 
         // Prevent users from having both Kilt and Connector at the same time.
         if (jarFile.getEntry("org/sinytra/connector/ConnectorUtil.class") != null) {
             throw Exception("Sinytra Connector was detected! I know I said \"Isn't it reasonable to have both?\", but come on!")
         }
 
-        val thrownExceptions = mutableMapOf<String, Exception>()
+        // Avoid loading JiJ'd MixinExtras, we already provide a modern version of it.
+        if (jarFile.getEntry("com/llamalad7/mixinextras/injector/ModifyExpressionValue.class") != null) {
+            return
+        }
+
+        val exception = RuntimeException("Failed to load file ${modFile.name}!")
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
 
         Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
@@ -400,12 +404,12 @@ class KiltLoader {
                         .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null
                 ) {
                     Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: ${mod.modId}")
-                    return mapOf()
+                    return
                 }
 
                 // Avoid loading mods twice
                 if (modLoadingQueue.any { it.modId == mod.modId })
-                    return mapOf()
+                    return
 
                 modLoadingQueue.add(mod)
 
@@ -413,7 +417,7 @@ class KiltLoader {
                 nestedModUpdater.accept(mod)
 
                 DeltaTimeProfiler.pop()
-                return mapOf()
+                return
             }
 
             // Check for Forge's method of include.
@@ -442,7 +446,7 @@ class KiltLoader {
                     }.onFailure { throwable ->
                         if (throwable !is FileAlreadyExistsException && throwable !is java.nio.file.FileAlreadyExistsException && throwable is Exception) {
                             Kilt.logger.error("Failed to load JiJ'd file: $fileName", throwable)
-                            thrownExceptions[fileName] = throwable
+                            exception.addSuppressed(throwable)
                             return@forEach
                         }
                     }
@@ -461,12 +465,14 @@ class KiltLoader {
                 Kilt.logger.info("Discovered Forge mod ${it.displayName} (${it.modId}) version ${it.version} (${modFile.name})")
             }
         } catch (e: Exception) {
-            thrownExceptions[modFile.name] = e
+            exception.addSuppressed(e)
             e.printStackTrace()
         }
 
         DeltaTimeProfiler.pop()
-        return thrownExceptions
+
+        if (exception.suppressed.isNotEmpty())
+            throw exception
     }
 
     // Split this off from the main preloadMods method, in case it needs to be used again later.
@@ -605,18 +611,11 @@ class KiltLoader {
             runCatching { createDirectories() }
         }
 
-        val exceptions = KiltRemapper.remapMods(modLoadingQueue, remappedModsDir)
-
-        if (exceptions.isNotEmpty()) {
-            FabricGuiEntry.displayError("Errors occurred while remapping Forge mods!", null, {
-                val tab = it.addTab("Kilt Error")
-
-                exceptions.forEach { e ->
-                    tab.node.addCleanedException(e)
-                }
-
-                it.tabs.removeIf { t -> t != tab }
-            }, true)
+        try {
+            KiltRemapper.remapMods(modLoadingQueue, remappedModsDir)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            FabricGuiEntry.displayError("Errors occurred while remapping Forge mods!", e, {}, true)
         }
 
         DeltaTimeProfiler.pop()
@@ -626,21 +625,19 @@ class KiltLoader {
         Kilt.logger.info("Starting initialization of Forge mods...")
         DeltaTimeProfiler.push("loadMods")
 
-        val exceptions = mutableListOf<Exception>()
+        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
 
         fullLoadForgeBuiltin()
 
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                for ((index, mod) in modLoadingQueue.withIndex()) {
-                    try {
+                modLoadingQueue.withIndex().asFlow().concurrent()
+                    .map { combined ->
+                        val (_, mod) = combined
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            mods[index] = mod
-                            exceptions.addAll(registerAnnotations(mod, mod.scanData))
-
-                            continue
+                            return@map combined
                         }
 
                         val scanData = ModFileScanData()
@@ -649,55 +646,54 @@ class KiltLoader {
                         mod.scanData = scanData
 
                         // basically emulate how Forge loads stuff
-                        launch {
-                            mod.jar.entries().asIterator().asFlow()
-                                .filter { it.name.endsWith(".class") }
-                                .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
-                                .collect {
-                                    val visitor = ModClassVisitor()
-                                    val classReader = ClassReader(it)
+                        mod.jar.stream().consumeAsFlow().concurrent()
+                            .filter { it.name.endsWith(".class") }
+                            .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
+                            .collect {
+                                val visitor = ModClassVisitor()
+                                val classReader = ClassReader(it)
 
-                                    classReader.accept(visitor, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
-                                    visitor.buildData(scanData.classes, scanData.annotations)
-                                }
+                                classReader.accept(visitor, 0)
+                                visitor.buildData(scanData.classes, scanData.annotations)
+                            }
 
-                            // Follow the exact order the mod loading queue was sorted.
-                            mods[index] = mod
+                        combined
+                    }
+                    .map { (index, mod) ->
+                        // Follow the exact order the mod loading queue was sorted.
+                        mods[index] = mod
 
+                        mod
+                    }
+                    .merge(true)
+                    .collect { mod ->
+                        try {
                             // Avoid `ConcurrentModificationException`
                             // when register the event for mods that need to find the context by `getMod`
                             ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
 
-                            exceptions.addAll(registerAnnotations(mod, scanData))
-                        }.join()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        exceptions.add(e)
+                            registerAnnotations(mod, mod.scanData)
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                            exception.addSuppressed(e)
+                        }
                     }
-                }
             }.join()
         }
 
         modLoadingQueue.clear()
 
-        if (exceptions.isNotEmpty()) {
-            FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", null, {
-                val tab = it.addTab("Kilt Error")
-
-                exceptions.forEach { e ->
-                    tab.node.addCleanedException(e)
-                }
-
-                it.tabs.removeIf { t -> t != tab }
-            }, true)
+        if (exception.suppressed.isNotEmpty()) {
+            exception.printStackTrace()
+            FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", exception, {}, true)
         }
         DeltaTimeProfiler.pop()
     }
 
     private val launcher = FabricLauncherBase.getLauncher()
 
-    private suspend fun registerAnnotations(mod: ForgeMod, scanData: ModFileScanData): List<Exception> {
-        val exceptions = mutableListOf<Exception>()
+    private suspend fun registerAnnotations(mod: ForgeMod, scanData: ModFileScanData) {
+        val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
 
         // Automatically subscribe events
         scanData.annotations.asFlow()
@@ -708,7 +704,7 @@ class KiltLoader {
 
                 try {
                     val modId = it.annotationData["modid"] as String?
-                    // Use the mod ID of the mod in the class instead
+                        // Use the mod ID of the mod in the class instead
                         ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, it.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
                         ?: mod.modId
 
@@ -725,15 +721,16 @@ class KiltLoader {
                     busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
                     ModLoadingContext.kiltActiveModId = null
 
-                    Kilt.logger.info("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
+                    Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Exception) {
                     Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
-                    exceptions.add(e)
+                    exception.addSuppressed(e)
                 }
             }
 
-        return exceptions
+        if (exception.suppressed.isNotEmpty())
+            throw exception
     }
 
     private fun checkTypeOrParentsAreType(rootType: Type, topType: Type): Boolean {
@@ -762,7 +759,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to load Kilt mods!")
 
         runBlocking {
-            mods.asFlow()
+            mods.asFlow().concurrent()
                 .collect { mod ->
                     try {
                         initMod(mod, mod.scanData)
@@ -782,12 +779,7 @@ class KiltLoader {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {
-                val tab = it.addTab("Kilt Error")
-                tab.node.addCleanedException(exception)
-
-                it.tabs.removeIf { t -> t != tab }
-            }, true)
+            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {}, true)
         }
         DeltaTimeProfiler.pop()
     }
@@ -993,14 +985,6 @@ class KiltLoader {
     internal fun addModToFabric(mod: ForgeMod) {
         modProvider.addModToLoader(mod)
         Kilt.logger.info("Injected mod ${mod.modId} into ${modProvider.name}")
-    }
-
-    // We need to initialize all early Forge-related things immediately,
-    // because otherwise things will break entirely.
-    fun initForge() {
-        SharedConstants.tryDetectVersion()
-        Bootstrap.bootStrap() // fuck you
-        ForgeRegistries.init()
     }
 
     private open class ModLoadingState(val dependency: IModInfo.ModVersion)
