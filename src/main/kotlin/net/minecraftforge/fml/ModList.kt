@@ -7,7 +7,6 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.*
@@ -23,11 +22,11 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
         get() = kiltMods.map { it.owningFile } // It's funny how stupid this is
 
     fun <T : Any> getModObjectById(modid: String): Optional<T> {
-        return Optional.ofNullable((kiltMods.firstOrNull { it != null && it.modId == modid } ?: KiltLoader.INSTANCE.modLoadingQueue.firstOrNull { it.modId == modid })?.modObject as T)
+        return Optional.ofNullable((kiltMods.firstOrNull { it.modId == modid })?.modObject as T)
     }
 
     fun getModContainerById(modId: String): Optional<out ModContainer> {
-        val mod = kiltMods.firstOrNull { it != null && it.modId == modId } ?: KiltLoader.INSTANCE.modLoadingQueue.firstOrNull { it.modId == modId } ?: return Optional.empty()
+        val mod = kiltMods.firstOrNull { it.modId == modId } ?: return Optional.empty()
 
         return Optional.of(KiltModContainer(mod))
     }
