@@ -74,6 +74,7 @@
         "compat.forgeconfigapiport.ModConfigMixin",
         "compat.mkb.IKeyBindingMixin",
         "compat.mkb.IKeyConflictContextMixin",
+        "compat.mkb.KeyConflictContextMixin",
         "compat.porting_lib.ConditionalRecipeSerializerMixin",
         "compat.porting_lib.RegistryObjectAccessor",
         "compat.porting_lib.RegistryObjectMixin",
@@ -102,7 +103,8 @@
         "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
-        "compat.indium.BakedModelMixin"
+        "compat.indium.BakedModelMixin",
+        "compat.mkb.KeyMappingMixin"
     ],
     "injectors": {
         "defaultRequire": 1
