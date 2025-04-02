@@ -11,7 +11,6 @@ import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
@@ -477,7 +476,7 @@ class KiltEarlyRiser : Runnable {
         DeltaTimeProfiler.push("preLaunch")
         try {
             Kilt.loader.preloadMods()
-            KiltMixinLoader.init(Kilt.loader.modLoadingQueue.stream().toList())
+            Kilt.loader.loadForgeModMixins()
             AccessTransformerLoader.runTransformers()
         } catch (e: Exception) {
             Kilt.logger.error("Kilt failed to preload mods!")

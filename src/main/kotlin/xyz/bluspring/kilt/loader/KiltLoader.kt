@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -44,6 +43,7 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.CoreModLoader
+import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.KiltModFileFactory
@@ -62,10 +62,15 @@ import kotlin.io.path.*
 import kotlin.system.exitProcess
 
 class KiltLoader {
-    val mods = ObjectArrayList<ForgeMod>()
-    internal val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+    val mods = LockableObjectArrayList<ForgeMod>()
     internal val forgeMods = ObjectArrayList<ForgeMod>()
     private val tomlParser = TomlParser()
+
+    // I have no fucking clue why this is needed, but for whatever fucking reason,
+    // the mods ObjectArrayList is getting resorted *after* it's getting sorted in scanMods,
+    // no matter what the fuck I do.
+    // I don't have time to deal with this, so this works instead.
+    private lateinit var sortedModOrder: Collection<ForgeMod>
 
     // Meant to be used for compatibility between Fabric and other derivatives of it, such as Quilt.
     // However, I currently haven't found a way to link Kilt's mods into Quilt, so this is how it will
@@ -75,6 +80,8 @@ class KiltLoader {
     private val environment = KiltEnvironment()
 
     suspend fun scanMods() {
+        val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
 
@@ -86,9 +93,10 @@ class KiltLoader {
         val exception = RuntimeException("Failed to load mods in Kilt!")
 
         DeltaTimeProfiler.push("preload")
+        preloadForgeBuiltinMod(modLoadingQueue)
         modsDir.forEachDirectoryEntry("*.jar") { modFile ->
             try {
-                preloadJarMod(modFile, ZipFile(modFile.toFile()))
+                preloadJarMod(modLoadingQueue, modFile, ZipFile(modFile.toFile()))
             } catch (e: Throwable) {
                 exception.addSuppressed(e)
             }
@@ -242,11 +250,10 @@ class KiltLoader {
             exitProcess(1)
         } else {
             Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
-            mods.size(preloadedMods.size)
 
             if (preloadedMods.isNotEmpty()) {
                 try {
-                    remapMods()
+                    remapMods(modLoadingQueue)
                 } catch (e: Exception) {
                     e.printStackTrace()
 
@@ -262,30 +269,44 @@ class KiltLoader {
                 loadTransformers(mod)
                 CoreModLoader.scanAndLoadCoreMods(mod)
             }
-
-            loadTransformers(null) // load Forge ATs
         }
 
         sortMods(modLoadingQueue)
         DeltaTimeProfiler.pop()
     }
 
-    private fun sortMods(queue: ConcurrentLinkedQueue<ForgeMod>) {
+    private fun sortMods(modLoadingQueue: MutableCollection<ForgeMod>) {
         DeltaTimeProfiler.push("sortMods")
-        val graph = queue.buildGraph()
+        val graph = modLoadingQueue.buildGraph()
         val sorted = TopologicalSort.topologicalSort(graph, null)
-        queue.clear()
-        queue.addAll(sorted)
+
+        mods.size(sorted.size)
+        sorted.forEachIndexed { i, mod ->
+            mods[i] = mod
+        }
+
+        mods.freeze()
+        modLoadingQueue.clear()
+
+        // See comment at the lateinit
+        sortedModOrder = sorted
+
         DeltaTimeProfiler.pop()
     }
 
     fun injectMods() {
         DeltaTimeProfiler.push("addToClassPath")
-        for (mod in modLoadingQueue) {
+        for (mod in mods) {
             Kilt.loader.addModToFabric(mod)
-            FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
+
+            if (mod.modFile != null) // Avoid adding the Forge builtins
+                FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
         }
         DeltaTimeProfiler.pop()
+    }
+
+    fun loadForgeModMixins() {
+        KiltMixinLoader.init(mods)
     }
 
     fun preloadMods() {
@@ -301,19 +322,15 @@ class KiltLoader {
         environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
-
-        loadForgeBuiltinMod() // fuck you
     }
 
-    // Apparently, Forge has itself as a mod. But Kilt will refuse to handle itself, as it's a Fabric mod.
-    // Let's do a trick to load the Forge built-in mod.
-    private fun loadForgeBuiltinMod() {
+    private fun preloadForgeBuiltinMod(modLoadingQueue: MutableCollection<ForgeMod>) {
         val forgeMods = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             val modsList = mutableListOf<ForgeMod>()
 
             for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
                 val toml = tomlParser.parse(url)
-                modsList.addAll(parseModsToml(toml, null, null))
+                modsList.addAll(parseModsToml(modLoadingQueue, toml, null, null))
             }
 
             modsList
@@ -323,34 +340,28 @@ class KiltLoader {
 
             val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
 
-            parseModsToml(toml, kiltFile, kiltJar)
+            parseModsToml(modLoadingQueue, toml, kiltFile, kiltJar)
         }
 
+        // Scan mods for data much earlier
         val scanData = ModFileScanData()
-        KiltHelper.getForgeClassNodes().forEach {
-            val visitor = ModClassVisitor()
-            it.accept(visitor)
 
-            visitor.buildData(scanData.classes, scanData.annotations)
+        runBlocking {
+            KiltHelper.getForgeClassNodes().asFlow().concurrent().collect {
+                val visitor = ModClassVisitor()
+                it.accept(visitor)
+
+                visitor.buildData(scanData.classes, scanData.annotations)
+            }
         }
 
-        for (forgeMod in forgeMods) {
-            scanData.addModFileInfo(ModFileInfo(forgeMod))
-
-            forgeMod.scanData = scanData
-            CoreModLoader.scanAndLoadCoreMods(forgeMod)
-
-            mods.add(forgeMod)
-            addModToFabric(forgeMod)
-            this.forgeMods.add(forgeMod)
-        }
-    }
-
-    private fun fullLoadForgeBuiltin() {
         for (mod in forgeMods) {
-            runBlocking { registerAnnotations(mod, mod.scanData) }
-            mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+            scanData.addModFileInfo(ModFileInfo(mod))
+            mod.scanData = scanData
         }
+
+        modLoadingQueue.addAll(forgeMods)
+        this.forgeMods.addAll(forgeMods)
     }
 
     // This is used specifically for JiJ'd mods that don't store mods.toml files.
@@ -367,6 +378,7 @@ class KiltLoader {
     }
 
     private fun preloadJarMod(
+        modLoadingQueue: MutableCollection<ForgeMod>,
         modFile: Path,
         jarFile: ZipFile,
         nestedModUpdater: Consumer<ForgeMod>? = null
@@ -452,14 +464,14 @@ class KiltLoader {
                         }
                     }
 
-                    preloadJarMod(file, ZipFile(file.toFile())) { mod ->
+                    preloadJarMod(modLoadingQueue, file, ZipFile(file.toFile())) { mod ->
                         nestedMods.add(mod)
                     }
                 }
             }
 
             val toml = tomlParser.parse(jarFile.getInputStream(modsToml))
-            val forgeMods = parseModsToml(toml, modFile, jarFile, nestedMods)
+            val forgeMods = parseModsToml(modLoadingQueue, toml, modFile, jarFile, nestedMods)
 
             forgeMods.forEach {
                 modLoadingQueue.add(it)
@@ -478,6 +490,7 @@ class KiltLoader {
 
     // Split this off from the main preloadMods method, in case it needs to be used again later.
     private fun parseModsToml(
+        modLoadingQueue: MutableCollection<ForgeMod>,
         toml: CommentedConfig,
         modFile: Path?,
         jarFile: ZipFile?,
@@ -605,7 +618,7 @@ class KiltLoader {
     }
 
     // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
-    private suspend fun remapMods() {
+    private suspend fun remapMods(mods: Collection<ForgeMod>) {
         DeltaTimeProfiler.push("remapMods")
 
         val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
@@ -613,7 +626,7 @@ class KiltLoader {
         }
 
         try {
-            KiltRemapper.remapMods(modLoadingQueue, remappedModsDir)
+            KiltRemapper.remapMods(mods, remappedModsDir)
         } catch (e: Throwable) {
             e.printStackTrace()
             FabricGuiEntry.displayError("Errors occurred while remapping Forge mods!", e, {}, true)
@@ -628,17 +641,18 @@ class KiltLoader {
 
         val exception = RuntimeException("Failed to load Forge mods in Kilt!")
 
-        fullLoadForgeBuiltin()
-
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                modLoadingQueue.withIndex().asFlow().concurrent()
-                    .map { combined ->
-                        val (_, mod) = combined
+                sortedModOrder.asFlow().concurrent()
+                    .map { mod ->
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            return@map combined
+                            return@map mod
+                        }
+
+                        if (mod.modFile == null) { // This is usually a Forge built-in, we don't have to worry about scanning this.
+                            return@map mod
                         }
 
                         val scanData = ModFileScanData()
@@ -647,7 +661,7 @@ class KiltLoader {
                         mod.scanData = scanData
 
                         // basically emulate how Forge loads stuff
-                        mod.jar.entries().asIterator().asFlow()
+                        mod.jar.entries().asIterator().asFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
                             .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
                             .collect {
@@ -658,15 +672,8 @@ class KiltLoader {
                                 visitor.buildData(scanData.classes, scanData.annotations)
                             }
 
-                        combined
-                    }
-                    .map { (index, mod) ->
-                        // Follow the exact order the mod loading queue was sorted.
-                        mods[index] = mod
-
                         mod
                     }
-                    .merge(true)
                     .collect { mod ->
                         try {
                             // Avoid `ConcurrentModificationException`
@@ -681,8 +688,6 @@ class KiltLoader {
                     }
             }.join()
         }
-
-        modLoadingQueue.clear()
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
@@ -760,7 +765,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to load Kilt mods!")
 
         runBlocking {
-            mods.asFlow().concurrent()
+            sortedModOrder.asFlow().concurrent()
                 .collect { mod ->
                     try {
                         initMod(mod, mod.scanData)
@@ -841,8 +846,8 @@ class KiltLoader {
         DeltaTimeProfiler.pop()
     }
 
-    private fun loadTransformers(mod: ForgeMod?) {
-        if (mod == null) {
+    private fun loadTransformers(mod: ForgeMod) {
+        if (mod.modFile == null) {
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
 
             if (accessTransformer != null) {
@@ -877,11 +882,11 @@ class KiltLoader {
     }
 
     fun getMod(id: String): ForgeMod? {
-        return mods.firstOrNull { it != null && it.modId == id } ?: modLoadingQueue.firstOrNull { it.modId == id }
+        return mods.firstOrNull { it != null && it.modId == id }
     }
 
     fun hasMod(id: String): Boolean {
-        return mods.any { it != null && it.modId == id } || modLoadingQueue.any { it.modId == id }
+        return mods.any { it != null && it.modId == id }
     }
 
     private var statesProvider: ForgeStatesProvider? = null
@@ -1041,7 +1046,5 @@ class KiltLoader {
             return (FabricLoader.getInstance().environmentType == EnvType.CLIENT && side == DependencySide.CLIENT)
                     || (FabricLoader.getInstance().environmentType == EnvType.SERVER && side == DependencySide.SERVER)
         }
-
-
     }
 }
