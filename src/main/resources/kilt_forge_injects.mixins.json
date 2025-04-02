@@ -301,6 +301,8 @@
         "client.gui.FontInject",
         "client.gui.GuiGraphicsInject",
         "client.gui.GuiInject",
+        "client.gui.MapRendererInject",
+        "client.gui.MapRendererInject$MapInstanceInject",
         "client.gui.components.AbstractButtonInject",
         "client.gui.components.AbstractSelectionListInject",
         "client.gui.components.AbstractWidgetInject",

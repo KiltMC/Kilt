@@ -155,17 +155,25 @@ object KiltMixinModifications {
         }
     }
 
-    private fun createAnnotation(annotationType: Class<*>, variables: Map<String, Any>): AnnotationNode {
-        return AnnotationNode(Type.getDescriptor(annotationType)).apply {
-            val values = mutableListOf<Any>()
+    fun createAnnotation(annotationType: Class<*>, variables: Map<String, Any>): AnnotationNode {
+        return createAnnotation(Type.getDescriptor(annotationType), variables)
+    }
 
-            for ((key, v) in variables) {
-                values.add(key)
-                values.add(v)
-            }
-
-            this.values = values
+    fun createAnnotation(annotationType: String, variables: Map<String, Any>): AnnotationNode {
+        return AnnotationNode(annotationType).apply {
+            this.values = mapToAnnotationValues(variables)
         }
+    }
+
+    fun mapToAnnotationValues(map: Map<String, Any>): List<Any> {
+        val values = mutableListOf<Any>()
+
+        for ((key, v) in map) {
+            values.add(key)
+            values.add(v)
+        }
+
+        return values
     }
 
     fun annotationValuesToMap(values: List<Any>): Map<String, Any> {

@@ -22,6 +22,18 @@ object KiltHelper {
         return array.joinToString(separator)
     }
 
+    fun <E> mergeNullableCollections(vararg collections: Collection<E>?): Collection<E> {
+        val merged = mutableListOf<E>()
+
+        for (collection in collections) {
+            if (collection != null) {
+                merged.addAll(collection)
+            }
+        }
+
+        return merged
+    }
+
     fun getKiltPaths(): List<Path> {
         return if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
             //listOf(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath())
