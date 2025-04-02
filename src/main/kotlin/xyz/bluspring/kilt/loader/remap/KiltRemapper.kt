@@ -47,7 +47,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 153
+    const val REMAPPER_VERSION = 154
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -538,6 +538,15 @@ object KiltRemapper {
                             }
 
                             properMapped.addProperty(name, "$intermediaryClass$intermediaryMethod$intermediaryDesc")
+
+                            // Add special handling for removed explicit targets
+                            if (name.startsWith("L")) {
+                                val owner = name.replaceAfter(";", "")
+
+                                if (owner != name) {
+                                    properMapped.addProperty(name.removePrefix(owner), "$intermediaryMethod$intermediaryDesc")
+                                }
+                            }
                         }
                     }
 
