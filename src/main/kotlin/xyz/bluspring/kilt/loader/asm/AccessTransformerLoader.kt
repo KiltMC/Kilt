@@ -275,7 +275,7 @@ object AccessTransformerLoader {
                 // final flag
                 if (classTransformInfo.final != Final.DEFAULT) {
                     classNode.access = if (classTransformInfo.final == Final.ADD)
-                        classNode.access or Opcodes.ACC_FINAL // set bits
+                        classNode.access //or Opcodes.ACC_FINAL // set bits // Kilt: we're ignoring it
                     else
                         classNode.access and Opcodes.ACC_FINAL.inv() // clear bits
 
@@ -306,7 +306,7 @@ object AccessTransformerLoader {
                     if (fieldTransformInfo.final != Final.DEFAULT) {
                         if (fieldTransformInfo.final == Final.ADD)
                             // add bits
-                            fieldNode.access = fieldNode.access or Opcodes.ACC_FINAL
+                            fieldNode.access = fieldNode.access //or Opcodes.ACC_FINAL //Kilt: we're ignoring that
                         else
                             // clear bits
                             fieldNode.access = fieldNode.access and Opcodes.ACC_FINAL.inv()
@@ -334,13 +334,16 @@ object AccessTransformerLoader {
                         methodNode.access = methodNode.access or methodTransformInfo.currentAccessType.flag
 
                         println("set method to access type ${methodTransformInfo.currentAccessType.name}")
+
+                        // final flag
+                        methodNode.access = methodNode.access and Opcodes.ACC_FINAL.inv() // just remove final immediately
                     }
 
                     // final flag
                     if (methodTransformInfo.final != Final.DEFAULT) {
                         if (methodTransformInfo.final == Final.ADD)
                         // add bits
-                            methodNode.access = methodNode.access or Opcodes.ACC_FINAL
+                            methodNode.access = methodNode.access //or Opcodes.ACC_FINAL // Kilt: we're ignoring that.
                         else
                         // clear bits
                             methodNode.access = methodNode.access and Opcodes.ACC_FINAL.inv()
