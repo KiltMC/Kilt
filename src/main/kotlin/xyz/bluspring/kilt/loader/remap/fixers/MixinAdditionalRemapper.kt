@@ -133,8 +133,8 @@ object MixinAdditionalRemapper {
                             val combined = methodValue.removePrefix(owner)
 
                             if ((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
-                                val methodName = combined.replaceBefore("(", "")
-                                val descriptor = combined.removePrefix(methodName)
+                                val descriptor = combined.replaceBefore("(", "")
+                                val methodName = combined.removeSuffix(descriptor)
 
                                 values["method"] = "$methodName${KiltRemapper.remapDescriptor(descriptor)}"
                             } else {
@@ -161,8 +161,8 @@ object MixinAdditionalRemapper {
                                 val combined = value.removePrefix(owner)
 
                                 if ((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
-                                    val methodName = combined.replaceBefore("(", "")
-                                    val descriptor = combined.removePrefix(methodName)
+                                    val descriptor = combined.replaceBefore("(", "")
+                                    val methodName = combined.removeSuffix(descriptor)
 
                                     list.add("$methodName${KiltRemapper.remapDescriptor(descriptor)}")
                                 } else {
