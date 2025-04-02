@@ -1,7 +1,9 @@
 package xyz.bluspring.kilt.injections.world.item;
 
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public interface DyeColorInjection {
@@ -17,4 +19,6 @@ public interface DyeColorInjection {
 
         return null;
     }
+
+    TagKey<Item> getTag();
 }
