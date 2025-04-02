@@ -274,9 +274,9 @@ object AccessTransformerLoader {
 
                 // final flag
                 if (classTransformInfo.final != Final.DEFAULT) {
-                    classNode.access = if (classTransformInfo.final == Final.ADD)
-                        classNode.access //or Opcodes.ACC_FINAL // set bits // Kilt: we're ignoring it
-                    else
+                    classNode.access = //if (classTransformInfo.final == Final.ADD)
+                        //classNode.access or Opcodes.ACC_FINAL // set bits // Kilt: we're just forcing no-final.
+                    //else
                         classNode.access and Opcodes.ACC_FINAL.inv() // clear bits
 
                     println("set class to final type ${classTransformInfo.final.name}")
@@ -298,16 +298,17 @@ object AccessTransformerLoader {
 
                         // add bits
                         fieldNode.access = fieldNode.access or fieldTransformInfo.currentAccessType.flag
+                        fieldNode.access = fieldNode.access and Opcodes.ACC_FINAL.inv() // Kilt: force no final
 
                         println("set field to access type ${fieldTransformInfo.currentAccessType.name}")
                     }
 
                     // final flag
                     if (fieldTransformInfo.final != Final.DEFAULT) {
-                        if (fieldTransformInfo.final == Final.ADD)
+                        //if (fieldTransformInfo.final == Final.ADD) // Kilt: we're forcing no final.
                             // add bits
-                            fieldNode.access = fieldNode.access //or Opcodes.ACC_FINAL //Kilt: we're ignoring that
-                        else
+                            //fieldNode.access = fieldNode.access or Opcodes.ACC_FINAL //Kilt: we're ignoring that
+                        //else
                             // clear bits
                             fieldNode.access = fieldNode.access and Opcodes.ACC_FINAL.inv()
 
@@ -341,10 +342,10 @@ object AccessTransformerLoader {
 
                     // final flag
                     if (methodTransformInfo.final != Final.DEFAULT) {
-                        if (methodTransformInfo.final == Final.ADD)
+                        //if (methodTransformInfo.final == Final.ADD) // Kilt: force no final
                         // add bits
-                            methodNode.access = methodNode.access //or Opcodes.ACC_FINAL // Kilt: we're ignoring that.
-                        else
+                            //methodNode.access = methodNode.access //or Opcodes.ACC_FINAL // Kilt: we're ignoring that.
+                        //else
                         // clear bits
                             methodNode.access = methodNode.access and Opcodes.ACC_FINAL.inv()
 
