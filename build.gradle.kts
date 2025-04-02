@@ -158,7 +158,7 @@ dependencies {
 //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
-    include(implementation("xyz.bluspring.kiltmc:MixinConstraints:${property("mixinconstraints_version")}") {
+    include(implementation("com.moulberry:mixinconstraints:${property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     })
 
