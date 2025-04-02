@@ -19,8 +19,6 @@ import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
-import net.minecraft.SharedConstants
-import net.minecraft.server.Bootstrap
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
@@ -42,7 +40,6 @@ import net.minecraftforge.forgespi.language.IModInfo.DependencySide
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ModFileFactory
-import net.minecraftforge.registries.ForgeRegistries
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
@@ -992,14 +989,6 @@ class KiltLoader {
     internal fun addModToFabric(mod: ForgeMod) {
         modProvider.addModToLoader(mod)
         Kilt.logger.info("Injected mod ${mod.modId} into ${modProvider.name}")
-    }
-
-    // We need to initialize all early Forge-related things immediately,
-    // because otherwise things will break entirely.
-    fun initForge() {
-        SharedConstants.tryDetectVersion()
-        Bootstrap.bootStrap() // fuck you
-        ForgeRegistries.init()
     }
 
     private open class ModLoadingState(val dependency: IModInfo.ModVersion)
