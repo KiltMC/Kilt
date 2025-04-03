@@ -13,6 +13,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
+import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.minecraftforge.fart.api.ClassProvider
 import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper

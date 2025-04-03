@@ -93,7 +93,7 @@ class Kilt : ModInitializer {
         }
 
         EntitySleepEvents.ALLOW_SETTING_SPAWN.register { player, pos ->
-            !ForgeEventFactory.onPlayerSpawnSet(player, player.level().dimension(), pos, false)
+            !ForgeEventFactory.onPlayerSpawnSet(player, player.level.dimension(), pos, false)
         }
 
         EntitySleepEvents.ALLOW_SLEEP_TIME.register { player, pos, _ ->
