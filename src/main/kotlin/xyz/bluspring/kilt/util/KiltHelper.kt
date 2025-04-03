@@ -33,6 +33,7 @@ object KiltHelper {
     }
 
     // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
+    @JvmStatic
     fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
         if (checkCache(cachedHasMethodOverride, topClass, superClass, methodName, *methodArgs))
             return true
