@@ -19,6 +19,7 @@ import xyz.bluspring.kilt.injections.world.level.storage.loot.LootDataTypeInject
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 @Mixin(LootDataType.class)
 public abstract class LootDataTypeInject<T> implements LootDataTypeInjection<T> {
@@ -39,6 +40,15 @@ public abstract class LootDataTypeInject<T> implements LootDataTypeInjection<T> 
     @Override
     public void kilt$setTriTopDeserializerGetter(BiFunction<Gson, String, TriFunction<ResourceLocation, JsonElement, ResourceManager, Optional<T>>> deserializerGetter) {
         this.kilt$deserializer = deserializerGetter.apply(this.parser, this.directory);
+    }
+
+    @Override
+    public Optional<T> kilt$tryDeserialize(ResourceLocation id, JsonElement json, ResourceManager resourceManager, Supplier<Optional<T>> original) {
+        if (this.kilt$deserializer == null) {
+            return original.get();
+        }
+
+        return this.deserialize(id, json, resourceManager);
     }
 
     @Override
