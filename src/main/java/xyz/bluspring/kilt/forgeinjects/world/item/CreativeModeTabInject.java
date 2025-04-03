@@ -35,10 +35,10 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     @Unique private boolean hasSearchBar;
     @Unique private int searchBarWidth;
     @Unique private ResourceLocation tabImage;
-    @Unique private int labelColor;
-    @Unique private int slotColor;
-    @Unique private List<ResourceLocation> tabsBefore;
-    @Unique private List<ResourceLocation> tabsAfter;
+    @Unique private int labelColor = Integer.MIN_VALUE;
+    @Unique private int slotColor = Integer.MIN_VALUE;
+    @Unique private List<ResourceLocation> tabsBefore = new ArrayList<>();
+    @Unique private List<ResourceLocation> tabsAfter = new ArrayList<>();
 
     CreativeModeTabInject(CreativeModeTab.Row row, int column, CreativeModeTab.Type type, Component displayName, Supplier<ItemStack> iconGenerator, CreativeModeTab.DisplayItemsGenerator displayItemGenerator) {
     }
