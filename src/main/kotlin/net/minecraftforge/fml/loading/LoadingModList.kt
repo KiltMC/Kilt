@@ -21,13 +21,6 @@ class LoadingModList {
             mods.add(ModInfo(mod))
         }
 
-        for (mod in Kilt.loader.modLoadingQueue) {
-            if (mod == null)
-                continue
-
-            mods.add(ModInfo(mod))
-        }
-
         return mods
     }
 
