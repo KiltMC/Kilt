@@ -477,7 +477,6 @@ class KiltEarlyRiser : Runnable {
         try {
             Kilt.loader.preloadMods()
             Kilt.loader.loadForgeModMixins()
-            AccessTransformerLoader.runTransformers()
         } catch (e: Exception) {
             Kilt.logger.error("Kilt failed to preload mods!")
             Kilt.logger.error("The following error may yell at Fabric-ASM/\"mm\", which is NOT the reason behind this crash.")
