@@ -13,6 +13,52 @@ import java.util.jar.JarFile
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
     private val cachedForgeClassNodes = getForgeClassNodesInternal()
+    private val cachedHasMethodOverride = LinkedHashSet<OverrideData>()
+    private val cachedHasNoMethodOverride = LinkedHashSet<OverrideData>()
+
+    private fun checkAllElementsMatch(array: Array<*>, array2: Array<*>): Boolean {
+        if (array.size != array2.size)
+            return false
+
+        for ((i, first) in array.withIndex()) {
+            if (first != array2[i])
+                return false
+        }
+
+        return true
+    }
+
+    private fun checkCache(cache: Collection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
+        return cache.any { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) }
+    }
+
+    // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
+    fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
+        if (checkCache(cachedHasMethodOverride, topClass, superClass, methodName, *methodArgs))
+            return true
+
+        if (checkCache(cachedHasNoMethodOverride, topClass, superClass, methodName, *methodArgs))
+            return false
+
+        val overrideData = OverrideData(topClass, superClass, methodName, *methodArgs)
+
+        var currentClass: Class<*>? = topClass
+        while (currentClass != null && currentClass != superClass && superClass.isAssignableFrom(topClass)) {
+            try {
+                currentClass.getDeclaredMethod(methodName, *methodArgs)
+                cachedHasMethodOverride.add(overrideData)
+                return true
+            } catch (_: NoSuchMethodException) {
+                currentClass = currentClass.superclass
+            } catch (_: Throwable) {
+                cachedHasNoMethodOverride.add(overrideData)
+                return false
+            }
+        }
+
+        cachedHasNoMethodOverride.add(overrideData)
+        return false
+    }
 
     fun getForgeClassNodes(): List<ClassNode> {
         return cachedForgeClassNodes
@@ -102,4 +148,11 @@ object KiltHelper {
 
         return list
     }
+
+    private class OverrideData(
+        val topClass: Class<*>,
+        val superClass: Class<*>,
+        val methodName: String,
+        vararg val methodArgs: Class<*>
+    )
 }

@@ -2,6 +2,8 @@
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.controls;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
@@ -12,15 +14,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(KeyBindsScreen.class)
 public class KeyBindsScreenInject {
     @Shadow @Nullable public KeyMapping selectedKey;
 
-    @Redirect(method = "method_38532", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;setKey(Lcom/mojang/blaze3d/platform/InputConstants$Key;)V"))
-    private void kilt$resetKeyDirectly(KeyMapping instance, InputConstants.Key key) {
+    @WrapOperation(method = "method_38532", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;setKey(Lcom/mojang/blaze3d/platform/InputConstants$Key;)V"))
+    private void kilt$resetKeyDirectly(KeyMapping instance, InputConstants.Key key, Operation<Void> original) {
+        original.call(instance, key);
         ((IForgeKeyMapping) instance).setToDefault();
     }
 
