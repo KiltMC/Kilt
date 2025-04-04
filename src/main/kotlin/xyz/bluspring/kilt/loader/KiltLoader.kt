@@ -396,8 +396,19 @@ class KiltLoader {
         // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
         if (
             jarFile.getEntry("fabric.mod.json") != null
-        )
-            return
+        ) {
+            // Special workaround for Pretty Pipes and other mods that do this kinda shit,
+            // because what?
+            try {
+                val entryData = JsonParser.parseReader(jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()).asJsonObject
+
+                if ((!entryData.has("depends") || !entryData.getAsJsonObject("depends").has("forge")) || (entryData.has("entrypoints") && entryData.getAsJsonObject("entrypoints").size() > 0)) {
+                    return
+                }
+            } catch (_: Throwable) {
+                return
+            }
+        }
 
         // Prevent users from having both Kilt and Connector at the same time.
         if (jarFile.getEntry("org/sinytra/connector/ConnectorUtil.class") != null) {
