@@ -1,11 +1,11 @@
 package net.minecraftforge.fml
 
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.forgespi.language.IModInfo
 import xyz.bluspring.kilt.remaps.fml.config.ModConfigRemap
-import java.util.EnumMap
-import java.util.Optional
+import java.util.*
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -33,12 +33,14 @@ abstract class ModContainer(info: IModInfo) {
 
     fun addConfig(modConfig: ModConfig) {
         configs[modConfig.type] = modConfig
+        ForgeConfigRegistry.INSTANCE.register(this.modId, modConfig.type, modConfig.getSpec())
     }
 
     // believe it or not, this is needed.
     // why? don't know, really.
     fun addConfig(modConfig: ModConfigRemap) {
         configs[modConfig.type] = modConfig
+        ForgeConfigRegistry.INSTANCE.register(this.modId, modConfig.type, modConfig.getSpec())
     }
 
     fun dispatchConfigEvent(event: IConfigEvent) {
