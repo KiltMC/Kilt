@@ -133,7 +133,7 @@ object MixinAdditionalRemapper {
                             val owner = tryGetOwnerFromMethodValue(methodValue) ?: continue
                             val combined = methodValue.removePrefix(owner)
 
-                            if (((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) //
+                            if (((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("("))
                                 // We ran into problems.
                                 || (values.contains("remap") && values["remap"] == false)
                                 || (isMixinRemapDisabled && values["remap"] != true)
@@ -165,7 +165,11 @@ object MixinAdditionalRemapper {
 
                                 val combined = value.removePrefix(owner)
 
-                                if ((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
+                                if (((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("("))
+                                    // We ran into problems.
+                                    || (values.contains("remap") && values["remap"] == false)
+                                    || (isMixinRemapDisabled && values["remap"] != true)
+                                ) {
                                     val descriptor = combined.replaceBefore("(", "")
                                     val methodName = combined.removeSuffix(descriptor)
 
