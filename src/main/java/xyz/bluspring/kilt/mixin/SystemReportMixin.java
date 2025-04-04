@@ -44,7 +44,6 @@ public abstract class SystemReportMixin {
     }
 
     // Kilt: Filter Forge mods from Fabric's list
-    @SuppressWarnings("UnresolvedMixinReference")
     @TargetHandler(mixin = "net.fabricmc.fabric.mixin.crash.report.info.SystemDetailsMixin", name = "appendMods")
     @ModifyReceiver(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/ArrayList;iterator()Ljava/util/Iterator;"))
     private static ArrayList<ModContainer> kilt$removeForgeModsFromList(ArrayList<ModContainer> instance) {

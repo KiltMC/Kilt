@@ -17,6 +17,8 @@ import java.util.function.Supplier;
 
 @Mixin(value = ForgeConfigSpec.Builder.class, remap = false)
 public abstract class ForgeConfigSpecMixin {
+    // Kilt: ForgeConfigAPIPort is missing these methods from newer versions of Forge.
+
     @Shadow public abstract <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator);
 
     public <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {

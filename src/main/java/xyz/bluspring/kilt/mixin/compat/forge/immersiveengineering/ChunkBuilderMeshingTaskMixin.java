@@ -32,6 +32,7 @@ public abstract class ChunkBuilderMeshingTaskMixin {
         ChunkBuildBuffers buffers = buildContext.buffers;
         blockPos.set(this.render.getOriginX(), this.render.getOriginY(), this.render.getOriginZ());
 
+        // Kilt: Create an Immersive Engineering handler for Sodium compatibility within Kilt
         SodiumIEVertexConsumer.Companion.renderConnectionsInSection(renderType -> {
             var material = DefaultMaterials.forRenderLayer(renderType);
             var builder = buffers.get(material).getVertexBuffer(ModelQuadFacing.UNASSIGNED);
