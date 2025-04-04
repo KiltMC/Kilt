@@ -7,6 +7,9 @@
   "authors": [
     "BluSpring"
   ],
+  "provides": [
+    "forge"
+  ],
   "contact": {
     "repo": "https://github.com/KiltMC/Kilt",
     "issues": "https://github.com/KiltMC/Kilt/issues"
