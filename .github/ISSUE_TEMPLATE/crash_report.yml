@@ -59,8 +59,8 @@ body:
   - type: input
     id: java
     attributes:
-      label: Java version
-      placeholder: 'Example: Java 17'
+      label: Java provider
+      placeholder: 'Example: Temurin'
     validations:
       required: true
   - type: textarea
