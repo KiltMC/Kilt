@@ -390,26 +390,6 @@ class KiltLoader {
         jarFile: ZipFile,
         nestedModUpdater: Consumer<ForgeMod>? = null
     ) {
-        // Do NOT load Fabric mods.
-        // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
-        // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
-        // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
-        if (
-            jarFile.getEntry("fabric.mod.json") != null
-        ) {
-            // Special workaround for Pretty Pipes and other mods that do this kinda shit,
-            // because what?
-            try {
-                val entryData = JsonParser.parseReader(jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()).asJsonObject
-
-                if ((!entryData.has("depends") || !entryData.getAsJsonObject("depends").has("forge")) || (entryData.has("entrypoints") && entryData.getAsJsonObject("entrypoints").size() > 0)) {
-                    return
-                }
-            } catch (_: Throwable) {
-                return
-            }
-        }
-
         // Prevent users from having both Kilt and Connector at the same time.
         if (jarFile.getEntry("org/sinytra/connector/ConnectorUtil.class") != null) {
             throw Exception("Sinytra Connector was detected! I know I said \"Isn't it reasonable to have both?\", but come on!")
@@ -421,6 +401,32 @@ class KiltLoader {
         }
 
         val exception = RuntimeException("Failed to load file ${modFile.name}!")
+        var isSpecialCasedFabric = false
+
+        // Do NOT load Fabric mods.
+        // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
+        // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
+        // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
+        if (
+            jarFile.getEntry("fabric.mod.json") != null
+        ) {
+            // Special workaround for Pretty Pipes and other mods that do this kinda shit,
+            // because what?
+            val fmjEntry = JsonParser.parseReader(jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()).asJsonObject
+            val modId = fmjEntry.get("id").asString
+
+            FabricLoader.getInstance().getModContainer(modId).ifPresent { container ->
+                if (container.metadata.dependencies.none { it.modId == "forge" }) {
+                    return@ifPresent
+                }
+
+                isSpecialCasedFabric = true
+            }
+
+            if (!isSpecialCasedFabric)
+                return
+        }
+
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
 
         Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
@@ -432,7 +438,9 @@ class KiltLoader {
                 val mod = createCustomMod(modFile)
 
                 if ((FabricLoader.getInstance()
-                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null) && mod.modId != "forge"
+                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null)
+                    && mod.modId != "forge"
+                    && !isSpecialCasedFabric
                 ) {
                     Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: ${mod.modId}")
                     return
