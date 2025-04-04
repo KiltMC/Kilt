@@ -26,6 +26,7 @@ object MixinAdditionalRemapper {
         val targetClassNames = mutableListOf<String>()
 
         val values = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+        val isMixinRemapDisabled = values.contains("remap") && values["remap"] == false
 
         if (values.contains("value")) {
             if (values["value"] is List<*>) {
@@ -132,7 +133,11 @@ object MixinAdditionalRemapper {
                             val owner = tryGetOwnerFromMethodValue(methodValue) ?: continue
                             val combined = methodValue.removePrefix(owner)
 
-                            if ((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) { // For now we might want to target only <init>, until we run into problems.
+                            if (((combined.startsWith("<init>") || combined.startsWith("*")) && combined.contains("(")) //
+                                // We ran into problems.
+                                || (values.contains("remap") && values["remap"] == false)
+                                || (isMixinRemapDisabled && values["remap"] != true)
+                            ) {
                                 val descriptor = combined.replaceBefore("(", "")
                                 val methodName = combined.removeSuffix(descriptor)
 
