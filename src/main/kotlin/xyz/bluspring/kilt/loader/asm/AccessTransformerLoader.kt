@@ -46,7 +46,19 @@ object AccessTransformerLoader {
 
             // field / method
             if (split.size > 2 && !split[2].startsWith("#")) {
-                if (split[2].contains("(")) { // method
+                if (split[2] == "*") { // Handle all of them
+                    val classInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)
+
+                    for (field in classInfo.fields) {
+                        accessWidener.visitField(intermediaryClassName, field.mapped, field.mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                        accessWidener.visitField(intermediaryClassName, field.mapped, field.mappedDescriptor, AccessWidenerReader.AccessType.MUTABLE, true)
+                    }
+
+                    for (method in classInfo.methods) {
+                        accessWidener.visitMethod(intermediaryClassName, method.mapped, method.mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                        accessWidener.visitMethod(intermediaryClassName, method.mapped, method.mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
+                    }
+                } else if (split[2].contains("(")) { // method
                     var name = ""
                     var descriptor = ""
 
@@ -65,7 +77,6 @@ object AccessTransformerLoader {
                     }
 
                     val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
-
                     val methodName = KiltRemapper.enhancedRemapper.mapMethodName(srgClassName.replace(".", "/"), name, descriptor)
 
                     // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
