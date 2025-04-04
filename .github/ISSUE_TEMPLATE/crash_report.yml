@@ -59,8 +59,8 @@ body:
   - type: input
     id: java
     attributes:
-      label: Java provider
-      placeholder: 'Example: Temurin'
+      label: Java Provider + Version
+      placeholder: 'Example: Eclipse Termurin 17.0.6'
     validations:
       required: true
   - type: textarea
