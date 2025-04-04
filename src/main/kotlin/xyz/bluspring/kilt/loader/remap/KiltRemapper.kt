@@ -703,8 +703,6 @@ object KiltRemapper {
                 }.launchIn(this).join()
         }
 
-        classProvider.close()
-
         logger.info("Finished remapping mods!")
 
         if (exception.suppressed.isNotEmpty()) {
