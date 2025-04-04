@@ -300,7 +300,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (this.isAlive() && cap == ForgeCapabilities.ITEM_HANDLER) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER && this.isAlive()) {
             if (side == null)
                 return handlers[2].cast();
             else if (side.getAxis().isVertical())
