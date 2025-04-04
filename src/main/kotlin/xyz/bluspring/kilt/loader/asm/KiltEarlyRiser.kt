@@ -14,6 +14,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
+import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.DeltaTimeProfiler
@@ -505,6 +506,7 @@ class KiltEarlyRiser : Runnable {
                 EventEmptyInitializerFixer.fixClass(it, classes)
                 ObjectHolderDefinalizer.processClass(it)
                 AnnotationWorkaroundFixer.fixClass(it)
+                EnvironmentRemapper.remapClass(it)
             }
         }
     }
