@@ -19,6 +19,6 @@ class KiltModProvider : IModProvider {
     }
 
     override fun isValid(modFile: IModFile?): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 }
