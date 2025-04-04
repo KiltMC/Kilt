@@ -431,8 +431,8 @@ class KiltLoader {
             if (nestedModUpdater != null && modsToml == null) {
                 val mod = createCustomMod(modFile)
 
-                if (FabricLoader.getInstance()
-                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null
+                if ((FabricLoader.getInstance()
+                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null) && mod.modId != "forge"
                 ) {
                     Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: ${mod.modId}")
                     return
@@ -561,8 +561,8 @@ class KiltLoader {
 
             // In most cases, Fabric versions of mods share the same mod ID as the Forge variant.
             // We don't want two of the same things, so we shouldn't allow this to occur.
-            if (FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null || FabricLoader.getInstance()
-                    .isModLoaded(modId)
+            if ((FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null || FabricLoader.getInstance()
+                    .isModLoaded(modId)) && modId != "forge"
             ) {
                 Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: $modId")
                 return@forEach
