@@ -16,7 +16,6 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.RenderTypeGroup;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
@@ -27,28 +26,53 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(SimpleBakedModel.class)
-public class SimpleBakedModelInject implements BakedModelInject, SimpleBakedModelInjection {
+public abstract class SimpleBakedModelInject implements BakedModelInject, SimpleBakedModelInjection {
     protected ChunkRenderTypeSet blockRenderTypes;
     protected List<RenderType> itemRenderTypes;
     protected List<RenderType> fabulousItemRenderTypes;
+    protected ChunkRenderTypeSet blockRenderTypesFast;
+    protected List<RenderType> itemRenderTypesFast;
+    protected List<RenderType> fabulousItemRenderTypesFast;
 
     public SimpleBakedModelInject(List<BakedQuad> unculledFaces, Map<Direction, List<BakedQuad>> culledFaces, boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides) {}
 
     @CreateInitializer
     public SimpleBakedModelInject(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
         this(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
-        this.addRenderTypes(renderTypeGroup);
+        this.kilt$addRenderTypes(renderTypeGroup);
+    }
+
+    @CreateInitializer
+    public SimpleBakedModelInject(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypeGroupFast) {
+        this(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
+        this.kilt$addRenderTypes(renderTypeGroup);
+        this.kilt$addRenderTypesFast(renderTypeGroupFast);
     }
 
     @Override
-    public void addRenderTypes(RenderTypeGroup renderTypeGroup) {
+    public void kilt$addRenderTypes(RenderTypeGroup renderTypeGroup) {
+        if (renderTypeGroup == null)
+            renderTypeGroup = RenderTypeGroup.EMPTY;
+
         this.blockRenderTypes = !renderTypeGroup.isEmpty() ? ChunkRenderTypeSet.of(renderTypeGroup.block()) : null;
         this.itemRenderTypes = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entity()) : null;
         this.fabulousItemRenderTypes = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entityFabulous()) : null;
     }
 
     @Override
+    public void kilt$addRenderTypesFast(RenderTypeGroup renderTypeGroup) {
+        if (renderTypeGroup == null)
+            renderTypeGroup = RenderTypeGroup.EMPTY;
+
+        this.blockRenderTypesFast = !renderTypeGroup.isEmpty() ? ChunkRenderTypeSet.of(renderTypeGroup.block()) : null;
+        this.itemRenderTypesFast = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entity()) : null;
+        this.fabulousItemRenderTypesFast = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entityFabulous()) : null;
+    }
+
+    @Override
     public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
+        // TODO: Add support for fast render types
+
         if (blockRenderTypes != null)
             return blockRenderTypes;
 
@@ -67,30 +91,21 @@ public class SimpleBakedModelInject implements BakedModelInject, SimpleBakedMode
     }
 
     @Mixin(SimpleBakedModel.Builder.class)
-    public static class BuilderInject implements SimpleBakedModelBuilderInjection {
-        @Shadow private TextureAtlasSprite particleIcon;
-
-        @Shadow @Final private List<BakedQuad> unculledFaces;
-
-        @Shadow @Final private Map<Direction, List<BakedQuad>> culledFaces;
-
-        @Shadow @Final private boolean hasAmbientOcclusion;
-
-        @Shadow @Final private boolean usesBlockLight;
-
-        @Shadow @Final private boolean isGui3d;
-
-        @Shadow @Final private ItemTransforms transforms;
-
-        @Shadow @Final private ItemOverrides overrides;
+    public static abstract class BuilderInject implements SimpleBakedModelBuilderInjection {
+        @Shadow public abstract BakedModel build();
 
         @Override
         public BakedModel build(RenderTypeGroup renderTypeGroup) {
-            if (this.particleIcon == null) {
-                throw new RuntimeException("Missing particle!");
-            } else {
-                return SimpleBakedModelInjection.create(this.unculledFaces, this.culledFaces, this.hasAmbientOcclusion, this.usesBlockLight, this.isGui3d, this.particleIcon, this.transforms, this.overrides, renderTypeGroup);
-            }
+            return this.build(renderTypeGroup, RenderTypeGroup.EMPTY);
+        }
+
+        @Override
+        public BakedModel build(RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypesFast) {
+            var model = this.build();
+            ((SimpleBakedModelInjection) model).kilt$addRenderTypes(renderTypeGroup);
+            ((SimpleBakedModelInjection) model).kilt$addRenderTypesFast(renderTypesFast);
+
+            return model;
         }
     }
 }

@@ -12,14 +12,23 @@ import java.util.List;
 import java.util.Map;
 
 public interface SimpleBakedModelInjection {
-    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
+    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup, RenderTypeGroup fastRenderTypeGroup) {
         var model = new SimpleBakedModel(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
-        ((SimpleBakedModelInjection) model).addRenderTypes(renderTypeGroup);
+        ((SimpleBakedModelInjection) model).kilt$addRenderTypes(renderTypeGroup);
+        ((SimpleBakedModelInjection) model).kilt$addRenderTypesFast(fastRenderTypeGroup);
 
         return model;
     }
 
-    default void addRenderTypes(RenderTypeGroup renderTypeGroup) {
+    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
+        return create(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides, renderTypeGroup, renderTypeGroup);
+    }
+
+    default void kilt$addRenderTypes(RenderTypeGroup renderTypeGroup) {
+        throw new IllegalStateException();
+    }
+
+    default void kilt$addRenderTypesFast(RenderTypeGroup renderTypeGroup) {
         throw new IllegalStateException();
     }
 }

@@ -7,4 +7,8 @@ public interface SimpleBakedModelBuilderInjection {
     default BakedModel build(RenderTypeGroup renderTypeGroup) {
         throw new IllegalStateException();
     }
+
+    default BakedModel build(RenderTypeGroup renderTypeGroup, RenderTypeGroup fastRenderTypeGroup) {
+        throw new IllegalStateException();
+    }
 }
