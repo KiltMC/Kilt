@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
+import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.api.EnvironmentInterface
 import net.fabricmc.api.EnvironmentInterfaces
@@ -20,6 +21,9 @@ object EnvironmentRemapper {
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
     private val ENVIRONMENT_INTERFACE_TYPE = Type.getType(EnvironmentInterface::class.java)
     private val ENVIRONMENT_INTERFACES_TYPE = Type.getType(EnvironmentInterfaces::class.java)
+
+    private val DIST_TYPE = Type.getType(Dist::class.java)
+    private val ENVTYPE_TYPE = Type.getType(EnvType::class.java)
 
     fun remapClass(classNode: ClassNode) {
         // Class annotation replacements
@@ -74,7 +78,7 @@ object EnvironmentRemapper {
                         // I think we can safely assume this is okay
                         newValues.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
                             this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
-                                "value" to DistUtil.distToEnvType(aValues["value"] as Dist),
+                                "value" to envTypeToStringArray(DistUtil.distToEnvType(stringArrayToDist(aValues["value"] as Array<String>) ?: return@apply)),
                                 "itf" to aValues["_interface"] as Class<*>
                             ))
                         })
@@ -88,13 +92,13 @@ object EnvironmentRemapper {
                 })
             } else if (node.desc == ONLYIN_TYPE.descriptor) {
                 val values = KiltMixinModifications.annotationValuesToMap(node.values)
-                val value = values["value"] as Dist
+                val value = stringArrayToDist(values["value"] as Array<String>) ?: return
                 val itf = values["_interface"]
 
                 if (itf != null && itf != Object::class.java) {
                     replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
                         this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
-                            "value" to DistUtil.distToEnvType(value),
+                            "value" to envTypeToStringArray(DistUtil.distToEnvType(value)),
                             "itf" to itf
                         ))
                     })
@@ -102,12 +106,26 @@ object EnvironmentRemapper {
 
                 replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
                     this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
-                        "value" to DistUtil.distToEnvType(value)
+                        "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
                     ))
                 })
             }
         }
 
         setter.accept(replaceable)
+    }
+
+    private fun stringArrayToDist(type: Array<String>): Dist? {
+        if (type.size != 2)
+            return null
+
+        if (type[0] != DIST_TYPE.descriptor)
+            return null
+
+        return Dist.valueOf(type[1])
+    }
+
+    private fun envTypeToStringArray(envType: EnvType): Array<String> {
+        return arrayOf(ENVTYPE_TYPE.descriptor, envType.name)
     }
 }
