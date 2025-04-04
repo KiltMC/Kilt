@@ -75,6 +75,7 @@
         "compat.mkb.IKeyBindingMixin",
         "compat.mkb.IKeyConflictContextMixin",
         "compat.mkb.KeyConflictContextMixin",
+        "compat.modmenu.ModMenuMixin",
         "compat.porting_lib.ConditionalRecipeSerializerMixin",
         "compat.porting_lib.RegistryObjectAccessor",
         "compat.porting_lib.RegistryObjectMixin",
