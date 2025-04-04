@@ -278,6 +278,10 @@ object KiltRemapper {
                 return
             }
 
+            if (KiltLoader.INSTANCE.forgeMods.contains(mod)) { // Prevent Kilt from remapping *directly* Forge mods. Yes, that started happening.
+                return
+            }
+
             val jar = withContext(Dispatchers.IO) { JarFile(file.toFile()) }
             val output = modifiedJarFile.outputStream()
             val jarOutput = withContext(Dispatchers.IO) { JarOutputStream(output) }
