@@ -296,6 +296,7 @@
         "client.MouseHandlerInject",
         "client.RecipeBookCategoriesInject",
         "client.ScreenshotInject",
+        "client.ToggleKeyMappingInject",
         "client.color.block.BlockColorsInject",
         "client.color.item.ItemColorsInject",
         "client.gui.FontInject",

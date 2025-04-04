@@ -105,10 +105,12 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
     private static List<KeyMapping> kilt$mkb$addMkbKeys(List<KeyMapping> original, @Local(argsOnly = true) InputConstants.Key key) {
         if (ModernKeyBinding.nonConflictKeys()) {
-            original.addAll(kilt$keybindingMap.lookupActives(key));
+            var existing = kilt$keybindingMap.lookupActives(key);
+            original.removeAll(existing);
+            original.addAll(existing);
         } else {
             var keyBinding = kilt$keybindingMap.lookupActive(key);
-            if (keyBinding != null)
+            if (keyBinding != null && !original.contains(keyBinding))
                 original.add(keyBinding);
         }
 
@@ -119,10 +121,12 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
     private static List<KeyMapping> kilt$mkb$addMkbKeysToSet(List<KeyMapping> original, @Local(argsOnly = true) InputConstants.Key key) {
         if (ModernKeyBinding.nonConflictKeys()) {
+            var existing = kilt$keybindingMap.lookupActives(key);
+            original.removeAll(existing);
             original.addAll(kilt$keybindingMap.lookupActives(key));
         } else {
             var keyBinding = kilt$keybindingMap.lookupActive(key);
-            if (keyBinding != null)
+            if (keyBinding != null && !original.contains(keyBinding))
                 original.add(keyBinding);
         }
 
