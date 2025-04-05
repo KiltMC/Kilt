@@ -222,7 +222,6 @@ public class GuiInject {
         }
     }
 
-
     // Jump Bar
     @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderJumpMeter(Lcom/mojang/blaze3d/vertex/PoseStack;I)V"))
     public boolean kilt$renderJumpBar(Gui instance, PoseStack stack, int i, @Local(ordinal = 0, index = 0) float delta) {
