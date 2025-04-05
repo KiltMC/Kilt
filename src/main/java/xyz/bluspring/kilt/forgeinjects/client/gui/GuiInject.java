@@ -244,7 +244,6 @@ public abstract class GuiInject implements GuiInjection {
         }
     }
 
-
     // Jump Bar
     @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderJumpMeter(Lnet/minecraft/world/entity/PlayerRideableJumping;Lnet/minecraft/client/gui/GuiGraphics;I)V"))
     public boolean kilt$renderJumpBar(Gui instance, PlayerRideableJumping rideable, GuiGraphics guiGraphics, int x, @Local(ordinal = 0, index = 0) float delta) {
