@@ -69,6 +69,7 @@
         "compat.forge.immersiveengineering.ChunkBuilderMeshingTaskMixin",
         "compat.forge.immersiveengineering.SodiumWorldRendererAccessor",
         "compat.forge.immersiveengineering.TerrainRenderPassAccessor",
+        "compat.forge.zerocore.ClientProxyMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
