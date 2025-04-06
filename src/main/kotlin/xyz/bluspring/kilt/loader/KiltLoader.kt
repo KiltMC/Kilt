@@ -80,7 +80,6 @@ class KiltLoader {
     // be for now.
     val modProvider: LoaderModProvider = FabricModProvider()
 
-    private val environment = KiltEnvironment()
 
     suspend fun scanMods() {
         val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
@@ -317,6 +316,8 @@ class KiltLoader {
     }
 
     fun preloadMods() {
+        val environment = KiltEnvironment()
+
         // DON'T TRY TO MAKE THIS USE "Environment.Keys".
         // OTHERWISE THE BUILD WILL FAIL.
         environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }

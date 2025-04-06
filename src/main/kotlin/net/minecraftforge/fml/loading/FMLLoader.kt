@@ -11,10 +11,15 @@ object FMLLoader {
         return !FabricLoader.getInstance().isDevelopmentEnvironment
     }
 
-    private val handler = KnotLaunchHandler()
+    @JvmStatic
+    private lateinit var handler: CommonLaunchHandler
 
     @JvmStatic
     fun getLaunchHandler(): CommonLaunchHandler {
+        if (!::handler.isInitialized) {
+            handler = KnotLaunchHandler()
+        }
+
         return this.handler
     }
 

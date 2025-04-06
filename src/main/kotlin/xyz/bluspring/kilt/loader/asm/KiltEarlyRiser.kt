@@ -487,7 +487,7 @@ class KiltEarlyRiser : Runnable {
         DeltaTimeProfiler.pop()
     }
 
-    private val ignoredKeywords = listOf("kilt", "fml", "mixin")
+    private val ignoredKeywords = listOf("kilt", "fml", "mixin", "modlauncher")
 
     // Required as Forge runs itself through ASM to fix events and ObjectHolders and such using ModLauncher.
     // So annoying.
