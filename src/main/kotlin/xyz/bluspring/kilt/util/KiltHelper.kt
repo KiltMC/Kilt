@@ -7,7 +7,9 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Path
+import java.security.MessageDigest
 import java.util.jar.JarFile
 
 object KiltHelper {
@@ -106,6 +108,25 @@ object KiltHelper {
 
             filesToScan
         }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun md5Hash(stream: InputStream): String {
+        val digest = MessageDigest.getInstance("MD5")
+        val buffer = ByteArray(1024)
+
+        var numRead: Int
+
+        do {
+            numRead = stream.read(buffer)
+            if (numRead > 0) {
+                digest.update(buffer, 0, numRead)
+            }
+        } while (numRead != -1)
+
+        stream.close()
+
+        return digest.digest().toHexString(HexFormat.Default)
     }
 
     private fun getPath(path: String): Path? {

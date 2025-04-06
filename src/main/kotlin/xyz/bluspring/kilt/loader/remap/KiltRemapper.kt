@@ -19,7 +19,6 @@ import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper
 import net.minecraftforge.fart.internal.RenamingTransformer
 import net.minecraftforge.srgutils.IMappingFile
-import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
@@ -221,7 +220,7 @@ object KiltRemapper {
                     return@forEach
                 }
 
-                val currentHash = DigestUtils.md5Hex(mod.modFile.inputStream())
+                val currentHash = KiltHelper.md5Hash(mod.modFile.inputStream())
 
                 if (currentHash != fileHash) {
                     markedForDeletion.add(file)
@@ -266,7 +265,7 @@ object KiltRemapper {
         suspend fun remapMod(file: Path, mod: ForgeMod) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.modId})!")
 
-            val hash = withContext(Dispatchers.IO) { DigestUtils.md5Hex(file.inputStream()) }
+            val hash = withContext(Dispatchers.IO) { KiltHelper.md5Hash(file.inputStream()) }
             val modifiedJarFile = KiltRemapper.remappedModsDir / "${mod.modId}_${REMAPPER_VERSION}_$hash.jar"
 
             if (modifiedJarFile.exists() && !forceRemap) {
