@@ -1,6 +1,6 @@
 package net.minecraftforge.fml
 
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
+import net.minecraftforge.api.ModLoadingContext
 import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.forgespi.language.IModInfo
@@ -33,14 +33,14 @@ abstract class ModContainer(info: IModInfo) {
 
     fun addConfig(modConfig: ModConfig) {
         configs[modConfig.type] = modConfig
-        ForgeConfigRegistry.INSTANCE.register(this.modId, modConfig.type, modConfig.getSpec())
+        ModLoadingContext.registerConfig(this.modId, modConfig.type, modConfig.getSpec())
     }
 
     // believe it or not, this is needed.
     // why? don't know, really.
     fun addConfig(modConfig: ModConfigRemap) {
         configs[modConfig.type] = modConfig
-        ForgeConfigRegistry.INSTANCE.register(this.modId, modConfig.type, modConfig.getSpec())
+        ModLoadingContext.registerConfig(this.modId, modConfig.type, modConfig.getSpec())
     }
 
     fun dispatchConfigEvent(event: IConfigEvent) {

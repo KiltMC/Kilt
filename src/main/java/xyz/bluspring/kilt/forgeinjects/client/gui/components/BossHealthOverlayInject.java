@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.BossHealthOverlay;
@@ -24,15 +25,15 @@ import org.spongepowered.asm.mixin.injection.At;
 public class BossHealthOverlayInject {
     @Shadow @Final private Minecraft minecraft;
 
-    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;drawBar(Lnet/minecraft/client/gui/GuiGraphics;IILnet/minecraft/world/BossEvent;)V"))
-    private boolean kilt$customizeBossEventProgress(BossHealthOverlay instance, GuiGraphics guiGraphics, int x, int y, BossEvent bossEvent, @Local(ordinal = 2) int k, @Local(ordinal = 1) int j, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
-        var event = ForgeHooksClient.onCustomizeBossEventProgress(guiGraphics, this.minecraft.getWindow(), (LerpingBossEvent) bossEvent, k, j, 10 + this.minecraft.font.lineHeight);
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;drawBar(Lcom/mojang/blaze3d/vertex/PoseStack;IILnet/minecraft/world/BossEvent;)V"))
+    private boolean kilt$customizeBossEventProgress(BossHealthOverlay instance, PoseStack poseStack, int x, int y, BossEvent bossEvent, @Local(ordinal = 2) int k, @Local(ordinal = 1) int j, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
+        var event = ForgeHooksClient.onCustomizeBossEventProgress(poseStack, this.minecraft.getWindow(), (LerpingBossEvent) bossEvent, k, j, 10 + this.minecraft.font.lineHeight);
         eventRef.set(event);
         return !event.isCanceled();
     }
 
-    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"))
-    private boolean kilt$cancelStringIfCancelled(GuiGraphics instance, Font font, Component text, int x, int y, int color, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawShadow(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/network/chat/Component;FFI)I"))
+    private boolean kilt$cancelStringIfCancelled(Font instance, PoseStack poseStack, Component text, float x, float y, int color, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
         return !eventRef.get().isCanceled();
     }
 

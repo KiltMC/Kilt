@@ -18,13 +18,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.client.color.block.BlockColorsInjection;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(BlockColors.class)
-public class BlockColorsInject implements BlockColorsInjection {
+public class BlockColorsInject {
     @Unique
     private Map<Holder.Reference<Block>, BlockColor> kilt$blockColors;
 
@@ -38,7 +37,6 @@ public class BlockColorsInject implements BlockColorsInjection {
         ForgeHooksClient.onBlockColorsInit(cir.getReturnValue());
     }
 
-    @Override
     public Map<Holder.Reference<Block>, BlockColor> kilt$getBlockColors() {
         return this.kilt$blockColors;
     }
