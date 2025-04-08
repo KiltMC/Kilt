@@ -125,7 +125,8 @@
   },
   "breaks": {
     "quilt-loader": "*",
-    "async": "*"
+    "async": "*",
+    "creativecore": "<2.12.33"
   },
   "accessWidener": "kilt.accesswidener"
 }
