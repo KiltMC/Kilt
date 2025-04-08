@@ -56,6 +56,7 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.*
 import java.net.URL
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
 import java.util.jar.JarFile
@@ -686,6 +687,9 @@ class KiltLoader {
 
                         mod.scanData = scanData
 
+                        val classes = ConcurrentHashMap.newKeySet<ModFileScanData.ClassData>()
+                        val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
+
                         // basically emulate how Forge loads stuff
                         mod.jar.entries().asIterator().asFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
@@ -695,8 +699,11 @@ class KiltLoader {
                                 val classReader = ClassReader(it)
 
                                 classReader.accept(visitor, 0)
-                                visitor.buildData(scanData.classes, scanData.annotations)
+                                visitor.buildData(classes, annotations)
                             }
+
+                        scanData.classes.addAll(classes)
+                        scanData.annotations.addAll(annotations)
 
                         mod
                     }
@@ -859,7 +866,7 @@ class KiltLoader {
                 }
             }
 
-        if (!hasInitialized && mod.shouldScan) {
+        if (!hasInitialized && mod.shouldScan && exception.suppressed.isEmpty()) {
             exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
         }
 
