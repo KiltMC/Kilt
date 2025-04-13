@@ -695,10 +695,6 @@ class KiltLoader {
                     }
                     .collect { mod ->
                         try {
-                            // Avoid `ConcurrentModificationException`
-                            // when register the event for mods that need to find the context by `getMod`
-                            ModLoadingContext.contexts[mod.modId] = ModLoadingContext(mod)
-
                             registerAnnotations(mod, mod.scanData)
                         } catch (e: Throwable) {
                             e.printStackTrace()
@@ -784,7 +780,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to load Kilt mods!")
 
         runBlocking {
-            sortedModOrder.asFlow().concurrent()
+            sortedModOrder.asFlow()
                 .collect { mod ->
                     try {
                         initMod(mod, mod.scanData)
@@ -816,7 +812,7 @@ class KiltLoader {
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         var hasInitialized = false
-        scanData.annotations.asFlow()
+        scanData.annotations.asFlow().concurrent()
             .filter { it.annotationType == MOD_ANNOTATION }
             .collect {
                 // it.clazz.className - Class
@@ -834,9 +830,8 @@ class KiltLoader {
 
                     try {
                         val constructor = clazz.getDeclaredConstructor(FMLJavaModLoadingContext::class.java)
-                        val ctx = FMLJavaModLoadingContext(mod)
+                        val ctx = FMLJavaModLoadingContext.kiltGetContext(mod)
 
-                        ModLoadingContext.contexts[mod.modId] = ctx
                         mod.modObject = constructor.newInstance(ctx)
                     } catch (_: NoSuchMethodException) {
                         mod.modObject = clazz.getDeclaredConstructor().newInstance()

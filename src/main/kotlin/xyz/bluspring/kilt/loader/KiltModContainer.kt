@@ -7,7 +7,7 @@ import xyz.bluspring.kilt.loader.mod.fabric.KiltFabricModContainer
 import java.util.*
 import java.util.function.Consumer
 
-class KiltModContainer(private val mod: ForgeMod) : FMLModContainer(mod) {
+class KiltModContainer(internal val mod: ForgeMod) : FMLModContainer(mod) {
     val fabricModContainer = KiltFabricModContainer(mod)
 
     init {

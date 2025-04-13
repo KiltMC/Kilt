@@ -1,6 +1,6 @@
 package net.minecraftforge.fml
 
-import java.util.Spliterator
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Consumer
@@ -22,7 +22,7 @@ object InterModComms {
         containerQueues.computeIfAbsent(modId) {
             ConcurrentLinkedQueue()
         }.add(IMCMessage(
-            ModLoadingContext.activeContainer.modId,
+            ModLoadingContext.get().activeNamespace,
             modId, method, thing
         ))
 
