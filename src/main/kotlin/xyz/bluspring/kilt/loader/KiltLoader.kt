@@ -823,6 +823,7 @@ class KiltLoader {
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         var hasInitialized = false
+        var hasErrored = false
         scanData.annotations.asFlow().concurrent()
             .filter { it.annotationType == MOD_ANNOTATION }
             .collect {
@@ -855,10 +856,11 @@ class KiltLoader {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     exception.addSuppressed(e)
+                    hasErrored = true
                 }
             }
 
-        if (!hasInitialized && mod.shouldScan) {
+        if (!hasInitialized && mod.shouldScan && !hasErrored) {
             exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
         }
 
