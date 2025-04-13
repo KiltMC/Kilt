@@ -106,7 +106,7 @@ object DistExecutor {
 
         val setter = try {
             supplier.get()
-        } catch (e: Exception) {
+        } catch (_: Throwable) {
             return
         }
 

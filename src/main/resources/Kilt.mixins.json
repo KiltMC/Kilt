@@ -67,6 +67,7 @@
         "compat.sodium.ChunkRenderRebuildTaskMixin",
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
+        "compat.supplementaries.ClientConfigsMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.LootContextExtensionsMixin",
         "porting_lib.RegistryObjectAccessor",
