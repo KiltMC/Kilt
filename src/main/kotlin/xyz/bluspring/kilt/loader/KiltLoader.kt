@@ -122,23 +122,26 @@ class KiltLoader {
             FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString
         )
         val preloadedMods = mutableMapOf<ForgeMod, List<ModLoadingState>>()
+        val modsToRemove = mutableListOf<ForgeMod>()
 
         // Iterate through the mod loading queue for the first time
         // to validate dependencies.
         modLoadingQueue.forEach { mod ->
             val dependencies = mutableListOf<ModLoadingState>()
             mod.dependencies.forEach dependencies@{ dependency ->
+                // I suspect this is how some Forge devs try to handle sided mods.
+                if (dependency.modId == "forge" && !isSideValid(dependency.side)) {
+                    modsToRemove.add(mod)
+                    Kilt.logger.info("Detected that ${mod.displayName} (${mod.modId}) may be client-only in a server environment, ignoring.")
+                    return@dependencies
+                }
+
                 if (!isSideValid(dependency.side))
                     return@dependencies // Don't need to load the dependency.
 
                 if (dependency.modId == "forge") {
                     if (!dependency.versionRange.containsVersion(SUPPORTED_FORGE_API_VERSION)) {
-                        dependencies.add(
-                            IncompatibleDependencyLoadingState(
-                                dependency,
-                                SUPPORTED_FORGE_API_VERSION
-                            )
-                        )
+                        dependencies.add(IncompatibleDependencyLoadingState(dependency, SUPPORTED_FORGE_API_VERSION))
 
                         return@dependencies
                     }
@@ -148,13 +151,7 @@ class KiltLoader {
                     return@dependencies
                 } else if (dependency.modId == "minecraft") {
                     if (!dependency.versionRange.containsVersion(mcVersion)) {
-                        dependencies.add(
-                            IncompatibleDependencyLoadingState(
-                                dependency,
-                                mcVersion
-                            )
-                        )
-
+                        dependencies.add(IncompatibleDependencyLoadingState(dependency, mcVersion))
                         return@dependencies
                     }
 
@@ -210,6 +207,12 @@ class KiltLoader {
             }
 
             preloadedMods[mod] = dependencies
+        }
+
+        // Remove any mods that shouldn't be handled
+        for (mod in modsToRemove) {
+            preloadedMods.remove(mod)
+            modLoadingQueue.remove(mod)
         }
 
         // Check if any of the dependencies failed to load
