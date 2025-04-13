@@ -75,13 +75,22 @@ object EnvironmentRemapper {
 
                         val aValues = KiltMixinModifications.annotationValuesToMap(annotation.values)
 
-                        // I think we can safely assume this is okay
-                        newValues.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
-                            this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
-                                "value" to envTypeToStringArray(DistUtil.distToEnvType(stringArrayToDist(aValues["value"] as Array<String>) ?: return@apply)),
-                                "itf" to aValues["_interface"] as Class<*>
-                            ))
-                        })
+                        val value = stringArrayToDist(aValues["value"] as Array<String>) ?: return
+                        val itf = aValues["_interface"]
+                        if (itf != null && itf != Object::class.java) {
+                            replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
+                                this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                                    "value" to envTypeToStringArray(DistUtil.distToEnvType(value)),
+                                    "itf" to itf
+                                ))
+                            })
+                        } else {
+                            replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
+                                this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                                    "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
+                                ))
+                            })
+                        }
                     }
                 }
 
@@ -102,13 +111,13 @@ object EnvironmentRemapper {
                             "itf" to itf
                         ))
                     })
+                } else {
+                    replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                            "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
+                        ))
+                    })
                 }
-
-                replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
-                    this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
-                        "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
-                    ))
-                })
             }
         }
 

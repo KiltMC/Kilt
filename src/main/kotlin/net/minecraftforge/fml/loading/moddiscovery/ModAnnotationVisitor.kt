@@ -30,18 +30,12 @@ class ModAnnotationVisitor(
     }
 
     override fun visit(name: String?, value: Any?) {
-        if (name == null || value == null)
-            return super.visit(name, value)
-
         annotation.addProperty(name, value)
     }
 
     override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor? {
-        if (name == null || descriptor == null)
-            return super.visitAnnotation(name, descriptor)
-
         val modAnnotation = annotations[0]
-        val child = modAnnotation.addChildAnnotation(name, descriptor)
+        val child = modAnnotation.addChildAnnotation(name, descriptor!!)
         annotations.add(0, child)
         return ModAnnotationVisitor(annotations, child, true)
     }
@@ -61,9 +55,6 @@ class ModAnnotationVisitor(
     }
 
     override fun visitEnum(name: String?, descriptor: String?, value: String?) {
-        if (name == null || descriptor == null || value == null)
-            return super.visitEnum(name, descriptor, value)
-
         annotation.addEnumProperty(name, descriptor, value)
     }
 }
