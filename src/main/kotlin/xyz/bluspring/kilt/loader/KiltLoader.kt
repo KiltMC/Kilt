@@ -8,7 +8,6 @@ import cpw.mods.modlauncher.api.IEnvironment
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -731,7 +730,7 @@ class KiltLoader {
         val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
 
         // Automatically subscribe events
-        scanData.annotations.asFlow()
+        scanData.annotations.asFlow().concurrent()
             .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
             .collect {
                 // it.annotationData["modid"] as String
@@ -748,9 +747,18 @@ class KiltLoader {
 
                     val busType = Mod.EventBusSubscriber.Bus.valueOf(
                         if (it.annotationData.contains("bus"))
-                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value
+                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
                         else "FORGE"
                     )
+
+                    val dists = if (it.annotationData.contains("value"))
+                        (it.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
+                    else
+                        listOf()
+
+                    if (dists.isNotEmpty() && dists.none { DistUtil.distToEnvType(it) == FabricLoader.getInstance().environmentType }) {
+                        return@collect
+                    }
 
                     ModLoadingContext.kiltActiveModId = modId
                     busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
