@@ -1,27 +1,38 @@
 package net.minecraftforge.fml
 
-import com.electronwill.nightconfig.toml.TomlParser
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
-import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
-import org.apache.commons.codec.digest.DigestUtils
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
-import xyz.bluspring.kilt.loader.mod.ForgeMod
-import java.util.concurrent.ConcurrentHashMap
+import xyz.bluspring.kilt.loader.VanillaModContainer
 import java.util.function.BiPredicate
 import java.util.function.Supplier
 
-open class ModLoadingContext(protected val mod: ForgeMod) {
+open class ModLoadingContext {
     // this should be Any, but we're only handling Java mods here so
-    private var languageExtension: FMLJavaModLoadingContext = if (this is FMLJavaModLoadingContext) this else FMLJavaModLoadingContext(mod)
+    private val languageExtension: FMLJavaModLoadingContext
+        get() {
+            return this as? FMLJavaModLoadingContext ?: FMLJavaModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)
+        }
 
-    val activeContainer: ModContainer = KiltModContainer(mod)
+    internal var kiltActiveContainer: ModContainer? = null
+
+    fun getActiveContainer(): ModContainer {
+        return if (kiltActiveContainer == null)
+            VanillaModContainer
+        else
+            kiltActiveContainer!!
+    }
+
+    fun setActiveContainer(container: ModContainer?) {
+        this.kiltActiveContainer = container
+    }
+
     val activeNamespace: String
         get() {
-            return mod.modId
+            return this.getActiveContainer().namespace
         }
 
     fun extension(): FMLJavaModLoadingContext {
@@ -29,18 +40,18 @@ open class ModLoadingContext(protected val mod: ForgeMod) {
     }
 
     fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {
-        activeContainer.registerExtensionPoint(point, extension)
+        this.getActiveContainer().registerExtensionPoint(point, extension)
     }
 
     // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise
     // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
-        val modId = mod.modId
+        val modId = this.activeNamespace
         ForgeConfigRegistry.INSTANCE.register(modId, type, spec, fileName)
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
-        val modId = mod.modId
+        val modId = this.activeNamespace
         ForgeConfigRegistry.INSTANCE.register(modId, type, spec)
     }
 
@@ -58,89 +69,23 @@ open class ModLoadingContext(protected val mod: ForgeMod) {
     }
 
     companion object {
-        // Mapped from Mod ID to ModLoadingContext
-        internal val contexts = ConcurrentHashMap<String, ModLoadingContext>()
-        // Mapped from MD5 hash of mods.toml to Mod ID, makes things faster.
-        private val tomlCache = ConcurrentHashMap<String, String>()
-
-        private val tomlParser = TomlParser()
-
-        // oh so that's why they did it like that
-        private val activeModId = ThreadLocal.withInitial<String?> { null }
+        // ah.
+        private val context = ThreadLocal.withInitial(::ModLoadingContext)
 
         var kiltActiveModId: String?
             get() {
-                return activeModId.get()
+                return this.get().kiltActiveContainer?.modId
             }
             set(value) {
-                activeModId.set(value)
-            }
-
-        val activeContainer: ModContainer
-            get() {
-                if (kiltActiveModId != null)
-                    return Kilt.loader.mods.first { it.modId == kiltActiveModId }.container
-
-                val stackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                val source = stackWalker.callerClass
-
-                return get(source).activeContainer
+                if (value == null)
+                    this.get().setActiveContainer(null)
+                else
+                    this.get().setActiveContainer(Kilt.loader.getMod(value)?.container ?: throw IllegalStateException("Failed to get container for mod ID $value!"))
             }
 
         @JvmStatic
         fun get(): ModLoadingContext {
-            // ensure the mod ID doesn't get overwritten at the exact same time
-            val modId = kiltActiveModId
-
-            if (modId != null) {
-                if (!contexts.contains(modId)) {
-                    val mod = Kilt.loader.getMod(modId) ?: throw Exception("Kilt has not finished loading mods yet!")
-                    contexts[modId] = ModLoadingContext(mod)
-                }
-
-                return contexts[modId]!!
-            }
-
-            return getForgeContext()
-        }
-
-        private fun getForgeContext(): ModLoadingContext {
-            if (!contexts.contains("forge")) {
-                val mod = Kilt.loader.getMod("forge") ?: throw Exception("Kilt has not finished loading mods yet!")
-                contexts["forge"] = ModLoadingContext(mod)
-            }
-
-            return contexts["forge"]!!
-        }
-
-        // Put this here so ModLoadingContext can be called from a Forge method
-        @JvmStatic
-        fun get(source: Class<*>): ModLoadingContext {
-            val tomlText = source.getResource("/META-INF/mods.toml")?.readText() ?: source.getResource("/META-INF/forge.mods.toml")?.readText() ?: return getForgeContext()
-            val tomlStream = tomlText.byteInputStream()
-
-            val hash = DigestUtils.md5Hex(tomlStream)
-
-            return if (tomlCache.contains(hash)) {
-                contexts[tomlCache[hash]]!!
-            } else {
-                val toml = NightConfigWrapper(tomlParser.parse(tomlText))
-                val modId = toml.getConfigList("mods")[0].getConfigElement<String>("modId").orElseThrow {
-                    RuntimeException("Mod does not contain mod ID! How did you even get to this point?")
-                }
-
-                if (modId == "forge")
-                    return getForgeContext()
-
-                tomlCache[hash] = modId
-
-                if (!contexts.contains(modId)) {
-                    val mod = Kilt.loader.getMod(modId) ?: throw Exception("Kilt has not finished loading mods yet!")
-                    contexts[modId] = ModLoadingContext(mod)
-                }
-
-                return contexts[modId]!!
-            }
+            return this.context.get()
         }
     }
 }
