@@ -7,10 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.extensions.IForgeItem;
 import net.minecraftforge.registries.GameData;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,7 +23,7 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
     @Shadow @Final @Mutable
     public static Map<Block, Item> BY_BLOCK;
     private boolean canRepair;
-    private Object renderProperties;
+    @Unique private Object kilt$renderProperties;
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$setRepairability(Item.Properties properties, CallbackInfo ci) {
@@ -42,14 +39,14 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
     private void kilt$initClient() {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             this.initializeClient(properties -> {
-                this.renderProperties = properties;
+                this.kilt$renderProperties = properties;
             });
         }
     }
 
     @Override
     public Object getRenderPropertiesInternal() {
-        return this.renderProperties;
+        return this.kilt$renderProperties;
     }
 
     @Override
