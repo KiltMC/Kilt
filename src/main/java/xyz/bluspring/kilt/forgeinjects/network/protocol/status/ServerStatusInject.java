@@ -18,7 +18,7 @@ import java.util.Optional;
 @Mixin(ServerStatus.class)
 public class ServerStatusInject implements ServerStatusInjection {
     @Unique
-    private Optional<ServerStatusPing> forgeData;
+    private Optional<ServerStatusPing> forgeData = Optional.empty();
 
     @Override
     @Nullable
