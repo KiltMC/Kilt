@@ -11,4 +11,8 @@ public interface MinecraftServerInjection {
     default MinecraftServer.ReloadableResources getServerResources() {
         throw new IllegalStateException();
     }
+
+    default String getStatusJson() {
+        throw new IllegalStateException();
+    }
 }
