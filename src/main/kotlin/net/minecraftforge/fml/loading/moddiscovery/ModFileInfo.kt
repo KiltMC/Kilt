@@ -5,10 +5,14 @@ import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 
-open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
+open class ModFileInfo(private val kiltMod: ForgeMod?, private val wrapper: FabricModFileInfoWrapper? = null) : IModFileInfo {
     override fun getMods(): MutableList<IModInfo> {
-        return mutableListOf(ModInfo(kiltMod))
+        if (wrapper != null)
+            return wrapper.mods
+
+        return mutableListOf(ModInfo(kiltMod!!))
     }
 
     override fun requiredLanguageLoaders(): MutableList<IModFileInfo.LanguageSpec> {
@@ -16,34 +20,55 @@ open class ModFileInfo(private val kiltMod: ForgeMod) : IModFileInfo {
     }
 
     override fun showAsResourcePack(): Boolean {
-        return kiltMod.showAsResourcePack
+        if (wrapper != null)
+            return wrapper.showAsResourcePack()
+
+        return kiltMod!!.showAsResourcePack
     }
 
     override fun getFileProperties(): MutableMap<String, Any> {
+        if (wrapper != null)
+            return wrapper.fileProperties
+
         return mutableMapOf()
     }
 
     override fun getLicense(): String {
-        return kiltMod.license
+        if (wrapper != null)
+            return wrapper.license!!
+
+        return kiltMod!!.license
     }
 
     override fun moduleName(): String {
-        return kiltMod.displayName
+        if (wrapper != null)
+            return wrapper.moduleName()!!
+
+        return kiltMod!!.displayName
     }
 
     override fun versionString(): String {
-        return kiltMod.version.toString()
+        if (wrapper != null)
+            return wrapper.versionString()!!
+
+        return kiltMod!!.version.toString()
     }
 
     override fun usesServices(): MutableList<String> {
         return mutableListOf()
     }
 
-    override fun getFile(): IModFile {
-        return ModFile(kiltMod)
+    override fun getFile(): IModFile? {
+        if (wrapper != null)
+            return wrapper.file
+
+        return ModFile(kiltMod!!)
     }
 
-    override fun getConfig(): IConfigurable {
-        return kiltMod.modConfig
+    override fun getConfig(): IConfigurable? {
+        if (wrapper != null)
+            return wrapper.config
+
+        return kiltMod!!.modConfig
     }
 }
