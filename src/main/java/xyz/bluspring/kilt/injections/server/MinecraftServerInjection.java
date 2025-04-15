@@ -8,5 +8,7 @@ public interface MinecraftServerInjection {
         throw new IllegalStateException();
     }
 
-
+    default String getStatusJson() {
+        throw new IllegalStateException();
+    }
 }
