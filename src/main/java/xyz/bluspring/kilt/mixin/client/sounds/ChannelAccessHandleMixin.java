@@ -43,7 +43,7 @@ public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInj
 
     @Inject(method = "method_19737", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", shift = At.Shift.AFTER))
     private void kilt$callPlaySoundEvents(Consumer<Channel> consumer, CallbackInfo ci) {
-        if (this.channel != null) {
+        if (this.channel != null && kilt$soundInstance != null) {
             if (kilt$pool == Library.Pool.STATIC) {
                 MinecraftForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             } else if (kilt$pool == Library.Pool.STREAMING) {
