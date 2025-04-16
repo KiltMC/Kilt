@@ -211,7 +211,7 @@ class KiltEarlyRiser : Runnable {
 
                         initializer.visitLabel(label2)
                         initializer.visitVarInsn(Opcodes.ALOAD, 0)
-                        initializer.visitVarInsn(Opcodes.ALOAD, 2)
+                        initializer.visitVarInsn(Opcodes.ALOAD, 3)
                         initializer.visitMethodInsn(Opcodes.INVOKEVIRTUAL, mobBucketItem, "setEmptySoundSupplier", "(Ljava/util/function/Supplier;)V", false)
 
                         initializer.visitLabel(label3)
