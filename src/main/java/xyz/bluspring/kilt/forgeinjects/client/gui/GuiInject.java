@@ -31,7 +31,10 @@ import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.client.KiltClient;
@@ -142,16 +145,22 @@ public abstract class GuiInject implements GuiInjection {
     }
 
     // Helmet
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
-    public boolean kilt$renderHelmet(ItemStack instance, Item item, @Local(argsOnly = true) GuiGraphics guiGraphics, @Local(ordinal = 0, index = 0, argsOnly = true) float delta) {
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+    public boolean kilt$renderHelmet(ItemStack instance, Item item, Operation<Boolean> original, @Local(argsOnly = true) GuiGraphics guiGraphics, @Local(ordinal = 0, argsOnly = true) float delta) {
         if (kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.HELMET)) {
-            // Let's just overwrite this with a call to this renderHelmet
-            this.kilt$getGui().renderHelmet(delta, guiGraphics);
+            if (this.kilt$getGui().kilt$renderHelmet(delta, guiGraphics, true)) {
+                return original.call(instance, item);
+            }
 
             post(guiGraphics, delta, VanillaGuiOverlay.HELMET);
         }
 
         return false;
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderTextureOverlay(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/resources/ResourceLocation;F)V", ordinal = 0, shift = At.Shift.AFTER))
+    private void kilt$postRenderHelmet(GuiGraphics guiGraphics, float partialTick, CallbackInfo ci) {
+        post(guiGraphics, partialTick, VanillaGuiOverlay.HELMET);
     }
 
     // Frostbite
