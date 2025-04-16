@@ -883,7 +883,9 @@ class KiltLoader {
             throw exception
         }
 
+        ModLoadingContext.kiltActiveModId = mod.modId
         mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        ModLoadingContext.kiltActiveModId = null
 
         DeltaTimeProfiler.pop()
     }
