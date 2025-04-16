@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
@@ -48,6 +49,12 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         this(((CreativeModeTabBuilderAccessor) builder).getRow(), ((CreativeModeTabBuilderAccessor) builder).getColumn(), ((CreativeModeTabBuilderAccessor) builder).getType(), ((CreativeModeTabBuilderAccessor) builder).getDisplayName(), ((CreativeModeTabBuilderAccessor) builder).getIconGenerator(), ((CreativeModeTabBuilderAccessor) builder).getDisplayItemsGenerator());
 
         kilt$assignValues(builder);
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$initCustomFields(CreativeModeTab.Row row, int column, CreativeModeTab.Type type, Component displayName, Supplier iconGenerator, CreativeModeTab.DisplayItemsGenerator displayItemGenerator, CallbackInfo ci) {
+        this.tabsBefore = new ArrayList<>();
+        this.tabsAfter = new ArrayList<>();
     }
 
     @Override
