@@ -1,6 +1,8 @@
 // TRACKED HASH: b37723b1659555bec4982842296934e1d854cb3e
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -59,6 +61,17 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
         return this.content;
     }
 
+    @WrapOperation(method = {"use", "emptyContents", "playEmptySound"}, at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/BucketItem;content:Lnet/minecraft/world/level/material/Fluid;"))
+    private Fluid kilt$useForgeContents(BucketItem instance, Operation<Fluid> original) {
+        var result = original.call(instance);
+
+        if (result != null) {
+            return result;
+        }
+
+        return this.getFluid();
+    }
+
     @Unique
     private final AtomicReference<ItemStack> kilt$container = new AtomicReference<>(null);
 
@@ -83,10 +96,10 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
     public void kilt$loadContainedFluidStack(Player player, Level level, BlockPos pos, BlockHitResult result, CallbackInfoReturnable<Boolean> cir, @Local BlockState state, @Local Block block, @Local(ordinal = 0) boolean bl) {
         var containedFluidStack = Optional.ofNullable(this.kilt$container.get()).flatMap(FluidUtil::getFluidContained);
         // TODO: figure out how to capture bl2
-        var bl2 = state.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer)block).canPlaceLiquid(level, pos, state, this.content);
+        var bl2 = state.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer)block).canPlaceLiquid(level, pos, state, this.getFluid());
 
-        if (bl2 && containedFluidStack.isPresent() && this.content.getFluidType().isVaporizedOnPlacement(level, pos, containedFluidStack.get())) {
-            this.content.getFluidType().onVaporize(player, level, pos, containedFluidStack.get());
+        if (bl2 && containedFluidStack.isPresent() && this.getFluid().getFluidType().isVaporizedOnPlacement(level, pos, containedFluidStack.get())) {
+            this.getFluid().getFluidType().onVaporize(player, level, pos, containedFluidStack.get());
 
             cir.setReturnValue(true);
         }
@@ -99,7 +112,7 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
 
     @Redirect(method = "emptyContents", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/BucketItem;content:Lnet/minecraft/world/level/material/Fluid;", ordinal = 4))
     public Fluid kilt$checkIfCanPlaceLiquid(BucketItem instance, @Local Block block, @Local Level level, @Local BlockPos pos, @Local BlockState state) {
-        if (((LiquidBlockContainer) block).canPlaceLiquid(level, pos, state, this.content))
+        if (((LiquidBlockContainer) block).canPlaceLiquid(level, pos, state, this.getFluid()))
             return Fluids.WATER;
 
         return this.content;

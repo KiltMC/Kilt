@@ -254,28 +254,6 @@ class KiltEarlyRiser : Runnable {
                     }
                 }
             }
-
-            run {
-                val fluidIm = "net.minecraft.class_3611"
-                val bucketItemIm = "net.minecraft.class_2404"
-                val fluid = mappingResolver.mapClassName(namespace, fluidIm)
-                val bucketItem = mappingResolver.mapClassName(namespace, bucketItemIm)
-
-                ClassTinkerers.addTransformation(bucketItem) {
-                    it.methods.forEach { methodNode ->
-                        if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
-                            return@forEach
-
-                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == mappingResolver.mapFieldName(namespace, bucketItemIm, "field_7905", "L${fluidIm.replace(".", "/")};") })
-                            return@forEach
-
-                        methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
-                            this.add(VarInsnNode(Opcodes.ALOAD, 0))
-                            this.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, bucketItem, "getFluid", "()L$fluid;"))
-                        })
-                    }
-                }
-            }
         }
 
         run {
