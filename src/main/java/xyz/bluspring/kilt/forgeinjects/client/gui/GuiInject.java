@@ -90,6 +90,8 @@ public abstract class GuiInject implements GuiInjection {
                 break;
 
             try {
+                ForgeGui.kilt$alreadyProcessedOverlays.add(overlay);
+
                 if (pre(window, guiGraphics, delta, overlay))
                     continue;
 
@@ -120,6 +122,11 @@ public abstract class GuiInject implements GuiInjection {
         renderAllOverlaysBetween(guiGraphics, delta, overlay, next);
 
         return !pre(this.minecraft.getWindow(), guiGraphics, delta, overlay.type());
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void kilt$resetForgeOverlayRenders(GuiGraphics guiGraphics, float partialTick, CallbackInfo ci) {
+        ForgeGui.kilt$alreadyProcessedOverlays.clear();
     }
 
     // Vignette
