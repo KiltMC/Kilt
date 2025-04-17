@@ -63,7 +63,7 @@ public class GuiInject {
                 break;
 
             try {
-                if (pre(window, stack, delta, overlay))
+                if (pre(window, guiGraphics, delta, overlay))
                     continue;
 
                 if (!overlay.id().getNamespace().equals("minecraft")) {
