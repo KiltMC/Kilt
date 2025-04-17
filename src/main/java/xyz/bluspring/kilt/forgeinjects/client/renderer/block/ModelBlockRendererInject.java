@@ -2,6 +2,9 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block;
 
 import com.bawnorton.mixinsquared.TargetHandler;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
@@ -15,7 +18,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.extensions.IForgeBlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,9 +25,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,29 +43,31 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
 
     @Shadow public abstract void renderModel(PoseStack.Pose pose, VertexConsumer vertexConsumer, @Nullable BlockState blockState, BakedModel bakedModel, float f, float g, float h, int i, int j);
 
-    @Redirect(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
-    public int kilt$useForgeLightEmission(BlockState instance, BlockAndTintGetter blockAndTintGetter, BakedModel bakedModel, BlockState state, BlockPos blockPos) {
-        return ((IForgeBlockState) instance).getLightEmission(blockAndTintGetter, blockPos);
+    @WrapOperation(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
+    public int kilt$useForgeLightEmission(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockAndTintGetter level, @Local(argsOnly = true) BlockPos pos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockState.class, "getLightEmission", BlockAndTintGetter.class, BlockPos.class)) {
+            return instance.getLightEmission(level, pos);
+        }
+
+        return original.call(instance);
     }
 
-    @Redirect(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;useAmbientOcclusion()Z"))
-    public boolean kilt$useForgeAmbientOcclusion(BakedModel instance, BlockAndTintGetter blockAndTintGetter, BakedModel bakedModel, BlockState state) {
-        return instance.useAmbientOcclusion(state, kilt$renderType.get());
+    @WrapOperation(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;useAmbientOcclusion()Z"))
+    public boolean kilt$useForgeAmbientOcclusion(BakedModel instance, Operation<Boolean> original, @Local(argsOnly = true) BlockState state) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "useAmbientOcclusion", BlockState.class, RenderType.class)) {
+            return instance.useAmbientOcclusion(state, kilt$renderType.get());
+        }
+
+        return original.call(instance);
     }
 
-    @Redirect(method = "tesselateWithAO", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    public List<BakedQuad> kilt$getQuadsWithAOOnForgeAtomics(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource) {
-        return instance.getQuads(blockState, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
-    }
+    @WrapOperation(method = {"tesselateWithAO", "tesselateWithoutAO", "renderModel"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    public List<BakedQuad> kilt$getQuadsWithAOOnForgeAtomics(BakedModel instance, @Nullable BlockState state, @Nullable Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
+            return instance.getQuads(state, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
+        }
 
-    @Redirect(method = "tesselateWithoutAO", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    public List<BakedQuad> kilt$getQuadsWithoutAOOnForgeAtomics(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource) {
-        return instance.getQuads(blockState, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
-    }
-
-    @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    public List<BakedQuad> kilt$getQuadsFromModelRenderOnForgeAtomics(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource) {
-        return instance.getQuads(blockState, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
+        return original.call(instance, state, direction, randomSource);
     }
 
     @Inject(at = @At("RETURN"), method = "tesselateBlock")
@@ -132,8 +136,12 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
         mixin = "me.jellysquid.mods.sodium.mixin.features.render.model.block.BlockModelRendererMixin",
         name = "renderFast"
     )
-    @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    private List<BakedQuad> kilt$getForgeQuadsDirectional(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource) {
-        return instance.getQuads(blockState, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$getForgeQuadsDirectional(BakedModel instance, BlockState state, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
+            return instance.getQuads(state, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
+        }
+
+        return original.call(instance, state, direction, randomSource);
     }
 }

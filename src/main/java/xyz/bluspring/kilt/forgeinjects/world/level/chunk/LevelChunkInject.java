@@ -39,6 +39,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ChunkAccessInjection;
 import xyz.bluspring.kilt.injections.world.level.chunk.LevelChunkInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -101,9 +102,14 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
         blockEntity.onLoad();
     }
 
-    @Redirect(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
-    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag) {
-        instance.handleUpdateTag(tag);
+    @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
+    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
+            instance.handleUpdateTag(tag);
+            return;
+        }
+
+        original.call(instance, tag);
     }
 
     @WrapOperation(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
