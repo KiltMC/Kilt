@@ -10,13 +10,14 @@ import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.util.*
 import java.util.jar.JarFile
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
     private val cachedForgeClassNodes = getForgeClassNodesInternal()
-    private val cachedHasMethodOverride = LinkedHashSet<OverrideData>()
-    private val cachedHasNoMethodOverride = LinkedHashSet<OverrideData>()
+    private val cachedHasMethodOverride = Collections.synchronizedSet(LinkedHashSet<OverrideData>())
+    private val cachedHasNoMethodOverride = Collections.synchronizedSet(LinkedHashSet<OverrideData>())
 
     private fun checkAllElementsMatch(array: Array<*>, array2: Array<*>): Boolean {
         if (array.size != array2.size)
