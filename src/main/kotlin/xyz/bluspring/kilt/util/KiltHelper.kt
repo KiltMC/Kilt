@@ -46,7 +46,7 @@ object KiltHelper {
         val overrideData = OverrideData(topClass, superClass, methodName, *methodArgs)
 
         var currentClass: Class<*>? = topClass
-        while (currentClass != null && currentClass != superClass && superClass.isAssignableFrom(topClass)) {
+        while (currentClass != null && currentClass != superClass && currentClass != Object::class.java && superClass.isAssignableFrom(topClass)) {
             try {
                 currentClass.getDeclaredMethod(methodName, *methodArgs)
                 cachedHasMethodOverride.add(overrideData)

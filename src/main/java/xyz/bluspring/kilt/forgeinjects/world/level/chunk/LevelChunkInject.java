@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ChunkAccessInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccessInject implements ChunkAccessInjection, IForgeLevelChunk {
@@ -30,9 +30,14 @@ public abstract class LevelChunkInject extends ChunkAccessInject implements Chun
         blockEntity.onLoad();
     }
 
-    @Redirect(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
-    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag) {
-        instance.handleUpdateTag(tag);
+    @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
+    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
+            instance.handleUpdateTag(tag);
+            return;
+        }
+
+        original.call(instance, tag);
     }
 
     @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
