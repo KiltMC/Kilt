@@ -183,7 +183,7 @@ object KiltRemapper {
                 if (it.nameWithoutExtension.startsWith("minecraft_") &&
                     (
                         !it.nameWithoutExtension.contains(KiltLoader.MC_VERSION.friendlyString) ||
-                        !it.endsWith("_$MC_MAPPED_JAR_VERSION")
+                        !it.nameWithoutExtension.endsWith("_$MC_MAPPED_JAR_VERSION")
                     )
                 ) {
                     markedForDeletion.add(it)
@@ -816,8 +816,10 @@ object KiltRemapper {
         val srgFile =
             KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg_$MC_MAPPED_JAR_VERSION.jar"
 
-        if (srgFile.exists() && !forceRemap)
+        if (srgFile.exists() && !forceRemap) {
+            logger.info("SRG-mapped Minecraft JAR detected, not creating a new remapped file.")
             return srgFile
+        }
 
         if (gameFile == null) {
             throw IllegalStateException("Minecraft JAR was not found!")
