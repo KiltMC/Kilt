@@ -50,6 +50,11 @@ object AccessTransformerLoader {
                     if (split[2] == "*") { // Handle all of them
                         val classInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)
 
+                        if (classInfo == null) {
+                            logger.warn("Missing class reference (SRG: $srgClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                            continue
+                        }
+
                         for (field in classInfo.fields) {
                             accessWidener.visitField(intermediaryClassName, field.mapped, field.mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
                             accessWidener.visitField(intermediaryClassName, field.mapped, field.mappedDescriptor, AccessWidenerReader.AccessType.MUTABLE, true)
