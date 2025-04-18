@@ -38,8 +38,6 @@ public final class MixinExtensionHelper {
         var slashedMixinClassName = mixinClassName.replaceAll("\\.", "/");
         var slashedTargetClassName = targetClassName.replaceAll("\\.", "/");
 
-        var methodsToRemove = new ArrayList<MethodNode>();
-
         var extend = Annotations.getVisible(classNode, Extends.class);
         if (extend != null) {
             if (targetClass.superName != null && !targetClass.superName.equals("java/lang/Object"))
@@ -96,48 +94,6 @@ public final class MixinExtensionHelper {
                 targetClass.methods.add(initializer);
             }
         }
-
-        List<MethodNode> replacementNodes = new LinkedList<>();
-
-        if (extend != null) {
-            if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
-                for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
-                    if (containsThisCall(targetClass, node.instructions))
-                        continue;
-
-                    methodsToRemove.add(node);
-
-                    var instructions = node.instructions;
-
-                    var aload = instructions.get(2);
-                    var invoke = instructions.get(3);
-                    var firstInsn = instructions.get(4);
-
-                    // remove Object.<init> call
-                    instructions.remove(aload);
-                    instructions.remove(invoke);
-
-                    var insnList = new InsnList();
-                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                    insnList.add(new LdcInsnNode(Type.getObjectType(targetClass.name)));
-                    insnList.add(new InsnNode(Opcodes.ICONST_0));
-                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "(Ljava/lang/Class;Z)V"));
-
-                    instructions.insertBefore(firstInsn, insnList);
-
-                    var newNode = new MethodNode(Opcodes.ASM9, node.access, node.name, node.desc, node.signature, node.exceptions.toArray(new String[0]));
-                    newNode.instructions = instructions;
-                    replacementNodes.add(newNode);
-                }
-            }
-        }
-
-        for (MethodNode methodNode : methodsToRemove) {
-            classNode.methods.remove(methodNode);
-            targetClass.methods.remove(methodNode);
-        }
-
-        targetClass.methods.addAll(replacementNodes);
     }
 
     @ApiStatus.Internal
@@ -148,6 +104,8 @@ public final class MixinExtensionHelper {
 
         var fieldsToRemove = new ArrayList<FieldNode>();
         var methodsToRemove = new ArrayList<MethodNode>();
+
+        var extend = Annotations.getVisible(classNode, Extends.class);
 
         for (FieldNode fieldNode : classNode.fields) {
             if (Annotations.getVisible(fieldNode, CreateStatic.class) == null)
@@ -275,6 +233,38 @@ public final class MixinExtensionHelper {
             }
         }
 
+        List<MethodNode> replacementNodes = new LinkedList<>();
+
+        if (extend != null) {
+            if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
+                for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
+                    if (containsThisCall(targetClass, node.instructions))
+                        continue;
+
+                    methodsToRemove.add(node);
+
+                    var instructions = node.instructions;
+
+                    var aload = instructions.get(2);
+                    var invoke = instructions.get(3);
+
+                    // remove Object.<init> call
+                    instructions.remove(invoke);
+
+                    var insnList = new InsnList();
+                    insnList.add(new LdcInsnNode(Type.getObjectType(targetClass.name)));
+                    insnList.add(new InsnNode(Opcodes.ICONST_0));
+                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "(Ljava/lang/Class;Z)V"));
+
+                    instructions.insert(aload, insnList);
+
+                    var newNode = new MethodNode(Opcodes.ASM9, node.access, node.name, node.desc, node.signature, node.exceptions.toArray(new String[0]));
+                    newNode.instructions = instructions;
+                    replacementNodes.add(newNode);
+                }
+            }
+        }
+
         for (FieldNode fieldNode : fieldsToRemove) {
             classNode.fields.remove(fieldNode);
         }
@@ -283,5 +273,7 @@ public final class MixinExtensionHelper {
             classNode.methods.remove(methodNode);
             targetClass.methods.remove(methodNode);
         }
+
+        targetClass.methods.addAll(replacementNodes);
     }
 }
