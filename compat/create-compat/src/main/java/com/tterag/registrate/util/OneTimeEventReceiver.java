@@ -14,7 +14,7 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.bluspring.kilt.compat.create.AbstractRegistrateForgeExtension;
+import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateForgeExtension;
 
 import javax.annotation.Nullable;
 import java.lang.invoke.MethodHandle;

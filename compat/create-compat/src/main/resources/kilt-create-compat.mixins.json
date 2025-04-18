@@ -5,11 +5,15 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "AbstractRegistrateMixin",
-        "CreateRegistrateMixin"
+        "AbstractRegistrateMixin$RegistrationMixin",
+        "CreateRegistrateMixin",
+        "RegistryEntryMixin",
+        "RegistryObjectMixin"
     ],
     "client": [
     ],
     "injectors": {
         "defaultRequire": 1
-    }
+    },
+    "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
 }

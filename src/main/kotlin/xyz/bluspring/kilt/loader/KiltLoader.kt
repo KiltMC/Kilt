@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
+import de.florianmichael.asmfabricloader.api.EarlyRiser
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
@@ -46,6 +47,7 @@ import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.api.entrypoints.ScanForgeModsEntrypoint
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.CoreModLoader
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
@@ -118,6 +120,15 @@ class KiltLoader {
             }
         }
         DeltaTimeProfiler.pop()
+
+        try {
+            // Allow Fabric mods to call for detecting Forge mods in the loading queue.
+            EarlyRiser.invokeEntrypoints("kilt:scanForgeMods", ScanForgeModsEntrypoint::class.java) {
+                it.onScanMods(modLoadingQueue)
+            }
+        } catch (e: Throwable) {
+            exception.addSuppressed(e)
+        }
 
         // If exceptions had occurred during preloading, then create a window to show the exceptions.
         if (exception.suppressed.isNotEmpty()) {

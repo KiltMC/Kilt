@@ -15,6 +15,9 @@
     "icon": "icon.png",
     "environment": "*",
     "entrypoints": {
+        "main": [
+            "xyz.bluspring.kilt.compat.curios_trinkets.KiltCuriosTrinketsCompat"
+        ]
     },
     "mixins": [
         "kilt_curios_trinkets_compat.mixins.json"
@@ -23,16 +26,9 @@
         "fabricloader": ">=${loader_version}",
         "minecraft": "${minecraft_version}",
         "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-        "trinkets": ">=${trinkets_version}",
         "kilt": "*"
     },
-    "breaks": {
-        "kilt_trinkets_curios_compat": "*"
-    },
     "custom": {
-        "kilt:forgeDependencies": {
-            "curios": "[${curios_version},)"
-        },
         "modmenu": {
             "parent": "kilt"
         }

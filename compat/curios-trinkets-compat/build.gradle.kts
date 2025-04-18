@@ -1,3 +1,5 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 base {
     archivesName.set("Kilt-Curios-Trinkets-Compats")
 }
@@ -38,3 +40,6 @@ tasks {
         }
     }
 }
+
+// Add compat layer to nested JARs in base Kilt project.
+rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar"))

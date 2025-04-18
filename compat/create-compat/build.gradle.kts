@@ -35,5 +35,4 @@ tasks {
 }
 
 // Add compat layer to nested JARs in base Kilt project.
-rootProject.configurations.runtimeClasspath.get()
 rootProject.tasks.getByName<RemapJarTask>("remapJar").nestedJars.from(project.tasks.getByName("remapJar"))

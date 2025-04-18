@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.compat.create
+package xyz.bluspring.kilt.compat.create.extensions
 
 import com.tterrag.registrate.AbstractRegistrate
 import net.minecraftforge.eventbus.api.IEventBus
