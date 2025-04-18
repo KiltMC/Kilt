@@ -173,11 +173,21 @@ class ForgeMod(
     }
 
     // Event Bus
-    val eventBus: IEventBus = BusBuilder.builder().apply {
-        setExceptionHandler(::onEventFailed)
-        setTrackPhases(false)
-        markerType(IModBusEvent::class.java)
-    }.build()
+    private lateinit var lateEventBus: IEventBus
+
+    val eventBus: IEventBus
+        get() {
+            if (!::lateEventBus.isInitialized) {
+                lateEventBus = BusBuilder.builder().apply {
+                    setExceptionHandler(::onEventFailed)
+                    setTrackPhases(false)
+                    markerType(IModBusEvent::class.java)
+                }.build()
+            }
+
+            return lateEventBus
+        }
+
     private fun onEventFailed(
         iEventBus: IEventBus,
         event: Event,

@@ -452,6 +452,38 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
+        // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
+        // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
+        run {
+            val eventBusPackage = "net.minecraftforge.eventbus"
+            val eventBusSlashed = eventBusPackage.replace(".", "/")
+            val modifiedEventBusClasses = listOf(
+                "IEventListenerFactory",
+                "BusBuilderImpl"
+            )
+
+            val helperUrl = Kilt::class.java.classLoader.getResource("$eventBusSlashed/KiltHelper.class")!!
+
+            for (className in modifiedEventBusClasses) {
+                ClassTinkerers.addReplacement("$eventBusPackage.$className") { classNode ->
+                    // Reset everything to a blank state, because fuck that
+                    classNode.fields?.clear()
+                    classNode.methods?.clear()
+                    classNode.visibleAnnotations?.clear()
+                    classNode.invisibleAnnotations?.clear()
+                    classNode.visibleTypeAnnotations?.clear()
+                    classNode.invisibleTypeAnnotations?.clear()
+
+                    val url = URL(
+                        helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
+                            .replace("$eventBusSlashed/KiltHelper", "$eventBusSlashed/${className.replace(".", "/")}")
+                    )
+                    val classReader = ClassReader(url.readBytes())
+                    classReader.accept(classNode, 0)
+                }
+            }
+        }
+
         DeltaTimeProfiler.push("preLaunch")
         try {
             Kilt.loader.preloadMods()
