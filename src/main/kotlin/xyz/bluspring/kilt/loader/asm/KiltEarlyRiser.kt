@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -19,6 +20,7 @@ import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
+import java.net.URL
 
 class KiltEarlyRiser : Runnable {
     override fun run() {
@@ -414,6 +416,38 @@ class KiltEarlyRiser : Runnable {
                     joinMethod.visitLocalVariable("separator", "Ljava/lang/String;", null, label0, label1, 1)
                     joinMethod.visitMaxs(3, 2)
                     joinMethod.visitEnd()
+                }
+            }
+        }
+
+        // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
+        // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
+        run {
+            val eventBusPackage = "net.minecraftforge.eventbus"
+            val eventBusSlashed = eventBusPackage.replace(".", "/")
+            val modifiedEventBusClasses = listOf(
+                "IEventListenerFactory",
+                "BusBuilderImpl"
+            )
+
+            val helperUrl = Kilt::class.java.classLoader.getResource("$eventBusSlashed/KiltHelper.class")!!
+
+            for (className in modifiedEventBusClasses) {
+                ClassTinkerers.addReplacement("$eventBusPackage.$className") { classNode ->
+                    // Reset everything to a blank state, because fuck that
+                    classNode.fields?.clear()
+                    classNode.methods?.clear()
+                    classNode.visibleAnnotations?.clear()
+                    classNode.invisibleAnnotations?.clear()
+                    classNode.visibleTypeAnnotations?.clear()
+                    classNode.invisibleTypeAnnotations?.clear()
+
+                    val url = URL(
+                        helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
+                            .replace("$eventBusSlashed/KiltHelper", "$eventBusSlashed/${className.replace(".", "/")}")
+                    )
+                    val classReader = ClassReader(url.readBytes())
+                    classReader.accept(classNode, 0)
                 }
             }
         }
