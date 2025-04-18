@@ -6,7 +6,8 @@ They will likely be their own mods, to not bloat the base Kilt module more than 
 the user's instance.**
 
 ## Supported Bridges
-| Mods                                                                                     | Bridge                         |
-|------------------------------------------------------------------------------------------|--------------------------------|
-| Forge Energy, Reborn Energy                                                              | Kilt                           |
-| [Trinkets](https://modrinth.com/mod/trinkets), [Curios](https://modrinth.com/mod/curios) | Kilt: Curios & Trinkets Compat |
+| Mods                                                                                                              | Bridge                           |
+|-------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| Forge Energy, Reborn Energy                                                                                       | Kilt: Transfer API Compat        |
+| [Trinkets](https://modrinth.com/mod/trinkets), [Curios](https://modrinth.com/mod/curios)                          | Kilt: Curios & Trinkets Compat   |
+| [Sodium](https://modrinth.com/mod/sodium), [Immersive Engineering](https://modrinth.com/mod/immersiveengineering) | Kilt: Sodium & Forge Mods Compat |
