@@ -33,12 +33,11 @@ public final class MixinExtensionHelper {
     }
 
     @ApiStatus.Internal
-    public static void apply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    public static void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         var classNode = mixinInfo.getClassNode(0);
         var slashedMixinClassName = mixinClassName.replaceAll("\\.", "/");
         var slashedTargetClassName = targetClassName.replaceAll("\\.", "/");
 
-        var fieldsToRemove = new ArrayList<FieldNode>();
         var methodsToRemove = new ArrayList<MethodNode>();
 
         var extend = Annotations.getVisible(classNode, Extends.class);
@@ -53,6 +52,102 @@ public final class MixinExtensionHelper {
             if (targetClass.signature != null)
                 targetClass.signature = targetClass.signature.replaceFirst("java/lang/Object", targetClass.superName);
         }
+
+        for (MethodNode methodNode : classNode.methods) {
+             if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
+                var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                initializer.visitCode();
+
+                for (AbstractInsnNode insnNode : methodNode.instructions) {
+                    if (insnNode instanceof MethodInsnNode methodInsn) {
+                        // super()/this()
+                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
+                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
+                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
+                            } else { // super()
+                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
+                            }
+                        } else {
+                            if (methodInsn.owner.equals(slashedMixinClassName)) {
+                                methodInsn.owner = slashedTargetClassName;
+                            }
+
+                            initializer.instructions.add(methodInsn);
+                        }
+                    } else {
+                        if (insnNode instanceof FieldInsnNode fieldInsn) {
+                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                fieldInsn.owner = slashedTargetClassName;
+                            }
+
+                            initializer.instructions.add(fieldInsn);
+                        } else {
+                            initializer.instructions.add(insnNode);
+                        }
+                    }
+                }
+
+                initializer.visitEnd();
+
+                initializer.localVariables = methodNode.localVariables;
+
+                // We don't need the method's instructions anymore.
+                methodNode.instructions.clear();
+                targetClass.methods.add(initializer);
+            }
+        }
+
+        List<MethodNode> replacementNodes = new LinkedList<>();
+
+        if (extend != null) {
+            if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
+                for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
+                    if (containsThisCall(targetClass, node.instructions))
+                        continue;
+
+                    methodsToRemove.add(node);
+
+                    var instructions = node.instructions;
+
+                    var aload = instructions.get(2);
+                    var invoke = instructions.get(3);
+                    var firstInsn = instructions.get(4);
+
+                    // remove Object.<init> call
+                    instructions.remove(aload);
+                    instructions.remove(invoke);
+
+                    var insnList = new InsnList();
+                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                    insnList.add(new LdcInsnNode(Type.getObjectType(targetClass.name)));
+                    insnList.add(new InsnNode(Opcodes.ICONST_0));
+                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "(Ljava/lang/Class;Z)V"));
+
+                    instructions.insertBefore(firstInsn, insnList);
+
+                    var newNode = new MethodNode(Opcodes.ASM9, node.access, node.name, node.desc, node.signature, node.exceptions.toArray(new String[0]));
+                    newNode.instructions = instructions;
+                    replacementNodes.add(newNode);
+                }
+            }
+        }
+
+        for (MethodNode methodNode : methodsToRemove) {
+            classNode.methods.remove(methodNode);
+            targetClass.methods.remove(methodNode);
+        }
+
+        targetClass.methods.addAll(replacementNodes);
+    }
+
+    @ApiStatus.Internal
+    public static void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        var classNode = mixinInfo.getClassNode(0);
+        var slashedMixinClassName = mixinClassName.replaceAll("\\.", "/");
+        var slashedTargetClassName = targetClassName.replaceAll("\\.", "/");
+
+        var fieldsToRemove = new ArrayList<FieldNode>();
+        var methodsToRemove = new ArrayList<MethodNode>();
 
         for (FieldNode fieldNode : classNode.fields) {
             if (Annotations.getVisible(fieldNode, CreateStatic.class) == null)
@@ -98,46 +193,6 @@ public final class MixinExtensionHelper {
                 method.visitEnd();
 
                 targetClass.methods.add(method);
-            } else if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
-                var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                initializer.visitCode();
-
-                for (AbstractInsnNode insnNode : methodNode.instructions) {
-                    if (insnNode instanceof MethodInsnNode methodInsn) {
-                        // super()/this()
-                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
-                            } else { // super()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
-                            }
-                        } else {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) {
-                                methodInsn.owner = slashedTargetClassName;
-                            }
-
-                            initializer.instructions.add(methodInsn);
-                        }
-                    } else {
-                        if (insnNode instanceof FieldInsnNode fieldInsn) {
-                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
-                                fieldInsn.owner = slashedTargetClassName;
-                            }
-
-                            initializer.instructions.add(fieldInsn);
-                        } else {
-                            initializer.instructions.add(insnNode);
-                        }
-                    }
-                }
-
-                initializer.visitEnd();
-
-                initializer.localVariables = methodNode.localVariables;
-
-                // We don't need the method's instructions anymore.
-                methodNode.instructions.clear();
-                targetClass.methods.add(initializer);
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
                 var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
 
@@ -178,41 +233,6 @@ public final class MixinExtensionHelper {
             }
         }
 
-        List<MethodNode> replacementNodes = new LinkedList<>();
-
-        if (extend != null) {
-            if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
-                for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
-                    if (containsThisCall(targetClass, node.instructions))
-                        continue;
-
-                    methodsToRemove.add(node);
-
-                    var instructions = node.instructions;
-
-                    var aload = instructions.get(2);
-                    var invoke = instructions.get(3);
-                    var firstInsn = instructions.get(4);
-
-                    // remove Object.<init> call
-                    instructions.remove(aload);
-                    instructions.remove(invoke);
-
-                    var insnList = new InsnList();
-                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                    insnList.add(new LdcInsnNode(Type.getObjectType(targetClass.name)));
-                    insnList.add(new InsnNode(Opcodes.ICONST_0));
-                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "(Ljava/lang/Class;Z)V"));
-
-                    instructions.insertBefore(firstInsn, insnList);
-
-                    var newNode = new MethodNode(Opcodes.ASM9, node.access, node.name, node.desc, node.signature, node.exceptions.toArray(new String[0]));
-                    newNode.instructions = instructions;
-                    replacementNodes.add(newNode);
-                }
-            }
-        }
-
         for (FieldNode fieldNode : fieldsToRemove) {
             classNode.fields.remove(fieldNode);
         }
@@ -221,7 +241,5 @@ public final class MixinExtensionHelper {
             classNode.methods.remove(methodNode);
             targetClass.methods.remove(methodNode);
         }
-
-        targetClass.methods.addAll(replacementNodes);
     }
 }
