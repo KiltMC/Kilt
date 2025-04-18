@@ -29,7 +29,6 @@ import net.minecraftforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
-import xyz.bluspring.kilt.interop.transfer.TransferInterop
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.DeltaTimeProfiler
@@ -39,7 +38,6 @@ class Kilt : ModInitializer {
     override fun onInitialize() {
         registerFabricEvents()
 
-        TransferInterop.init()
         DeltaTimeProfiler.popAll()
     }
 

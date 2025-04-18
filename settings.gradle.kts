@@ -16,3 +16,10 @@ pluginManagement {
                     .split("+")[0] // Ensures sentences like `+build.1` are ignored
     }
 }
+
+file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
+    include(":compat:${it.name}")
+    project(":compat:${it.name}").apply {
+        this.projectDir = it
+    }
+}

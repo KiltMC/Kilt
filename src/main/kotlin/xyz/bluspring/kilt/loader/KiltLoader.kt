@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.metadata.ModMetadata
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
@@ -41,6 +42,7 @@ import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ModFileFactory
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
@@ -83,8 +85,18 @@ class KiltLoader {
 
     private val environment = KiltEnvironment()
 
+    private data class ModInfo(val id: String, val displayName: String)
+
     suspend fun scanMods() {
         val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
+        val fabricModDependencies = mutableMapOf<ModMetadata, Map<String, VersionRange>>()
+
+        // Collect Fabric mods' Forge dependencies
+        for (mod in FabricLoader.getInstance().allMods) {
+            if (mod.metadata.containsCustomValue("kilt:forgeDependencies")) {
+                fabricModDependencies[mod.metadata] = mod.metadata.getCustomValue("kilt:forgeDependencies").asObject.associate { it.key to VersionRange.createFromVersionSpec(it.value.asString) }
+            }
+        }
 
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
@@ -122,18 +134,36 @@ class KiltLoader {
         val mcVersion = DefaultArtifactVersion(
             FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString
         )
-        val preloadedMods = mutableMapOf<ForgeMod, List<ModLoadingState>>()
-        val modsToRemove = mutableListOf<ForgeMod>()
+        val preloadedMods = mutableMapOf<ModInfo, List<DependencyLoadingState>>()
+        val modDependencies = mutableMapOf<ModInfo, List<IModInfo.ModVersion>>()
+        val modsToRemove = mutableListOf<ModInfo>()
+
+        // Add validation for Forge mods' dependencies
+        for (mod in modLoadingQueue) {
+            modDependencies[ModInfo(mod.modId, mod.displayName)] = mod.dependencies
+        }
+
+        // Add validation for Fabric mods' Forge dependencies
+        for ((metadata, dependencies) in fabricModDependencies) {
+            val modInfo = ModInfo(metadata.id, metadata.name)
+            val deps = mutableListOf<IModInfo.ModVersion>()
+
+            for ((depId, depVersion) in dependencies) {
+                deps.add(ForgeMod.ForgeModDependency(depId, depVersion, true, IModInfo.Ordering.NONE, DependencySide.BOTH))
+            }
+
+            modDependencies[modInfo] = deps
+        }
 
         // Iterate through the mod loading queue for the first time
         // to validate dependencies.
-        modLoadingQueue.forEach { mod ->
-            val dependencies = mutableListOf<ModLoadingState>()
-            mod.dependencies.forEach dependencies@{ dependency ->
+        modDependencies.forEach { (mod, dependencies) ->
+            val states = mutableListOf<DependencyLoadingState>()
+            dependencies.forEach dependencies@{ dependency ->
                 // I suspect this is how some Forge devs try to handle sided mods.
                 if (dependency.modId == "forge" && !isSideValid(dependency.side)) {
                     modsToRemove.add(mod)
-                    Kilt.logger.info("Detected that ${mod.displayName} (${mod.modId}) may be client-only in a server environment, ignoring.")
+                    Kilt.logger.info("Detected that ${mod.displayName} (${mod.id}) may be client-only in a server environment, ignoring.")
                     return@dependencies
                 }
 
@@ -142,21 +172,21 @@ class KiltLoader {
 
                 if (dependency.modId == "forge") {
                     if (!dependency.versionRange.containsVersion(SUPPORTED_FORGE_API_VERSION)) {
-                        dependencies.add(IncompatibleDependencyLoadingState(dependency, SUPPORTED_FORGE_API_VERSION))
+                        states.add(IncompatibleDependencyLoadingState(dependency, SUPPORTED_FORGE_API_VERSION))
 
                         return@dependencies
                     }
 
-                    dependencies.add(ValidDependencyLoadingState(dependency))
+                    states.add(ValidDependencyLoadingState(dependency))
 
                     return@dependencies
                 } else if (dependency.modId == "minecraft") {
                     if (!dependency.versionRange.containsVersion(mcVersion)) {
-                        dependencies.add(IncompatibleDependencyLoadingState(dependency, mcVersion))
+                        states.add(IncompatibleDependencyLoadingState(dependency, mcVersion))
                         return@dependencies
                     }
 
-                    dependencies.add(ValidDependencyLoadingState(dependency))
+                    states.add(ValidDependencyLoadingState(dependency))
 
                     return@dependencies
                 }
@@ -166,7 +196,7 @@ class KiltLoader {
                     !FabricLoader.getInstance().isModLoaded(dependency.modId) &&
                     dependency.isMandatory
                 ) {
-                    dependencies.add(MissingDependencyLoadingState(dependency))
+                    states.add(MissingDependencyLoadingState(dependency))
                     return@dependencies
                 }
 
@@ -182,19 +212,19 @@ class KiltLoader {
                     val version = DefaultArtifactVersion(dependencyContainer.metadata.version.friendlyString)
 
                     if (dependency.versionRange.containsVersion(version)) {
-                        dependencies.add(ValidDependencyLoadingState(dependency))
+                        states.add(ValidDependencyLoadingState(dependency))
                     } else {
-                        dependencies.add(IncompatibleDependencyLoadingState(dependency, version))
+                        states.add(IncompatibleDependencyLoadingState(dependency, version))
                     }
 
                     return@dependencies
                 } else if (dependencyMod == null) {
-                    dependencies.add(MissingDependencyLoadingState(dependency))
+                    states.add(MissingDependencyLoadingState(dependency))
                     return@dependencies
                 }
 
                 if (!dependency.versionRange.containsVersion(dependencyMod.version)) {
-                    dependencies.add(
+                    states.add(
                         IncompatibleDependencyLoadingState(
                             dependency,
                             dependencyMod.version
@@ -204,23 +234,23 @@ class KiltLoader {
                     return@dependencies
                 }
 
-                dependencies.add(ValidDependencyLoadingState(dependency))
+                states.add(ValidDependencyLoadingState(dependency))
             }
 
-            preloadedMods[mod] = dependencies
+            preloadedMods[mod] = states
         }
 
         // Remove any mods that shouldn't be handled
         for (mod in modsToRemove) {
             preloadedMods.remove(mod)
-            modLoadingQueue.remove(mod)
+            modLoadingQueue.removeIf { it.modId == mod.id }
         }
 
         // Check if any of the dependencies failed to load
         if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
             preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
                 .forEach { (mod, dependencyStates) ->
-                    Kilt.logger.error("${mod.displayName} (${mod.modId}) failed to load!")
+                    Kilt.logger.error("${mod.displayName} (${mod.id}) failed to load!")
 
                     dependencyStates.forEach states@{ state ->
                         if (state is ValidDependencyLoadingState)
@@ -236,7 +266,7 @@ class KiltLoader {
                 preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
                     .forEach { (mod, dependencyStates) ->
                         val message = tab.node.addMessage(
-                            "${mod.displayName} (${mod.modId}) failed to load!",
+                            "${mod.displayName} (${mod.id}) failed to load!",
                             FabricStatusTree.FabricTreeWarningLevel.ERROR
                         )
 
@@ -256,9 +286,9 @@ class KiltLoader {
 
             exitProcess(1)
         } else {
-            Kilt.logger.info("Found ${preloadedMods.size} Forge mods.")
+            Kilt.logger.info("Found ${modLoadingQueue.size} Forge mods.")
 
-            if (preloadedMods.isNotEmpty()) {
+            if (modLoadingQueue.isNotEmpty()) {
                 try {
                     remapMods(modLoadingQueue)
                 } catch (e: Exception) {
@@ -1037,12 +1067,12 @@ class KiltLoader {
         Kilt.logger.info("Injected mod ${mod.modId} into ${modProvider.name}")
     }
 
-    private open class ModLoadingState(val dependency: IModInfo.ModVersion)
+    private open class DependencyLoadingState(val dependency: IModInfo.ModVersion)
 
     private class IncompatibleDependencyLoadingState(
         dependency: IModInfo.ModVersion,
         val version: ArtifactVersion
-    ) : ModLoadingState(dependency) {
+    ) : DependencyLoadingState(dependency) {
         override fun toString(): String {
             return "Incompatible dependency version! (required: ${dependency.versionRange}, found: $version)"
         }
@@ -1050,7 +1080,7 @@ class KiltLoader {
 
     private class MissingDependencyLoadingState(
         dependency: IModInfo.ModVersion
-    ) : ModLoadingState(dependency) {
+    ) : DependencyLoadingState(dependency) {
         override fun toString(): String {
             return "Missing mod ID ${dependency.modId}"
         }
@@ -1058,7 +1088,7 @@ class KiltLoader {
 
     private class ValidDependencyLoadingState(
         dependency: IModInfo.ModVersion
-    ) : ModLoadingState(dependency) {
+    ) : DependencyLoadingState(dependency) {
         override fun toString(): String {
             return "Loaded perfectly fine actually, how do you do?"
         }

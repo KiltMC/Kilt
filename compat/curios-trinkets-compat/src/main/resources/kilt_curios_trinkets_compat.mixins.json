@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.kilt.compat.curios_trinkets.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+    ],
+    "client": [
+        "curios.GuiEventHandlerMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

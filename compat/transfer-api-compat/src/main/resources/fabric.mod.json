@@ -1,0 +1,35 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_transfer_compat",
+    "version": "${version}",
+    "name": "Kilt: Transfer API Compat",
+    "description": "A mod designed to bridge the Forge and Fabric Transfer APIs together.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "xyz.bluspring.kilt.compat.transfer.TransferInterop"
+        ]
+    },
+    "mixins": [
+    ],
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "kilt": "*"
+    },
+    "custom": {
+        "modmenu": {
+            "parent": "kilt"
+        }
+    }
+}

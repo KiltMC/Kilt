@@ -1,0 +1,40 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_curios_trinkets_compat",
+    "version": "${version}",
+    "name": "Kilt: Curios & Trinkets Compat",
+    "description": "A compatibility layer designed to support the Curios API within the Trinkets API and vice versa, while also allowing to switch between the two GUIs.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+    },
+    "mixins": [
+        "kilt_curios_trinkets_compat.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "trinkets": ">=${trinkets_version}",
+        "kilt": "*"
+    },
+    "breaks": {
+        "kilt_trinkets_curios_compat": "*"
+    },
+    "custom": {
+        "kilt:forgeDependencies": {
+            "curios": "[${curios_version},)"
+        },
+        "modmenu": {
+            "parent": "kilt"
+        }
+    }
+}
