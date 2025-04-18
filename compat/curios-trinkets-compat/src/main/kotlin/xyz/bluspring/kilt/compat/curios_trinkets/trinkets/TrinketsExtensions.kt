@@ -32,8 +32,9 @@ fun trinketsInventoryFromCurios(context: SlotContext): TrinketInventory? {
     val slots = CuriosApi.getEntitySlots(context.entity())
     val inventory = TrinketsApi.getTrinketComponent(context.entity).orElseThrow().inventory
 
-    context.index()
     val slotType = slots[context.identifier()] ?: return null
+
+    return null
 }
 
 fun slotReferenceFromCurios(context: SlotContext): SlotReference? {
