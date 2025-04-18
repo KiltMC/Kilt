@@ -245,11 +245,10 @@ dependencies {
     }
 
     // Compatibility layers
-    runtimeOnly(project(":compat:transfer-api-compat", configuration = "namedElements")) {
-        isTransitive = false
-    }
-    runtimeOnly(project(":compat:forge-sodium-compats", configuration = "namedElements")) {
-        isTransitive = false
+    listOf(
+        "transfer-api-compat", "forge-sodium-compats", "create-compat"
+    ).forEach { layer ->
+        runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
     }
 
     // Test libraries

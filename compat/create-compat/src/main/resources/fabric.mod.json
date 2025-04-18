@@ -1,9 +1,9 @@
 {
     "schemaVersion": 1,
-    "id": "kilt_transfer_compat",
+    "id": "kilt_create_compat",
     "version": "${version}",
-    "name": "Kilt: Transfer API Compat",
-    "description": "A compatibility layer for Kilt designed to bridge the Forge and Fabric Transfer APIs together.",
+    "name": "Kilt: Create Fabric Compat",
+    "description": "A compatibility layer to help bridge Create Fabric and any Create Forge addons.",
     "authors": [
         "BluSpring"
     ],
@@ -15,11 +15,9 @@
     "icon": "icon.png",
     "environment": "*",
     "entrypoints": {
-        "main": [
-            "xyz.bluspring.kilt.compat.transfer.TransferInterop"
-        ]
     },
     "mixins": [
+        "kilt-create-compat.mixins.json"
     ],
     "depends": {
         "fabricloader": ">=${loader_version}",
