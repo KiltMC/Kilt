@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.compat.sodium.mixin.immersiveengineering;
 import blusunrize.immersiveengineering.client.render.ConnectionRenderer;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
+import com.moulberry.mixinconstraints.annotations.IfModLoadeds;
 import me.jellysquid.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
 import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
@@ -22,8 +23,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.compat.sodium.immersiveengineering.SodiumIEVertexConsumer;
 
-@IfModLoaded(value = "sodium", maxVersion = "0.6.0")
-@IfModLoaded("immersiveengineering")
+@IfModLoadeds({
+    @IfModLoaded("immersiveengineering"),
+    @IfModLoaded(value = "sodium", maxVersion = "0.6.0")
+})
 @Pseudo
 @Mixin(ChunkBuilderMeshingTask.class)
 public abstract class ChunkBuilderMeshingTaskMixin {
