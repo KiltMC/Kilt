@@ -22,13 +22,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.compat.sodium.immersiveengineering.SodiumIEVertexConsumer;
 
-@IfModLoaded("immersiveengineering")
 @IfModLoaded(value = "sodium", maxVersion = "0.6.0")
 @Pseudo
 @Mixin(ChunkBuilderMeshingTask.class)
 public abstract class ChunkBuilderMeshingTaskMixin {
     @Shadow @Final private RenderSection render;
 
+    @IfModLoaded("immersiveengineering")
     @Inject(method = "execute(Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lme/jellysquid/mods/sodium/client/util/task/CancellationToken;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;", at = @At(value = "FIELD", target = "Lme/jellysquid/mods/sodium/client/render/chunk/terrain/DefaultTerrainRenderPasses;ALL:[Lme/jellysquid/mods/sodium/client/render/chunk/terrain/TerrainRenderPass;", shift = At.Shift.AFTER, remap = false), remap = false)
     private void kilt$tryBuildImmersiveConnections(ChunkBuildContext buildContext, CancellationToken cancellationToken, CallbackInfoReturnable<ChunkBuildOutput> cir, @Local(ordinal = 0) BlockPos.MutableBlockPos blockPos) {
         ChunkBuildBuffers buffers = buildContext.buffers;
