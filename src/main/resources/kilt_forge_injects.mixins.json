@@ -93,6 +93,7 @@
         "world.entity.SpawnPlacementsInject$TypeInject",
         "world.entity.ai.attributes.AttributeSupplierBuilderInject",
         "world.entity.ai.attributes.DefaultAttributesInject",
+        "world.entity.item.ItemEntityInject",
         "world.entity.player.InventoryInject",
         "world.entity.player.PlayerInject",
         "world.entity.projectile.FishingHookInject",

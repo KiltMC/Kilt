@@ -44,6 +44,10 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
 
     @Shadow private EntityDimensions dimensions;
 
+    @Shadow public abstract boolean isRemoved();
+
+    @Shadow public abstract void discard();
+
     @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
     private float kilt$useSizesFromEvent(Entity instance, Pose pose, EntityDimensions dimensions, Operation<Float> original) {
         var event = ForgeEventFactory.getEntitySizeForge(instance, pose, dimensions, original.call(instance, pose, dimensions));
