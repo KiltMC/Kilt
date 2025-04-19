@@ -122,6 +122,7 @@
         "world.entity.ai.BrainInject",
         "world.entity.ai.attributes.AttributeSupplierInject$BuilderInject",
         "world.entity.ai.attributes.DefaultAttributesInject",
+        "world.entity.item.ItemEntityInject",
         "world.entity.player.InventoryInject",
         "world.entity.player.PlayerInject",
         "world.entity.projectile.FishingHookInject",
