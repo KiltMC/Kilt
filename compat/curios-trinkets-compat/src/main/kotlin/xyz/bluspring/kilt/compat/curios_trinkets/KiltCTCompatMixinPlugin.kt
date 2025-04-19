@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.curios_trinkets
 
+import com.moulberry.mixinconstraints.MixinConstraints
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
@@ -13,7 +14,7 @@ class KiltCTCompatMixinPlugin : IMixinConfigPlugin {
     }
 
     override fun shouldApplyMixin(targetClassName: String, mixinClassName: String): Boolean {
-        return KiltCuriosTrinketsCompat.isActive
+        return KiltCuriosTrinketsCompat.isActive && MixinConstraints.shouldApplyMixin(mixinClassName)
     }
 
     override fun acceptTargets(

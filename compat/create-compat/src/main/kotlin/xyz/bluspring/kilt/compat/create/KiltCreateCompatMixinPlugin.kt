@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.create
 
+import com.moulberry.mixinconstraints.MixinConstraints
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
@@ -14,7 +15,7 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
     }
 
     override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String?): Boolean {
-        return FabricLoader.getInstance().isModLoaded("create")
+        return FabricLoader.getInstance().isModLoaded("create") && MixinConstraints.shouldApplyMixin(mixinClassName)
     }
 
     override fun acceptTargets(

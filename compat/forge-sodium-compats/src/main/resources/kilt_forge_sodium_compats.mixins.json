@@ -11,5 +11,6 @@
     ],
     "injectors": {
         "defaultRequire": 1
-    }
+    },
+    "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
 }
