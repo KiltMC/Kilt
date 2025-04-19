@@ -12,5 +12,5 @@
     "injectors": {
         "defaultRequire": 1
     },
-    "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
+    "plugin": "xyz.bluspring.kilt.compat.sodium.KiltForgeSodiumCompatMixinPlugin"
 }
