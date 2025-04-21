@@ -193,6 +193,7 @@ dependencies {
     modImplementation ("maven.modrinth:sodium:mc1.19.2-0.4.4") {
         exclude("net.fabricmc", "fabric-loader")
     }
+    modRuntimeOnly("maven.modrinth:iris:1.6.11+1.19.2")
     modRuntimeOnly ("maven.modrinth:lithium:mc1.19.2-0.11.1") {
         exclude("net.fabricmc", "fabric-loader")
     }
