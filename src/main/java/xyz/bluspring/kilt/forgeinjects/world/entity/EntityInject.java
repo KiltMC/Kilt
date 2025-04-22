@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.forgeinjects.world.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.fabricators_of_create.porting_lib.extensions.EntityExtensions;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.*;
@@ -10,6 +12,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.extensions.IForgeEntity;
@@ -27,6 +30,7 @@ import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.capabilities.EntityCapabilityProviderImpl;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 
+import java.util.Comparator;
 import java.util.function.BiPredicate;
 
 @Mixin(Entity.class)
@@ -68,6 +72,9 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     private boolean canUpdate = true;
+
+    protected Object2DoubleMap<FluidType> forgeFluidTypeHeight = new Object2DoubleArrayMap<>(FluidType.SIZE.get());
+    private FluidType forgeFluidTypeOnEyes = ForgeMod.EMPTY_TYPE.get();
 
     @Override
     public boolean canUpdate() {
@@ -116,30 +123,45 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         this.reviveCaps();
     }
 
-    // TODO: Implement these
+    protected final void setFluidTypeHeight(FluidType type, double height) {
+        this.forgeFluidTypeHeight.put(type, height);
+    }
+
     @Override
     public double getFluidTypeHeight(FluidType type) {
-        return 0;
+        return this.forgeFluidTypeHeight.getDouble(type);
     }
 
     @Override
     public FluidType getMaxHeightFluidType() {
-        return null;
+        if (this.forgeFluidTypeHeight.isEmpty())
+            return ForgeMod.EMPTY_TYPE.get();
+
+        return this.forgeFluidTypeHeight.object2DoubleEntrySet()
+            .stream()
+            .max(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
+            .map(Object2DoubleMap.Entry::getKey)
+            .orElseGet(ForgeMod.EMPTY_TYPE);
     }
 
     @Override
     public boolean isInFluidType(BiPredicate<FluidType, Double> predicate, boolean forAllTypes) {
-        return false;
+        if (this.forgeFluidTypeHeight.isEmpty())
+            return false;
+
+        var stream = this.forgeFluidTypeHeight.object2DoubleEntrySet().stream();
+        return forAllTypes ? stream.allMatch(e -> predicate.test(e.getKey(), e.getDoubleValue()))
+            : stream.anyMatch(e -> predicate.test(e.getKey(), e.getDoubleValue()));
     }
 
     @Override
     public boolean isInFluidType() {
-        return false;
+        return !this.forgeFluidTypeHeight.isEmpty();
     }
 
     @Override
     public FluidType getEyeInFluidType() {
-        return null;
+        return this.forgeFluidTypeOnEyes;
     }
 
     @Override
