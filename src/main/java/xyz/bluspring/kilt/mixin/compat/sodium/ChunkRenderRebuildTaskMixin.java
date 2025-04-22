@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildBuffers;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.buffers.ChunkModelBuilder;
 import me.jellysquid.mods.sodium.client.render.chunk.tasks.ChunkRenderRebuildTask;
@@ -15,13 +16,17 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.compat.sodium.ChunkModelRenderTypeHolder;
 
 @IfModLoaded("sodium")
 @Mixin(ChunkRenderRebuildTask.class)
 public abstract class ChunkRenderRebuildTaskMixin {
+    @Shadow @Final private RenderSection render;
+
     @WrapOperation(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/pipeline/BlockRenderer;renderModel(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/resources/model/BakedModel;Lme/jellysquid/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;ZJ)Z"))
     private boolean kilt$renderModelWithMultiLayer(BlockRenderer instance, BlockAndTintGetter world, BlockState state, BlockPos pos, BlockPos origin, BakedModel model, ChunkModelBuilder originalBuffers, boolean cull, long seed, Operation<Boolean> original, @Local ChunkBuildBuffers buffers, @Local RenderType originalRenderType) {
         var random = RandomSource.create(seed);
@@ -29,7 +34,7 @@ public abstract class ChunkRenderRebuildTaskMixin {
         var renderTypes = model.getRenderTypes(state, random, modelData != null ? modelData : ModelData.EMPTY);
         var hasRendered = false;
 
-        if (renderTypes.isEmpty()) {
+        if (renderTypes.isEmpty() || (renderTypes.asList().size() == 1 && renderTypes.asList().get(0) == originalRenderType)) {
             return original.call(instance, world, state, pos, origin, model, originalBuffers, cull, seed);
         }
 
