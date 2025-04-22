@@ -87,6 +87,7 @@
         "debug.ChunkSkyLightSourcesMixin",
         "dev.MappedRegistryMixin",
         "resources.RegistryOpsAccessor",
+        "server.level.TicketAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.UseAnimAccessor",
         "world.level.biome.BiomeClimateSettingsAccessor",
