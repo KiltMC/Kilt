@@ -16,8 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerGamePacketListenerImplInject {
     @Shadow @Final public Connection connection;
 
-    @Inject(at = @At("HEAD"), method = "handleCustomPayload")
+    @Inject(at = @At("HEAD"), method = "handleCustomPayload", cancellable = true)
     public void kilt$handleCustomPayload(ServerboundCustomPayloadPacket packet, CallbackInfo ci) {
-        NetworkHooks.onCustomPayload(packet, this.connection);
+        if (NetworkHooks.onCustomPayload(packet, this.connection)) {
+            ci.cancel();
+        }
     }
 }
