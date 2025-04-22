@@ -29,6 +29,7 @@ public abstract class PackMetadataSectionInject implements PackMetadataSectionIn
         this.packTypeVersions = packTypeVersions;
     }
 
+    @Override
     public int getPackFormat(PackType packType) {
         return packTypeVersions.getOrDefault(packType, this.packFormat);
     }
