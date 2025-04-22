@@ -23,6 +23,11 @@ public abstract class PackMetadataSectionInject implements PackMetadataSectionIn
         this.packTypeVersions = Map.of();
     }
 
+    @Override
+    public void kilt$setPackTypeVersions(Map<PackType, Integer> packTypeVersions) {
+        this.packTypeVersions = packTypeVersions;
+    }
+
     public PackMetadataSectionInject(Component description, int packFormat, Map<PackType, Integer> packTypeVersions) {
         this.description = description;
         this.packFormat = packFormat;
