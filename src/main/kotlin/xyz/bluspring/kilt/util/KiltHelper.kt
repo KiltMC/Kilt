@@ -127,7 +127,7 @@ object KiltHelper {
 
         stream.close()
 
-        return digest.digest().toHexString(HexFormat.Default)
+        return digest.digest().toHexString()
     }
 
     private fun getPath(path: String): Path? {

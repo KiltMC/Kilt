@@ -99,4 +99,9 @@ public abstract class ModelBakeryInject implements ModelBakeryInjection {
     public void kilt$useForgeSpritesForBake(Args args) {
         args.set(1, this.sprites.get());
     }
+
+    @Override
+    public Function<Material, TextureAtlasSprite> kilt$getSpriteGetter() {
+        return this.sprites.get();
+    }
 }

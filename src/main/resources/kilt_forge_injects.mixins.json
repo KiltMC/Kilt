@@ -45,6 +45,7 @@
         "network.protocol.login.ServerboundCustomQueryPacketInject",
         "network.protocol.status.ClientboundStatusResponsePacketInject",
         "network.protocol.status.ServerStatusInject",
+        "network.protocol.status.ServerStatusInject$SerializerInject",
         "network.syncher.EntityDataSerializersInject",
         "resources.RegistryLoaderInject",
         "resources.ResourceLocationInject",
@@ -59,6 +60,7 @@
         "server.level.ChunkMapInject",
         "server.level.ServerChunkCacheInject",
         "server.level.ServerLevelInject",
+        "server.level.ServerLevelInject$EntityCallbacksInject",
         "server.level.ServerPlayerGameModeInject",
         "server.level.ServerPlayerInject",
         "server.network.MemoryServerHandshakePacketListenerImplInject",
@@ -209,6 +211,8 @@
         "client.color.block.BlockColorsInject",
         "client.color.item.ItemColorsInject",
         "client.gui.GuiInject",
+        "client.gui.MapRendererInject",
+        "client.gui.MapRendererInject$MapInstanceInject",
         "client.gui.components.AbstractSelectionListInject",
         "client.gui.components.AbstractWidgetInject",
         "client.gui.components.BossHealthOverlayInject",
@@ -272,7 +276,8 @@
         "client.resources.model.ModelManagerInject",
         "client.resources.model.SimpleBakedModelInject",
         "client.resources.model.SimpleBakedModelInject$BuilderInject",
-        "client.server.IntegratedServerInject"
+        "client.server.IntegratedServerInject",
+        "client.sounds.SoundEngineInject"
     ],
     "injectors": {
         "defaultRequire": 1

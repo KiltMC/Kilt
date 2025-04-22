@@ -1,29 +1,28 @@
 package xyz.bluspring.kilt.forgeinjects.server;
 
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
-import net.minecraftforge.network.ServerStatusPing;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.server.MinecraftServerInjection;
 
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerInject implements MinecraftServerInjection {
     @Shadow private MinecraftServer.ReloadableResources resources;
+    @Shadow @Final private ServerStatus status;
     private Map<ResourceKey<Level>, long[]> perWorldTickTimes = Maps.newIdentityHashMap();
 
     @Override
@@ -46,27 +45,9 @@ public class MinecraftServerInject implements MinecraftServerInjection {
         return this.resources;
     }
 
-    @Unique private static final Gson GSON = new Gson();
-    @Unique private String cachedServerStatus;
-    @Unique private void resetStatusCache(ServerStatus status) {
-        this.cachedServerStatus = GSON.toJson(ServerStatus.CODEC.encodeStart(JsonOps.INSTANCE, status).result().orElseThrow());
-    }
-
-    @ModifyExpressionValue(method = "tickServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;buildServerStatus()Lnet/minecraft/network/protocol/status/ServerStatus;"))
-    private ServerStatus kilt$resetStatusCache(ServerStatus original) {
-        this.resetStatusCache(original);
-        return original;
-    }
-
-    @Override
-    public String getStatusJson() {
-        return this.cachedServerStatus;
-    }
-
-    @ModifyReturnValue(method = "buildServerStatus", at = @At("RETURN"))
-    private ServerStatus kilt$appendServerPing(ServerStatus original) {
-        original.setForgeData(Optional.of(new ServerStatusPing()));
-        return original;
+    @Inject(method = "tickServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/status/ServerStatus$Players;setSample([Lcom/mojang/authlib/GameProfile;)V", shift = At.Shift.AFTER))
+    private void kilt$resetStatusCache(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
+        this.status.invalidateJson();
     }
 
     // Tick Events implemented via Architectury

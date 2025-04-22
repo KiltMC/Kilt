@@ -13,4 +13,6 @@ public interface ModelBakeryInjection {
     BakedModel bake(ResourceLocation loc, ModelState state, Function<Material, TextureAtlasSprite> sprites);
 
     AtlasSet getAtlasSet();
+
+    Function<Material, TextureAtlasSprite> kilt$getSpriteGetter();
 }

@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer.block;
 
-import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -22,7 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
+import xyz.bluspring.kilt.injections.client.render.block.ModelBlockRendererInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
@@ -123,21 +122,5 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
         kilt$modelData.set(modelData);
         kilt$renderType.set(renderType);
         renderModel(pose, vertexConsumer, blockState, bakedModel, f1, f2, f3, i1, i2);
-    }
-
-    // Sodium compatibility
-    @IfModLoaded(value = "sodium", maxVersion = "0.6.0")
-    @Dynamic
-    @TargetHandler(
-        mixin = "me.jellysquid.mods.sodium.mixin.features.render.model.block.BlockModelRendererMixin",
-        name = "renderFast"
-    )
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    private List<BakedQuad> kilt$getForgeQuadsDirectional(BakedModel instance, BlockState state, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
-            return instance.getQuads(state, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
-        }
-
-        return original.call(instance, state, direction, randomSource);
     }
 }

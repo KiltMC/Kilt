@@ -78,6 +78,7 @@
         "DebugScreenOverlayMixin",
         "OptionsAccessor",
         "client.renderer.item.ItemPropertiesAccessor",
+        "client.sounds.ChannelAccessHandleMixin",
         "compat.geckolib.BlockEntityWithoutLevelRendererMixin",
         "fabric_api.FluidRenderHandlerRegistryImplMixin"
     ],

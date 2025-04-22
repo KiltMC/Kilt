@@ -53,45 +53,47 @@ public final class MixinExtensionHelper {
 
         for (MethodNode methodNode : classNode.methods) {
              if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
-                var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                initializer.visitCode();
+                 var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                 initializer.visitCode();
 
-                for (AbstractInsnNode insnNode : methodNode.instructions) {
-                    if (insnNode instanceof MethodInsnNode methodInsn) {
-                        // super()/this()
-                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
-                            } else { // super()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
-                            }
-                        } else {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) {
-                                methodInsn.owner = slashedTargetClassName;
-                            }
+                 for (AbstractInsnNode insnNode : methodNode.instructions) {
+                     if (insnNode instanceof MethodInsnNode methodInsn) {
+                         // super()/this()
+                         if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
+                             } else { // super()
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
+                             }
+                         } else if (insnNode.getOpcode() == Opcodes.INVOKEVIRTUAL && methodInsn.name.equals("kilt$mixin$superCall")) { // super()
+                             initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), "<init>", methodInsn.desc, false);
+                         } else {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) {
+                                 methodInsn.owner = slashedTargetClassName;
+                             }
 
-                            initializer.instructions.add(methodInsn);
-                        }
-                    } else {
-                        if (insnNode instanceof FieldInsnNode fieldInsn) {
-                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
-                                fieldInsn.owner = slashedTargetClassName;
-                            }
+                             initializer.instructions.add(methodInsn);
+                         }
+                     } else {
+                         if (insnNode instanceof FieldInsnNode fieldInsn) {
+                             if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                 fieldInsn.owner = slashedTargetClassName;
+                             }
 
-                            initializer.instructions.add(fieldInsn);
-                        } else {
-                            initializer.instructions.add(insnNode);
-                        }
-                    }
-                }
+                             initializer.instructions.add(fieldInsn);
+                         } else {
+                             initializer.instructions.add(insnNode);
+                         }
+                     }
+                 }
 
-                initializer.visitEnd();
+                 initializer.visitEnd();
 
-                initializer.localVariables = methodNode.localVariables;
+                 initializer.localVariables = methodNode.localVariables;
 
-                // We don't need the method's instructions anymore.
-                methodNode.instructions.clear();
-                targetClass.methods.add(initializer);
+                 // We don't need the method's instructions anymore.
+                 methodNode.instructions.clear();
+                 targetClass.methods.add(initializer);
             }
         }
     }
@@ -151,48 +153,6 @@ public final class MixinExtensionHelper {
                 method.visitEnd();
 
                 targetClass.methods.add(method);
-            } else if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
-                var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                initializer.visitCode();
-
-                for (AbstractInsnNode insnNode : methodNode.instructions) {
-                    if (insnNode instanceof MethodInsnNode methodInsn) {
-                        // super()/this()
-                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
-                            } else { // super()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, methodInsn.owner, "<init>", methodInsn.desc, false);
-                            }
-                        } else if (insnNode.getOpcode() == Opcodes.INVOKEVIRTUAL && methodInsn.name.equals("kilt$mixin$superCall")) { // super()
-                            initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), "<init>", methodInsn.desc, false);
-                        } else {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) {
-                                methodInsn.owner = slashedTargetClassName;
-                            }
-
-                            initializer.instructions.add(methodInsn);
-                        }
-                    } else {
-                        if (insnNode instanceof FieldInsnNode fieldInsn) {
-                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
-                                fieldInsn.owner = slashedTargetClassName;
-                            }
-
-                            initializer.instructions.add(fieldInsn);
-                        } else {
-                            initializer.instructions.add(insnNode);
-                        }
-                    }
-                }
-
-                initializer.visitEnd();
-
-                initializer.localVariables = methodNode.localVariables;
-
-                // We don't need the method's instructions anymore.
-                methodNode.instructions.clear();
-                targetClass.methods.add(initializer);
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
                 var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
 

@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -31,14 +30,6 @@ public class SpawnEggItemInject implements SpawnEggItemInjection {
             return this.getDefaultType();
 
         return original;
-    }
-
-    @ModifyReceiver(method = "requiredFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityType;requiredFeatures()Lnet/minecraft/world/flag/FeatureFlagSet;"))
-    private EntityType<?> kilt$useForgeDefaultTypeForFeatures(EntityType<?> instance) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), SpawnEggItem.class, "getDefaultType"))
-            return this.getDefaultType();
-
-        return instance;
     }
 
     @Override

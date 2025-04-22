@@ -2,12 +2,13 @@ package xyz.bluspring.kilt.forgeinjects.network.protocol.status;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
@@ -15,6 +16,7 @@ import xyz.bluspring.kilt.injections.network.protocol.status.ClientboundStatusRe
 
 @Mixin(ClientboundStatusResponsePacket.class)
 public abstract class ClientboundStatusResponsePacketInject implements ClientboundStatusResponsePacketInjection {
+    @Shadow @Final private ServerStatus status;
     @Nullable @Unique
     private String cachedStatus;
 
@@ -36,12 +38,8 @@ public abstract class ClientboundStatusResponsePacketInject implements Clientbou
         this.cachedStatus = data;
     }
 
-    @WrapOperation(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeJsonWithCodec(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
-    private <T> void kilt$writeCachedStatus(FriendlyByteBuf instance, Codec<T> codec, T value, Operation<Void> original) {
-        if (cachedStatus != null)
-            instance.writeUtf(cachedStatus);
-        else
-            //noinspection MixinExtrasOperationParameters
-            original.call(instance, codec, value);
+    @WrapOperation(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeUtf(Ljava/lang/String;)Lnet/minecraft/network/FriendlyByteBuf;"))
+    private <T> FriendlyByteBuf kilt$writeCachedStatus(FriendlyByteBuf instance, String string, Operation<FriendlyByteBuf> original) {
+        return original.call(instance, this.status.getJson());
     }
 }

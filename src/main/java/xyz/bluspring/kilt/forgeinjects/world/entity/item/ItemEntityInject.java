@@ -92,7 +92,7 @@ public abstract class ItemEntityInject extends EntityInject implements ItemEntit
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     private float kilt$handleWithForgeFriction(Block instance, Operation<Float> original, @Share("groundPos") LocalRef<BlockPos> groundPosRef, @Share("blockState") LocalRef<BlockState> stateRef) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Block.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
-            return stateRef.get().getFriction(this.level(), groundPosRef.get(), (ItemEntity) (Object) this);
+            return stateRef.get().getFriction(this.level, groundPosRef.get(), (ItemEntity) (Object) this);
         }
 
         return 0;
@@ -186,7 +186,7 @@ public abstract class ItemEntityInject extends EntityInject implements ItemEntit
 
     @ModifyExpressionValue(method = "makeFakeItem", at = @At(value = "CONSTANT", args = "intValue=5999"))
     private int kilt$useEntityLifespanIfPossible(int original) {
-        var lifespan = this.getItem().getEntityLifespan(this.level()) - 1;
+        var lifespan = this.getItem().getEntityLifespan(this.level) - 1;
 
         if (lifespan == LIFETIME - 1) {
             return original;
