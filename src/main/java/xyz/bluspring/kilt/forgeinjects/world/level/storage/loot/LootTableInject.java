@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.storage.loot;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.google.common.collect.Lists;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -7,6 +8,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.fabricators_of_create.porting_lib.loot.extensions.LootTableExtensions;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -24,7 +26,7 @@ import xyz.bluspring.kilt.injections.world.level.storage.loot.LootTableInjection
 
 import java.util.List;
 
-@Mixin(LootTable.class)
+@Mixin(value = LootTable.class, priority = 1050)
 public abstract class LootTableInject implements LootTableInjection, LootTableExtensions {
     @Shadow @Final @Mutable public LootPool[] pools;
     @Unique private List<LootPool> kilt$pools;
@@ -87,6 +89,13 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
             }
         }
         return null;
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.loot.mixin.LootTableMixin", name = "setLootTableId")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$avoidCrashingIfSimilarId(ResourceLocation id, CallbackInfo ci) {
+        if (id != null && this.getLootTableId() != null && this.getLootTableId().equals(id))
+            ci.cancel();
     }
 
     @Override
