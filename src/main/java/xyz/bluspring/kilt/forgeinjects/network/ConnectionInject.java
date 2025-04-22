@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.network;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.ConnectionInjection;
 
 import java.net.SocketAddress;
@@ -50,7 +50,6 @@ public class ConnectionInject implements ConnectionInjection {
             activationHandler.accept((Connection) (Object) this);
     }
 
-
     @WrapOperation(at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelConfig;setAutoRead(Z)Lio/netty/channel/ChannelConfig;", remap = false), method = "sendPacket")
     public ChannelConfig kilt$makeEventLoop(ChannelConfig instance, boolean b, Operation<ChannelConfig> original) {
         this.channel.eventLoop().execute(() -> original.call(instance, false));
@@ -65,8 +64,8 @@ public class ConnectionInject implements ConnectionInjection {
         return connection;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;", remap = false), method = "connectToLocalServer", locals = LocalCapture.CAPTURE_FAILHARD)
-    private static void kilt$registerClientLoginChannelLocally(SocketAddress address, CallbackInfoReturnable<Connection> cir, Connection connection) {
+    @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;", remap = false), method = "connectToLocalServer")
+    private static void kilt$registerClientLoginChannelLocally(SocketAddress address, CallbackInfoReturnable<Connection> cir, @Local Connection connection) {
         connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
     }
 

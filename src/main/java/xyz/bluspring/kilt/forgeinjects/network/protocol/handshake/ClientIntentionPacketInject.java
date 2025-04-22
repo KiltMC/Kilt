@@ -1,6 +1,7 @@
 // TRACKED HASH: b1d270381307f1dd2174ce194ca2605380b6ed59
 package xyz.bluspring.kilt.forgeinjects.network.protocol.handshake;
 
+import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraftforge.network.NetworkConstants;
@@ -17,7 +18,12 @@ public class ClientIntentionPacketInject implements ClientIntentionPacketInjecti
     @Shadow @Final @Mutable
     private String hostName;
     @Unique
-    private String fmlVersion = NetworkConstants.NETVERSION;
+    private String fmlVersion;
+
+    @Inject(at = @At("TAIL"), method = "<init>(Ljava/lang/String;ILnet/minecraft/network/ConnectionProtocol;)V")
+    private void kilt$setFmlVersion(String hostName, int port, ConnectionProtocol intention, CallbackInfo ci) {
+        this.fmlVersion = NetworkConstants.NETVERSION;
+    }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/network/FriendlyByteBuf;)V")
     public void kilt$readForgeData(FriendlyByteBuf friendlyByteBuf, CallbackInfo ci) {
