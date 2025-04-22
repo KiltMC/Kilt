@@ -6,16 +6,15 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.RenderTypeGroup;
 import net.minecraftforge.client.model.ExtendedBlockModelDeserializer;
@@ -36,6 +35,7 @@ import xyz.bluspring.kilt.injections.client.renderer.block.model.BlockModelInjec
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 @Mixin(BlockModel.class)
@@ -62,6 +62,16 @@ public class BlockModelInject implements BlockModelInjection {
     private void kilt$cancelIfContainingCustomGeometry(CallbackInfoReturnable<List<BlockElement>> cir) {
         if (this.customData.hasCustomGeometry())
             cir.setReturnValue(Collections.emptyList());
+    }
+
+    @WrapOperation(method = "getMaterials", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/BlockModel;getElements()Ljava/util/List;"))
+    private List<BlockElement> kilt$useCustomGeometryMaterialData(BlockModel instance, Operation<List<BlockElement>> original, @Local(ordinal = 1) Set<Material> materialSet, @Local(argsOnly = true) Function<ResourceLocation, UnbakedModel> modelGetter, @Local(argsOnly = true) Set<Pair<String, String>> missingTextureErrors) {
+        if (this.customData.hasCustomGeometry()) {
+            materialSet.addAll(this.customData.getTextureDependencies(modelGetter, missingTextureErrors));
+            return Collections.emptyList();
+        }
+
+        return original.call(instance);
     }
 
     public BakedModel bakeVanilla(ModelBakery modelBakery, BlockModel blockModel, Function<Material, TextureAtlasSprite> function, ModelState modelState, ResourceLocation resourceLocation, boolean bl, RenderTypeGroup renderTypes) {
