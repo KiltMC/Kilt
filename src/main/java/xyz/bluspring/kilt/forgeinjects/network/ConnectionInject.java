@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
@@ -16,11 +17,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.ConnectionInjection;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.function.Consumer;
 
@@ -57,11 +58,9 @@ public class ConnectionInject implements ConnectionInjection {
         return instance;
     }
 
-    @ModifyVariable(at = @At("STORE"), ordinal = 0, method = "connectToServer")
-    private static Connection kilt$registerClientLoginChannel(Connection connection) {
+    @Inject(at = @At("HEAD"), method = "connect")
+    private static void kilt$registerClientLoginChannel(InetSocketAddress address, boolean useEpollIfAvailable, Connection connection, CallbackInfoReturnable<ChannelFuture> cir) {
         connection.setActivationHandler(NetworkHooks::registerClientLoginChannel);
-
-        return connection;
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lio/netty/bootstrap/Bootstrap;group(Lio/netty/channel/EventLoopGroup;)Lio/netty/bootstrap/AbstractBootstrap;", remap = false), method = "connectToLocalServer")
