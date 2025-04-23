@@ -384,6 +384,7 @@
         "client.multiplayer.ServerStatusPingerInject",
         "client.multiplayer.resolver.AddressCheckInject",
         "client.particle.ParticleInject",
+        "client.particle.TerrainParticleInject",
         "client.player.AbstractClientPlayerInject",
         "client.player.LocalPlayerInject",
         "client.player.RemotePlayerInject",

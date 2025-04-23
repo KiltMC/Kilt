@@ -234,6 +234,11 @@ dependencies {
     modOptional ("maven.modrinth:indium:${property("indium_version")}", runSodium)
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
 
+    // Need this for Iris
+    modRuntimeOnly("io.github.douira:glsl-transformer:2.0.1")
+    modRuntimeOnly("org.antlr:antlr4-runtime:4.13.1")
+    modRuntimeOnly("org.anarres:jcpp:1.4.14")
+
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
