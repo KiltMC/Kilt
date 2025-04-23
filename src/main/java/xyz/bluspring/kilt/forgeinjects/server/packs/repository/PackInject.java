@@ -21,9 +21,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.server.packs.metadata.pack.PackMetadataSectionInjection;
 import xyz.bluspring.kilt.injections.server.packs.repository.PackInfoInjection;
+import xyz.bluspring.kilt.injections.server.packs.repository.PackInjection;
 
 @Mixin(Pack.class)
-public abstract class PackInject {
+public abstract class PackInject implements PackInjection {
     @Unique private boolean hidden;
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -42,6 +43,7 @@ public abstract class PackInject {
         return original;
     }
 
+    @Override
     public boolean isHidden() {
         return hidden;
     }

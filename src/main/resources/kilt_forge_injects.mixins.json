@@ -300,7 +300,9 @@
         "world.level.storage.loot.providers.nbt.ContextNbtProviderInject$Getter2Inject"
     ],
     "client": [
+        "blaze3d.pipeline.RenderTargetInject",
         "blaze3d.platform.GlStateManagerInject",
+        "blaze3d.platform.WindowInject",
         "blaze3d.vertex.BufferBuilderInject",
         "blaze3d.vertex.PoseStackInject",
         "blaze3d.vertex.SheetedDecalTextureGeneratorInject",
@@ -332,8 +334,14 @@
         "client.gui.components.ButtonInject$ButtonBuilderInject",
         "client.gui.components.DebugScreenOverlayInject",
         "client.gui.components.toasts.ToastComponentInject",
+        "client.gui.screens.ChatScreenInject",
+        "client.gui.screens.ConnectScreenInject",
+        "client.gui.screens.LoadingOverlayInject",
         "client.gui.screens.MenuScreensInject",
+        "client.gui.screens.OptionsScreenInject",
+        "client.gui.screens.PauseScreenInject",
         "client.gui.screens.ScreenInject",
+        "client.gui.screens.TitleScreenInject",
         "client.gui.screens.advancements.AdvancementsScreenInject",
         "client.gui.screens.advancements.AdvancementTabInject",
         "client.gui.screens.advancements.AdvancementTabTypeInject",
@@ -347,7 +355,17 @@
         "client.gui.screens.inventory.InventoryScreenInject",
         "client.gui.screens.inventory.tooltip.ClientTooltipComponentInject",
         "client.gui.screens.inventory.tooltip.TooltipRenderUtilInject",
+        "client.gui.screens.multiplayer.JoinMultiplayerScreenInject",
+        "client.gui.screens.multiplayer.ServerSelectionListInject",
+        "client.gui.screens.packs.PackSelectionModelInject",
+        "client.gui.screens.packs.PackSelectionModelInject$EntryBaseInject",
+        "client.gui.screens.packs.PackSelectionModelInject$EntryInject",
+        "client.gui.screens.packs.PackSelectionScreenInject",
         "client.gui.screens.recipebook.RecipeBookComponentInject",
+        "client.gui.screens.worldselection.CreateWorldScreenInject",
+        "client.gui.screens.worldselection.PresetEditorInject",
+        "client.gui.screens.worldselection.WorldCreationContextInject",
+        "client.gui.screens.worldselection.WorldCreationUiStateInject",
         "client.gui.screens.worldselection.WorldOpenFlowsInject",
         "client.gui.screens.worldselection.WorldSelectionListInject",
         "client.gui.screens.worldselection.WorldSelectionListInject$WorldListEntryInject",
@@ -435,7 +453,9 @@
         "client.server.IntegratedServerInject",
         "client.server.LanServerDetectionInject",
         "client.server.LanServerPingerInject",
-        "client.sounds.SoundEngineInject"
+        "client.sounds.SoundEngineInject",
+        "realmsclient.gui.screens.RealmsGenericErrorScreenInject",
+        "realmsclient.gui.screens.RealmsNotificationScreenInject"
     ],
     "injectors": {
         "defaultRequire": 1
