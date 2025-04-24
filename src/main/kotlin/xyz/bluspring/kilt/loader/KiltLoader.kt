@@ -94,11 +94,12 @@ class KiltLoader {
         val fabricModDependencies = mutableMapOf<ModMetadata, Map<String, VersionRange>>()
 
         // Collect Fabric mods' Forge dependencies
-        for (mod in FabricLoader.getInstance().allMods) {
+        // FIXME: https://github.com/KiltMC/Kilt/issues/255
+        /*for (mod in FabricLoader.getInstance().allMods) {
             if (mod.metadata.containsCustomValue("kilt:forgeDependencies")) {
                 fabricModDependencies[mod.metadata] = mod.metadata.getCustomValue("kilt:forgeDependencies").asObject.associate { it.key to VersionRange.createFromVersionSpec(it.value.asString) }
             }
-        }
+        }*/
 
         Kilt.logger.info("Scanning the mods directory for Forge mods...")
         DeltaTimeProfiler.push("scanMods")
