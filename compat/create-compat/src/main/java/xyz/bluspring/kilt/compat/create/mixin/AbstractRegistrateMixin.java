@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@IfModLoaded("registrate")
+@IfModLoaded("registrate-fabric")
 @Mixin(AbstractRegistrate.class)
 public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> implements AbstractRegistrateForgeExtension<S> {
     @Shadow @Final private NonNullSupplier<Boolean> doDatagen;
