@@ -30,7 +30,9 @@ object KiltHelper {
     }
 
     private fun checkCache(cache: Collection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
-        return cache.any { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) }
+        synchronized(cache) {
+            return cache.any { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) }
+        }
     }
 
     // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
