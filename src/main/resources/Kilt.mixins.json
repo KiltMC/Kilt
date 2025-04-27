@@ -71,6 +71,7 @@
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
+        "compat.geckolib.RenderProviderMixin",
         "compat.mkb.IKeyBindingMixin",
         "compat.mkb.IKeyConflictContextMixin",
         "compat.mkb.KeyConflictContextMixin",
