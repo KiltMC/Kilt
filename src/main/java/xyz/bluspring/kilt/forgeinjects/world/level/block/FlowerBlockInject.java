@@ -24,7 +24,12 @@ public abstract class FlowerBlockInject extends BushBlock {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$addDelegateMobEffect(MobEffect suspiciousStewEffect, int effectDuration, BlockBehaviour.Properties properties, CallbackInfo ci) {
-        this.suspiciousStewEffectSupplier = ForgeRegistries.MOB_EFFECTS.getDelegateOrThrow(suspiciousStewEffect);
+        var delegate = ForgeRegistries.MOB_EFFECTS.getDelegate(suspiciousStewEffect);
+        if (delegate.isPresent()) {
+            this.suspiciousStewEffectSupplier = delegate.orElseThrow();
+        } else {
+            this.suspiciousStewEffectSupplier = () -> suspiciousStewEffect;
+        }
     }
 
     @CreateInitializer
