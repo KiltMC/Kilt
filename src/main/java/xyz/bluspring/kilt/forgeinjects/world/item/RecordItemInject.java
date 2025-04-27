@@ -29,7 +29,12 @@ public abstract class RecordItemInject extends Item implements RecordItemInjecti
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$addDelegateSoundEvent(int analogOutput, SoundEvent sound, Properties properties, int lengthInSeconds, CallbackInfo ci) {
-        this.soundSupplier = ForgeRegistries.SOUND_EVENTS.getDelegateOrThrow(sound);
+        var delegate = ForgeRegistries.SOUND_EVENTS.getDelegate(sound);
+        if (delegate.isPresent()) {
+            this.soundSupplier = delegate.orElseThrow();
+        } else {
+            this.soundSupplier = () -> sound;
+        }
     }
 
     @CreateInitializer
