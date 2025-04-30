@@ -8,6 +8,7 @@ import org.objectweb.asm.tree.MethodNode
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
+import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.asm.NashornHelper
 import xyz.bluspring.kilt.loader.mod.ForgeMod
@@ -138,7 +139,8 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
         private val modifiedScriptPath = (KiltLoader.kiltCacheDir / "modifiedCoreMods").apply {
             runCatching {
                 this.deleteIfExists()
-                this.createDirectories()
+                if (KiltFlags.STORE_MODIFIED_COREMODS)
+                    this.createDirectories()
             }
         }
         private val currentLocalCoreMod: ThreadLocal<CoreMod?> = ThreadLocal.withInitial { null }
@@ -204,7 +206,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
             currentScript = lines.joinToString("\n")
 
             // Store modified coremods
-            if (modifiedScriptPath.exists()) {
+            if (modifiedScriptPath.exists() && KiltFlags.STORE_MODIFIED_COREMODS) {
                 val coreModPath = modifiedScriptPath / coreMod.mod.modId
 
                 if (!coreModPath.exists())
