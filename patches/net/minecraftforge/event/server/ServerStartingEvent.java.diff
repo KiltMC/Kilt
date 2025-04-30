@@ -1,8 +1,0 @@
---- ServerStartingEvent.java
-+++ ServerStartingEvent.java
-@@ -18,4 +18,5 @@
- public class ServerStartingEvent extends ServerLifecycleEvent
- {
-+    public ServerStartingEvent() {}
-     public ServerStartingEvent(final MinecraftServer server)
-     {

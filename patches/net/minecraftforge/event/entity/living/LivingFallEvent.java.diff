@@ -1,9 +1,0 @@
---- LivingFallEvent.java
-+++ LivingFallEvent.java
-@@ -31,4 +31,6 @@
- public class LivingFallEvent extends LivingEvent
- {
-+    public LivingFallEvent() {}
-+
-     private float distance;
-     private float damageMultiplier;

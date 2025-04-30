@@ -1,8 +1,0 @@
---- EntityMobGriefingEvent.java
-+++ EntityMobGriefingEvent.java
-@@ -25,4 +25,5 @@
- public class EntityMobGriefingEvent extends EntityEvent
- {
-+    public EntityMobGriefingEvent() {}
-     public EntityMobGriefingEvent(Entity entity)
-     {

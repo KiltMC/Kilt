@@ -1,8 +1,0 @@
---- SoundEngineLoadEvent.java
-+++ SoundEngineLoadEvent.java
-@@ -24,4 +24,5 @@
- public class SoundEngineLoadEvent extends SoundEvent implements IModBusEvent
- {
-+    public SoundEngineLoadEvent() {}
-     @ApiStatus.Internal
-     public SoundEngineLoadEvent(SoundEngine manager)
