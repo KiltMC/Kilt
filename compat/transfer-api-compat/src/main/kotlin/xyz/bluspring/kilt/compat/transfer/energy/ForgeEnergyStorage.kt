@@ -4,32 +4,31 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraftforge.energy.IEnergyStorage
 import team.reborn.energy.api.EnergyStorage
+import xyz.bluspring.kilt.compat.transfer.TransferInterop
 
 class ForgeEnergyStorage(val storage: IEnergyStorage) : EnergyStorage {
-    // TODO: do proper conversions between the two energy types
-
     override fun insert(maxAmount: Long, transaction: TransactionContext): Long {
         val snapshot = ForgeEnergySnapshot(true)
         snapshot.updateSnapshots(transaction)
 
-        val inserted = storage.receiveEnergy(maxAmount.toInt(), true)
-        return inserted.toLong()
+        val inserted = storage.receiveEnergy(maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY, true)
+        return inserted.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY
     }
 
     override fun extract(maxAmount: Long, transaction: TransactionContext): Long {
         val snapshot = ForgeEnergySnapshot(false)
         snapshot.updateSnapshots(transaction)
 
-        val extracted = storage.extractEnergy(maxAmount.toInt(), true)
-        return extracted.toLong()
+        val extracted = storage.extractEnergy(maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY, true)
+        return extracted.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY
     }
 
     override fun getAmount(): Long {
-        return storage.energyStored.toLong()
+        return storage.energyStored.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY
     }
 
     override fun getCapacity(): Long {
-        return storage.maxEnergyStored.toLong()
+        return storage.maxEnergyStored.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY
     }
 
     private inner class ForgeEnergySnapshot(val insert: Boolean) : SnapshotParticipant<Int>() {
@@ -46,9 +45,9 @@ class ForgeEnergyStorage(val storage: IEnergyStorage) : EnergyStorage {
 
         override fun onFinalCommit() {
             if (insert) {
-                storage.receiveEnergy(original, false)
+                storage.receiveEnergy(current, false)
             } else {
-                storage.extractEnergy(original, false)
+                storage.extractEnergy(current, false)
             }
         }
     }

@@ -50,8 +50,6 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     }
 
     private inner class ForgeFluidStackSnapshot(var stack: FluidStack, val insert: Boolean) : SnapshotParticipant<FluidStack>() {
-        val original = stack
-
         override fun createSnapshot(): FluidStack {
             return stack
         }
@@ -62,9 +60,9 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
         override fun onFinalCommit() {
             if (insert) {
-                handler.fill(original, IFluidHandler.FluidAction.EXECUTE)
+                handler.fill(stack, IFluidHandler.FluidAction.EXECUTE)
             } else {
-                handler.drain(original, IFluidHandler.FluidAction.EXECUTE)
+                handler.drain(stack, IFluidHandler.FluidAction.EXECUTE)
             }
         }
     }

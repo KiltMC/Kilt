@@ -7,8 +7,11 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.LazyOptional
 import team.reborn.energy.api.EnergyStorage
+import java.util.*
 
 class FabricEnergyStorageCapabilityProvider(val blockEntity: BlockEntity) : ICapabilityProvider {
+    private val capabilityCache = Collections.synchronizedMap(mutableMapOf<EnergyStorage, FabricEnergyStorageCapability>())
+
     override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> {
         if (cap == ForgeCapabilities.ENERGY) {
             val fabricStorage = EnergyStorage.SIDED.getProvider(blockEntity.blockState.block) ?: return LazyOptional.empty()
@@ -18,7 +21,7 @@ class FabricEnergyStorageCapabilityProvider(val blockEntity: BlockEntity) : ICap
             if (storage is ForgeEnergyStorage)
                 return LazyOptional.empty()
 
-            return LazyOptional.of { FabricEnergyStorageCapability(storage) }.cast()
+            return LazyOptional.of { capabilityCache.computeIfAbsent(storage) { s -> FabricEnergyStorageCapability(s) } }.cast()
         }
 
         return LazyOptional.empty()

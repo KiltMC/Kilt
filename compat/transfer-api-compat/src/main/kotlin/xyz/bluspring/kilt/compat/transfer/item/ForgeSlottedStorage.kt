@@ -97,8 +97,6 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
         }
 
         private inner class ForgeStackInsertSnapshot(var stack: ItemStack) : SnapshotParticipant<ItemStack>() {
-            val original = stack.copy()
-
             override fun createSnapshot(): ItemStack {
                 return stack
             }
@@ -108,13 +106,11 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
             }
 
             override fun onFinalCommit() {
-                handler.insertItem(slot, original, false)
+                handler.insertItem(slot, stack, false)
             }
         }
 
         private inner class ForgeStackExtractSnapshot(var maxAmount: Long) : SnapshotParticipant<Long>() {
-            val original = maxAmount
-
             override fun createSnapshot(): Long {
                 return maxAmount
             }
@@ -124,7 +120,7 @@ class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVarian
             }
 
             override fun onFinalCommit() {
-                handler.extractItem(slot, original.toInt(), false)
+                handler.extractItem(slot, maxAmount.toInt(), false)
             }
         }
     }

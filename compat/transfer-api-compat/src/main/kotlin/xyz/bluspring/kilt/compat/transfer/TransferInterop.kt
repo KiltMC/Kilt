@@ -132,4 +132,8 @@ class TransferInterop : ModInitializer {
             FabricEnergyItemStorageCapabilityProvider(stack)
         )
     }
+
+    companion object {
+        val REBORN_ENERGY_TO_FORGE_ENERGY = 10 // 1 E -> 10 FE, matching Connector Extras
+    }
 }
