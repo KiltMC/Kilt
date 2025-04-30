@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.asm
+package xyz.bluspring.kilt.loader.asm.coremod
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.minecraftforge.coremod.api.TargetType
@@ -8,13 +8,15 @@ import org.objectweb.asm.tree.MethodNode
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
-import xyz.bluspring.kilt.loader.asm.CoreModLoader.ALLOWED_CLASSES
-import xyz.bluspring.kilt.loader.asm.CoreModLoader.ALLOWED_PACKAGES
+import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.loader.asm.NashornHelper
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import java.nio.file.StandardOpenOption
 import javax.script.Bindings
 import javax.script.Invocable
 import javax.script.ScriptEngine
+import kotlin.io.path.*
 
 class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
     private val data = String(mod.getFile(file)!!.readAllBytes())
@@ -23,7 +25,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
     private val logger = LoggerFactory.getLogger("CoreMod: ${mod.modId} $id")
 
     val engine: ScriptEngine = NashornScriptEngineFactory().getScriptEngine(arrayOf("--language=es6"), CoreModLoader::class.java.classLoader) {
-        ALLOWED_CLASSES.contains(it) || (it.lastIndexOf('.') != -1 && ALLOWED_PACKAGES.contains(it.substring(0, it.lastIndexOf('.'))))
+        CoreModLoader.ALLOWED_CLASSES.contains(it) || (it.lastIndexOf('.') != -1 && CoreModLoader.ALLOWED_PACKAGES.contains(it.substring(0, it.lastIndexOf('.'))))
     }
 
     init {
@@ -36,7 +38,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
     }
 
     fun init() {
-        engine.eval(data)
+        engine.eval(modifyScript(this))
 
         tracked = this
         bindings = (engine as Invocable).invokeFunction("initializeCoreMod") as Map<String, out Bindings>
@@ -64,7 +66,11 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                         logger.debug("Binding $name: Added class $target as target")
 
                         ClassTinkerers.addTransformation(KiltRemapper.remapClass(target, ignoreWorkaround = true)) {
-                            NashornHelper.getFunction<ClassNode, ClassNode>(function).apply(it)
+                            try {
+                                NashornHelper.getFunction<ClassNode, ClassNode>(function).apply(it)
+                            } catch (e: Throwable) {
+                                throw RuntimeException("[CoreMod: ${mod.modId}/${this.id}/$name] Failed to bind class $target!", e)
+                            }
                         }
                     }
                 }
@@ -77,7 +83,11 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     logger.debug("Binding $name: Added field $fieldName / $mappedFieldName from class $className as target")
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
                         val field = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@addTransformation
-                        NashornHelper.getFunction<FieldNode, FieldNode>(function).apply(field)
+                        try {
+                            NashornHelper.getFunction<FieldNode, FieldNode>(function).apply(field)
+                        } catch (e: Throwable) {
+                            throw RuntimeException("[CoreMod: ${mod.modId}/${this.id}/$name] Failed to bind field $fieldName / $mappedFieldName for class $className!", e)
+                        }
                     }
                 }
 
@@ -92,7 +102,11 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     logger.debug("Binding $name: Added method $methodName$mappedDescName / $mappedMethodName$mappedDescName from class $className as target")
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
                         val method = classNode.methods.firstOrNull { it.name == mappedMethodName && it.desc == mappedDescName } ?: return@addTransformation
-                        NashornHelper.getFunction<MethodNode, MethodNode>(function).apply(method)
+                        try {
+                            NashornHelper.getFunction<MethodNode, MethodNode>(function).apply(method)
+                        } catch (e: Throwable) {
+                            throw RuntimeException("[CoreMod: ${mod.modId}/${this.id}/$name] Failed to bind method $methodName$mappedDescName / $mappedMethodName$mappedDescName for class $className!", e)
+                        }
                     }
                 }
             }
@@ -121,9 +135,90 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
     }
 
     companion object {
+        private val modifiedScriptPath = (KiltLoader.kiltCacheDir / "modifiedCoreMods").apply {
+            runCatching {
+                this.deleteIfExists()
+                this.createDirectories()
+            }
+        }
         private val currentLocalCoreMod: ThreadLocal<CoreMod?> = ThreadLocal.withInitial { null }
         var tracked: CoreMod?
             get() = currentLocalCoreMod.get()
             set(value) = currentLocalCoreMod.set(value)
+
+        val remappedNames = mapOf(
+            "new FieldInsnNode" to "new KiltMC_RemappingFieldInsnNode",
+            "new MethodInsnNode" to "new KiltMC_RemappingMethodInsnNode",
+        )
+
+        private fun modifyScript(coreMod: CoreMod): String {
+            var currentScript = coreMod.data
+
+            // Add CoreModHelper to all scripts for the sake of handling stuff better
+            currentScript = "var KiltMC_CoreModHelper = Java.type('xyz.bluspring.kilt.loader.asm.coremod.CoreModHelper');\n$currentScript"
+
+            // Add remapping instructions imports
+            currentScript = "var KiltMC_RemappingFieldInsnNode = Java.type('xyz.bluspring.kilt.loader.asm.coremod.RemappingFieldInsnNode');\n$currentScript"
+            currentScript = "var KiltMC_RemappingMethodInsnNode = Java.type('xyz.bluspring.kilt.loader.asm.coremod.RemappingMethodInsnNode');\n$currentScript"
+
+            // Remap whatever names to their fixed equivalents
+            for ((original, remapped) in remappedNames) {
+                currentScript = currentScript.replace(original, remapped)
+            }
+
+            // Remap classes for coremods like Twilight Forest that check class names
+            val lines = currentScript.lines().toMutableList()
+
+            for ((index, line) in currentScript.lines().withIndex()) {
+                val classNamesToRemap = mutableSetOf<String>()
+                var currentParsed = ""
+                var stringChar = '\u0000'
+
+                for ((i, c) in line.withIndex()) {
+                    if ((c == '\'' || c == '"' || c == '`') && (i == 0 || line[i - 1] != '\\')) { // Check is in string
+                        if (stringChar != '\u0000' && c == stringChar) {
+                            currentParsed += c
+
+                            val assumedClassName = currentParsed.removeSurrounding("$stringChar")
+                            if (assumedClassName.startsWith("net/minecraft/") || assumedClassName.startsWith("com/mojang/")) {
+                                classNamesToRemap.add(currentParsed)
+                            }
+
+                            currentParsed = ""
+                            stringChar = '\u0000'
+                        } else if (stringChar == '\u0000') {
+                            stringChar = c
+                        }
+                    }
+
+                    if (stringChar != '\u0000') {
+                        currentParsed += c
+                    }
+                }
+
+                for (classString in classNamesToRemap) {
+                    lines[index] = lines[index].replace(classString, "KiltMC_CoreModHelper.remapClass($classString)")
+                }
+            }
+
+            currentScript = lines.joinToString("\n")
+
+            // Store modified coremods
+            if (modifiedScriptPath.exists()) {
+                val coreModPath = modifiedScriptPath / coreMod.mod.modId
+
+                if (!coreModPath.exists())
+                    runCatching { coreModPath.createDirectories() }
+
+                val scriptPath = coreModPath / coreMod.file.split("/").last()
+
+                if (!scriptPath.exists())
+                    scriptPath.createFile()
+
+                scriptPath.writeText(currentScript, Charsets.UTF_8,  StandardOpenOption.WRITE)
+            }
+
+            return currentScript
+        }
     }
 }

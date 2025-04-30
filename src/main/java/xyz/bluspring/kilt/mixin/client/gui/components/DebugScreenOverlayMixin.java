@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
-import xyz.bluspring.kilt.loader.asm.CoreModLoader;
+import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader;
 
 import java.util.List;
 

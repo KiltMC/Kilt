@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.asm
+package xyz.bluspring.kilt.loader.asm.coremod
 
 import com.google.gson.JsonParser
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
@@ -56,7 +56,12 @@ object CoreModLoader {
         "org.objectweb.asm.Label",
         "org.objectweb.asm.Type",
         "org.objectweb.asm.TypePath",
-        "org.objectweb.asm.TypeReference"
+        "org.objectweb.asm.TypeReference",
+
+        // Kilt: Provide access to the remapper for ourselves
+        "xyz.bluspring.kilt.loader.asm.coremod.CoreModHelper",
+        "xyz.bluspring.kilt.loader.asm.coremod.RemappingFieldInsnNode",
+        "xyz.bluspring.kilt.loader.asm.coremod.RemappingMethodInsnNode"
     )
 
     val loadedCoreMods = mutableListOf<CoreMod>()

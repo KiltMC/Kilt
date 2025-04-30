@@ -16,4 +16,6 @@ public abstract class SlotInject implements SlotInjection {
     public boolean isSameInventory(Slot other) {
         return this.container == other.container;
     }
+
+    // Kilt: background & slot index handled by Porting Lib
 }

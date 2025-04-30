@@ -1,0 +1,10 @@
+package xyz.bluspring.kilt.loader.asm.coremod
+
+import org.objectweb.asm.tree.FieldInsnNode
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+
+open class RemappingFieldInsnNode(opcode: Int, owner: String, name: String, descriptor: String) : FieldInsnNode(opcode,
+    KiltRemapper.remapClass(owner, ignoreWorkaround = true),
+    name,
+    KiltRemapper.remapDescriptor(descriptor)
+)

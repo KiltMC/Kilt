@@ -49,7 +49,7 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.entrypoints.ScanForgeModsEntrypoint
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
-import xyz.bluspring.kilt.loader.asm.CoreModLoader
+import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
 import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.KiltEnvironment
