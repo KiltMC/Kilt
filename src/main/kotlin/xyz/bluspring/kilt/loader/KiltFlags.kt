@@ -14,6 +14,9 @@ object KiltFlags {
     // Disables coremods in all loaded Forge mods.
     @JvmField val DISABLE_COREMODS = !"kilt.disableCoreMods".checkPropertyBoolean()
 
+    // Stores modified coremods into the .kilt/modifiedCoreMods directory
+    @JvmField val STORE_MODIFIED_COREMODS = "kilt.storeModifiedCoreMods".checkPropertyBoolean()
+
     // Mainly for debugging, enables profiling if the DeltaTimeProfiler#dumpTree method is called.
     @JvmField val ENABLE_PROFILING = "kilt.enableProfiling".checkPropertyBoolean()
 

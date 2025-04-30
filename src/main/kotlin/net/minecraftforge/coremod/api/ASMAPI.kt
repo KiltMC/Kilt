@@ -6,7 +6,6 @@ import org.objectweb.asm.util.Textifier
 import org.objectweb.asm.util.TraceClassVisitor
 import org.objectweb.asm.util.TraceMethodVisitor
 import org.slf4j.LoggerFactory
-import xyz.bluspring.kilt.loader.asm.CoreMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.io.IOException
 import java.io.PrintWriter
