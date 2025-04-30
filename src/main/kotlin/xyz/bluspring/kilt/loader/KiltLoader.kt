@@ -376,7 +376,7 @@ class KiltLoader {
     }
 
     // This is used specifically for JiJ'd mods that don't store mods.toml files.
-    private fun createCustomMod(modFile: Path): ForgeMod {
+    private fun createCustomMod(modFile: Path, manifest: Manifest?): ForgeMod {
         return ForgeMod(
             "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
             "(Kilt JiJ) ${modFile.nameWithoutExtension}",
@@ -384,7 +384,9 @@ class KiltLoader {
             DefaultArtifactVersion("0.0.0"),
             modFile = modFile.toFile(),
             modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml"))),
-            shouldScan = false // no point scanning JiJ'd files
+
+            // Registrate and stuff don't provide a mods.toml.....
+            shouldScan = manifest?.mainAttributes?.contains("FMLModType") == true && manifest.mainAttributes["FMLModType"] == "GAMELIBRARY"
         )
     }
 
@@ -433,7 +435,14 @@ class KiltLoader {
             val modsToml = jarFile.getEntry("META-INF/mods.toml")
 
             if (nestedModUpdater != null && modsToml == null) {
-                val mod = createCustomMod(modFile)
+                // Load the JAR's manifest file, or at least try to.
+                val manifest = if (jarFile != null) try {
+                    Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
+                } catch (_: Exception) {
+                    null
+                } else null
+
+                val mod = createCustomMod(modFile, manifest)
 
                 if ((FabricLoader.getInstance()
                         .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null) && mod.modId != "forge"
