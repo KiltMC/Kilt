@@ -92,6 +92,7 @@
         "server.level.TicketAccessor",
         "world.inventory.GrindstoneMenuAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
+        "world.item.FireworkRocketItemShapeAccessor",
         "world.item.UseAnimAccessor",
         "world.level.biome.BiomeClimateSettingsAccessor",
         "world.level.block.entity.RandomizableContainerBlockEntityMixin",
