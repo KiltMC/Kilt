@@ -10,6 +10,8 @@ transitive-extendable method net/minecraft/world/entity/Entity setRemoved (Lnet/
 transitive-accessible method net/minecraft/world/item/CreativeModeTab <init> (Lnet/minecraft/world/item/CreativeModeTab$Row;ILnet/minecraft/world/item/CreativeModeTab$Type;Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;)V
 transitive-accessible class net/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule
 transitive-accessible class net/minecraft/data/HashCache$ProviderCache
+transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
+transitive-extendable method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
 
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
