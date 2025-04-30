@@ -59,6 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
+import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -66,7 +67,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityInject extends Entity implements IForgeLivingEntity, EntityExtensions, CapabilityProviderInjection {
+public abstract class LivingEntityInject extends Entity implements IForgeLivingEntity, EntityExtensions, CapabilityProviderInjection, LivingEntityInjection {
     public LivingEntityInject(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
