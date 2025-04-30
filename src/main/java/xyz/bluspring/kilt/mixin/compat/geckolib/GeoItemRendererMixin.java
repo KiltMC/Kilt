@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.mixin.compat.geckolib;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -13,6 +12,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
@@ -20,7 +20,7 @@ import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 
-@IfModLoaded("geckolib3")
+@Pseudo
 @Mixin(GeoItemRenderer.class)
 @Extends(BlockEntityWithoutLevelRenderer.class)
 public abstract class GeoItemRendererMixin<T extends Item & IAnimatable> {

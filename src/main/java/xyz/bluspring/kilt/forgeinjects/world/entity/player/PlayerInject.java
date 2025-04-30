@@ -1,11 +1,15 @@
 package xyz.bluspring.kilt.forgeinjects.world.entity.player;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.extensions.IForgePlayer;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,6 +51,13 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         if (blockPos != null)
             this.kilt$dugBlockPos.set(blockPos);
         return this.getDestroySpeed(blockState);
+    }
+
+    @ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
+    private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
+        return original
+            .add(ForgeMod.REACH_DISTANCE.get())
+            .add(Attributes.ATTACK_KNOCKBACK);
     }
 
     @Inject(at = @At("TAIL"), method = "getDestroySpeed", cancellable = true)
