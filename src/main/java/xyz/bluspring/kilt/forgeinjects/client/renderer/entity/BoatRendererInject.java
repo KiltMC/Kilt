@@ -27,7 +27,7 @@ public abstract class BoatRendererInject implements BoatRendererInjection {
             return (V) this.getModelWithLocation(boat);
         }
 
-        return null;
+        return original.call(instance, o);
     }
 
     @Override
