@@ -18,6 +18,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
+import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
 import java.io.File
 import java.io.InputStream
 import java.net.URL
