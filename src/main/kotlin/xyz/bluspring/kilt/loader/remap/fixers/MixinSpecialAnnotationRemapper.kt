@@ -69,6 +69,8 @@ object MixinSpecialAnnotationRemapper {
                         extraNode.values = extraValues
 
                         values.add(extraNode)
+                    } else {
+                        values.add(value)
                     }
                 }
 
@@ -82,16 +84,19 @@ object MixinSpecialAnnotationRemapper {
     }
 
     private fun tryRemapString(fullDescriptor: String): String {
-        if (!fullDescriptor.contains("<") || !fullDescriptor.startsWith("L"))
+        if (!fullDescriptor.contains("<") && !fullDescriptor.startsWith("*") && !fullDescriptor.startsWith("L"))
             return fullDescriptor
 
-        val originalClassName = fullDescriptor.replaceAfter(";", "")
-        val originalDescriptor = fullDescriptor.replaceBefore(">", "").removePrefix(">")
+        val originalClassName = if (fullDescriptor.startsWith("L"))
+            fullDescriptor.replaceAfter(";", "")
+        else ""
+        val originalDescriptor = fullDescriptor.replaceBefore("(", "")
 
         val mappedClassName = KiltRemapper.remapDescriptor(originalClassName, toIntermediary = KiltRemapper.forceProductionRemap)
         val mappedDescriptor = KiltRemapper.remapDescriptor(originalDescriptor, toIntermediary = KiltRemapper.forceProductionRemap)
+        val methodName = fullDescriptor.removePrefix(originalClassName).removeSuffix(originalDescriptor)
 
-        return fullDescriptor.replace(originalClassName, mappedClassName).replace(originalDescriptor, mappedDescriptor)
+        return "$mappedClassName$methodName$mappedDescriptor"
     }
 
     private fun getValues(value: Any): List<String> {
