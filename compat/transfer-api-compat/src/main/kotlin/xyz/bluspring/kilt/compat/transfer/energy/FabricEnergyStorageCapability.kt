@@ -6,8 +6,6 @@ import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.compat.transfer.TransferInterop
 
 open class FabricEnergyStorageCapability(val storage: EnergyStorage) : IEnergyStorage {
-    // TODO: do proper conversions between the two energy types
-
     override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int {
         TransferUtil.getTransaction().use { transaction ->
             val inserted = storage.insert(maxReceive.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY, transaction)

@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.compat.transfer.TransferInterop
 
 class ForgeEnergyStorage(val storage: IEnergyStorage) : EnergyStorage {
     override fun insert(maxAmount: Long, transaction: TransactionContext): Long {
-        val snapshot = ForgeEnergySnapshot(true)
+        val snapshot = ForgeEnergySnapshot(true, maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY)
         snapshot.updateSnapshots(transaction)
 
         val inserted = storage.receiveEnergy(maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY, true)
@@ -16,7 +16,7 @@ class ForgeEnergyStorage(val storage: IEnergyStorage) : EnergyStorage {
     }
 
     override fun extract(maxAmount: Long, transaction: TransactionContext): Long {
-        val snapshot = ForgeEnergySnapshot(false)
+        val snapshot = ForgeEnergySnapshot(false, maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY)
         snapshot.updateSnapshots(transaction)
 
         val extracted = storage.extractEnergy(maxAmount.toInt() * TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY, true)
@@ -31,8 +31,15 @@ class ForgeEnergyStorage(val storage: IEnergyStorage) : EnergyStorage {
         return storage.maxEnergyStored.toLong() / TransferInterop.REBORN_ENERGY_TO_FORGE_ENERGY
     }
 
-    private inner class ForgeEnergySnapshot(val insert: Boolean) : SnapshotParticipant<Int>() {
-        val original = storage.energyStored
+    override fun supportsExtraction(): Boolean {
+        return storage.canExtract()
+    }
+
+    override fun supportsInsertion(): Boolean {
+        return storage.canReceive()
+    }
+
+    private inner class ForgeEnergySnapshot(val insert: Boolean, val original: Int) : SnapshotParticipant<Int>() {
         var current = original
 
         override fun createSnapshot(): Int {
