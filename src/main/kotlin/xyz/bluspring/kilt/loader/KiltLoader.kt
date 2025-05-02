@@ -80,6 +80,7 @@ class KiltLoader {
     // be for now.
     val modProvider: LoaderModProvider = FabricModProvider()
 
+    private var hasInjected = false
 
     suspend fun scanMods() {
         val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
@@ -300,6 +301,11 @@ class KiltLoader {
     }
 
     fun injectMods() {
+        if (hasInjected)
+            return
+
+        hasInjected = true
+
         DeltaTimeProfiler.push("addToClassPath")
         for (mod in mods) {
             Kilt.loader.addModToFabric(mod)
