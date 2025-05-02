@@ -20,6 +20,7 @@
         ]
     },
     "mixins": [
+        "kilt_transfer_compat.mixins.json"
     ],
     "depends": {
         "fabricloader": ">=${loader_version}",
