@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.forgeinjects.server;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.server.Bootstrap;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.GameData;
@@ -14,5 +15,10 @@ public class BootstrapInject {
     private static void kilt$gameDataVanillaSnapshot(CallbackInfo ci) {
         GameData.vanillaSnapshot();
         NetworkHooks.init();
+    }
+
+    @WrapWithCondition(method = "validate", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/DefaultAttributes;validate()V"))
+    private static boolean kilt$preventAttributeValidation() {
+        return false;
     }
 }
