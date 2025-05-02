@@ -41,11 +41,13 @@ import xyz.bluspring.kilt.injections.ChunkAccessInjection;
 import xyz.bluspring.kilt.injections.world.level.chunk.LevelChunkInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.List;
 import java.util.Map;
 
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccess implements ChunkAccessInjection, IForgeLevelChunk, LevelChunkInjection {
+    @Shadow public abstract Level getLevel();
+    @Shadow @Final private Level level;
+
     @Unique private final CapabilityProvider.AsField<LevelChunk> capProvider = new CapabilityProvider.AsField<>(LevelChunk.class, (LevelChunk) (Object) this);
 
     public LevelChunkInject(ChunkPos chunkPos, UpgradeData upgradeData, LevelHeightAccessor levelHeightAccessor, Registry<Biome> biomeRegistry, long inhabitedTime, @Nullable LevelChunkSection[] sections, @Nullable BlendingData blendingData) {
@@ -55,6 +57,58 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
     @Inject(method = "<init>(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/world/level/chunk/UpgradeData;Lnet/minecraft/world/ticks/LevelChunkTicks;Lnet/minecraft/world/ticks/LevelChunkTicks;J[Lnet/minecraft/world/level/chunk/LevelChunkSection;Lnet/minecraft/world/level/chunk/LevelChunk$PostLoadProcessor;Lnet/minecraft/world/level/levelgen/blending/BlendingData;)V", at = @At("TAIL"))
     private void kilt$initCaps(Level level, ChunkPos pos, UpgradeData data, LevelChunkTicks blockTicks, LevelChunkTicks fluidTicks, long inhabitedTime, LevelChunkSection[] sections, LevelChunk.PostLoadProcessor postLoad, BlendingData blendingData, CallbackInfo ci) {
         this.capProvider.initInternal();
+    }
+
+    @WrapOperation(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
+    private boolean kilt$verifyBlockEntityToo(BlockState instance, Block block, Operation<Boolean> original, @Local(argsOnly = true) BlockState state) {
+        return original.call(instance, block) && state.hasBlockEntity();
+    }
+
+    @WrapOperation(method = "setBlockState", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"))
+    private boolean kilt$validateNotCapturingSnapshots(Level instance, Operation<Boolean> original) {
+        return original.call(instance); // || ((LevelInjection) instance).isCaptureBlockSnapshots();
+    }
+
+    @WrapOperation(method = "getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+    private <K, V> V kilt$returnNullIfRemoved(Map<K, V> instance, Object o, Operation<V> original, @Local(argsOnly = true) BlockPos pos) {
+        BlockEntity blockEntity = (BlockEntity) original.call(instance, o);
+
+        if (blockEntity != null && blockEntity.isRemoved()) {
+            this.blockEntities.remove(pos);
+            return null;
+        }
+
+        return (V) blockEntity;
+    }
+
+    @Redirect(method = "getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;isRemoved()Z"))
+    private boolean kilt$disableBlockEntityRemove(BlockEntity instance) {
+        return false;
+    }
+
+    @Inject(method = "addAndRegisterBlockEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;updateBlockEntityTicker(Lnet/minecraft/world/level/block/entity/BlockEntity;)V", shift = At.Shift.AFTER))
+    public void kilt$loadBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
+        blockEntity.onLoad();
+    }
+
+    @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
+    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
+            instance.handleUpdateTag(tag);
+            return;
+        }
+
+        original.call(instance, tag);
+    }
+
+    @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
+    private void kilt$unloadBlockEntities(CallbackInfo ci) {
+        this.blockEntities.values().forEach(BlockEntity::onChunkUnloaded);
+    }
+
+    @Inject(method = "registerAllBlockEntitiesAfterLevelLoad", at = @At("HEAD"))
+    private void kilt$addBlockEntitiesToLevel(CallbackInfo ci) {
+        this.level.addFreshBlockEntities(this.blockEntities.values());
     }
 
     @Override
@@ -87,72 +141,6 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
         capProvider.reviveCaps();
     }
 
-    @Shadow public abstract Level getLevel();
-
-    @Shadow @Final private Level level;
-
-    @Nullable
-    @Override
-    public LevelAccessor getWorldForge() {
-        return this.getLevel();
-    }
-
-    @Inject(method = "addAndRegisterBlockEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;updateBlockEntityTicker(Lnet/minecraft/world/level/block/entity/BlockEntity;)V", shift = At.Shift.AFTER))
-    public void kilt$loadBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
-        blockEntity.onLoad();
-    }
-
-    @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
-    public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag, Operation<Void> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
-            instance.handleUpdateTag(tag);
-            return;
-        }
-
-        original.call(instance, tag);
-    }
-
-    @WrapOperation(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
-    private boolean kilt$verifyBlockEntityToo(BlockState instance, Block block, Operation<Boolean> original, @Local(argsOnly = true) BlockState state) {
-        return original.call(instance, block) || state.hasBlockEntity();
-    }
-
-    @WrapOperation(method = "setBlockState", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"))
-    private boolean kilt$validateNotCapturingSnapshots(Level instance, Operation<Boolean> original) {
-        return original.call(instance); // || ((LevelInjection) instance).isCaptureBlockSnapshots();
-    }
-
-    @WrapOperation(method = "getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private <K, V> V kilt$returnNullIfRemoved(Map<K, V> instance, Object o, Operation<V> original, @Local(argsOnly = true) BlockPos pos) {
-        BlockEntity blockEntity = (BlockEntity) original.call(instance, o);
-
-        if (blockEntity != null && blockEntity.isRemoved()) {
-            this.blockEntities.remove(pos);
-            return null;
-        }
-
-        return (V) blockEntity;
-    }
-
-    @Redirect(method = "getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;isRemoved()Z"))
-    private boolean kilt$disableBlockEntityRemove(BlockEntity instance) {
-        return false;
-    }
-
-    @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
-    private void kilt$unloadBlockEntities(CallbackInfo ci) {
-        this.blockEntities.values().forEach(BlockEntity::onChunkUnloaded);
-    }
-
-    @Inject(method = "registerAllBlockEntitiesAfterLevelLoad", at = @At("HEAD"))
-    private void kilt$addBlockEntitiesToLevel(CallbackInfo ci) {
-        this.level.addFreshBlockEntities(this.blockEntities.values());
-    }
-
-    @Inject(method = "addAndRegisterBlockEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;updateBlockEntityTicker(Lnet/minecraft/world/level/block/entity/BlockEntity;)V"))
-    private void kilt$addBlockEntity(BlockEntity blockEntity, CallbackInfo ci) {
-        this.level.addFreshBlockEntities(List.of(blockEntity));
-    }
 
     @Override
     public CompoundTag writeCapsToNBT() {
@@ -162,5 +150,11 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
     @Override
     public void readCapsFromNBT(CompoundTag tag) {
         capProvider.deserializeInternal(tag);
+    }
+
+    @Nullable
+    @Override
+    public LevelAccessor getWorldForge() {
+        return this.getLevel();
     }
 }
