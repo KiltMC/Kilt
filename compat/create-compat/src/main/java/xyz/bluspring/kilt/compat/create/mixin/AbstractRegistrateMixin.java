@@ -148,5 +148,10 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
             event.register(type, rh -> rh.register(name, entry));
             ((RegistryEntryForgeExtension) delegate).updateReference(event);
         }
+
+        @Override
+        public @NotNull ResourceLocation getName() {
+            return name;
+        }
     }
 }
