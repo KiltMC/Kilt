@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.compat.create.extensions.RegistryEntryForgeExtension;
+import xyz.bluspring.kilt.compat.create.extensions.RegistryObjectForgeExtension;
 
 import java.util.Objects;
 
@@ -19,6 +20,6 @@ public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtensi
     @Override
     public void updateReference(@NotNull RegisterEvent event) {
         var delegate = this.delegate;
-        ((RegistryEntryForgeExtension) Objects.requireNonNull(delegate)).updateReference(event);
+        ((RegistryObjectForgeExtension) Objects.requireNonNull(delegate)).updateReference(event);
     }
 }
