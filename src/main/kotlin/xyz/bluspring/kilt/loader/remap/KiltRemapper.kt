@@ -47,7 +47,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 166
+    const val REMAPPER_VERSION = 168
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -639,6 +639,7 @@ object KiltRemapper {
                     // only do this on mixin classes, please
                     if (remappedNode.name in mixinClasses) {
                         MixinAdditionalRemapper.remapClass(remappedNode, remapper)
+                        MixinSpecialAnnotationRemapper.remapClass(remappedNode, remapper)
                     }
 
                     EventClassVisibilityFixer.fixClass(remappedNode)
@@ -646,7 +647,6 @@ object KiltRemapper {
                     ObjectHolderDefinalizer.processClass(remappedNode)
                     WorkaroundFixer.fixClass(remappedNode)
                     ConflictingStaticMethodFixer.fixClass(remappedNode)
-                    MixinSpecialAnnotationRemapper.remapClass(remappedNode)
                     EnvironmentRemapper.remapClass(remappedNode)
 
                     val classWriter = ClassWriter(0)

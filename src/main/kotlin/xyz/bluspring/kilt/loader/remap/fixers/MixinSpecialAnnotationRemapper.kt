@@ -3,10 +3,11 @@ package xyz.bluspring.kilt.loader.remap.fixers
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object MixinSpecialAnnotationRemapper {
-    fun remapClass(classNode: ClassNode) {
+    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
         for (method in classNode.methods) {
             if (method.visibleAnnotations == null)
                 continue
@@ -16,7 +17,7 @@ object MixinSpecialAnnotationRemapper {
             for (annotation in method.visibleAnnotations) {
                 val values = mutableListOf<Any>()
 
-                if (!recursiveRemapAnnotation(annotation, values))
+                if (!recursiveRemapAnnotation(annotation, values, remapper))
                     continue
 
                 annotationsToReplace[annotation] = AnnotationNode(Opcodes.ASM9, annotation.desc)
@@ -30,7 +31,7 @@ object MixinSpecialAnnotationRemapper {
         }
     }
 
-    private fun recursiveRemapAnnotation(annotation: AnnotationNode, values: MutableList<Any>): Boolean {
+    private fun recursiveRemapAnnotation(annotation: AnnotationNode, values: MutableList<Any>, remapper: KiltEnhancedRemapper): Boolean {
         if (annotation.values == null)
             return false
 
@@ -39,7 +40,7 @@ object MixinSpecialAnnotationRemapper {
         for (value in annotation.values) {
             when (value) {
                 is String -> {
-                    values.add(tryRemapString(value).apply {
+                    values.add(tryRemapString(value, remapper).apply {
                         if (this != value)
                             shouldChange = true
                     })
@@ -49,7 +50,7 @@ object MixinSpecialAnnotationRemapper {
                     val list = mutableListOf<Any?>()
                     value.forEach {
                         if (it is String)
-                            list.add(tryRemapString(it).apply {
+                            list.add(tryRemapString(it, remapper).apply {
                                 if (this != it)
                                     shouldChange = true
                             })
@@ -62,7 +63,7 @@ object MixinSpecialAnnotationRemapper {
                 is AnnotationNode -> {
                     val extraValues = mutableListOf<Any>()
 
-                    if (recursiveRemapAnnotation(value, extraValues)) {
+                    if (recursiveRemapAnnotation(value, extraValues, remapper)) {
                         shouldChange = true
 
                         val extraNode = AnnotationNode(Opcodes.ASM9, value.desc)
@@ -83,8 +84,8 @@ object MixinSpecialAnnotationRemapper {
         return shouldChange
     }
 
-    private fun tryRemapString(fullDescriptor: String): String {
-        if (!fullDescriptor.contains("<") && !fullDescriptor.startsWith("*") && !fullDescriptor.startsWith("L"))
+    private fun tryRemapString(fullDescriptor: String, remapper: KiltEnhancedRemapper): String {
+        if (!fullDescriptor.contains("<") && !fullDescriptor.contains("*") && !fullDescriptor.startsWith("L"))
             return fullDescriptor
 
         val originalClassName = if (fullDescriptor.startsWith("L"))
@@ -92,10 +93,14 @@ object MixinSpecialAnnotationRemapper {
         else ""
         val originalDescriptor = fullDescriptor.replaceBefore("(", "")
             .replaceBefore(":", "").replaceFirst(":", "")
+        val methodName = fullDescriptor.removePrefix(originalClassName).removeSuffix(originalDescriptor)
+
+        if (!methodName.contains("<") && !methodName.contains("*")) {
+            return fullDescriptor
+        }
 
         val mappedClassName = KiltRemapper.remapDescriptor(originalClassName, toIntermediary = KiltRemapper.forceProductionRemap)
         val mappedDescriptor = KiltRemapper.remapDescriptor(originalDescriptor, toIntermediary = KiltRemapper.forceProductionRemap)
-        val methodName = fullDescriptor.removePrefix(originalClassName).removeSuffix(originalDescriptor)
 
         return "$mappedClassName$methodName$mappedDescriptor"
     }
