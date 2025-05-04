@@ -80,6 +80,11 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     @Shadow public abstract ItemStack getItemInHand(InteractionHand hand);
 
+    @Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
+
+    @Shadow protected abstract void onEffectRemoved(MobEffectInstance effectInstance);
+
+    @Shadow private boolean effectsDirty;
     private LazyOptional<?>[] handlers = EntityEquipmentInvWrapper.create((LivingEntity) (Object) this);
 
     @WrapWithCondition(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"))
@@ -298,6 +303,29 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
     }
 
     // TODO: implement more patches starting from L404
+
+
+    @Override
+    public boolean curePotionEffects(ItemStack curativeStack) {
+        if (this.level().isClientSide())
+            return false;
+
+        var ret = false;
+        var effects = this.activeEffects.values().iterator();
+
+        while (effects.hasNext()) {
+            var effect = effects.next();
+
+            if (effect.isCurativeItem(curativeStack) && !MinecraftForge.EVENT_BUS.post(new MobEffectEvent.Remove((LivingEntity) (Object) this, effect))) {
+                this.onEffectRemoved(effect);
+                effects.remove();
+                ret = true;
+                this.effectsDirty = true;
+            }
+        }
+
+        return ret;
+    }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {

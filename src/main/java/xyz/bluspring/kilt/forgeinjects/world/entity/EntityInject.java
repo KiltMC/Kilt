@@ -1,6 +1,7 @@
 // TRACKED HASH: 34fb617752c8022973f9dca4fb9eed32600931bf
 package xyz.bluspring.kilt.forgeinjects.world.entity;
 
+import com.google.common.base.Predicates;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -10,9 +11,13 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.nbt.CompoundTag;
@@ -20,16 +25,21 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
@@ -39,6 +49,7 @@ import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.fluids.FluidType;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -53,10 +64,13 @@ import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 import xyz.bluspring.kilt.injections.world.entity.LightningBoltInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 @Mixin(Entity.class)
 @Extends(CapabilityProvider.class)
@@ -66,24 +80,22 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Shadow public abstract float getBbHeight();
     @Shadow protected abstract void unsetRemoved();
     @Shadow protected abstract float getEyeHeight(Pose pose, EntityDimensions dimensions);
-
     @Shadow private EntityDimensions dimensions;
-
     @Shadow public abstract Level level();
-
     @Shadow protected abstract void playCombinationStepSounds(BlockState primaryState, BlockState secondaryState);
-
     @Shadow protected abstract void playMuffledStepSound(BlockState state);
-
     @Shadow private @Nullable Entity vehicle;
-
     @Shadow public abstract EntityType<?> getType();
-
     @Shadow @Final private EntityType<?> type;
-
     @Shadow public abstract boolean isRemoved();
-
     @Shadow public abstract void discard();
+    @Shadow public abstract @Nullable Entity getVehicle();
+    @Shadow public float fallDistance;
+    @Shadow public abstract void clearFire();
+    @Shadow protected boolean wasTouchingWater;
+    @Shadow public abstract boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluidTag, double motionScale);
+    @Shadow public abstract Vec3 getDeltaMovement();
+    @Shadow public abstract void setDeltaMovement(Vec3 deltaMovement);
 
     @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
     private float kilt$useSizesFromEvent(Entity instance, Pose pose, EntityDimensions dimensions, Operation<Float> original) {
@@ -176,6 +188,15 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return original.call(instance);
     }
 
+    @WrapOperation(method = "playStepSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
+    private SoundType kilt$useForgeSoundTypeIfPossible(BlockState instance, Operation<SoundType> original, @Local(argsOnly = true) BlockPos pos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+            return instance.getSoundType(this.level(), pos, (Entity) (Object) this);
+        }
+
+        return original.call(instance);
+    }
+
     @WrapOperation(method = "updateSwimming", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;isInWater()Z"))
     private boolean kilt$checkCanSwimInFluidType(Entity instance, Operation<Boolean> original) {
         return original.call(instance) || this.isInFluidType((fluidType, height) -> this.canSwimInFluidType(fluidType));
@@ -196,7 +217,48 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         this.forgeFluidTypeHeight.clear();
     }
 
-    // TODO: implement updateInWaterStateAndDoFluidPushing
+    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;updateInWaterStateAndDoWaterCurrentPushing()V", shift = At.Shift.AFTER), cancellable = true)
+    private void kilt$tryHandleForgeFluids(CallbackInfoReturnable<Boolean> cir) {
+        if (!(this.getVehicle() instanceof Boat) && this.isInFluidType()) {
+            var fluidDistanceModifier = this.forgeFluidTypeHeight.object2DoubleEntrySet().stream().filter(e -> !e.getKey().isAir() && !e.getKey().isVanilla())
+                .map(e -> this.getFluidFallDistanceModifier(e.getKey()))
+                .min(Float::compare);
+            if (fluidDistanceModifier.isPresent()) {
+                this.fallDistance *= fluidDistanceModifier.orElseThrow();
+
+                if (this.isInFluidType((fluidType, height) -> !fluidType.isAir() && !fluidType.isVanilla() && this.canFluidExtinguish(fluidType))) {
+                    this.clearFire();
+                }
+
+                cir.setReturnValue(this.isInFluidType());
+            }
+        }
+    }
+
+    @WrapOperation(method = "updateInWaterStateAndDoWaterCurrentPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;isUnderWater()Z"))
+    private boolean kilt$disableBoatReturn(Boat instance, Operation<Boolean> original, @Share("updateFluidHeight") LocalRef<BooleanSupplier> updateFluidHeightRef) {
+        var isUnderwater = original.call(instance);
+
+        if (!isUnderwater) {
+            this.wasTouchingWater = false;
+
+            updateFluidHeightRef.set(() -> {
+                this.updateFluidHeightAndDoFluidPushing(state -> this.shouldUpdateFluidWhileBoating(state, instance));
+                return false;
+            });
+        }
+
+        return true;
+    }
+
+    @WrapOperation(method = "updateInWaterStateAndDoWaterCurrentPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z"))
+    private boolean kilt$checkForgeFluidHeight(Entity instance, TagKey<Fluid> fluidTag, double motionScale, Operation<Boolean> original, @Share("updateFluidHeight") LocalRef<BooleanSupplier> updateFluidHeightRef) {
+        if (updateFluidHeightRef.get() != null) {
+            return updateFluidHeightRef.get().getAsBoolean();
+        }
+
+        return original.call(instance, fluidTag, motionScale);
+    }
 
     @Inject(method = "updateFluidOnEyes", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V", ordinal = 0, shift = At.Shift.AFTER))
     private void kilt$clearForgeFluidTypeOnEyes(CallbackInfo ci) {
@@ -268,6 +330,16 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             this.deserializeCaps(compound.getCompound("ForgeCaps"));
     }
 
+    @WrapOperation(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    private boolean kilt$tryCaptureDrops(Level instance, Entity entity, Operation<Boolean> original) {
+        if (this.captureDrops() != null && entity instanceof ItemEntity itemEntity) {
+            this.captureDrops().add(itemEntity);
+            return false;
+        } else {
+            return original.call(instance, entity);
+        }
+    }
+
     @WrapWithCondition(method = "rideTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
     private boolean kilt$checkCanUpdate(Entity instance) {
         return instance.canUpdate();
@@ -313,7 +385,128 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return this.changeDimension(level, (io.github.fabricators_of_create.porting_lib.entity.ITeleporter) teleporter);
     }
 
-    // TODO: implement getEntitySize
+    @Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true)
+    private void kilt$handleChangeDimensionEvent(ServerLevel destination, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension((Entity) (Object) this, destination.dimension())) {
+            cir.setReturnValue(null);
+        }
+    }
+
+    @ModifyExpressionValue(method = "refreshDimensions", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
+    private float kilt$callForgeSizeEvent(float original, @Local(ordinal = 0) EntityDimensions dimensions, @Local(ordinal = 1) LocalRef<EntityDimensions> dimensions2, @Local Pose pose) {
+        var sizeEvent = ForgeEventFactory.getEntitySizeForge((Entity) (Object) this, pose, dimensions, this.dimensions, original);
+        dimensions2.set(this.dimensions = sizeEvent.getNewSize());
+        return sizeEvent.getNewEyeHeight();
+    }
+
+    // Kilt: Little workaround to allow mixins to still occur in updateFluidHeightAndDoFluidPushing
+    // I swear to god if this method is accessed in a non-thread safe way, I will scream
+    @Unique private Predicate<FluidState> kilt$shouldUpdateFluid;
+
+    @Override
+    public void updateFluidHeightAndDoFluidPushing() {
+        this.updateFluidHeightAndDoFluidPushing(Predicates.alwaysTrue());
+    }
+
+    @Override
+    public void updateFluidHeightAndDoFluidPushing(Predicate<FluidState> shouldUpdate) {
+        this.kilt$shouldUpdateFluid = shouldUpdate;
+        this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 1.0);
+        this.kilt$shouldUpdateFluid = null;
+    }
+
+    @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/BlockPos$MutableBlockPos;<init>()V", shift = At.Shift.AFTER))
+    private void kilt$initInterimCalcs(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
+        if (this.kilt$shouldUpdateFluid != null) // Kilt: micro-optimization - only init this when it's needed
+            interimCalcs.set(new Object2ObjectArrayMap<>(FluidType.SIZE.get() - 1));
+    }
+
+    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0))
+    private boolean kilt$checkIsValidFluidType(FluidState instance, TagKey<Fluid> tag, Operation<Boolean> original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
+        fluidTypeRef.set(instance.getFluidType());
+
+        if (this.kilt$shouldUpdateFluid != null) {
+            return !fluidTypeRef.get().isAir() && this.kilt$shouldUpdateFluid.test(instance);
+        }
+
+        return original.call(instance, tag);
+    }
+
+    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(DD)D"))
+    private double kilt$useInterimCalc(double a, double b, Operation<Double> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
+        if (this.kilt$shouldUpdateFluid != null) {
+            interim.set(interimCalcs.get().computeIfAbsent(fluidTypeRef.get(), t -> MutableTriple.of(0.0, Vec3.ZERO, 0)));
+
+            var calc = original.call(a, (double) interim.get().getLeft());
+            interim.get().setLeft(calc);
+            return calc;
+        }
+
+        return original.call(a, b);
+    }
+
+    // TODO: there is definitely a better way to do this.
+    @Definition(id = "bl", local = @Local(type = boolean.class, ordinal = 0))
+    @Expression("bl")
+    @ModifyExpressionValue(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkIsPushedByFluid(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
+        if (this.kilt$shouldUpdateFluid != null) {
+            return this.isPushedByFluid(fluidTypeRef.get());
+        }
+
+        return original;
+    }
+
+    // Kilt: we don't need to handle d0 < 0.4D, that's already updated
+
+    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", ordinal = 0))
+    private Vec3 kilt$updateInterimValues(Vec3 instance, Vec3 vec, Operation<Vec3> original, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
+        if (this.kilt$shouldUpdateFluid != null) {
+            interim.get().setMiddle(interim.get().getMiddle().add(vec));
+            interim.get().setRight(interim.get().getRight() + 1);
+        }
+
+        return original.call(instance, vec);
+    }
+
+    @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;length()D", ordinal = 0), cancellable = true)
+    private void kilt$useInterimValuesForCalc(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
+        if (this.kilt$shouldUpdateFluid != null) {
+            cir.setReturnValue(false);
+
+            // Kilt: we have to reimplement everything, cuz we can't wrap blocks of code into a loop.
+            interimCalcs.get().forEach((fluidType, interim) -> {
+                if (interim.getMiddle().length() > 0) {
+                    if (interim.getRight() > 0) {
+                        interim.setMiddle(interim.getMiddle().scale(1.0 / (double) interim.getRight()));
+                    }
+
+                    if (!((Object) this instanceof Player)) {
+                        interim.setMiddle(interim.getMiddle().normalize());
+                    }
+
+                    Vec3 velocity = this.getDeltaMovement();
+                    interim.setMiddle(interim.getMiddle().scale(this.getFluidMotionScale(fluidType)));
+
+                    double tolerance = 0.003;
+                    if (Math.abs(velocity.x) < tolerance && Math.abs(velocity.z) < tolerance && interim.getMiddle().length() < 0.0045000000000000005) {
+                        interim.setMiddle(interim.getMiddle().normalize().scale(0.0045000000000000005));
+                    }
+
+                    this.setDeltaMovement(this.getDeltaMovement().add(interim.getMiddle()));
+                }
+
+                this.setFluidTypeHeight(fluidType, interim.getLeft());
+            });
+        }
+    }
+
+    @Inject(method = "setPosRaw", at = @At("TAIL"))
+    private void kilt$ensureChunkLoaded(double x, double y, double z, CallbackInfo ci) {
+        if (this.isAddedToWorld() && !this.level().isClientSide() && !this.isRemoved()) {
+            this.level().getChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);
+        }
+    }
 
     @Unique
     private boolean canUpdate = true;
@@ -411,15 +604,5 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Override
     public FluidType getEyeInFluidType() {
         return this.forgeFluidTypeOnEyes;
-    }
-
-    @WrapOperation(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
-    public boolean kilt$captureSpawnDrops(Level instance, Entity entity, Operation<Boolean> original) {
-        if (captureDrops() != null) {
-            captureDrops().add((ItemEntity) entity);
-            return false;
-        } else {
-            return original.call(instance, entity);
-        }
     }
 }
