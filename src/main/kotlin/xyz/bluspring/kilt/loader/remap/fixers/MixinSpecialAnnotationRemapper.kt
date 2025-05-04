@@ -91,6 +91,7 @@ object MixinSpecialAnnotationRemapper {
             fullDescriptor.replaceAfter(";", "")
         else ""
         val originalDescriptor = fullDescriptor.replaceBefore("(", "")
+            .replaceBefore(":", "").replaceFirst(":", "")
 
         val mappedClassName = KiltRemapper.remapDescriptor(originalClassName, toIntermediary = KiltRemapper.forceProductionRemap)
         val mappedDescriptor = KiltRemapper.remapDescriptor(originalDescriptor, toIntermediary = KiltRemapper.forceProductionRemap)

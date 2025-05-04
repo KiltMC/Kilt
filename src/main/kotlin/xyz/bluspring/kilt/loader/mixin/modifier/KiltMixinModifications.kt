@@ -9,6 +9,7 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.injection.At
+import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -17,6 +18,37 @@ object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
     private val MODIFIERS = mutableMapOf<String, List<MixinModifier>>()
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
+
+    val INJECT = register(
+        Inject::class.java,
+
+        // Fixes Blueprint's ReloadableServerResources
+        MixinModifier(
+            owner = "net/minecraft/server/ReloadableServerResources",
+            methods = listOf("loadResources"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    TargetHandler::class.java, mapOf(
+                        "mixin" to "xyz.bluspring.kilt.forgeinjects.server.ReloadableServerResourcesInject",
+                        "name" to "kilt\$blueprintWorkaround"
+                    )
+                ),
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("@MixinSquared:Handler"),
+                        "at" to at("TAIL"),
+                        "locals" to arrayOf("Lorg/spongepowered/asm/mixin/injection/callback/LocalCapture;", "CAPTURE_FAILHARD")
+                    )
+                )
+            )
+        )
+    )
 
     val MODIFY_VARIABLE = register(
         ModifyVariable::class.java,
@@ -38,6 +70,31 @@ object KiltMixinModifications {
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
                     "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
+                ))
+            )
+        ),
+
+        // Fixes Blueprint's StructureTemplate
+        MixinModifier(
+            owner = "net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate",
+            methods = listOf("placeInWorld(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/util/RandomSource;I)Z"),
+            variables = mapOf(
+                "index" to 22,
+                "at" to at(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate\$StructureBlockInfo;nbt:Lnet/minecraft/nbt/CompoundTag;",
+                    ordinal = 0
+                )
+            ),
+            replaceWith = listOf(
+                createAnnotation(ModifyVariable::class.java, mapOf(
+                    "method" to listOf("placeInWorld(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/util/RandomSource;I)Z"),
+                    "at" to at(
+                        value = "FIELD",
+                        target = "Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate\$StructureBlockInfo;nbt:Lnet/minecraft/nbt/CompoundTag;",
+                        ordinal = 0
+                    ),
+                    "index" to 23
                 ))
             )
         )
@@ -125,7 +182,12 @@ object KiltMixinModifications {
             return@all if (it.value is List<*>)
                 (it.value as List<*>).any { a ->
                     if (value is List<*>)
-                        value.any { b -> b == a }
+                        value.any { b ->
+                            if (b is AnnotationNode && a is AnnotationNode)
+                                checkAllConditionsMatch(annotationValuesToMap(b.values), annotationValuesToMap(a.values))
+                            else
+                                b == a
+                        }
                     else if (value is AnnotationNode)
                         if (a is AnnotationNode)
                             checkAllConditionsMatch(annotationValuesToMap(value.values), annotationValuesToMap(a.values))
@@ -191,12 +253,15 @@ object KiltMixinModifications {
         return map
     }
 
-    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf()): AnnotationNode {
+    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null): AnnotationNode {
         return createAnnotation(At::class.java, mutableMapOf<String, Any>(
             "value" to value
         ).apply {
             if (target != null)
                 this["target"] = target
+
+            if (ordinal != null)
+                this["ordinal"] = ordinal
 
             this.putAll(variables)
         })

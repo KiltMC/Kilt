@@ -6,6 +6,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagManager;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,6 +27,8 @@ import xyz.bluspring.kilt.injections.ReloadableServerResourcesInjection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Mixin(ReloadableServerResources.class)
 public class ReloadableServerResourcesInject implements ReloadableServerResourcesInjection {
@@ -44,12 +47,32 @@ public class ReloadableServerResourcesInject implements ReloadableServerResource
         return kilt$context;
     }
 
+    @Unique private static final ThreadLocal<List<PreparableReloadListener>> kilt$listeners = new ThreadLocal<>();
+    @Unique private static final ThreadLocal<ReloadableServerResources> kilt$serverResources = new ThreadLocal<>();
+
     @ModifyArg(method = "loadResources", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
-    private static List<PreparableReloadListener> kilt$addForgeResourceReloadListener(List<PreparableReloadListener> listeners, @Local ReloadableServerResources serverResources, @Local(argsOnly = true) RegistryAccess.Frozen registryAccess) {
+    private static List<PreparableReloadListener> kilt$addForgeResourceReloadListener(List<PreparableReloadListener> listeners, @Local ReloadableServerResources serverResources, @Local(argsOnly = true) RegistryAccess.Frozen registryAccess, @Local(argsOnly = true) Commands.CommandSelection commandSelection) {
         var list = new ArrayList<>(listeners);
         list.addAll(ForgeEventFactory.onResourceReload(serverResources, registryAccess));
 
+        kilt$listeners.set(list);
+        kilt$serverResources.set(serverResources);
+        kilt$blueprintWorkaround(null, registryAccess, null, commandSelection, 0, null, null);
+        kilt$listeners.remove();
+        kilt$serverResources.remove();
+
         return list;
+    }
+
+    // Kilt: Special workaround specifically for Blueprint's mixin
+    private static CompletableFuture<ReloadableServerResources> kilt$blueprintWorkaround(ResourceManager resourceManager, RegistryAccess.Frozen registryAccess, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, int functionCompilationLevel, Executor backgroundExecutor, Executor gameExecutor) {
+        var serverResources = kilt$serverResources.get();
+        var listeners = kilt$listeners.get();
+
+        serverResources.listeners();
+        listeners.size();
+
+        return null;
     }
 
     @Inject(method = "updateRegistryTags(Lnet/minecraft/core/RegistryAccess;)V", at = @At("TAIL"))
