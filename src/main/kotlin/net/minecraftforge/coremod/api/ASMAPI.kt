@@ -161,11 +161,14 @@ object ASMAPI {
         owner: String, name: String, descriptor: String,
         startIndex: Int
     ): MethodInsnNode? {
+        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
+
         for (i in max(0, startIndex) until method.instructions.size()) {
             val node = method.instructions[i]
 
             if (node is MethodInsnNode && node.opcode == type.toOpcode()) {
-                if (node.owner == owner && node.name == name && node.desc == descriptor) {
+                if ((node.owner == owner || node.owner == remappedOwner) && node.name == name && (node.desc == descriptor || node.desc == remappedDescriptor)) {
                     return node
                 }
             }
@@ -192,11 +195,14 @@ object ASMAPI {
         owner: String, name: String, descriptor: String,
         startIndex: Int
     ): MethodInsnNode? {
+        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
+
         for (i in min((method.instructions.size() - 1), startIndex) downTo 0) {
             val node = method.instructions[i]
 
             if (node is MethodInsnNode && node.opcode == type.toOpcode()) {
-                if (node.owner == owner && node.name == name && node.desc == descriptor) {
+                if ((node.owner == owner || node.owner == remappedOwner) && node.name == name && (node.desc == descriptor || node.desc == remappedDescriptor)) {
                     return node
                 }
             }
@@ -226,10 +232,13 @@ object ASMAPI {
         val nodeIterator = method.instructions.iterator()
         val opcode = type.toOpcode()
 
+        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedDescriptor = KiltRemapper.remapDescriptor(desc)
+
         while (nodeIterator.hasNext()) {
             val next = nodeIterator.next()
             if (next.opcode == opcode && next is MethodInsnNode) {
-                if (next.owner == owner && next.name == name && next.desc == desc) {
+                if ((next.owner == owner || next.owner == remappedOwner) && next.name == name && (next.desc == desc || next.desc == remappedDescriptor)) {
                     if (mode == InsertMode.INSERT_BEFORE)
                         method.instructions.insertBefore(next, list)
                     else
