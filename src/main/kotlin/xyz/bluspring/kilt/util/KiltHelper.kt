@@ -14,8 +14,8 @@ import java.util.jar.JarFile
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
     private val cachedForgeClassNodes = getForgeClassNodesInternal()
-    private val cachedHasMethodOverride = Collections.synchronizedSet(LinkedHashSet<OverrideData>())
-    private val cachedHasNoMethodOverride = Collections.synchronizedSet(LinkedHashSet<OverrideData>())
+    private val cachedHasMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
+    private val cachedHasNoMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
 
     private fun checkAllElementsMatch(array: Array<*>, array2: Array<*>): Boolean {
         if (array.size != array2.size)
@@ -29,9 +29,12 @@ object KiltHelper {
         return true
     }
 
-    private fun checkCache(cache: Collection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
+    private fun checkCache(cache: MutableCollection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
         synchronized(cache) {
-            return cache.any { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) }
+            val existing = cache.firstOrNull { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) } ?: return false
+
+            // Force the cache to mark this as accessed
+            return !cache.add(existing)
         }
     }
 
