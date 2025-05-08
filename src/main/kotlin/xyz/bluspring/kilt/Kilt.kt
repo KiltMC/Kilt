@@ -21,7 +21,6 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.entity.EntityJoinLevelEvent
 import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
@@ -145,13 +144,6 @@ class Kilt : ModInitializer {
 
         EntityEvent.ANIMAL_TAME.register { animal, player ->
             if (ForgeEventFactory.onAnimalTame(animal, player))
-                EventResult.interruptDefault()
-            else
-                EventResult.pass()
-        }
-
-        EntityEvent.ADD.register { entity, level ->
-            if (MinecraftForge.EVENT_BUS.post(EntityJoinLevelEvent(entity, level)))
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
