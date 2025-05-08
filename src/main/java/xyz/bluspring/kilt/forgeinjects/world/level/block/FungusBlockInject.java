@@ -1,0 +1,31 @@
+package xyz.bluspring.kilt.forgeinjects.world.level.block;
+
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.sugar.Cancellable;
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.FungusBlock;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.eventbus.api.Event;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(FungusBlock.class)
+public abstract class FungusBlockInject {
+    @ModifyReceiver(method = "method_46682", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/Holder;value()Ljava/lang/Object;"))
+    private static Holder<ConfiguredFeature<?, ?>> kilt$useForgeEventFeature(Holder<ConfiguredFeature<?, ?>> instance, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) RandomSource randomSource, @Local(argsOnly = true) BlockPos pos, @Cancellable CallbackInfo ci) {
+        var event = ForgeEventFactory.blockGrowFeature(level, randomSource, pos, instance);
+
+        if (event.getResult().equals(Event.Result.DENY)) {
+            ci.cancel();
+            return instance;
+        }
+
+        return event.getFeature();
+    }
+}

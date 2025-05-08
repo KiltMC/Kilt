@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CoralBlock.class)
-public class CoralBlockInject {
+public abstract class CoralBlockInject {
     @Inject(method = "scanForWater", at = @At("HEAD"))
     private void kilt$getBlockStateAtPos(BlockGetter level, BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Share("state") LocalRef<BlockState> state) {
         state.set(level.getBlockState(pos));
@@ -28,6 +28,6 @@ public class CoralBlockInject {
 
     @WrapOperation(method = "scanForWater", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
     private boolean kilt$checkCanHydrate(FluidState instance, TagKey<Fluid> tag, Operation<Boolean> original, @Local(argsOnly = true) BlockGetter level, @Local(argsOnly = true) BlockPos pos, @Share("state") LocalRef<BlockState> state, @Local Direction direction) {
-        return original.call(instance, tag) || state.get().canBeHydrated(level, pos, instance, pos.relative(direction));
+        return state.get().canBeHydrated(level, pos, instance, pos.relative(direction)) || original.call(instance, tag);
     }
 }

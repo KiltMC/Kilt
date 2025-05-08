@@ -29,6 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CropBlock.class)
 public abstract class CropBlockInject {
+    @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
+    private void kilt$checkAreaLoaded(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
+        if (!level.isAreaLoaded(pos, 1))
+            ci.cancel();
+    }
+
     @Definition(id = "random", local = @Local(type = RandomSource.class))
     @Definition(id = "nextInt", method = "Lnet/minecraft/util/RandomSource;nextInt(I)I")
     @Definition(id = "f", local = @Local(type = float.class))
