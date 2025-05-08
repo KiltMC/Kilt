@@ -18,7 +18,7 @@ public class BakedQuadInject implements BakedQuadInjection {
         this.hasAmbientOcclusion = hasAmbientOcclusion;
     }
 
-    private boolean hasAmbientOcclusion;
+    private boolean hasAmbientOcclusion = true;
 
     @Override
     public void kilt$setAmbientOcclusion(boolean hasAo) {
