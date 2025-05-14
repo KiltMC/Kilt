@@ -51,7 +51,7 @@ public class LevelRendererInject implements LevelRendererInjection {
             ci.cancel();
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;isFoggyAt(II)Z", shift = At.Shift.AFTER))
+    @Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=sky"))
     private void kilt$earlySetupFog(PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local(ordinal = 2) boolean isFoggy, @Local(ordinal = 1) float renderDistance) {
         // TODO: Is this actually needed?
         FogRenderer.setupFog(camera, FogRenderer.FogMode.FOG_SKY, renderDistance, isFoggy, partialTick);

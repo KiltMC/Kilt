@@ -1,13 +1,17 @@
 package xyz.bluspring.kilt.mixin.compat.architectury;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import dev.architectury.registry.registries.fabric.RegistrarManagerImpl;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.minecraft.core.Registry;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
+@IfModLoaded("architectury")
+@Pseudo
 @Mixin(RegistrarManagerImpl.RegistrarImpl.class)
 public class RegistrarManagerImplMixin<T> {
     @Shadow private Registry<T> delegate;
