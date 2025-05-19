@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import com.google.gson.stream.MalformedJsonException
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import de.florianmichael.asmfabricloader.api.EarlyRiser
@@ -466,19 +467,27 @@ class KiltLoader {
         ) {
             // Special workaround for Pretty Pipes and other mods that do this kinda shit,
             // because what?
-            val fmjEntry = JsonParser.parseReader(jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()).asJsonObject
-            val modId = fmjEntry.get("id").asString
+            try {
+                val fmjEntry = JsonParser.parseReader(
+                    jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()
+                ).asJsonObject
+                val modId = fmjEntry.get("id").asString
 
-            FabricLoader.getInstance().getModContainer(modId).ifPresent { container ->
-                if (container.metadata.dependencies.none { it.modId == "forge" }) {
-                    return@ifPresent
+                FabricLoader.getInstance().getModContainer(modId).ifPresent { container ->
+                    if (container.metadata.dependencies.none { it.modId == "forge" }) {
+                        return@ifPresent
+                    }
+
+                    isSpecialCasedFabric = true
                 }
 
-                isSpecialCasedFabric = true
-            }
-
-            if (!isSpecialCasedFabric)
+                if (!isSpecialCasedFabric)
+                    return
+            } catch (e: MalformedJsonException) {
+                Kilt.logger.error("Failed to parse FMJ of mod file ${modFile.name}!")
+                e.printStackTrace()
                 return
+            }
         }
 
         DeltaTimeProfiler.push(modFile.nameWithoutExtension)
