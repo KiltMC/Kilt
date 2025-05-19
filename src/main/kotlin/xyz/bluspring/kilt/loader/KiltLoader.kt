@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
-import com.google.gson.stream.MalformedJsonException
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import de.florianmichael.asmfabricloader.api.EarlyRiser
@@ -483,7 +482,7 @@ class KiltLoader {
 
                 if (!isSpecialCasedFabric)
                     return
-            } catch (e: MalformedJsonException) {
+            } catch (e: Throwable) {
                 Kilt.logger.error("Failed to parse FMJ of mod file ${modFile.name}!")
                 e.printStackTrace()
                 return
