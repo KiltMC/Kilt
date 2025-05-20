@@ -1,12 +1,13 @@
+# Kilt
+[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
+A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.
 <p>
   <img align="left" width="250" alt="image" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true">
 </p>
 
-# Kilt
-A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.
+[![Discord invite](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/social/discord-singular_46h.png?raw=true)](https://discord.gg/enGK2TymYJ) The download is in #rules-and-info in the Discord.<br>
+[![Buy Me A Coffee](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/donate/kofi-singular-alt_46h.png?raw=true)](https://ko-fi.com/bluspring)<br><br><br><br><br><br><br>
 
-[Join us on Discord (the download is in #rules-and-info)](https://discord.gg/enGK2TymYJ)<br>
-[![Buy Me A Coffee](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/donate/kofi-singular-alt_46h.png?raw=true)](https://ko-fi.com/bluspring) [![wakatime](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1.svg)](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1)<br><br>
 ## FAQ
 ### Why?
 I like Fabric. And I hate Forge. More reasons [here](WHY.md).
