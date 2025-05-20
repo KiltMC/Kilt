@@ -162,6 +162,7 @@
         "world.entity.projectile.ShulkerBulletInject",
         "world.entity.projectile.SmallFireballInject",
         "world.entity.projectile.ThrowableProjectileInject",
+        "world.entity.projectile.ThrownEnderpearlInject",
         "world.entity.projectile.WitherSkullInject",
         "world.entity.raid.RaidInject",
         "world.entity.raid.RaidInject$RaiderTypeInject",
