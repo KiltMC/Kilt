@@ -1,5 +1,5 @@
 # Kilt
-[![wakatime](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1.svg)](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1)
+[![wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)
 
 [Join us on Discord (the download is in #rules-and-info)](https://discord.gg/enGK2TymYJ) | [Buy me a coffee!](https://ko-fi.com/bluspring)
 
