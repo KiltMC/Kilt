@@ -18,7 +18,7 @@ public interface SpawnPlacementsTypeInjection {
                 (values) -> TypeAccessor.setValues(values.toArray(new SpawnPlacements.Type[0]))
         );
 
-        ((SpawnPlacementsTypeInjection) (Object) value).setPredicate(predicate);
+        ((SpawnPlacementsTypeInjection) (Object) value).kilt$setPredicate(predicate);
         return value;
     }
 
@@ -26,7 +26,7 @@ public interface SpawnPlacementsTypeInjection {
         throw new IllegalStateException();
     }
 
-    default void setPredicate(TriPredicate<LevelReader, BlockPos, EntityType<? extends Mob>> predicate) {
+    default void kilt$setPredicate(TriPredicate<LevelReader, BlockPos, EntityType<? extends Mob>> predicate) {
         throw new IllegalStateException();
     }
 }

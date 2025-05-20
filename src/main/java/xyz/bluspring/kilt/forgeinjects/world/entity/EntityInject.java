@@ -97,6 +97,8 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Shadow public abstract Vec3 getDeltaMovement();
     @Shadow public abstract void setDeltaMovement(Vec3 deltaMovement);
 
+    @Shadow public abstract EntityDimensions getDimensions(Pose pose);
+
     @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
     private float kilt$useSizesFromEvent(Entity instance, Pose pose, EntityDimensions dimensions, Operation<Float> original) {
         var event = ForgeEventFactory.getEntitySizeForge(instance, pose, dimensions, original.call(instance, pose, dimensions));
@@ -575,18 +577,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     @Override
-    public FluidType getMaxHeightFluidType() {
-        if (this.forgeFluidTypeHeight.isEmpty())
-            return ForgeMod.EMPTY_TYPE.get();
-
-        return this.forgeFluidTypeHeight.object2DoubleEntrySet()
-            .stream()
-            .max(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
-            .map(Object2DoubleMap.Entry::getKey)
-            .orElseGet(ForgeMod.EMPTY_TYPE);
-    }
-
-    @Override
     public boolean isInFluidType(BiPredicate<FluidType, Double> predicate, boolean forAllTypes) {
         if (this.forgeFluidTypeHeight.isEmpty())
             return false;
@@ -604,5 +594,21 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @Override
     public FluidType getEyeInFluidType() {
         return this.forgeFluidTypeOnEyes;
+    }
+
+    @Override
+    public FluidType getMaxHeightFluidType() {
+        if (this.forgeFluidTypeHeight.isEmpty())
+            return ForgeMod.EMPTY_TYPE.get();
+
+        return this.forgeFluidTypeHeight.object2DoubleEntrySet()
+            .stream()
+            .max(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
+            .map(Object2DoubleMap.Entry::getKey)
+            .orElseGet(ForgeMod.EMPTY_TYPE);
+    }
+
+    public EntityDimensions getDimensionsForge(Pose pose) {
+        return getDimensions(pose);
     }
 }
