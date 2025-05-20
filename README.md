@@ -7,10 +7,25 @@ A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experim
 
 [Join us on Discord (the download is in #rules-and-info)](https://discord.gg/enGK2TymYJ)<br>
 [![Buy Me A Coffee](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/donate/kofi-singular-alt_46h.png?raw=true)](https://ko-fi.com/bluspring) [![wakatime](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1.svg)](https://wakatime.com/badge/user/4132d759-5e83-45df-9c82-e7fda2bd090a/project/f9d36fac-dbe1-47cf-9ddd-2fdd5ebc78d1)<br><br>
-
-## FAQ (probably)
+## FAQ
 ### Why?
 I like Fabric. And I hate Forge. More reasons [here](WHY.md).
+
+### Download?
+First, you must understand that Kilt is currently highly unstable, may break worlds, may cause crashes,
+and may not even be in a playable state, hence why it is currently not published to CurseForge or Modrinth.
+
+If you encounter any bugs or crashes, **do not report them to the mod developers unless they also occur on Forge**.
+Instead, report them onto the [Kilt issue tracker](https://github.com/KiltMC/Kilt/issues), if a similar issue does not exist.
+
+Now that that's out of the way, the download link may be accessed from the GitHub Actions page, and a quick access
+download link may be found in the Discord (#rules-and-info), which also always downloads the latest build.
+
+### What about updating/backporting to other versions of Minecraft?
+While updates to newer versions are planned, Kilt is an incredibly large undertaking for only one person to work on.
+I am only going to focus on 1.20.1 until all patches have been ported to mixins, and then I'm going to work on making a 1.21.1 NeoForge build,
+which is also going to take some time. Afterwards, we are able to move forward onto the latest version of Minecraft. Anything
+in-between is going to be unsupported, however someone else may take on that role instead.
 
 ### What about Patchwork?
 Patchwork completely halted development recently, which means they will no longer be worked on
@@ -22,8 +37,12 @@ Isn't it reasonable to just have both?
 
 ### Okay... so how does this work?
 Basically this recreates FML in a way that functions with Fabric Loader, with some of its own changes
-to hopefully improve on its performance, and interoperating with Fabric-native APIs for the sake
-of compatibility.
+to hopefully improve on its performance, and bridging together Forge APIs with Fabric-native APIs for the sake
+of compatibility. Additionally, the entire Forge API is already bundled within Kilt, it just relies on the
+patch re-implementations (known as "injects" in Kilt's codebase) to be created first in mixin form.
+
+For making the Forge mods themselves work, Kilt first remaps them from the Forge SRG format into Fabric's Intermediary format,
+then applies some of its own "fixers" to ensure that everything will work correctly in the Fabric environment.
 
 ### How have you not lost your sanity doing this?
 [Already have. Next question.](https://github.com/KiltMC/Kilt/blob/version/1.20.1/screaming.txt)
