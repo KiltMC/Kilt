@@ -1,9 +1,8 @@
-
 <p>
   <img align="left" width="75" alt="image" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true">
 </p>
 
-# Kilt<br><br>
+# Kilt
 A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.<br>
 [![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
 [![Discord invite](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/social/discord-singular_46h.png?raw=true)](https://discord.gg/enGK2TymYJ) 
