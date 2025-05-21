@@ -27,10 +27,17 @@ public abstract class ItemModelShaperInject {
 
     @ModifyReturnValue(method = "getItemModel(Lnet/minecraft/world/item/Item;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("RETURN"))
     private BakedModel kilt$useForgeItemModel(BakedModel original, @Local(argsOnly = true) Item item) {
-        if (original == null)
-            return this.kilt$forgeModelShaper.getItemModel(item);
+        try {
+            var model = this.kilt$forgeModelShaper.getItemModel(item);
 
-        return original;
+            if (model == null) {
+                return original;
+            }
+
+            return model;
+        } catch (Exception e) {
+            return original;
+        }
     }
 
     @Inject(method = "register", at = @At("TAIL"))
