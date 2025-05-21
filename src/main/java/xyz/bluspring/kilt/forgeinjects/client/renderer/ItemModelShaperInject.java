@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemModelShaper.class)
 public abstract class ItemModelShaperInject {
@@ -24,10 +25,12 @@ public abstract class ItemModelShaperInject {
             this.kilt$forgeModelShaper = new ForgeItemModelShaper(modelManager);
     }
 
-    @Inject(method = "getItemModel(Lnet/minecraft/world/item/Item;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("HEAD"), cancellable = true)
-    private void kilt$useForgeItemModel(Item item, CallbackInfoReturnable<BakedModel> cir) {
-        // TODO: Run a check that ensures the model namespace is a Forge mod ID?
-        cir.setReturnValue(this.kilt$forgeModelShaper.getItemModel(item));
+    @ModifyReturnValue(method = "getItemModel(Lnet/minecraft/world/item/Item;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("RETURN"))
+    private BakedModel kilt$useForgeItemModel(BakedModel original, @Local(argsOnly = true) Item item) {
+        if (original == null)
+            return this.kilt$forgeModelShaper.getItemModel(item);
+
+        return original;
     }
 
     @Inject(method = "register", at = @At("TAIL"))
