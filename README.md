@@ -1,12 +1,13 @@
-# Kilt
-[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
-A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.
+
 <p>
-  <img align="left" width="250" alt="image" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true">
+  <img align="left" width="75" alt="image" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true">
 </p>
 
-[![Discord invite](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/social/discord-singular_46h.png?raw=true)](https://discord.gg/enGK2TymYJ) The download is in #rules-and-info in the Discord.<br>
-[![Buy Me A Coffee](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/donate/kofi-singular-alt_46h.png?raw=true)](https://ko-fi.com/bluspring)<br><br><br><br><br><br><br>
+# Kilt
+[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
+A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.<br>
+[![Discord invite](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/social/discord-singular_46h.png?raw=true)](https://discord.gg/enGK2TymYJ) 
+[![Buy Me A Coffee](https://github.com/intergrav/devins-badges/blob/v3/assets/compact-minimal/donate/kofi-singular-alt_46h.png?raw=true)](https://ko-fi.com/bluspring)
 
 ## FAQ
 ### Why?
