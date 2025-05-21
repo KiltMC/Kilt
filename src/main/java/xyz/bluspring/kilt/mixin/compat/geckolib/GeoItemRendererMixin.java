@@ -37,6 +37,10 @@ public abstract class GeoItemRendererMixin<T extends Item & IAnimatable> {
         ((BlockEntityWithoutLevelRendererAccessor) this).setEntityModelSet(modelSet);
     }
 
+    public void method_3166(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        renderByItem(stack, transformType, poseStack, bufferSource, packedLight, packedOverlay);
+    }
+
     public void renderByItem(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (transformType == ItemTransforms.TransformType.GUI) {
             poseStack.pushPose();
