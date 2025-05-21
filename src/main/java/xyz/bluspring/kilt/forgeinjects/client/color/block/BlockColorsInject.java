@@ -8,6 +8,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Mixin(BlockColors.class)
 public class BlockColorsInject {
@@ -43,7 +45,7 @@ public class BlockColorsInject {
 
     @WrapOperation(method = "getColor*", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/IdMapper;byId(I)Ljava/lang/Object;"))
     private <T> T kilt$useForgeBlockColorIfPossible(IdMapper<T> instance, int id, Operation<T> original, @Local(argsOnly = true) BlockState state) {
-        var delegate = ForgeRegistries.BLOCKS.getDelegate(state.getBlock());
+        var delegate = kilt$getHolderDelegate(state.getBlock());
         if (delegate.isPresent() && this.kilt$blockColors.containsKey(delegate.get())) {
             return (T) this.kilt$blockColors.get(delegate.get());
         }
@@ -53,10 +55,28 @@ public class BlockColorsInject {
 
     @Inject(method = "register", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/IdMapper;addMapping(Ljava/lang/Object;I)V"))
     private void kilt$registerBlockToForgeColor(BlockColor blockColor, Block[] blocks, CallbackInfo ci, @Local Block block) {
-        var delegate = ForgeRegistries.BLOCKS.getDelegate(block);
+        var delegate = kilt$getHolderDelegate(block);
 
         if (delegate.isPresent()) {
             this.kilt$blockColors.put(delegate.get(), blockColor);
+        }
+    }
+
+    @Unique
+    private static Optional<Holder.Reference<Block>> kilt$getHolderDelegate(Block block) {
+        var delegate = ForgeRegistries.BLOCKS.getDelegate(block);
+
+        if (delegate.isPresent()) {
+            return delegate;
+        } else {
+            var holder = Registry.BLOCK.getHolderOrThrow(Registry.BLOCK.getResourceKey(block).orElseThrow());
+
+            // why does Forge require explicitly a reference. dude. come on.
+            if (!(holder instanceof Holder.Reference<Block> reference)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(reference);
         }
     }
 }
