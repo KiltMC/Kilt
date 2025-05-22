@@ -67,6 +67,7 @@
         "client.renderer.item.ItemPropertiesAccessor",
         "compat.architectury.RegistrarManagerImplMixin",
         "compat.fabric_api.registry_sync.RegistrySyncManagerMixin",
+        "compat.forge.blueprint.RemoldedResourceManagerMixin",
         "compat.forge.iceandfire.TabulaModelHandlerHelperMixin",
         "compat.forge.zerocore.ClientProxyMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
