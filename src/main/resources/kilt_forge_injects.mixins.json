@@ -226,6 +226,7 @@
         "client.gui.screens.inventory.AbstractContainerScreenInject",
         "client.gui.screens.inventory.CreativeModeInventoryScreenInject",
         "client.gui.screens.inventory.CreativeModeInventoryScreenInject$SlotWrapperInject",
+        "client.gui.screens.inventory.EffectRenderingInventoryScreenInject",
         "client.gui.screens.inventory.tooltip.ClientTooltipComponentInject",
         "client.gui.screens.recipebook.RecipeBookComponentInject",
         "client.gui.screens.worldselection.WorldOpenFlowsInject",
