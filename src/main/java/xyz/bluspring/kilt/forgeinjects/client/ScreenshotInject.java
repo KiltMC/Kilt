@@ -8,10 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.ScreenshotEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 @Mixin(Screenshot.class)
 public class ScreenshotInject {
-    private static final AtomicReference<ScreenshotEvent> kilt$target = new AtomicReference<>();
+    @Unique private static final AtomicReference<ScreenshotEvent> kilt$target = new AtomicReference<>();
 
     @Inject(method = "_grab", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/ExecutorService;execute(Ljava/lang/Runnable;)V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private static void kilt$runScreenshotEvent(File gameDirectory, String screenshotName, RenderTarget buffer, Consumer<Component> messageConsumer, CallbackInfo ci, NativeImage nativeImage, File file, File file2) {
@@ -58,11 +58,11 @@ public class ScreenshotInject {
         return file;
     }
 
-    @Redirect(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
-    private static void kilt$useForgeEventSuccess(Consumer<Component> instance, Object component) {
-        if (kilt$target.get() != null)
-            instance.accept(kilt$target.get().getResultMessage());
-        else
-            instance.accept((Component) component);
+    @ModifyArg(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
+    private static <T> T kilt$useForgeEventSuccess(T t) {
+        if (kilt$target.get() != null && kilt$target.get().getResultMessage() != null)
+            return (T) kilt$target.get().getResultMessage();
+
+        return t;
     }
 }
