@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import net.fabricmc.loader.api.FabricLoader;
@@ -7,12 +11,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.RecordItem;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 // higher priority to allow for Sodium to overwrite the method
 @Mixin(value = LevelRenderer.class, priority = 1050)
-public class LevelRendererInject implements LevelRendererInjection {
+public abstract class LevelRendererInject implements LevelRendererInjection {
     @Shadow private int ticks;
 
     @Shadow @Nullable private Frustum capturedFrustum;
@@ -30,6 +39,8 @@ public class LevelRendererInject implements LevelRendererInjection {
     @Shadow private Frustum cullingFrustum;
 
     @Shadow @Final private Minecraft minecraft;
+
+    @Shadow public abstract void playStreamingMusic(net.minecraft.sounds.@Nullable SoundEvent soundEvent, BlockPos pos);
 
     private final AtomicReference<Matrix4f> kilt$projectionMatrix = new AtomicReference<>(null);
 
@@ -59,5 +70,29 @@ public class LevelRendererInject implements LevelRendererInjection {
         if (stage != null) {
             MinecraftForge.EVENT_BUS.post(new RenderLevelStageEvent(stage, (LevelRenderer) (Object) this, poseStack, projectionMatrix, this.ticks, this.minecraft.getPartialTick(), this.minecraft.gameRenderer.getMainCamera(), this.capturedFrustum != null ? this.capturedFrustum : this.cullingFrustum));
         }
+    }
+
+    @Unique private RecordItem kilt$currentRecordItem;
+
+    @Override
+    public void playStreamingMusic(@Nullable SoundEvent soundEvent, BlockPos pos, @Nullable RecordItem musicDiscItem) {
+        this.kilt$currentRecordItem = musicDiscItem;
+        this.playStreamingMusic(soundEvent, pos);
+        this.kilt$currentRecordItem = null;
+    }
+
+    @ModifyExpressionValue(method = "playStreamingMusic", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/RecordItem;getBySound(Lnet/minecraft/sounds/SoundEvent;)Lnet/minecraft/world/item/RecordItem;"))
+    private RecordItem kilt$useCustomRecordItem(RecordItem original) {
+        if (this.kilt$currentRecordItem != null)
+            return this.kilt$currentRecordItem;
+
+        return original;
+    }
+
+    @WrapOperation(method = "levelEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;playStreamingMusic(Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/core/BlockPos;)V", ordinal = 0))
+    private void kilt$storeCurrentRecordItem(LevelRenderer instance, SoundEvent soundEvent, BlockPos pos, Operation<Void> original, @Local(ordinal = 1, argsOnly = true) int data) {
+        this.kilt$currentRecordItem = (RecordItem) Item.byId(data);
+        original.call(instance, soundEvent, pos);
+        this.kilt$currentRecordItem = null;
     }
 }
