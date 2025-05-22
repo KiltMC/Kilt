@@ -21,7 +21,6 @@ import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
 import net.minecraftforge.common.extensions.IForgeBlock;
-import net.minecraftforge.registries.GameData;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,7 +44,7 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void kilt$useGameDataStateIdMap(CallbackInfo ci) {
-        BLOCK_STATE_REGISTRY = GameData.getBlockStateIDMap();
+        //BLOCK_STATE_REGISTRY = GameData.getBlockStateIDMap();
     }
 
     @Inject(at = @At("TAIL"), method = "<init>")
