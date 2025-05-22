@@ -86,7 +86,7 @@ object MixinSpecialAnnotationRemapper {
 
     private fun tryRemapString(fullDescriptor: String, remapper: KiltEnhancedRemapper): String {
         // Remap class in NEW annotation
-        if (fullDescriptor.startsWith("net/minecraft/") && !fullDescriptor.contains("*") && !fullDescriptor.contains("<") && !fullDescriptor.contains(";")) {
+        if (fullDescriptor.startsWith("net/minecraft/") && !fullDescriptor.contains("*") && !fullDescriptor.contains("<") && !fullDescriptor.contains(";") && !fullDescriptor.contains(".")) {
             return KiltRemapper.remapClass(fullDescriptor, ignoreWorkaround = true, toIntermediary = KiltRemapper.forceProductionRemap)
         }
 
