@@ -68,6 +68,7 @@
         "compat.architectury.RegistrarManagerImplMixin",
         "compat.fabric_api.registry_sync.RegistrySyncManagerMixin",
         "compat.forge.blueprint.RemoldedResourceManagerMixin",
+        "compat.forge.decocraft.JsonParserMixin",
         "compat.forge.iceandfire.TabulaModelHandlerHelperMixin",
         "compat.forge.zerocore.ClientProxyMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
