@@ -1,6 +1,11 @@
 // TRACKED HASH: 12b17cf5ecf56046e0c8f2d76638acdc60c56dfb
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.StackedContents;
@@ -12,6 +17,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.RecipeMatcher;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,25 +40,21 @@ public class ShapelessRecipeInject {
         this.isSimple = ingredients.stream().allMatch(IngredientInjection::isSimple);
     }
 
-    // stole this from Porting Lib
-    @Inject(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At("HEAD"), cancellable = true)
-	public void kilt$matches(CraftingContainer inv, Level level, CallbackInfoReturnable<Boolean> cir) {
-		if (!isSimple) {
-			StackedContents stackedcontents = new StackedContents();
-			List<ItemStack> inputs = new ArrayList<>();
-			int i = 0;
+	@Inject(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At("HEAD"))
+	private void kilt$initInputsList(CraftingContainer inv, Level level, CallbackInfoReturnable<Boolean> cir, @Share("inputs") LocalRef<List<ItemStack>> inputsRef) {
+		inputsRef.set(new ArrayList<>());
+	}
 
-			for(int j = 0; j < inv.getContainerSize(); ++j) {
-				ItemStack itemstack = inv.getItem(j);
-				if (!itemstack.isEmpty()) {
-					++i;
-					if (isSimple)
-						stackedcontents.accountStack(itemstack, 1);
-					else inputs.add(itemstack);
-				}
-			}
+    @WrapOperation(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/StackedContents;accountStack(Lnet/minecraft/world/item/ItemStack;I)V"))
+	private void kilt$addToInputsIfSimple(StackedContents instance, ItemStack stack, int amount, Operation<Void> original, @Share("inputs") LocalRef<List<ItemStack>> inputsRef) {
+		if (isSimple)
+			original.call(instance, stack, amount);
+		else
+			inputsRef.get().add(stack);
+	}
 
-			cir.setReturnValue(i == this.ingredients.size() && (isSimple ? stackedcontents.canCraft((Recipe<?>) this, null) : RecipeMatcher.findMatches(inputs,  this.ingredients) != null));
-		}
+	@WrapOperation(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/StackedContents;canCraft(Lnet/minecraft/world/item/crafting/Recipe;Lit/unimi/dsi/fastutil/ints/IntList;)Z"))
+	private boolean kilt$tryFindMatchesIfSimple(StackedContents instance, Recipe<?> recipe, @Nullable IntList stackingIndexList, Operation<Boolean> original, @Share("inputs") LocalRef<List<ItemStack>> inputsRef) {
+		return isSimple ? original.call(instance, recipe, stackingIndexList) : RecipeMatcher.findMatches(inputsRef.get(), this.ingredients) != null;
 	}
 }
