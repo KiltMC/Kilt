@@ -34,7 +34,7 @@ public class ServerStatusInject implements ServerStatusInjection {
     // thanks @TropheusJ
     // https://gist.github.com/TropheusJ/6fc33a167f63fbfab0b6eb8afd298ed8
     @ModifyReturnValue(method = "method_49092", at = @At("RETURN"))
-    private static App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> method_49092(App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> original, @Local(argsOnly = true) RecordCodecBuilder.Instance<ServerStatus> instance) {
+    private static App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> kilt$appendForgeData(App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> original, @Local(argsOnly = true) RecordCodecBuilder.Instance<ServerStatus> instance) {
         return instance.group(original,
             ServerStatusPing.CODEC
                 .optionalFieldOf("forgeData")
