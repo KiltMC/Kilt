@@ -28,8 +28,6 @@ public class AttributeSupplierInject {
         @Final
         private Map<Attribute, AttributeInstance> builder;
 
-        @Shadow private boolean instanceFrozen;
-
         @Override
         public void combine(AttributeSupplier.Builder other) {
             this.builder.putAll(((AttributeSupplierBuilderAccessor) other).getBuilder());
@@ -41,14 +39,11 @@ public class AttributeSupplierInject {
             return this.builder.containsKey(attribute);
         }
 
-        @Inject(at = @At("HEAD"), method = "build", cancellable = true)
+        @Inject(at = @At("TAIL"), method = "build")
         public void kilt$build(CallbackInfoReturnable<AttributeSupplier> cir) {
-            this.instanceFrozen = true;
             for (AttributeSupplier.Builder other : others) {
                 ((AttributeSupplierBuilderAccessor) other).setInstanceFrozen(true);
             }
-
-            cir.setReturnValue(new AttributeSupplier(this.builder));
         }
 
         public BuilderInject() {}
