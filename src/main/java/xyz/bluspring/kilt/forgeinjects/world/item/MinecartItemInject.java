@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.MinecartItem;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,7 +23,7 @@ public abstract class MinecartItemInject {
         private Comparable kilt$tryUseRailDirection(BlockState instance, Property property, Operation<Comparable> original, @Local Level level, @Local BlockPos pos) {
             var block = (BaseRailBlock) instance.getBlock();
 
-            if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, Level.class, BlockPos.class)) {
+            if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, BlockGetter.class, BlockPos.class, AbstractMinecart.class)) {
                 return block.getRailDirection(instance, level, pos, (AbstractMinecart) null);
             }
 
@@ -34,7 +35,7 @@ public abstract class MinecartItemInject {
     private Comparable kilt$tryUseRailDirection(BlockState instance, Property property, Operation<Comparable> original, @Local Level level, @Local BlockPos pos) {
         var block = (BaseRailBlock) instance.getBlock();
 
-        if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, Level.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, BlockGetter.class, BlockPos.class, AbstractMinecart.class)) {
             return block.getRailDirection(instance, level, pos, (AbstractMinecart) null);
         }
 
