@@ -20,6 +20,7 @@ import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
@@ -355,9 +356,12 @@ class KiltLoader {
             Kilt.loader.addModToFabric(mod)
 
             if (mod.modFile != null) { // Avoid adding the Forge builtins
-                if (mod.isRemapped())
+                if (mod.isRemapped()) {
                     FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
-                else // Still need to load JiJ'd libraries
+
+                    // Force Java to be aware of the remapped mod
+                    FileSystemUtil.getJarFileSystem(mod.remappedModFile.toPath(), true)
+                } else // Still need to load JiJ'd libraries
                     FabricLauncherBase.getLauncher().addToClassPath(mod.modFile.toURI().toPath())
             }
         }
