@@ -297,27 +297,43 @@ tasks {
 
         doFirst {
             // Scan Forge patches dir
-            var count = 0
-
-            fun readDir(file: File) {
+            fun readDir(file: File, list: MutableList<String> = mutableListOf(), root: File = file): List<String> {
                 val files = file.listFiles()!!
 
                 files.forEach {
                     if (it.isDirectory) {
-                        readDir(it)
+                        readDir(it, list, root)
                     } else {
-                        count++
+                        list.add(it.toRelativeString(root).replace("\\", "/").removePrefix("/"))
                     }
                 }
+
+                return list
             }
 
-            readDir(File("$projectDir/forge/patches"))
+            val forgePatches = readDir(File("$projectDir/forge/patches/minecraft"))
+            val forgePatchCount = forgePatches.size
 
-            val forgePatchCount = count
-            count = 0
+            val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            val kiltInjectCount = kiltInjects.size
 
-            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
-            val kiltInjectCount = count
+            forgePatches.filter {
+                if (it.startsWith("com/mojang/"))
+                    !kiltInjects.contains(it.removePrefix("com/mojang/").replace(".java.patch", "Inject.java"))
+                else
+                    !kiltInjects.contains(it.removePrefix("net/minecraft/").replace(".java.patch", "Inject.java"))
+            }.forEach {
+                println("[-] Missing patch: $it")
+            }
+
+            kiltInjects.filter {
+                if (it.startsWith("blaze3d") || it.startsWith("math") || it.startsWith("realmsclient"))
+                    !forgePatches.contains(("com/mojang/$it").replace("Inject.java", ".java.patch"))
+                else
+                    !forgePatches.contains(("net/minecraft/$it").replace("Inject.java", ".java.patch"))
+            }.forEach {
+                println("[!] Extra inject: $it")
+            }
 
             println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
         }

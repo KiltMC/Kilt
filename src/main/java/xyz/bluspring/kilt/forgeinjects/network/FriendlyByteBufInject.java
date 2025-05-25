@@ -14,9 +14,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import xyz.bluspring.kilt.injections.network.FriendlyByteBufInjection;
 
 @Mixin(FriendlyByteBuf.class)
-public abstract class FriendlyByteBufInject implements IForgeFriendlyByteBuf {
+public abstract class FriendlyByteBufInject implements IForgeFriendlyByteBuf, FriendlyByteBufInjection {
     @Shadow public abstract ByteBuf writeBoolean(boolean bl);
 
     @Shadow public abstract <T> void writeId(IdMap<T> idMap, T value);
