@@ -4,9 +4,9 @@
 
 # Kilt
 A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.<br>
-[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
 [![Discord invite](https://raw.githubusercontent.com/Cart-shit/Kilta/40b2990099df787fc77e905db24b94bb8396237b/.github/assets/discord-plural_vector%201.svg)](https://discord.gg/enGK2TymYJ) 
 [![Buy Me A Coffee](https://raw.githubusercontent.com/intergrav/devins-badges/c7fd18efdadd1c3f12ae56b49afd834640d2d797/assets/cozy/donate/kofi-plural-alt_vector.svg?raw=true)](https://ko-fi.com/bluspring)
+[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)
 
 ## FAQ
 ### Why?
