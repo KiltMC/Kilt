@@ -944,7 +944,7 @@ class KiltLoader {
                 }
             }
 
-        if (!hasInitialized && mod.shouldScan && !hasErrored) {
+        if (!hasInitialized && mod.shouldScan && !mod.modId.startsWith("jij_") && !hasErrored) {
             exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
         }
 
