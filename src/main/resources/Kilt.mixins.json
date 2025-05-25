@@ -103,7 +103,8 @@
         "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
-        "compat.indium.BakedModelMixin"
+        "compat.indium.BakedModelMixin",
+        "compat.sodium.LevelRendererMixin"
     ],
     "injectors": {
         "defaultRequire": 1

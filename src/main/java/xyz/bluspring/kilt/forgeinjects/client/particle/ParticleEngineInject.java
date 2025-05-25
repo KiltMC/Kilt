@@ -56,6 +56,11 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     }
 
     @Override
+    public void kilt$setClippingHelper(Frustum frustum) {
+        this.kilt$clippingHelper = frustum;
+    }
+
+    @Override
     public void render(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper) {
         this.kilt$clippingHelper = clippingHelper;
         this.render(poseStack, bufferSource, lightTexture, camera, tickDelta);

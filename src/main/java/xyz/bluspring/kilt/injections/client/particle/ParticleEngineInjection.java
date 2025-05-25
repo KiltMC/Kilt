@@ -10,6 +10,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public interface ParticleEngineInjection {
+    void kilt$setClippingHelper(Frustum frustum);
     void render(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper);
     void addBlockHitEffects(BlockPos pos, BlockHitResult target);
 }
