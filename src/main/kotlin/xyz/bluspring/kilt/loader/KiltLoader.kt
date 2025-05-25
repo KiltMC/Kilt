@@ -438,7 +438,7 @@ class KiltLoader {
             modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml"))),
 
             // Registrate and stuff don't provide a mods.toml.....
-            shouldScan = manifest?.mainAttributes?.contains("FMLModType") == true && manifest.mainAttributes["FMLModType"] == "GAMELIBRARY"
+            shouldScan = manifest?.mainAttributes?.getValue("FMLModType") == "GAMELIBRARY"
         )
     }
 
