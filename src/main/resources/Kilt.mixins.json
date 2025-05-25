@@ -75,10 +75,6 @@
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
-        "compat.geckolib.RenderProviderMixin",
-        "compat.mkb.IKeyBindingMixin",
-        "compat.mkb.IKeyConflictContextMixin",
-        "compat.mkb.KeyConflictContextMixin",
         "compat.modmenu.ModMenuMixin",
         "compat.porting_lib.ConditionalRecipeSerializerMixin",
         "compat.porting_lib.TicketHelperAccessor",
@@ -87,7 +83,6 @@
         "compat.sodium.BlockRendererMixin",
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
-        "compat.wthit.WailaMixin",
         "data.registries.VanillaRegistriesAccessor",
         "debug.ChunkSkyLightSourcesMixin",
         "dev.MappedRegistryMixin",
@@ -108,8 +103,7 @@
         "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
-        "compat.indium.BakedModelMixin",
-        "compat.mkb.KeyMappingMixin"
+        "compat.indium.BakedModelMixin"
     ],
     "injectors": {
         "defaultRequire": 1

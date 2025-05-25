@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.compat.wthit;
+package xyz.bluspring.kilt.compat.fabric.mixin.wthit;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import org.spongepowered.asm.mixin.Dynamic;
@@ -20,3 +20,4 @@ public class WailaMixin {
         ci.cancel();
     }
 }
+

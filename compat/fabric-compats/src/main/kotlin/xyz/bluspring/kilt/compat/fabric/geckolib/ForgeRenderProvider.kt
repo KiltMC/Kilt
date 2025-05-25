@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.compat.geckolib
+package xyz.bluspring.kilt.compat.fabric.geckolib
 
 import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.model.Model

@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.compat.mkb;
+package xyz.bluspring.kilt.compat.fabric.mixin.mkb;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.minecraftforge.client.settings.IKeyConflictContext;

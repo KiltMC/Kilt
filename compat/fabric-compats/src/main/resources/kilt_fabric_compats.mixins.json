@@ -1,0 +1,20 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.kilt.compat.fabric.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "geckolib.RenderProviderMixin",
+        "mkb.IKeyBindingMixin",
+        "mkb.IKeyConflictContextMixin",
+        "mkb.KeyConflictContextMixin",
+        "wthit.WailaMixin"
+    ],
+    "client": [
+        "mkb.KeyMappingMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
+}

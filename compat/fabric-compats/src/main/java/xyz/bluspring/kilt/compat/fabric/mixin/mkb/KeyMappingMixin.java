@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.compat.mkb;
+package xyz.bluspring.kilt.compat.fabric.mixin.mkb;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.compat.mkb.MKBKeyConflictContextWrapper;
+import xyz.bluspring.kilt.compat.fabric.mkb.MKBKeyConflictContextWrapper;
 
 import java.util.HashMap;
 import java.util.List;

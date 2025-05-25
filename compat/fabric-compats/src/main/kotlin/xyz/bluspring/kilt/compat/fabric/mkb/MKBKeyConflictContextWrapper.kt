@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.compat.mkb
+package xyz.bluspring.kilt.compat.fabric.mkb
 
 import net.minecraftforge.client.settings.IKeyConflictContext
 import committee.nova.mkb.api.IKeyConflictContext as MKBKeyConflictContext

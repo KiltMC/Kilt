@@ -215,9 +215,6 @@ dependencies {
         }
     }
 
-    // Compatibility
-    modImplementation("software.bernie.geckolib:geckolib-fabric-${property("minecraft_version")}:${property("geckolib_version")}")
-
     val runSodium = true
 
     // Runtime mods for testing
@@ -244,15 +241,10 @@ dependencies {
 
     implementation(include("commons-codec:commons-codec:1.15")!!)
 
-    // Fabric compatibility stuff
-    modCompileOnly("maven.modrinth:modernkeybinding:${property("mkb_version")}") { // Modern Keybinding - The Maven repo is unstable, rely on Modrinth instead
-        isTransitive = false
-    }
-
     // Compatibility layers
     listOf(
         "transfer-api-compat", "forge-sodium-compats", "create-compat",
-        "curios-trinkets-compat"
+        "curios-trinkets-compat", "fabric-compats"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
     }
