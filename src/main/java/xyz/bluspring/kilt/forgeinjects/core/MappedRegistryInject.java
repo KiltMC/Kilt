@@ -4,12 +4,10 @@ package xyz.bluspring.kilt.forgeinjects.core;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraftforge.registries.RegistryManager;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -18,10 +16,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +34,8 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Shadow @Final private ResourceKey<? extends Registry<T>> key;
 
     @Shadow public abstract ResourceKey<? extends Registry<T>> key();
+
+    @Shadow private volatile Map<TagKey<T>, HolderSet.Named<T>> tags;
 
     @CreateStatic
     private static Set<ResourceLocation> getKnownRegistries() {
@@ -102,5 +104,14 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         }
 
         return value;
+    }
+
+    @Inject(method = "bindTags", at = @At("TAIL"))
+    private void kilt$tryBindTags(Map<TagKey<T>, List<Holder<T>>> tagMap, CallbackInfo ci) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null && registry.tags() != null) {
+            registry.tags().kilt$bindTags(this.tags);
+        }
     }
 }
