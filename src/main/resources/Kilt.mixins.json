@@ -71,6 +71,7 @@
         "compat.forge.iceandfire.TabulaModelHandlerHelperMixin",
         "compat.forge.tacz.GetJarResourcesMixin",
         "compat.forge.zerocore.ClientProxyMixin",
+        "compat.forgeconfigapiport.ConfigTrackerAccessor",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
