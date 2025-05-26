@@ -49,6 +49,8 @@ public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInj
             } else if (kilt$pool == Library.Pool.STREAMING) {
                 MinecraftForge.EVENT_BUS.post(new PlayStreamingSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             }
+
+            this.kilt$soundInstance = null;
         }
     }
 }
