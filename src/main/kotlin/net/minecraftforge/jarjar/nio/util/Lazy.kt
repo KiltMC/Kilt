@@ -61,7 +61,7 @@ class Lazy<T> {
 
     fun <R> map(mapper: Function<T, R>): Lazy<R> {
         synchronized(lock) {
-            return of { mapper.apply(this.get()) }
+            return of<R> { mapper.apply(this.get()) }
         }
     }
 
