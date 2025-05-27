@@ -8,7 +8,7 @@ class Lazy<T> {
     companion object {
         @JvmStatic
         fun <T> of(): Lazy<T> {
-            return Lazy(null as Supplier<T?>?)
+            return Lazy<T>(null)
         }
 
         @JvmStatic
@@ -33,20 +33,20 @@ class Lazy<T> {
         this.provider = Supplier { value }
     }
 
-    constructor(provider: Supplier<T?>?) {
+    constructor(provider: Supplier<T>?) {
         this.value = null
         this.initialized = false
         this.provider = provider
     }
 
-    fun get(): T? {
+    fun get(): T {
         synchronized(lock) {
             if (!initialized && provider != null) {
                 initialized = true
                 this.value = provider.get()
             }
 
-            return this.value
+            return this.value!!
         }
     }
 
