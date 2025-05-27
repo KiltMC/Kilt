@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.util
+package xyz.bluspring.knit.loader.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel

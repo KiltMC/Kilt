@@ -1,0 +1,31 @@
+{
+    "schema_version": 1,
+    "quilt_loader": {
+        "group": "xyz.bluspring",
+        "id": "knit-loader",
+        "version": "${version}",
+        "entrypoints": {},
+        "plugins": [
+            "xyz.bluspring.knit.loader.quilt.KnitLoaderQuilt"
+        ],
+        "depends": [
+            {
+                "id": "fabric-language-kotlin",
+                "versions": ">=${fabric_kotlin_version}"
+            }
+        ],
+        "intermediate_mappings": "net.fabricmc:intermediary",
+        "metadata": {
+            "name": "Knit Loader",
+            "description": "A mod that allows mods to load other mods. Abstraction library for ",
+            "license": "MIT",
+            "contributors": {
+                "BluSpring": "Maintainer"
+            },
+            "contact": {
+                "sources": "https://github.com/KiltMC/Kilt",
+                "issues": "https://github.com/KiltMC/Kilt/issues"
+            }
+        }
+    }
+}

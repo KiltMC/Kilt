@@ -30,7 +30,10 @@ import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.fixers.*
-import xyz.bluspring.kilt.util.*
+import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
+import xyz.bluspring.kilt.util.ClassNameHashSet
+import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.knit.loader.util.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Path
