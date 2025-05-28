@@ -16,12 +16,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.server.ServerLifecycleHooks
@@ -43,8 +43,19 @@ class Kilt : ModInitializer {
     @Suppress("removal")
     private fun registerFabricEvents() {
         InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
-            val event = ForgeHooks.onRightClickBlock(player, hand, pos, BlockHitResult(pos.center, direction, pos, false))
-            eventBusToArchitectury(event.result)
+            val hitResult = BlockHitResult(pos.center, direction, pos, false)
+            val event = ForgeHooks.onRightClickBlock(player, hand, pos, hitResult)
+            val stack = player.getItemInHand(hand)
+
+            if (!stack.isEmpty && event.useItem != Event.Result.DENY) {
+                val result = stack.onItemUseFirst(UseOnContext(player, hand, hitResult))
+
+                if (result != InteractionResult.PASS && result != InteractionResult.FAIL) {
+                    return@register vanillaToArchitectury(result)
+                }
+            }
+
+            eventBusToArchitectury(event.useBlock)
         }
 
         InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
@@ -87,10 +98,6 @@ class Kilt : ModInitializer {
 
         InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
             ForgeHooks.onEmptyClick(player, hand)
-        }
-
-        LivingEntityEvents.DROPS.register { entity, source, drops, level, recentlyHit ->
-            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
         LivingEntityEvents.LivingTickEvent.TICK.register { event ->
