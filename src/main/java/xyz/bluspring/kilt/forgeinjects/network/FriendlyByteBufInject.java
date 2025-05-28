@@ -1,52 +1,58 @@
 // TRACKED HASH: 65eab7af6923cfe40b811ec9f2b77f27d0284455
 package xyz.bluspring.kilt.forgeinjects.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.core.IdMap;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.extensions.IForgeFriendlyByteBuf;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import xyz.bluspring.kilt.injections.network.FriendlyByteBufInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(FriendlyByteBuf.class)
 public abstract class FriendlyByteBufInject implements IForgeFriendlyByteBuf, FriendlyByteBufInjection {
-    @Shadow public abstract ByteBuf writeBoolean(boolean bl);
+    @Shadow public abstract FriendlyByteBuf writeItem(ItemStack stack);
 
-    @Shadow public abstract <T> void writeId(IdMap<T> idMap, T value);
+    // Kilt: Forge defaults to true, but we need to support Fabric mods that don't know this exists, so it defaults to false.
+    @Unique private boolean kilt$isLimitedTag = false;
 
-    @Shadow public abstract ByteBuf writeByte(int i);
-
-    @Shadow public abstract FriendlyByteBuf writeNbt(@Nullable CompoundTag nbt);
-
+    @Override
     public FriendlyByteBuf writeItemStack(ItemStack stack, boolean limitedTag) {
-        if (stack.isEmpty()) {
-            this.writeBoolean(false);
-        } else {
-            this.writeBoolean(true);
-            Item item = stack.getItem();
-            this.writeId(BuiltInRegistries.ITEM, item);
-            this.writeByte(stack.getCount());
-            CompoundTag compoundTag = null;
-            if (item.isDamageable(stack) || item.shouldOverrideMultiplayerNbt()) {
-                compoundTag = limitedTag ? stack.getShareTag() : stack.getTag();
-            }
+        this.kilt$isLimitedTag = limitedTag;
+        var buf = this.writeItem(stack);
+        this.kilt$isLimitedTag = false;
 
-            this.writeNbt(compoundTag);
-        }
-
-        return (FriendlyByteBuf) (Object) this;
+        return buf;
     }
 
-    @Redirect(method = "readItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;setTag(Lnet/minecraft/nbt/CompoundTag;)V"))
-    private void kilt$readShareTagForStack(ItemStack instance, CompoundTag compoundTag) {
-        instance.readShareTag(compoundTag);
+    @WrapOperation(method = "writeItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;canBeDepleted()Z"))
+    private boolean kilt$checkIsDamageable(Item instance, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "isDamageable", ItemStack.class))
+            return instance.isDamageable(stack);
+
+        return original.call(instance);
+    }
+
+    @WrapOperation(method = "writeItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getTag()Lnet/minecraft/nbt/CompoundTag;"))
+    private CompoundTag kilt$checkIsLimitedTag(ItemStack instance, Operation<CompoundTag> original) {
+        if (this.kilt$isLimitedTag)
+            return instance.getShareTag();
+
+        return original.call(instance);
+    }
+
+    @WrapOperation(method = "readItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;setTag(Lnet/minecraft/nbt/CompoundTag;)V"))
+    private void kilt$readShareTagForStack(ItemStack instance, CompoundTag compoundTag, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "readShareTag", ItemStack.class, CompoundTag.class))
+            instance.readShareTag(compoundTag);
+        else
+            original.call(instance, compoundTag);
     }
 }
