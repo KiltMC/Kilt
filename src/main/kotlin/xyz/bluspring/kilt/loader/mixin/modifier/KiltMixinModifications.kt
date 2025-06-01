@@ -76,6 +76,22 @@ object KiltMixinModifications {
                     )
                 )
             )
+        ),
+
+        // Disables Structure Gel API's placeInWorld_loadBlockEntity inject,
+        // because the locals are all wrong.
+        MixinModifier(
+            owner = "net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate",
+            methods = listOf("placeInWorld"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V",
+                    shift = At.Shift.AFTER
+                )),
+                "locals" to arrayOf("Lorg/spongepowered/asm/mixin/injection/callback/LocalCapture;", "CAPTURE_FAILEXCEPTION")
+            ),
+            replaceWith = emptyList()
         )
     )
 
@@ -237,7 +253,18 @@ object KiltMixinModifications {
                 // or if value is list, check if none of the values equal the main value
                 if (value is List<*>)
                     value.any { a -> a == it.value }
-                else if (value is AnnotationNode)
+                else if (value is Array<*> && it.value is Array<*>) {
+                    var current = true
+                    val value2 = it.value as Array<*>
+
+                    for ((index, i) in value.withIndex()) {
+                        if (i != value2[index]) {
+                            current = false
+                        }
+                    }
+
+                    current
+                } else if (value is AnnotationNode)
                     if (it.value is Map<*, *>)
                         checkAllConditionsMatch(annotationValuesToMap(value.values), it.value as Map<String, Any>)
                     else false
@@ -282,7 +309,7 @@ object KiltMixinModifications {
         return map
     }
 
-    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null): AnnotationNode {
+    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null, shift: At.Shift? = null): AnnotationNode {
         return createAnnotation(At::class.java, mutableMapOf<String, Any>(
             "value" to value
         ).apply {
@@ -294,6 +321,9 @@ object KiltMixinModifications {
 
             if (remap != null)
                 this["remap"] = remap
+
+            if (shift != null)
+                this["shift"] = arrayOf("Lorg/spongepowered/asm/mixin/injection/At\$Shift;", shift.name)
 
             this.putAll(variables)
         })
