@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
+import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
@@ -188,6 +190,25 @@ object MixinAdditionalRemapper {
                         node.values = KiltMixinModifications.mapToAnnotationValues(values)
                     }
                 }
+            }
+        }
+
+        // Increase priority if LevelRenderer
+        val levelRenderer = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_761")
+        if (!values.contains("priority") && (targetClassNames.contains(levelRenderer.replace(".", "/")) || targetClassNames.contains(levelRenderer))) {
+            val modifiedValues = values.toMutableMap()
+            modifiedValues["priority"] = 1050
+
+            if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                    this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                })
+            } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                    this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                })
             }
         }
     }

@@ -47,6 +47,35 @@ object KiltMixinModifications {
                     )
                 )
             )
+        ),
+
+        // Fixes Rediscovered's Sodium compat
+        MixinModifier(
+            owner = "net/minecraft/client/renderer/LevelRenderer",
+            methods = listOf("renderClouds(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FDDD)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lme/jellysquid/mods/sodium/client/render/immediate/CloudRenderer;render",
+                    remap = false
+                )),
+                "require" to 0,
+                "cancellable" to true
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to "renderClouds(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FDDD)V",
+                        "at" to at(
+                            value = "INVOKE",
+                            target = "Lme/jellysquid/mods/sodium/client/render/immediate/CloudRenderer;render(L${KiltRemapper.remapClass("net/minecraft/client/multiplayer/ClientLevel")};L${KiltRemapper.remapClass("net/minecraft/client/player/LocalPlayer")};L${KiltRemapper.remapClass("com/mojang/blaze3d/vertex/PoseStack")};Lorg/joml/Matrix4f;FFDDD)V",
+                            remap = false
+                        ),
+                        "require" to 0,
+                        "cancellable" to true
+                    )
+                )
+            )
         )
     )
 
@@ -253,7 +282,7 @@ object KiltMixinModifications {
         return map
     }
 
-    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null): AnnotationNode {
+    private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null): AnnotationNode {
         return createAnnotation(At::class.java, mutableMapOf<String, Any>(
             "value" to value
         ).apply {
@@ -262,6 +291,9 @@ object KiltMixinModifications {
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
+
+            if (remap != null)
+                this["remap"] = remap
 
             this.putAll(variables)
         })
