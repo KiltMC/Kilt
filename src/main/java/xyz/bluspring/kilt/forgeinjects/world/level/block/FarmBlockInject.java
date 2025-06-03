@@ -31,7 +31,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(FarmBlock.class)
+// Higher priority for Potatoptimize
+@Mixin(value = FarmBlock.class, priority = 1050)
 public abstract class FarmBlockInject {
     @Shadow public static void turnToDirt(@Nullable Entity entity, BlockState state, Level level, BlockPos pos) {}
 

@@ -63,7 +63,7 @@ public abstract class ShaderInstanceInject {
         cancellable = true
     )
     private void kilt$addForgeSupportToFabricAPI(String id, CallbackInfoReturnable<String> cir) {
-        if (id.contains(":") && !(((Object) this) instanceof FabricShaderProgram)) {
+        if (this.name.contains(":") && !(((Object) this) instanceof FabricShaderProgram)) {
             cir.setReturnValue(FabricShaderProgram.rewriteAsId(id, this.name));
         }
     }

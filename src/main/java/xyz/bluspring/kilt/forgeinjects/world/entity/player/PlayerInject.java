@@ -71,7 +71,8 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         super(entityType, level);
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    // Kilt: handled via Architectury
+    /*@Inject(method = "tick", at = @At("HEAD"))
     public void kilt$playerTickStart(CallbackInfo ci) {
         ForgeEventFactory.onPlayerPreTick((Player) (Object) this);
     }
@@ -79,7 +80,7 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
     @Inject(method = "tick", at = @At("TAIL"))
     public void kilt$playerTickEnd(CallbackInfo ci) {
         ForgeEventFactory.onPlayerPostTick((Player) (Object) this);
-    }
+    }*/
 
     private final AtomicReference<BlockPos> kilt$dugBlockPos = new AtomicReference<>();
 
