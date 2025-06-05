@@ -47,6 +47,17 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    tasks {
+        create("printConfigurations") {
+            doLast {
+                println("Project Name: ${project.name} configurations:")
+                configurations.forEach { config ->
+                    println("\t- ${config.name}")
+                }
+            }
+        }
+    }
+
     repositories {
         mavenCentral()
         mavenLocal()
@@ -259,6 +270,12 @@ dependencies {
     // Knit Loader
     api(project(":loader"))
     runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+    include(project(":loader:fabric")) {
+        isTransitive = false
+    }
+    include(project(":loader:quilt")) {
+        isTransitive = false
+    }
 
     // Kotlin for Forge
     // We only need the language provider, as that's what we try to provide compatibility for.
