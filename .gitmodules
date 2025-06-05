@@ -2,3 +2,6 @@
 	path = forge
 	url = https://github.com/KiltMC/NeoForge.git
 	branch = 1.19.2
+[submodule "loader"]
+	path = loader
+	url = https://github.com/KiltMC/KnitLoader.git

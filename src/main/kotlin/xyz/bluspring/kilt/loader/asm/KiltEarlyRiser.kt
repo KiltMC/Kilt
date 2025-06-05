@@ -17,7 +17,6 @@ import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
-import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 import java.net.URL
@@ -483,18 +482,6 @@ class KiltEarlyRiser : Runnable {
                 }
             }
         }
-
-        DeltaTimeProfiler.push("preLaunch")
-        try {
-            Kilt.loader.preloadMods()
-            Kilt.loader.loadForgeModMixins()
-        } catch (e: Exception) {
-            Kilt.logger.error("Kilt failed to preload mods!")
-            Kilt.logger.error("The following error may yell at Fabric-ASM/\"mm\", which is NOT the reason behind this crash.")
-
-            throw e
-        }
-        DeltaTimeProfiler.pop()
     }
 
     private val ignoredKeywords = listOf("kilt", "fml", "mixin", "modlauncher")

@@ -1,9 +1,18 @@
 pluginManagement {
     repositories {
         maven("https://maven.fabricmc.net/") {
-            name = "Fabric"
+            name = "FabricMC"
+        }
+        maven("https://maven.quiltmc.org/repository/release/") {
+            name = "QuiltMC"
         }
         maven("https://dl.bintray.com/brambolt/public")
+        maven("https://mvn.devos.one/releases") {
+            name = "devOS Releases"
+        }
+        maven("https://mvn.devos.one/snapshots") {
+            name = "devOS Releases"
+        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -16,3 +25,7 @@ pluginManagement {
                     .split("+")[0] // Ensures sentences like `+build.1` are ignored
     }
 }
+
+include(":loader:cichlid")
+include(":loader:fabric")
+include(":loader:quilt")

@@ -1,9 +1,7 @@
 package xyz.bluspring.kilt.loader
 
 import de.florianmichael.asmfabricloader.api.event.PrePrePreLaunchEntrypoint
-import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 class KiltEarlierInitializer : PrePrePreLaunchEntrypoint {
     override fun onLanguageAdapterLaunch() {
@@ -13,8 +11,5 @@ class KiltEarlierInitializer : PrePrePreLaunchEntrypoint {
         if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             this::class.java.classLoader.setDefaultAssertionStatus(KiltFlags.ENABLE_ASSERTIONS)
         }
-
-        KiltRemapper.init()
-        runBlocking { KiltLoader.INSTANCE.scanMods() }
     }
 }

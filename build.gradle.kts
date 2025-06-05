@@ -33,11 +33,32 @@ loom {
     }
 }
 
-repositories {
-    mavenLocal()
-    maven("https://mvn.devos.one/snapshots/") {
-        name = "DevOS One"
+allprojects {
+    apply(plugin = "java")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    tasks {
+        create("printConfigurations") {
+            doLast {
+                println("Project Name: ${project.name} configurations:")
+                configurations.forEach { config ->
+                    println("\t- ${config.name}")
+                }
+            }
+        }
     }
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+
+        maven("https://mvn.devos.one/releases/") {
+            name = "devOS Maven"
+        }
+
+        maven("https://mvn.devos.one/snapshots/") {
+            name = "devOS Maven (Snapshots)"
+        }
 
     maven("https://jitpack.io/") {
         name = "JitPack"
@@ -99,26 +120,57 @@ repositories {
         name = "Su5ed"
     }
 
-    maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
-        name = "GeckoLib"
+        maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
+            name = "GeckoLib"
+        }
+
+        maven("https://thedarkcolour.github.io/KotlinForForge/") {
+            name = "Kotlin for Forge"
+        }
+    }
+
+    // Avoid making the compats submodule use Loom, otherwise we break stuff
+    if (project.name == "compat")
+        return@allprojects
+
+    // Prevent other Knit Loader modules from going through Fabric Loom.
+    if (project.name == "loader" || (project.parent?.name == "loader"))
+        return@allprojects
+
+    apply(plugin = "fabric-loom")
+
+    dependencies {
+        // To change the versions see the gradle.properties file
+        minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
+        mappings (loom.layered {
+            officialMojangMappings()
+            parchment("org.parchmentmc.data:parchment-${rootProject.property("parchment_version")}:${rootProject.property("parchment_release")}@zip")
+        })
+        modImplementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+
+        // Just because I like Kotlin more than Java
+        modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+
+        // TODO: remove this when 0.5 is mainlined into Fabric
+        include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
+
+        include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
+            exclude("org.spongepowered", "mixin")
+        })
+
+        if (project.parent?.name != "loader") {
+            // Fabric API. This is technically optional, but you probably want it anyway.
+            modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
+
+            // Cursed Fabric/Mixin stuff
+            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
+            modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
+            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
+        }
     }
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft ("com.mojang:minecraft:${property("minecraft_version")}")
-    mappings (loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${property("parchment_version")}:${property("parchment_release")}@zip")
-    })
-    modImplementation ("net.fabricmc:fabric-loader:${property("loader_version")}")
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation ("net.fabricmc.fabric-api:fabric-api:${property("fabric_version")}")
-
-    // Just because I like Kotlin more than Java
-    modImplementation ("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-
     // we require Indium due to us using Fabric Rendering API stuff.
     // let's tell the users that too.
     modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}") {
@@ -130,11 +182,8 @@ dependencies {
     portingLibs.forEach { lib ->
         modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
-    modImplementation ("dev.architectury:architectury-fabric:${property("architectury_version")}")
-    implementation(include(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")!!)!!)
-    implementation(include("com.github.thecatcore:CursedMixinExtensions:${property("cursedmixinextensions_version")}")!!)
-    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${property("mixin_squared_version")}")!!)!!)
-    modImplementation(include("com.github.Chocohead:Fabric-ASM:${property("fabric_asm_version")}")!!)
+    modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
+
     modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modImplementation("net.minecraftforge:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
@@ -208,6 +257,32 @@ dependencies {
 
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
+
+    implementation(include("commons-codec:commons-codec:1.15")!!)
+
+    // Knit Loader
+    api(project(":loader"))
+    runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+    include(project(":loader:fabric")) {
+        isTransitive = false
+    }
+    include(project(":loader:quilt")) {
+        isTransitive = false
+    }
+
+    // Kotlin for Forge
+    // We only need the language provider, as that's what we try to provide compatibility for.
+    // The end user still however has to provide KFF themselves.
+    compileOnly("thedarkcolour:kfflang:${property("kff_version")}") {
+        exclude("org.jetbrains.kotlin") // KFF ships an outdated version of Kotlin, we use latest.
+    }
+
+    // Test libraries
+    testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
+    testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
+    testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
 }
 
 configurations.all {
