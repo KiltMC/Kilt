@@ -5,8 +5,6 @@ import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
-import de.florianmichael.asmfabricloader.api.EarlyRiser
-import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
@@ -15,12 +13,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.api.metadata.ModMetadata
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
-import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
-import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
@@ -38,41 +33,33 @@ import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper
 import net.minecraftforge.fml.loading.toposort.TopologicalSort
 import net.minecraftforge.forgespi.Environment
 import net.minecraftforge.forgespi.language.IModInfo
-import net.minecraftforge.forgespi.language.IModInfo.DependencySide
 import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ModFileFactory
-import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
-import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.api.entrypoints.ScanForgeModsEntrypoint
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
-import xyz.bluspring.kilt.loader.mixin.KiltMixinLoader
-import xyz.bluspring.kilt.loader.mod.ForgeMod
-import xyz.bluspring.kilt.loader.mod.KiltEnvironment
-import xyz.bluspring.kilt.loader.mod.KiltModFileFactory
-import xyz.bluspring.kilt.loader.mod.LoaderModProvider
-import xyz.bluspring.kilt.loader.mod.fabric.FabricModProvider
+import xyz.bluspring.kilt.loader.mod.*
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.util.*
-import java.net.URL
+import xyz.bluspring.kilt.util.DistUtil
+import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.buildGraph
+import xyz.bluspring.knit.loader.KnitLoader
+import xyz.bluspring.knit.loader.KnitModLoader
+import xyz.bluspring.knit.loader.mod.ModDefinition
+import xyz.bluspring.knit.loader.mod.ModDependency
+import xyz.bluspring.knit.loader.mod.ModEnvironment
+import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.function.Consumer
 import java.util.jar.JarFile
 import java.util.jar.Manifest
-import java.util.zip.ZipFile
 import kotlin.io.path.*
-import kotlin.system.exitProcess
 
-class KiltLoader {
-    val mods = LockableObjectArrayList<ForgeMod>()
-    internal val forgeMods = ObjectArrayList<ForgeMod>()
+class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private val tomlParser = TomlParser()
 
     // I have no fucking clue why this is needed, but for whatever fucking reason,
@@ -81,298 +68,323 @@ class KiltLoader {
     // I don't have time to deal with this, so this works instead.
     private lateinit var sortedModOrder: Collection<ForgeMod>
 
-    // Meant to be used for compatibility between Fabric and other derivatives of it, such as Quilt.
-    // However, I currently haven't found a way to link Kilt's mods into Quilt, so this is how it will
-    // be for now.
-    val modProvider: LoaderModProvider = FabricModProvider()
-
     private val environment = KiltEnvironment()
 
-    private data class ModInfo(val id: String, val displayName: String)
-    private var hasInjected = false
+    override fun getModDefinitions(path: Path): List<ModDefinition> {
+        if (path.extension != "jar")
+            return emptyList()
 
-    suspend fun scanMods() {
-        val modLoadingQueue = ConcurrentLinkedQueue<ForgeMod>()
-        val fabricModDependencies = mutableMapOf<ModMetadata, Map<String, VersionRange>>()
-
-        // Collect Fabric mods' Forge dependencies
-        // FIXME: https://github.com/KiltMC/Kilt/issues/255
-        /*for (mod in FabricLoader.getInstance().allMods) {
-            if (mod.metadata.containsCustomValue("kilt:forgeDependencies")) {
-                fabricModDependencies[mod.metadata] = mod.metadata.getCustomValue("kilt:forgeDependencies").asObject.associate { it.key to VersionRange.createFromVersionSpec(it.value.asString) }
-            }
-        }*/
-
-        Kilt.logger.info("Scanning the mods directory for Forge mods...")
-        DeltaTimeProfiler.push("scanMods")
-
-        val modsDir = FabricLoader.getInstance().gameDir / "mods"
-
-        if (!modsDir.exists() || !modsDir.isDirectory())
-            throw IllegalStateException("Mods directory doesn't exist! ...how did you even get to this point?")
-
-        val exception = RuntimeException("Failed to load mods in Kilt!")
-
-        DeltaTimeProfiler.push("preload")
-        preloadForgeBuiltinMod(modLoadingQueue)
-        modsDir.forEachDirectoryEntry("*.jar") { modFile ->
-            try {
-                preloadJarMod(modLoadingQueue, modFile, ZipFile(modFile.toFile()))
-            } catch (e: Throwable) {
-                exception.addSuppressed(e)
-            }
-        }
-        DeltaTimeProfiler.pop()
-
-        try {
-            // Allow Fabric mods to call for detecting Forge mods in the loading queue.
-            EarlyRiser.invokeEntrypoints("kilt:scanForgeMods", ScanForgeModsEntrypoint::class.java) {
-                it.onScanMods(modLoadingQueue)
-            }
-        } catch (e: Throwable) {
-            exception.addSuppressed(e)
-        }
-
-        // If exceptions had occurred during preloading, then create a window to show the exceptions.
-        if (exception.suppressed.isNotEmpty()) {
-            Kilt.logger.error("Failed to load Forge mods in Kilt!")
-            exception.printStackTrace()
-
-            FabricGuiEntry.displayError("Exceptions occurred whilst scanning Forge mods in Kilt!", exception, {}, true)
-
-            exitProcess(1)
-        }
-
-        Kilt.logger.debug("Re-scanning Forge mods to verify mod dependencies...")
-
-        val mcVersion = DefaultArtifactVersion(
-            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version.friendlyString
-        )
-        val preloadedMods = mutableMapOf<ModInfo, List<DependencyLoadingState>>()
-        val modDependencies = mutableMapOf<ModInfo, List<IModInfo.ModVersion>>()
-        val modsToRemove = mutableListOf<ModInfo>()
-
-        // Add validation for Forge mods' dependencies
-        for (mod in modLoadingQueue) {
-            modDependencies[ModInfo(mod.modId, mod.displayName)] = mod.dependencies
-        }
-
-        // Add validation for Fabric mods' Forge dependencies
-        for ((metadata, dependencies) in fabricModDependencies) {
-            val modInfo = ModInfo(metadata.id, metadata.name)
-            val deps = mutableListOf<IModInfo.ModVersion>()
-
-            for ((depId, depVersion) in dependencies) {
-                deps.add(ForgeMod.ForgeModDependency(depId, depVersion, true, IModInfo.Ordering.NONE, DependencySide.BOTH))
-            }
-
-            modDependencies[modInfo] = deps
-        }
-
-        // Iterate through the mod loading queue for the first time
-        // to validate dependencies.
-        modDependencies.forEach { (mod, dependencies) ->
-            val states = mutableListOf<DependencyLoadingState>()
-            dependencies.forEach dependencies@{ dependency ->
-                // I suspect this is how some Forge devs try to handle sided mods.
-                if (dependency.modId == "forge" && !isSideValid(dependency.side)) {
-                    modsToRemove.add(mod)
-                    Kilt.logger.info("Detected that ${mod.displayName} (${mod.id}) may be client-only in a server environment, ignoring.")
-                    return@dependencies
-                }
-
-                if (!isSideValid(dependency.side))
-                    return@dependencies // Don't need to load the dependency.
-
-                if (dependency.modId == "forge") {
-                    if (!dependency.versionRange.containsVersion(SUPPORTED_FORGE_API_VERSION)) {
-                        states.add(IncompatibleDependencyLoadingState(dependency, SUPPORTED_FORGE_API_VERSION))
-
-                        return@dependencies
-                    }
-
-                    states.add(ValidDependencyLoadingState(dependency))
-
-                    return@dependencies
-                } else if (dependency.modId == "minecraft") {
-                    if (!dependency.versionRange.containsVersion(mcVersion)) {
-                        states.add(IncompatibleDependencyLoadingState(dependency, mcVersion))
-                        return@dependencies
-                    }
-
-                    states.add(ValidDependencyLoadingState(dependency))
-
-                    return@dependencies
-                }
-
-                if ( // Check if the dependency exists, and if it's required.
-                    modLoadingQueue.none { it.modId == dependency.modId } &&
-                    !FabricLoader.getInstance().isModLoaded(dependency.modId) &&
-                    dependency.isMandatory
-                ) {
-                    states.add(MissingDependencyLoadingState(dependency))
-                    return@dependencies
-                }
-
-                // If it's not required, no need to worry.
-                if (modLoadingQueue.none { it.modId == dependency.modId } && !FabricLoader.getInstance()
-                        .isModLoaded(dependency.modId))
-                    return@dependencies
-
-                val dependencyMod = modLoadingQueue.firstOrNull { it.modId == dependency.modId }
-
-                if (dependencyMod == null && FabricLoader.getInstance().isModLoaded(dependency.modId)) {
-                    val dependencyContainer = FabricLoader.getInstance().getModContainer(dependency.modId).orElseThrow()
-                    val version = DefaultArtifactVersion(dependencyContainer.metadata.version.friendlyString)
-
-                    if (dependency.versionRange.containsVersion(version)) {
-                        states.add(ValidDependencyLoadingState(dependency))
-                    } else {
-                        states.add(IncompatibleDependencyLoadingState(dependency, version))
-                    }
-
-                    return@dependencies
-                } else if (dependencyMod == null) {
-                    states.add(MissingDependencyLoadingState(dependency))
-                    return@dependencies
-                }
-
-                if (!dependency.versionRange.containsVersion(dependencyMod.version)) {
-                    states.add(
-                        IncompatibleDependencyLoadingState(
-                            dependency,
-                            dependencyMod.version
-                        )
-                    )
-
-                    return@dependencies
-                }
-
-                states.add(ValidDependencyLoadingState(dependency))
-            }
-
-            preloadedMods[mod] = states
-        }
-
-        // Remove any mods that shouldn't be handled
-        for (mod in modsToRemove) {
-            preloadedMods.remove(mod)
-            modLoadingQueue.removeIf { it.modId == mod.id }
-        }
-
-        // Check if any of the dependencies failed to load
-        if (preloadedMods.any { it.value.any { state -> state !is ValidDependencyLoadingState } }) {
-            preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
-                .forEach { (mod, dependencyStates) ->
-                    Kilt.logger.error("${mod.displayName} (${mod.id}) failed to load!")
-
-                    dependencyStates.forEach states@{ state ->
-                        if (state is ValidDependencyLoadingState)
-                            return@states
-
-                        Kilt.logger.error("- Dependency ${state.dependency.modId} failed to load: $state")
-                    }
-                }
-
-            FabricGuiEntry.displayError("Incompatible Forge mod set!", null, {
-                val tab = it.addTab("Kilt Error")
-
-                preloadedMods.filter { mod -> mod.value.any { state -> state !is ValidDependencyLoadingState } }
-                    .forEach { (mod, dependencyStates) ->
-                        val message = tab.node.addMessage(
-                            "${mod.displayName} (${mod.id}) failed to load!",
-                            FabricStatusTree.FabricTreeWarningLevel.ERROR
-                        )
-
-                        dependencyStates.forEach states@{ state ->
-                            if (state is ValidDependencyLoadingState)
-                                return@states
-
-                            message.addMessage(
-                                "Dependency ${state.dependency.modId} failed to load: $state",
-                                FabricStatusTree.FabricTreeWarningLevel.NONE
-                            )
-                        }
-                    }
-
-                it.tabs.removeIf { t -> t != tab }
-            }, true)
-
-            exitProcess(1)
-        } else {
-            Kilt.logger.info("Found ${modLoadingQueue.size} Forge mods.")
-
-            if (modLoadingQueue.isNotEmpty()) {
-                try {
-                    remapMods(modLoadingQueue)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-
-                    FabricGuiEntry.displayError("Failed to remap Forge mods!", e, {}, true)
-
-                    exitProcess(1)
-                }
-            } else {
-                Kilt.logger.info("No Forge mods located, not proceeding with mod remapping.")
-            }
-
-            modLoadingQueue.forEach { mod ->
-                loadTransformers(mod)
-                CoreModLoader.scanAndLoadCoreMods(mod)
-            }
-        }
-
-        sortMods(modLoadingQueue)
-        DeltaTimeProfiler.pop()
+        // Load all mod definitions. This is recursive, and since we also need to handle JiJ, it's separated into another method.
+        return loadModDefinitions(path)
     }
 
-    private fun sortMods(modLoadingQueue: MutableCollection<ForgeMod>) {
-        DeltaTimeProfiler.push("sortMods")
-        val graph = modLoadingQueue.buildGraph()
-        val sorted = TopologicalSort.topologicalSort(graph, null)
+    private fun loadModDefinitions(path: Path, parents: List<ModDefinition>? = null): List<ModDefinition> {
+        val jarFile = JarFile(path.toFile())
 
-        mods.size(sorted.size)
-        sorted.forEachIndexed { i, mod ->
-            mods[i] = mod
+        // Prevent users from having both Kilt and Connector at the same time.
+        if (jarFile.getEntry("org/sinytra/connector/ConnectorUtil.class") != null) {
+            throw Exception("Sinytra Connector was detected! I know I said \"Isn't it reasonable to have both?\", but come on!")
         }
 
-        mods.freeze()
-        modLoadingQueue.clear()
+        // Avoid loading JiJ'd MixinExtras, we already provide a modern version of it.
+        if (jarFile.getEntry("com/llamalad7/mixinextras/injector/ModifyExpressionValue.class") != null) {
+            return emptyList()
+        }
+
+        val definitions = mutableListOf<ModDefinition>()
+        val modsTomlEntry = jarFile.getEntry("META-INF/mods.toml")
+
+        // If no mods.toml even exists, just skip it, unless it's JiJ'd.
+        if (modsTomlEntry == null && parents == null)
+            return emptyList()
+
+        // Try to load manifest from JAR file, because it's required for some stuff in Forge mods.
+        val manifest = try {
+            jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")).use { Manifest(it) }
+        } catch (_: Throwable) {
+            null
+        }
+
+        // Load all mod definitions from the TOML.
+        if (modsTomlEntry != null) {
+            jarFile.getInputStream(modsTomlEntry)
+                .use {
+                    definitions.addAll(parseModsToml(path, tomlParser.parse(it, Charsets.UTF_8), manifest))
+                }
+        } else {
+            // Load JiJ'd libraries
+            definitions.add(createCustomMod(path, manifest))
+        }
+
+        val rootDefinitions = parents ?: definitions
+
+        // Then, we also want to load all JiJ'd mods.
+        val jarJarMetadata = jarFile.getEntry("META-INF/jarjar/metadata.json")
+
+        if (jarJarMetadata != null) {
+            val json = jarFile.getInputStream(jarJarMetadata).use { JsonParser.parseReader(it.reader(Charsets.UTF_8)).asJsonObject }
+            val exception = RuntimeException("Failed to load JiJ data in mod ${path.fileName}!")
+
+            // Iterate through the JARs that have been JiJ'd
+            for (element in json.getAsJsonArray("jars")) {
+                val data = element.asJsonObject
+                val filePath = data.get("path").asString
+
+                // If the entry doesn't actually exist, simply ignore.
+                val entry = jarFile.getEntry(filePath) ?: continue
+                val fileName = filePath.split("/").last()
+
+                val file = jarFile.getInputStream(entry).use { extractedModsDir / "${HashUtils.md5Hash(it)}-$fileName" }
+
+                runCatching {
+                    file.createFile()
+                    jarFile.getInputStream(entry).use { file.writeBytes(it.readAllBytes()) }
+                }.onFailure { throwable ->
+                    // Handle files that already exist, so we can just have it dealt with right off the bat.
+                    if (throwable !is FileAlreadyExistsException && throwable !is java.nio.file.FileAlreadyExistsException && throwable is Exception) {
+                        Kilt.logger.error("Failed to load JiJ'd file: $fileName", throwable)
+                        exception.addSuppressed(throwable)
+                    }
+                }
+
+                // Load through the definitions recursively until all JiJ'd mods have been loaded.
+                try {
+                    definitions.addAll(loadModDefinitions(file, rootDefinitions))
+                } catch (e: Throwable) {
+                    Kilt.logger.error("Failed to load JiJ'd file: $fileName", e)
+                    exception.addSuppressed(e)
+                }
+            }
+
+            // If something failed, make sure to throw the exception.
+            if (exception.suppressed.isNotEmpty())
+                throw exception
+        }
+
+        return definitions
+    }
+
+    // This is used specifically for JiJ'd mods that don't store mods.toml files.
+    private fun createCustomMod(modFile: Path, manifest: Manifest?): ModDefinition {
+        return ModDefinition(
+            modFile,
+            "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
+            "(Kilt JiJ) ${modFile.nameWithoutExtension}",
+            description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway.",
+            version = ForgeModVersion(DefaultArtifactVersion("0.0.0")),
+            license = "All Rights Reserved",
+
+            additionalData = mapOf(
+                "manifest" to manifest,
+                "isJiJ" to true,
+                "config" to NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml")))
+            ),
+            loaderCustomData = mapOf(
+                "modmenu" to mapOf(
+                    // Hide JiJ'd mods under the library badge.
+                    "badges" to listOf("library")
+                )
+            )
+        )
+    }
+
+    private fun parseModsToml(path: Path, toml: CommentedConfig, manifest: Manifest?, parentId: String? = null, isBuiltIn: Boolean = false): List<ModDefinition> {
+        val fileName = path.fileName
+        val modLoader = toml.get<String>("modLoader")
+
+        // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
+        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
+            throw Exception("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
+        }
+
+        val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion"))
+        when (modLoader) {
+            "kotlinforforge" -> {
+                if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
+                    throw Exception("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                }
+            }
+
+            "javafml", "lowcodefml" -> {
+                if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION)) {
+                    throw Exception("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FORGE_SPEC_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                }
+            }
+        }
+
+        val definitions = mutableListOf<ModDefinition>()
+        val mainConfig = NightConfigWrapper(toml)
+
+        // Load all mod metadata in the TOML, since Forge allows mods to specify multiple mods in the TOML.
+        for (metadata in mainConfig.getConfigList("mods")) {
+            val modId = metadata.getConfigElement<String>("modId").orElseThrow {
+                Exception("Forge mod file $fileName does not contain a mod ID!")
+            }
+
+            val modVersion = ForgeModVersion(DefaultArtifactVersion(
+                // Forge custom-replaces mod versions with string templates, so we need to handle that.
+                metadata.getConfigElement<String>("version").orElse("1")
+                    .run {
+                        if (this == "\${file.jarVersion}")
+                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
+                        else if (this == "\${global.forgeVersion}")
+                            SUPPORTED_FORGE_API_VERSION.toString()
+                        else if (this == "\${global.mcVersion}")
+                            MC_VERSION.friendlyString
+                        else this
+                    }
+            ))
+
+            val dependencies = mutableListOf<ModDependency>()
+
+            // Check all dependencies from the provided mod
+            for (forgeDep in mainConfig.getConfigList("dependencies", modId)) {
+                val versionRange = MavenVersionAdapter.createFromVersionSpec(
+                    forgeDep.getConfigElement<String>("versionRange")
+                        .orElseThrow { Exception("Forge mod file $fileName's dependencies contain a dependency without a version range!") }
+                )
+
+                dependencies.add(ModDependency(
+                    id = forgeDep.getConfigElement<String>("modId").orElseThrow {
+                        Exception("Forge mod file $fileName's dependencies contain a dependency without a mod ID!")
+                    },
+                    // Forge doesn't have nearly as much control over the dependency type, so handle required and optional only.
+                    type = if (forgeDep.getConfigElement<Boolean>("mandatory").orElse(false))
+                        ModDependency.Type.REQUIRED
+                    else
+                        ModDependency.Type.OPTIONAL,
+                    constraint = ForgeVersionConstraint(versionRange),
+
+                    // Forge has sided dependencies. How did we get sided dependencies before sided mods?
+                    side = when (forgeDep.getConfigElement<String>("side").orElse("BOTH")) {
+                        "CLIENT" -> ModEnvironment.CLIENT
+                        "SERVER" -> ModEnvironment.SERVER
+                        "BOTH" -> ModEnvironment.SERVER
+                        else -> throw IllegalArgumentException("Invalid side ${forgeDep.getConfigElement<String>("side")} provided while handling Forge mod file $fileName!")
+                    },
+
+                    // Knit has no reason to handle ordering, but we do, so we store it into the additional data.
+                    additionalData = mapOf(
+                        "ordering" to IModInfo.Ordering.valueOf(forgeDep.getConfigElement<String>("ordering").orElse("NONE"))
+                    )
+                ))
+            }
+
+            val definition = ModDefinition(
+                id = modId,
+                displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
+                description = metadata.getConfigElement<String>("description").orElse("")
+                    .replace("\r", ""), // Otherwise, the CR gets rendered weirdly into the newlines.
+                authors = metadata.getConfigElement<String>("authors").orElse("").split(","),
+                version = modVersion,
+                license = toml.get("license"),
+
+                dependencies = dependencies,
+                mixinConfigs = manifest?.mainAttributes?.getValue("MixinConfigs")?.split(",")
+                    ?.map { ModDefinition.MixinConfig(it) }
+                    ?: emptyList(),
+                path = path,
+
+                // Sets the parent ID of the mod definition
+                parentId = parentId,
+
+                // TODO: make the icon square
+                icon = metadata.getConfigElement<String>("logoFile").orElse(""),
+
+                // Forge mods handle both, there's no way to define sided mods.
+                environment = ModEnvironment.BOTH,
+
+                // If this mod is built-in, make sure to specify it.
+                isBuiltin = isBuiltIn,
+
+                additionalData = mapOf(
+                    "manifest" to manifest,
+                    "config" to mainConfig
+                ),
+
+                loaderCustomData = mapOf(
+                    // This is to trick ModMenu into giving Forge mods the "Forge" tag.
+                    "patchwork:patcherMeta" to true
+                )
+            )
+
+            definitions.add(definition)
+        }
+
+        return definitions
+    }
+
+    override fun getBuiltinModDefinitions(): List<ModDefinition> {
+        return if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val modsList = mutableListOf<ModDefinition>()
+
+            for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
+                val toml = tomlParser.parse(url)
+                modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
+            }
+
+            modsList
+        } else {
+            val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            val kiltJar = JarFile(kiltFile.toFile())
+
+            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
+
+            parseModsToml(kiltFile, toml, null, isBuiltIn = true)
+        }
+    }
+
+    override fun finishModScanning() {
+        val graph = this.mods.buildGraph()
+        val sorted = TopologicalSort.topologicalSort(graph, null)
 
         // See comment at the lateinit
         sortedModOrder = sorted
 
-        DeltaTimeProfiler.pop()
-    }
-
-    fun injectMods() {
-        if (hasInjected)
-            return
-
-        hasInjected = true
-
-        DeltaTimeProfiler.push("addToClassPath")
+        // Load mod access transformers and coremods
         for (mod in mods) {
-            Kilt.loader.addModToFabric(mod)
-
-            if (mod.modFile != null) { // Avoid adding the Forge builtins
-                if (mod.isRemapped()) {
-                    FabricLauncherBase.getLauncher().addToClassPath(mod.remappedModFile.toURI().toPath())
-
-                    // Force Java to be aware of the remapped mod
-                    FileSystemUtil.getJarFileSystem(mod.remappedModFile.toPath(), true)
-                } else // Still need to load JiJ'd libraries
-                    FabricLauncherBase.getLauncher().addToClassPath(mod.modFile.toURI().toPath())
-            }
+            loadTransformers(mod)
+            CoreModLoader.scanAndLoadCoreMods(mod)
         }
-        DeltaTimeProfiler.pop()
     }
 
-    fun loadForgeModMixins() {
-        KiltMixinLoader.init(mods)
+    override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<ForgeMod> {
+        val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
+            runCatching { createDirectories() }
+        }
+
+        // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
+        try {
+            KiltRemapper.remapMods(definitions, remappedModsDir)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw RuntimeException("Errors occurred while remapping Forge mods!", e)
+        }
+
+        val mods = mutableListOf<ForgeMod>()
+
+        // Then creates the mod containers for each mod.
+        for (definition in definitions) {
+            val config = definition.additionalData["config"] as NightConfigWrapper
+
+            mods.add(ForgeMod(definition,
+                showAsResourcePack = config.getConfigElement<Boolean>("showAsResourcePack").orElse(false),
+                modConfig = config,
+                modFile = definition.path.run {
+                    if (this.extension == "jar")
+                        this.toFile()
+                    else null // If this is a built-in, let's not actually bother with it
+                },
+                // Some JiJ'd mods don't have TOML files, but we need to check if they have the "GAMELIBRARY" attribute,
+                // because then that verifies that we need to scan it.
+                shouldScan = definition.additionalData["isJiJ"] != true || (definition.additionalData["manifest"] as? Manifest?)?.mainAttributes?.getValue("FMLModType") == "GAMELIBRARY"
+            ))
+        }
+
+        return mods
     }
 
-    fun preloadMods() {
+    override fun preInitialize() {
         // DON'T TRY TO MAKE THIS USE "Environment.Keys".
         // OTHERWISE THE BUILD WILL FAIL.
         environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
@@ -387,361 +399,23 @@ class KiltLoader {
         Environment.build(environment) // Use Kilt's environment
     }
 
-    private fun preloadForgeBuiltinMod(modLoadingQueue: MutableCollection<ForgeMod>) {
-        val forgeMods = if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val modsList = mutableListOf<ForgeMod>()
-
-            for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
-                val toml = tomlParser.parse(url)
-                modsList.addAll(parseModsToml(modLoadingQueue, toml, null, null))
-            }
-
-            modsList
-        } else {
-            val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
-            val kiltJar = JarFile(kiltFile.toFile())
-
-            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
-
-            parseModsToml(modLoadingQueue, toml, kiltFile, kiltJar)
-        }
-
-        // Scan mods for data much earlier
-        val scanData = ModFileScanData()
-
-        runBlocking {
-            KiltHelper.getForgeClassNodes().asFlow().concurrent().collect {
-                val visitor = ModClassVisitor()
-                it.accept(visitor)
-
-                visitor.buildData(scanData.classes, scanData.annotations)
-            }
-        }
-
-        for (mod in forgeMods) {
-            scanData.addModFileInfo(ModFileInfo(mod))
-            mod.scanData = scanData
-        }
-
-        modLoadingQueue.addAll(forgeMods)
-        this.forgeMods.addAll(forgeMods)
-    }
-
-    // This is used specifically for JiJ'd mods that don't store mods.toml files.
-    private fun createCustomMod(modFile: Path, manifest: Manifest?): ForgeMod {
-        return ForgeMod(
-            "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
-            "(Kilt JiJ) ${modFile.nameWithoutExtension}",
-            description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway.",
-            DefaultArtifactVersion("0.0.0"),
-            modFile = modFile.toFile(),
-            modConfig = NightConfigWrapper(tomlParser.parse(this::class.java.getResource("/default_mods.toml"))),
-
-            // Registrate and stuff don't provide a mods.toml.....
-            shouldScan = manifest?.mainAttributes?.getValue("FMLModType") == "GAMELIBRARY"
-        )
-    }
-
-    private fun preloadJarMod(
-        modLoadingQueue: MutableCollection<ForgeMod>,
-        modFile: Path,
-        jarFile: ZipFile,
-        nestedModUpdater: Consumer<ForgeMod>? = null
-    ) {
-        // Prevent users from having both Kilt and Connector at the same time.
-        if (jarFile.getEntry("org/sinytra/connector/ConnectorUtil.class") != null) {
-            throw Exception("Sinytra Connector was detected! I know I said \"Isn't it reasonable to have both?\", but come on!")
-        }
-
-        // Avoid loading JiJ'd MixinExtras, we already provide a modern version of it.
-        if (jarFile.getEntry("com/llamalad7/mixinextras/injector/ModifyExpressionValue.class") != null) {
-            return
-        }
-
-        val exception = RuntimeException("Failed to load file ${modFile.name}!")
-        var isSpecialCasedFabric = false
-
-        // Do NOT load Fabric mods.
-        // Some mod JARs actually store both Forge and Fabric in one JAR by using Forgix.
-        // Since Fabric loads the Fabric mod before we can even get to it, we shouldn't load the Forge variant
-        // ourselves to avoid mod conflicts. And because Kilt is still in an unstable state.
-        if (
-            jarFile.getEntry("fabric.mod.json") != null
-        ) {
-            // Special workaround for Pretty Pipes and other mods that do this kinda shit,
-            // because what?
-            try {
-                val fmjEntry = JsonParser.parseReader(
-                    jarFile.getInputStream(jarFile.getEntry("fabric.mod.json")).bufferedReader()
-                ).asJsonObject
-                val modId = fmjEntry.get("id").asString
-
-                FabricLoader.getInstance().getModContainer(modId).ifPresent { container ->
-                    if (container.metadata.dependencies.none { it.modId == "forge" }) {
-                        return@ifPresent
-                    }
-
-                    isSpecialCasedFabric = true
-                }
-
-                if (!isSpecialCasedFabric)
-                    return
-            } catch (e: Throwable) {
-                Kilt.logger.error("Failed to parse FMJ of mod file ${modFile.name}!")
-                e.printStackTrace()
-                return
-            }
-        }
-
-        DeltaTimeProfiler.push(modFile.nameWithoutExtension)
-
-        Kilt.logger.debug("Scanning jar file ${modFile.name} for Forge mod metadata.")
-
-        try {
-            val modsToml = jarFile.getEntry("META-INF/mods.toml")
-
-            if (nestedModUpdater != null && modsToml == null) {
-                // Load the JAR's manifest file, or at least try to.
-                val manifest = if (jarFile != null) try {
-                    Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
-                } catch (_: Exception) {
-                    null
-                } else null
-
-                val mod = createCustomMod(modFile, manifest)
-
-                if ((FabricLoader.getInstance()
-                        .isModLoaded(mod.modId) || FabricLoaderImpl.INSTANCE.getModCandidate(mod.modId) != null)
-                    && mod.modId != "forge"
-                    && !isSpecialCasedFabric
-                ) {
-                    Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: ${mod.modId}")
-                    return
-                }
-
-                // Avoid loading mods twice
-                if (modLoadingQueue.any { it.modId == mod.modId })
-                    return
-
-                modLoadingQueue.add(mod)
-
-                Kilt.logger.info("Loaded JiJ'd mod ${modFile.nameWithoutExtension}.")
-                nestedModUpdater.accept(mod)
-
-                DeltaTimeProfiler.pop()
-                return
-            }
-
-            // Check for Forge's method of include.
-            // Doing it this way is probably faster than scanning the entire JAR.
-            val jarJarMetadata = jarFile.getEntry("META-INF/jarjar/metadata.json")
-
-            val nestedMods = mutableListOf<ForgeMod>()
-
-            if (jarJarMetadata != null) {
-                val json = JsonParser.parseReader(jarFile.getInputStream(jarJarMetadata).reader()).asJsonObject
-
-                json.getAsJsonArray("jars").forEach {
-                    val data = it.asJsonObject
-                    val filePath = data.get("path").asString
-
-                    val entry = jarFile.getEntry(filePath) ?: return@forEach
-
-                    // Use the CRC as a way of having a unique point of storage, so
-                    // if the file already exists, no need to extract it again.
-                    val fileName = filePath.split("/").last()
-
-                    val file = extractedModsDir / "${entry.crc}-$fileName"
-                    runCatching {
-                        file.createFile()
-                        file.writeBytes(jarFile.getInputStream(entry).readAllBytes())
-                    }.onFailure { throwable ->
-                        if (throwable !is FileAlreadyExistsException && throwable !is java.nio.file.FileAlreadyExistsException && throwable is Exception) {
-                            Kilt.logger.error("Failed to load JiJ'd file: $fileName", throwable)
-                            exception.addSuppressed(throwable)
-                            return@forEach
-                        }
-                    }
-
-                    preloadJarMod(modLoadingQueue, file, ZipFile(file.toFile())) { mod ->
-                        nestedMods.add(mod)
-                    }
-                }
-            }
-
-            val toml = tomlParser.parse(jarFile.getInputStream(modsToml))
-            val forgeMods = parseModsToml(modLoadingQueue, toml, modFile, jarFile, nestedMods)
-
-            forgeMods.forEach {
-                modLoadingQueue.add(it)
-                Kilt.logger.info("Discovered Forge mod ${it.displayName} (${it.modId}) version ${it.version} (${modFile.name})")
-            }
-        } catch (e: Exception) {
-            exception.addSuppressed(e)
-            e.printStackTrace()
-        }
-
-        DeltaTimeProfiler.pop()
-
-        if (exception.suppressed.isNotEmpty())
-            throw exception
-    }
-
-    // Split this off from the main preloadMods method, in case it needs to be used again later.
-    private fun parseModsToml(
-        modLoadingQueue: MutableCollection<ForgeMod>,
-        toml: CommentedConfig,
-        modFile: Path?,
-        jarFile: ZipFile?,
-        nestedMods: List<ForgeMod> = listOf()
-    ): List<ForgeMod> {
-        if (toml.get("modLoader") as String != "javafml" && toml.get("modLoader") as String != "lowcodefml")
-            throw Exception(
-                "Forge mod file ${modFile?.name ?: "(unknown)"} is not a supported FML mod! (got ${
-                    toml.get(
-                        "modLoader"
-                    ) as String
-                })"
-            )
-
-        // Load the JAR's manifest file, or at least try to.
-        val manifest = if (jarFile != null) try {
-            Manifest(jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")))
-        } catch (_: Exception) {
-            null
-        } else null
-
-        val fileName = modFile?.name ?: "(unknown)"
-
-        val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion") as String)
-        if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION))
-            throw Exception("Forge mod file $fileName does not support Forge loader version $SUPPORTED_FORGE_SPEC_VERSION (mod supports versions between [$loaderVersionRange]))")
-
-        val mainConfig = NightConfigWrapper(toml)
-
-        val modsMetadataList = mainConfig.getConfigList("mods")
-        val forgeMods = mutableListOf<ForgeMod>()
-
-        modsMetadataList.forEach { metadata ->
-            val modId = metadata.getConfigElement<String>("modId").orElseThrow {
-                Exception("Forge mod file $fileName does not contain a mod ID!")
-            }
-
-            val modVersion = DefaultArtifactVersion(
-                metadata.getConfigElement<String>("version").orElse("1")
-                    .run {
-                        if (this == "\${file.jarVersion}")
-                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
-                        else if (this == "\${global.forgeVersion}")
-                            SUPPORTED_FORGE_API_VERSION.toString()
-                        else if (this == "\${global.mcVersion}")
-                            MC_VERSION.friendlyString
-                        else this
-                    }
-            )
-
-            // In most cases, Fabric versions of mods share the same mod ID as the Forge variant.
-            // We don't want two of the same things, so we shouldn't allow this to occur.
-            if ((FabricLoaderImpl.INSTANCE.getModCandidate(modId) != null || FabricLoader.getInstance()
-                    .isModLoaded(modId)) && modId != "forge"
-            ) {
-                Kilt.logger.warn("Duplicate Forge and Fabric mod IDs detected: $modId")
-                return@forEach
-            }
-
-            // Forge and Fabric handle duplicate mods by taking the latest version
-            // of the mod, I believe. We should share this behaviour, as some mods may
-            // JiJ some other mods.
-            if (modLoadingQueue.any { it.modId == modId }) {
-                val duplicateMod = modLoadingQueue.first { it.modId == modId }
-
-                if (modVersion > duplicateMod.version) {
-                    modLoadingQueue.remove(duplicateMod)
-                } else return@forEach // Let's just let it slide.
-            }
-
-            // create mod info
-            val mod = ForgeMod(
-                license = toml.get("license"),
-                issueTrackerURL = toml.getOrElse("issueTrackerURL", ""),
-                showAsResourcePack = toml.getOrElse("showAsResourcePack", false),
-                modId = modId,
-                version = modVersion,
-                displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
-                updateURL = metadata.getConfigElement<String>("updateJSONURL").run {
-                    return@run if (this.isPresent && this.get().isNotBlank())
-                        try { URL(this.get()) } catch (_: Throwable) { null }
-                    else
-                        null
-                },
-                credits = metadata.getConfigElement<String>("credits").orElse(""),
-                authors = metadata.getConfigElement<String>("authors").orElse(""),
-                description = metadata.getConfigElement<String>("description").orElse("MISSING DESCRIPTION")
-                    .replace("\r", ""),
-                dependencies = mainConfig.getConfigList("dependencies", modId)
-                    .map {
-                        ForgeMod.ForgeModDependency(
-                            modId = it.getConfigElement<String>("modId").orElseThrow {
-                                Exception("Forge mod file $fileName's dependencies contains a dependency without a mod ID!")
-                            },
-                            isMandatory = it.getConfigElement<Boolean>("mandatory").orElse(false),
-                            versionRange = MavenVersionAdapter.createFromVersionSpec(
-                                it.getConfigElement<String>("versionRange")
-                                    .orElseThrow {
-                                        Exception("Forge mod file $fileName's dependencies contains a dependency without a version range!")
-                                    }
-                            ),
-                            ordering = IModInfo.Ordering.valueOf(
-                                it.getConfigElement<String>("ordering").orElse("NONE")
-                            ),
-                            side = IModInfo.DependencySide.valueOf(it.getConfigElement<String>("side").orElse("BOTH"))
-                        )
-                    },
-                modFile = modFile?.toFile(),
-                modConfig = mainConfig,
-                nestedMods = nestedMods,
-                // TODO: make logo file square
-                logoFile = metadata.getConfigElement<String>("logoFile").orElse(""),
-                shouldScan = toml.get("modLoader") as String == "javafml"
-            )
-            mod.manifest = manifest
-
-            nestedMods.forEach {
-                it.parent = mod
-            }
-
-            forgeMods.add(mod)
-        }
-
-        return forgeMods
-    }
-
-    // Remaps all Forge mods from SRG to Intermediary/Yarn/MojMap
-    private suspend fun remapMods(mods: Collection<ForgeMod>) {
-        DeltaTimeProfiler.push("remapMods")
-
-        val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
-            runCatching { createDirectories() }
-        }
-
-        try {
-            KiltRemapper.remapMods(mods, remappedModsDir)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while remapping Forge mods!", e, {}, true)
-        }
-
-        DeltaTimeProfiler.pop()
-    }
-
     fun loadMods() {
         Kilt.logger.info("Starting initialization of Forge mods...")
-        DeltaTimeProfiler.push("loadMods")
 
         val exception = RuntimeException("Failed to load Forge mods in Kilt!")
 
         runBlocking {
             launch(Dispatchers.Default) {
+                // Load Forge scan data immediately, then we can assign it when we need to.
+                val forgeScanData = ModFileScanData()
+
+                KiltHelper.getForgeClassNodes().asFlow().collect {
+                    val visitor = ModClassVisitor()
+                    it.accept(visitor)
+
+                    visitor.buildData(forgeScanData.classes, forgeScanData.annotations)
+                }
+
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
                 sortedModOrder.asFlow().concurrent()
                     .map { mod ->
@@ -751,6 +425,12 @@ class KiltLoader {
                         }
 
                         if (mod.modFile == null) { // This is usually a Forge built-in, we don't have to worry about scanning this.
+                            // If it is in fact a built-in, let's assign the scan data.
+                            if (mod.definition.isBuiltin) {
+                                forgeScanData.addModFileInfo(ModFileInfo(mod))
+                                mod.scanData = forgeScanData
+                            }
+
                             return@map mod
                         }
 
@@ -794,7 +474,6 @@ class KiltLoader {
             exception.printStackTrace()
             FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", exception, {}, true)
         }
-        DeltaTimeProfiler.pop()
     }
 
     private val launcher = FabricLauncherBase.getLauncher()
@@ -871,7 +550,6 @@ class KiltLoader {
     }
 
     fun initMods() {
-        DeltaTimeProfiler.push("initMods")
         val exception = RuntimeException("Failed to load Kilt mods!")
 
         runBlocking {
@@ -897,11 +575,9 @@ class KiltLoader {
             exception.printStackTrace()
             FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {}, true)
         }
-        DeltaTimeProfiler.pop()
     }
 
     suspend fun initMod(mod: ForgeMod, scanData: ModFileScanData) {
-        DeltaTimeProfiler.push(mod.modId)
         val exception = RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})!")
 
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
@@ -955,8 +631,6 @@ class KiltLoader {
         ModLoadingContext.kiltActiveModId = mod.modId
         mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
         ModLoadingContext.kiltActiveModId = null
-
-        DeltaTimeProfiler.pop()
     }
 
     private fun loadTransformers(mod: ForgeMod) {
@@ -1006,7 +680,6 @@ class KiltLoader {
 
     private val fmlPhases = mutableMapOf(
         ModLoadingPhase.LOAD to {
-            DeltaTimeProfiler.push("config_load")
             // CONFIG_LOAD
             if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
                 ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.CLIENT, FMLPaths.CONFIGDIR.get());
@@ -1016,18 +689,12 @@ class KiltLoader {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.COMMON, FMLPaths.CONFIGDIR.get());
 
             // COMMON_SETUP
-            DeltaTimeProfiler.popPush("common_setup")
             ModLoader.get()
                 .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
 
-            DeltaTimeProfiler.push("runTasks")
-
             ModLoadingStage.COMMON_SETUP.deferredWorkQueue.runTasks()
 
-            DeltaTimeProfiler.pop()
-
             // SIDED_SETUP
-            DeltaTimeProfiler.popPush("sided_setup")
             ModLoader.get().kiltPostEventWrappingModsBuildEvent {
                 if (FabricLoader.getInstance().environmentType == EnvType.CLIENT)
                     FMLClientSetupEvent(it, ModLoadingStage.SIDED_SETUP)
@@ -1035,35 +702,24 @@ class KiltLoader {
                     FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
             }
 
-            DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.SIDED_SETUP.deferredWorkQueue.runTasks()
-            DeltaTimeProfiler.pop()
 
             // ENQUEUE_IMC
-            DeltaTimeProfiler.popPush("enqueue_imc")
             ModLoader.get()
                 .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
 
-            DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
-            DeltaTimeProfiler.pop()
 
             // PROCESS_IMC
-            DeltaTimeProfiler.popPush("process_imc")
             ModLoader.get()
                 .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
 
-            DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
-            DeltaTimeProfiler.pop()
 
             // COMPLETE
-            DeltaTimeProfiler.popPush("complete")
             ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
 
-            DeltaTimeProfiler.push("runTasks")
             ModLoadingStage.COMPLETE.deferredWorkQueue.runTasks()
-            DeltaTimeProfiler.pop()
         }
     )
 
@@ -1080,62 +736,20 @@ class KiltLoader {
                 -1
         }
 
-        DeltaTimeProfiler.push(phase.name.lowercase())
-        try {
-            fmlPhases[phase]?.invoke()
+        fmlPhases[phase]?.invoke()
 
-            for (state in sortedStates) {
-                println("running ${state.name()} in ${state.phase()}")
+        for (state in sortedStates) {
+            println("running ${state.name()} in ${state.phase()}")
 
-                DeltaTimeProfiler.push(state.name())
-                try {
-                    state.inlineRunnable().ifPresent { consumer ->
-                        consumer.accept(ModList.get())
-                    }
-                } finally {
-                    DeltaTimeProfiler.pop()
-                }
+            state.inlineRunnable().ifPresent { consumer ->
+                consumer.accept(ModList.get())
             }
-        } finally {
-            DeltaTimeProfiler.pop()
-        }
-    }
-
-    internal fun addModToFabric(mod: ForgeMod) {
-        modProvider.addModToLoader(mod)
-        Kilt.logger.info("Injected mod ${mod.modId} into ${modProvider.name}")
-    }
-
-    private open class DependencyLoadingState(val dependency: IModInfo.ModVersion)
-
-    private class IncompatibleDependencyLoadingState(
-        dependency: IModInfo.ModVersion,
-        val version: ArtifactVersion
-    ) : DependencyLoadingState(dependency) {
-        override fun toString(): String {
-            return "Incompatible dependency version! (required: ${dependency.versionRange}, found: $version)"
-        }
-    }
-
-    private class MissingDependencyLoadingState(
-        dependency: IModInfo.ModVersion
-    ) : DependencyLoadingState(dependency) {
-        override fun toString(): String {
-            return "Missing mod ID ${dependency.modId}"
-        }
-    }
-
-    private class ValidDependencyLoadingState(
-        dependency: IModInfo.ModVersion
-    ) : DependencyLoadingState(dependency) {
-        override fun toString(): String {
-            return "Loaded perfectly fine actually, how do you do?"
         }
     }
 
     companion object {
-        @JvmField
-        val INSTANCE = KiltLoader()
+        val instance: KiltLoader
+            get() = KnitLoader.instance.getLoaderById("kilt") as KiltLoader
 
         // These constants are to be updated each time we change versions
         val SUPPORTED_FORGE_SPEC_VERSION = Constants.FORGE_LOADER_VERSION
@@ -1150,14 +764,6 @@ class KiltLoader {
         }
         private val extractedModsDir = (kiltCacheDir / "extractedMods").apply {
             runCatching { this.createDirectories() }
-        }
-
-        private fun isSideValid(side: DependencySide): Boolean {
-            if (side == DependencySide.BOTH)
-                return true
-
-            return (FabricLoader.getInstance().environmentType == EnvType.CLIENT && side == DependencySide.CLIENT)
-                    || (FabricLoader.getInstance().environmentType == EnvType.SERVER && side == DependencySide.SERVER)
         }
     }
 }

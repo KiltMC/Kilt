@@ -47,6 +47,17 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    tasks {
+        create("printConfigurations") {
+            doLast {
+                println("Project Name: ${project.name} configurations:")
+                configurations.forEach { config ->
+                    println("\t- ${config.name}")
+                }
+            }
+        }
+    }
+
     repositories {
         mavenCentral()
         mavenLocal()
@@ -120,10 +131,18 @@ allprojects {
         maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
             name = "GeckoLib"
         }
+
+        maven("https://thedarkcolour.github.io/KotlinForForge/") {
+            name = "Kotlin for Forge"
+        }
     }
 
     // Avoid making the compats submodule use Loom, otherwise we break stuff
     if (project.name == "compat")
+        return@allprojects
+
+    // Prevent other Knit Loader modules from going through Fabric Loom.
+    if (project.name == "loader" || (project.parent?.name == "loader"))
         return@allprojects
 
     apply(plugin = "fabric-loom")
@@ -137,23 +156,25 @@ allprojects {
         })
         modImplementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
-        // Fabric API. This is technically optional, but you probably want it anyway.
-        modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
-
         // Just because I like Kotlin more than Java
         modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
         // TODO: remove this when 0.5 is mainlined into Fabric
         include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
 
-        // Cursed Fabric/Mixin stuff
-        implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
-        modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
-        include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
-
         include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
         })
+
+        if (project.parent?.name != "loader") {
+            // Fabric API. This is technically optional, but you probably want it anyway.
+            modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
+
+            // Cursed Fabric/Mixin stuff
+            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
+            modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
+            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
+        }
     }
 }
 
@@ -170,9 +191,6 @@ dependencies {
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
-
-    // Cursed Fabric/Mixin stuff
-    include(modImplementation("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
@@ -247,6 +265,23 @@ dependencies {
         "curios-trinkets-compat", "fabric-compats"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
+    }
+
+    // Knit Loader
+    api(project(":loader"))
+    runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+    include(project(":loader:fabric")) {
+        isTransitive = false
+    }
+    include(project(":loader:quilt")) {
+        isTransitive = false
+    }
+
+    // Kotlin for Forge
+    // We only need the language provider, as that's what we try to provide compatibility for.
+    // The end user still however has to provide KFF themselves.
+    compileOnly("thedarkcolour:kfflang:${property("kff_version")}") {
+        exclude("org.jetbrains.kotlin") // KFF ships an outdated version of Kotlin, we use latest.
     }
 
     // Test libraries

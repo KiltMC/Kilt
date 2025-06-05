@@ -30,14 +30,11 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
-import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
         registerFabricEvents()
-
-        DeltaTimeProfiler.popAll()
     }
 
     @Suppress("removal")
@@ -202,7 +199,8 @@ class Kilt : ModInitializer {
 
         lateinit var instance: Kilt
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
-        val loader: KiltLoader = KiltLoader.INSTANCE
+        val loader: KiltLoader
+            get() = KiltLoader.instance
         val gson = GsonBuilder().setPrettyPrinting().create()
 
         fun load(onServer: Boolean) {
