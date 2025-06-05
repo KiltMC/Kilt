@@ -9,10 +9,7 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${rootProject.property("parchment_version")}:${rootProject.property("parchment_release")}@zip")
-    })
+    mappings(loom.officialMojangMappings())
 
     modImplementation("org.quiltmc:quilt-loader:${property("quilt_loader_version")}")
 

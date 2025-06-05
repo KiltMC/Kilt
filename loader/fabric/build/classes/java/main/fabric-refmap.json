@@ -1,0 +1,14 @@
+{
+  "mappings": {
+    "xyz/bluspring/knit/loader/fabric/mixin/SystemReportMixin": {
+      "<init>": "Lnet/minecraft/class_6396;<init>()V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "xyz/bluspring/knit/loader/fabric/mixin/SystemReportMixin": {
+        "<init>": "Lnet/minecraft/class_6396;<init>()V"
+      }
+    }
+  }
+}

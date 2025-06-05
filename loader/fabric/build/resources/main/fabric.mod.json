@@ -1,0 +1,36 @@
+{
+    "schemaVersion": 1,
+    "id": "knit-loader",
+    "version": "0.0.1",
+    "name": "Knit Loader",
+    "description": "A heavy abstraction of Kilt's loader code to allow for reuse in other bridge-type mods.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "repo": "https://github.com/KiltMC/Kilt/",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "assets/knit_loader/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "afl:prePrePreLaunch": [
+            "xyz.bluspring.knit.loader.fabric.KnitEarlierInitializer"
+        ]
+    },
+    "mixins": [
+        "knit_loader.fabric.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.14",
+        "fabric-api": ">=0.92.4+1.20.1",
+        "minecraft": ">=1.20.1",
+        "fabric-language-kotlin": ">=1.13.0+kotlin.2.1.0"
+    },
+    "custom": {
+        "modmenu": {
+            "badges": [ "library" ]
+        }
+    }
+}

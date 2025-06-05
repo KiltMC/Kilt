@@ -131,7 +131,7 @@ allprojects {
         return@allprojects
 
     // Prevent other Knit Loader modules from going through Fabric Loom.
-    if (project.name == "loader" || (project.parent?.name == "loader" && project.name != "fabric"))
+    if (project.name == "loader" || (project.parent?.name == "loader"))
         return@allprojects
 
     apply(plugin = "fabric-loom")

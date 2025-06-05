@@ -1,4 +1,18 @@
+plugins {
+    id("fabric-loom") version "1.9-SNAPSHOT"
+}
+
 dependencies {
+    minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
+    mappings(loom.officialMojangMappings())
+
+    modImplementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+
+    modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
+
+    // Just because I like Kotlin more than Java
+    modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+
     // Cursed Fabric/Mixin stuff
     include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
