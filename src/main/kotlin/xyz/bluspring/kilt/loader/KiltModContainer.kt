@@ -6,7 +6,7 @@ import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.*
 import java.util.function.Consumer
 
-class KiltModContainer(internal val mod: ForgeMod) : FMLModContainer(mod) {
+open class KiltModContainer(internal val mod: ForgeMod) : FMLModContainer(mod) {
     init {
         configHandler = Optional.of(Consumer {
             mod.eventBus.post(it.self())

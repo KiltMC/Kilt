@@ -7,7 +7,6 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.*
 import java.util.function.BiConsumer
@@ -28,7 +27,7 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     fun getModContainerById(modId: String): Optional<out ModContainer> {
         val mod = kiltMods.firstOrNull { it.modId == modId } ?: return Optional.empty()
 
-        return Optional.of(KiltModContainer(mod))
+        return Optional.of(mod.container)
     }
 
     fun getModContainerByObject(obj: Any): Optional<out ModContainer> {

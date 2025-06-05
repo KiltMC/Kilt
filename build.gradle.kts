@@ -277,13 +277,6 @@ dependencies {
         isTransitive = false
     }
 
-    // Kotlin for Forge
-    // We only need the language provider, as that's what we try to provide compatibility for.
-    // The end user still however has to provide KFF themselves.
-    compileOnly("thedarkcolour:kfflang:${property("kff_version")}") {
-        exclude("org.jetbrains.kotlin") // KFF ships an outdated version of Kotlin, we use latest.
-    }
-
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")

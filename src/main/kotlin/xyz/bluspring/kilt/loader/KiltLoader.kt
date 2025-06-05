@@ -299,7 +299,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 additionalData = mapOf(
                     "manifest" to manifest,
-                    "config" to mainConfig
+                    "config" to mainConfig,
+                    "loader" to modLoader
                 ),
 
                 loaderCustomData = mapOf(
@@ -513,7 +514,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     }
 
                     ModLoadingContext.kiltActiveModId = modId
-                    busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
+
+                    val clazz = Class.forName(it.clazz.className, true, this::class.java.classLoader)
+                    val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
+
+                    if (obj != null)
+                        busType.bus().get().register(obj)
+                    else
+                        busType.bus().get().register(clazz)
+
                     ModLoadingContext.kiltActiveModId = null
 
                     Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")

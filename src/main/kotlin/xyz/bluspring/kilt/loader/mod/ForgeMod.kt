@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
+import thedarkcolour.kotlinforforge.KotlinModContainer
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
@@ -47,7 +48,10 @@ class ForgeMod(
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    val container = KiltModContainer(this)
+    val container = if (definition.additionalData["loader"] == "kotlinforforge")
+        KotlinModContainer(this)
+    else
+        KiltModContainer(this)
 
     lateinit var scanData: ModFileScanData
     lateinit var modObject: Any

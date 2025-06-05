@@ -1,8 +1,10 @@
 package net.minecraftforge.fml
 
+import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.config.ConfigTracker
 import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.config.ModConfig
+import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.forgespi.language.IModInfo
 import xyz.bluspring.kilt.mixin.compat.forgeconfigapiport.ConfigTrackerAccessor
 import xyz.bluspring.kilt.remaps.fml.config.ModConfigRemap
@@ -49,4 +51,6 @@ abstract class ModContainer(info: IModInfo) {
             it.accept(event)
         }
     }
+
+    protected open fun <T> acceptEvent(e: T) where T : Event, T : IModBusEvent {}
 }
