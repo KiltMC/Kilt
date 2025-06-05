@@ -1,29 +1,22 @@
-package xyz.bluspring.kilt.compat.sodium
+package xyz.bluspring.knit.loader.fabric
 
-import com.moulberry.mixinconstraints.MixinConstraints
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
-import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.knit.loader.KnitLoader
 
-class KiltForgeSodiumCompatMixinPlugin : IMixinConfigPlugin {
-    lateinit var mixinPackage: String
-
-    override fun onLoad(mixinPackage: String) {
-        this.mixinPackage = mixinPackage
+class KnitMixinPlugin : IMixinConfigPlugin {
+    override fun onLoad(mixinPackage: String?) {
+        KnitLoader.logger.info("Injecting loaded Knit mods into Fabric...")
+        KnitLoader.instance.injectModsToLoader()
     }
 
     override fun getRefMapperConfig(): String? {
         return null
     }
 
-    override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String): Boolean {
-        return try {
-            val modId = mixinClassName.removePrefix("$mixinPackage.").split(".")[0]
-            KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(mixinClassName)
-        } catch (_: Throwable) {
-            MixinConstraints.shouldApplyMixin(mixinClassName)
-        }
+    override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String?): Boolean {
+        return true
     }
 
     override fun acceptTargets(
@@ -33,6 +26,9 @@ class KiltForgeSodiumCompatMixinPlugin : IMixinConfigPlugin {
     }
 
     override fun getMixins(): List<String?>? {
+        // Inject the mod mixins here, otherwise they just don't apply ever
+        KnitLoader.instance.injectModMixins()
+
         return null
     }
 

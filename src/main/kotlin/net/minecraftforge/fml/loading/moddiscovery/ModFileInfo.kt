@@ -37,7 +37,7 @@ open class ModFileInfo(private val kiltMod: ForgeMod?, private val wrapper: Fabr
         if (wrapper != null)
             return wrapper.license!!
 
-        return kiltMod!!.license
+        return kiltMod!!.definition.license
     }
 
     override fun moduleName(): String {

@@ -3,7 +3,13 @@ package xyz.bluspring.knit.loader.mod
 data class ModDependency(
     val id: String,
     val constraint: VersionConstraint,
-    val type: Type
+    val type: Type,
+    val side: ModEnvironment,
+
+    /**
+     * Used to store any arbitrary data stored in the dependency that Knit doesn't handle.
+     */
+    val additionalData: Map<String, Any?> = mapOf()
 ) {
     enum class Type(val checkIsMissing: Boolean, val shouldExitOnFail: Boolean = false) {
         /**

@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
-import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
 import xyz.bluspring.kilt.util.ClassNameHashSet
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.util.*
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -45,7 +45,6 @@ import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 import kotlin.io.path.*
 import kotlin.time.measureTime
-
 
 object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
@@ -159,15 +158,10 @@ object KiltRemapper {
 
     fun init() {}
 
-    suspend fun remapMods(modLoadingQueue: Collection<ForgeMod>, remappedModsDir: Path) {
+    suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
             logger.warn("Only have this enabled if you know what you're doing!")
-
-            modLoadingQueue.asFlow().concurrent().collect {
-                if (it.modFile != null)
-                    it.remappedModFile = it.modFile
-            }
 
             return
         }
@@ -199,14 +193,14 @@ object KiltRemapper {
                 if (file.extension != "jar")
                     return@forEach
 
-                val mod = modLoadingQueue.firstOrNull { file.nameWithoutExtension.startsWith(it.modId) }
+                val mod = modLoadingQueue.firstOrNull { file.nameWithoutExtension.startsWith(it.id) }
 
                 if (mod == null) {
                     markedForDeletion.add(file)
                     return@forEach
                 }
 
-                val fileNameSplit = file.nameWithoutExtension.removePrefix("${mod.modId}_").split("_")
+                val fileNameSplit = file.nameWithoutExtension.removePrefix("${mod.id}_").split("_")
                 val fileRemapperVersion = fileNameSplit[0].toIntOrNull()
                 val fileHash = fileNameSplit[1]
 
@@ -220,12 +214,12 @@ object KiltRemapper {
                     return@forEach
                 }
 
-                if (mod.modFile == null) {
+                if (mod.isBuiltin) {
                     markedForDeletion.add(file)
                     return@forEach
                 }
 
-                val currentHash = DigestUtils.md5Hex(mod.modFile.inputStream())
+                val currentHash = DigestUtils.md5Hex(mod.path.inputStream())
 
                 if (currentHash != fileHash) {
                     markedForDeletion.add(file)
@@ -244,8 +238,7 @@ object KiltRemapper {
 
         logger.info("Remapping Forge mods...")
 
-        val mods =
-            modLoadingQueue.asFlow().concurrent().filter { !it.isRemapped() && it.modFile != null }.merge(false).toSet()
+        val mods = modLoadingQueue.asFlow().concurrent().filter { !it.isBuiltin }.merge(false).toSet()
 
         // Use the regular mod file
         val classProvider = ClassProvider.builder().apply {
@@ -260,29 +253,30 @@ object KiltRemapper {
                 getGameClassPath().asFlow(),
                 // Add all Forge mods to the library path, because dependencies don't have to be specified
                 // in order to use mods lmao
-                modLoadingQueue.asFlow().mapNotNull { mod -> mod.modFile?.toPath() }
+                modLoadingQueue.asFlow().mapNotNull { mod -> mod.path }
             ).collect { addLibrary(it) }
         }.build()
 
         // Initialize a global remapper state
         enhancedRemapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, ClassNameHashSet())
 
-        suspend fun remapMod(file: Path, mod: ForgeMod) {
-            val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.modId})!")
+        suspend fun remapMod(file: Path, mod: ModDefinition) {
+            val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
+
+            if (mod.isBuiltin) { // Prevent Kilt from remapping *directly* Forge mods. Yes, that started happening.
+                return
+            }
+
+            // Avoid remapping JiJ'd mods, but also mods like Registrate require remapping, and they don't provide a TOML file.
+            if (mod.additionalData["isJiJ"] == true && (mod.additionalData["manifest"] as? Manifest?)?.mainAttributes?.getValue("FMLModType") != "GAMELIBRARY") {
+                return
+            }
 
             val hash = withContext(Dispatchers.IO) { DigestUtils.md5Hex(file.inputStream()) }
-            val modifiedJarFile = KiltRemapper.remappedModsDir / "${mod.modId}_${REMAPPER_VERSION}_$hash.jar"
+            val modifiedJarFile = KiltRemapper.remappedModsDir / "${mod.id}_${REMAPPER_VERSION}_$hash.jar"
 
             if (modifiedJarFile.exists() && !forceRemap) {
-                mod.remappedModFile = modifiedJarFile.toFile()
-                return
-            }
-
-            if (!mod.shouldScan) { // We don't need to remap non-Forge JiJ'd mods
-                return
-            }
-
-            if (KiltLoader.INSTANCE.forgeMods.contains(mod)) { // Prevent Kilt from remapping *directly* Forge mods. Yes, that started happening.
+                mod.path = modifiedJarFile
                 return
             }
 
@@ -339,9 +333,9 @@ object KiltRemapper {
                     // Read mixin configs and add them to the list of mixins to fix
                     mixinConfigs.asFlow().concurrent().collect { config ->
                         val jsonEntry = jar.getJarEntry(config) ?: return@collect
-                        val data = jar.getInputStream(jsonEntry).reader()
-
-                        val json = JsonParser.parseReader(data).asJsonObject
+                        val json = jar.getInputStream(jsonEntry).use {
+                            JsonParser.parseReader(it.reader())
+                        }.asJsonObject
 
                         if (!json.has("package")) return@collect
 
@@ -368,10 +362,11 @@ object KiltRemapper {
                 remapper: KiltEnhancedRemapper,
                 jarOutput: JarOutputStream
             ) {
-                val refmapData =
-                    JsonParser.parseReader(withContext(Dispatchers.IO) {
-                        jar.getInputStream(entry)
-                    }.reader()).asJsonObject
+                val refmapData = withContext<JsonObject>(Dispatchers.IO) {
+                    jar.getInputStream(entry).use {
+                        JsonParser.parseReader(it.reader(Charsets.UTF_8))
+                    }.asJsonObject
+                }
 
                 val refmapMappings = refmapData.getAsJsonObject("mappings")
                 val newMappings = JsonObject()
@@ -593,7 +588,7 @@ object KiltRemapper {
                         // ignore JAR signatures.
                         // Due to Kilt remapping the JAR files, we are unable to use this to our advantage.
                         // TODO: Maybe run a verification step in the mod loading process prior to remapping?
-                        logger.warn("Detected that ${mod.displayName} (${mod.modId}) is a signed JAR! This is a security measure by mod developers to verify that the distributed mod JARs are theirs, however Kilt is unable to use this verification step properly, and isthus stripping this information.")
+                        logger.warn("Detected that ${mod.displayName} (${mod.id}) is a signed JAR! This is a security measure by mod developers to verify that the distributed mod JARs are theirs, however Kilt is unable to use this verification step properly, and isthus stripping this information.")
                     }
                     !isHash
                 }
@@ -606,14 +601,14 @@ object KiltRemapper {
                             withContext(Dispatchers.IO) {
                                 synchronized(jarOutput) {
                                     jarOutput.putNextEntry(entry)
-                                    jar.getInputStream(entry).copyTo(jarOutput)
+                                    jar.getInputStream(entry).use { it.copyTo(jarOutput) }
                                     jarOutput.closeEntry()
                                 }
                             }
                         }
 
                         else -> {
-                            val classReader = ClassReader(jar.getInputStream(entry))
+                            val classReader = jar.getInputStream(entry).use { ClassReader(it) }
 
                             // we need the info for this for the class writer
                             val classNode = ClassNode(Opcodes.ASM9)
@@ -693,7 +688,7 @@ object KiltRemapper {
             if (exception.suppressed.isNotEmpty())
                 throw exception
 
-            mod.remappedModFile = modifiedJarFile.toFile()
+            mod.path = modifiedJarFile
             jarOutput.close()
             jar.close()
 
@@ -704,13 +699,13 @@ object KiltRemapper {
             mods.asFlow().concurrent()
                 .onEach { mod ->
                     runCatching {
-                        logger.info("Remapping ${mod.displayName} (${mod.modId})")
+                        logger.info("Remapping ${mod.displayName} (${mod.id})")
                         val ms = measureTime {
-                            remapMod(mod.modFile!!.toPath(), mod)
+                            remapMod(mod.path, mod)
                         }.inWholeMilliseconds
-                        logger.info("Remapped ${mod.displayName} (${mod.modId}) [took ${ms}ms]")
+                        logger.info("Remapped ${mod.displayName} (${mod.id}) [took ${ms}ms]")
                     }.onFailure {
-                        logger.error("Failed to remap ${mod.displayName} (${mod.modId})", it)
+                        logger.error("Failed to remap ${mod.displayName} (${mod.id})", it)
                         if (it is Exception) {
                             exception.addSuppressed(it)
                         }
@@ -726,7 +721,7 @@ object KiltRemapper {
         }
     }
 
-    private val nameMappingCache = mutableMapOf<String, MutableMap<String, String>>()
+    private val nameMappingCache = Collections.synchronizedMap(mutableMapOf<String, MutableMap<String, String>>())
 
     fun remapClass(name: String, toIntermediary: Boolean = false, ignoreWorkaround: Boolean = false): String {
         val workaround = if (!ignoreWorkaround)
@@ -851,10 +846,10 @@ object KiltRemapper {
         runCatching { srgFile.createFile() }
 
         withContext(Dispatchers.IO) { JarOutputStream(srgFile.outputStream()) }.use { outputJar ->
-            gameJar.stream().consumeAsFlow().flowOn(Dispatchers.IO).concurrent()
+            gameJar.stream().consumeAsFlow().flowOn(Dispatchers.IO)
                 .collect { entry ->
                     if (entry.name.endsWith(".class")) {
-                        val classReader = ClassReader(gameJar.getInputStream(entry))
+                        val classReader = gameJar.getInputStream(entry).use { ClassReader(it) }
 
                         val classNode = ClassNode(Opcodes.ASM9)
                         classReader.accept(classNode, 0)
@@ -875,7 +870,7 @@ object KiltRemapper {
                         outputJar.closeEntry()
                     } else {
                         outputJar.putNextEntry(entry)
-                        outputJar.write(gameJar.getInputStream(entry).readAllBytes())
+                        gameJar.getInputStream(entry).use { outputJar.write(it.readAllBytes()) }
                         outputJar.closeEntry()
                     }
                 }

@@ -2,6 +2,8 @@ package xyz.bluspring.knit.loader.quilt
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import net.fabricmc.api.EnvType
+import net.fabricmc.loader.api.FabricLoader
 import org.quiltmc.loader.api.LoaderValue
 import org.quiltmc.loader.api.ModContainer
 import org.quiltmc.loader.api.QuiltLoader
@@ -11,9 +13,10 @@ import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.KnitModLoader
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
+import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.ModVersion
 
-class KnitLoaderQuilt : KnitLoader<ModContainer>(), QuiltLoaderPlugin {
+class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
     private lateinit var context: QuiltPluginContext
 
     override fun <T : KnitMod> createContainer(mod: T): ModContainer {
@@ -36,6 +39,14 @@ class KnitLoaderQuilt : KnitLoader<ModContainer>(), QuiltLoaderPlugin {
 
         runBlocking(Dispatchers.IO) {
             scanMods(context.manager().gameDirectory)
+        }
+    }
+
+    override fun isValidEnvironment(env: ModEnvironment): Boolean {
+        return when (env) {
+            ModEnvironment.BOTH -> true
+            ModEnvironment.CLIENT -> FabricLoader.getInstance().environmentType == EnvType.CLIENT
+            ModEnvironment.SERVER -> FabricLoader.getInstance().environmentType == EnvType.SERVER
         }
     }
 

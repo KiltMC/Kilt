@@ -3,57 +3,34 @@
     "id": "knit-loader",
     "version": "${version}",
     "name": "Knit Loader",
-    "description": "Allows the loading of Forge mods in the Fabric ecosystem. Very experimental.",
+    "description": "",
     "authors": [
         "BluSpring"
-    ],
-    "provides": [
-        "forge"
     ],
     "contact": {
         "repo": "https://github.com/KiltMC/Kilt/",
         "issues": "https://github.com/KiltMC/Kilt/issues"
     },
-    "license": "LGPL-2.1-only",
-    "icon": "assets/kilt/icon.png",
+    "license": "MIT",
+    "icon": "assets/knit_loader/icon.png",
     "environment": "*",
     "entrypoints": {
-        "client": [
-            "xyz.bluspring.kilt.client.KiltClient"
-        ],
-        "main": [
-            "xyz.bluspring.kilt.Kilt"
-        ],
-        "preLaunch": [
-            "xyz.bluspring.kilt.loader.KiltEarlyInitializer"
-        ],
-        "server": [
-            "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
-        ],
-        "mm:early_risers": [
-            "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
-        ],
         "afl:prePrePreLaunch": [
-            "xyz.bluspring.kilt.loader.KiltEarlierInitializer"
-        ],
-        "mixinsquared": [
-            "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
+            "xyz.bluspring.knit.loader.fabric.KnitEarlierInitializer"
         ]
     },
     "mixins": [
-        "Kilt.mixins.json",
-        "kilt_forge_injects.mixins.json"
+        "knit_loader.fabric.mixins.json"
     ],
     "depends": {
         "fabricloader": ">=${loader_version}",
         "fabric-api": ">=${fabric_version}",
-        "minecraft": "${minecraft_version}",
-        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-        "mm": ">=${fabric_asm_version}",
-        "forgeconfigapiport": ">=${forge_config_version}",
-        "architectury": ">=${architectury_version}"
+        "minecraft": ">=${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}"
     },
     "custom": {
-
+        "modmenu": {
+            "badges": [ "library" ]
+        }
     }
 }

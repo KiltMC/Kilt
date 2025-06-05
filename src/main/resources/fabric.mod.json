@@ -24,17 +24,11 @@
     "main": [
       "xyz.bluspring.kilt.Kilt"
     ],
-    "preLaunch": [
-      "xyz.bluspring.kilt.loader.KiltEarlyInitializer"
-    ],
     "server": [
       "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
     ],
     "mm:early_risers": [
       "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
-    ],
-    "afl:prePrePreLaunch": [
-      "xyz.bluspring.kilt.loader.KiltEarlierInitializer"
     ],
     "mixinsquared": [
       "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"

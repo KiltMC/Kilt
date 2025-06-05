@@ -1,3 +1,9 @@
+base {
+    archivesName.set("Knit-Loader")
+}
+
+version = property("mod_version") as String
+
 repositories {
     maven("https://maven.fabricmc.net")
 }

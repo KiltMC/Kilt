@@ -15,10 +15,15 @@ import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
+import xyz.bluspring.knit.loader.mod.KnitMod
+import xyz.bluspring.knit.loader.mod.ModDefinition
+import xyz.bluspring.knit.loader.mod.ModDependency
+import xyz.bluspring.knit.loader.mod.ModEnvironment
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -30,33 +35,20 @@ import java.util.jar.Manifest
 import kotlin.io.path.toPath
 
 class ForgeMod(
-    private val modId: String,
-    private val displayName: String,
-    private val description: String,
-    private val version: ArtifactVersion,
-    private val dependencies: List<ForgeModDependency> = listOf(),
-
-    private val modURL: URL? = null,
-    private val logoFile: String? = null,
-
-    val nestedMods: List<ForgeMod> = listOf(),
+    definition: ModDefinition,
 
     val showAsResourcePack: Boolean = false,
-    val license: String = "All Rights Reserved",
     val modConfig: IConfigurable,
     val modFile: File?,
 
-    val issueTrackerURL: String = "",
     private val updateURL: URL? = null,
 
-    val authors: String = "",
-    val credits: String = "",
-
     val shouldScan: Boolean = true
-) : IModInfo {
+) : KnitMod(definition), IModInfo {
+    private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
+
     val container = KiltModContainer(this)
 
-    lateinit var remappedModFile: File
     lateinit var scanData: ModFileScanData
     lateinit var modObject: Any
 
@@ -67,33 +59,20 @@ class ForgeMod(
 
     val jar: JarFile
         get() {
-            return if (this@ForgeMod::remappedModFile.isInitialized)
-                JarFile(remappedModFile)
-            else
-                JarFile(modFile)
+            return JarFile(modFile)
         }
 
     val coreMods = mutableListOf<CoreMod>()
 
-    fun isRemapped(): Boolean {
-        return this@ForgeMod::remappedModFile.isInitialized
-    }
-
     val paths: MutableList<Path>
         get() = mutableListOf<Path>().apply {
-            if (this@ForgeMod::remappedModFile.isInitialized)
-                this.add(this@ForgeMod.remappedModFile.toPath())
-            else
-                this.add(this@ForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
+            this.add(this@ForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
         }
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {
             if (!this@ForgeMod::secureJar.isInitialized) {
-                secureJar = if (this@ForgeMod::remappedModFile.isInitialized)
-                    SecureJar.from(remappedModFile.toPath())
-                else
-                    SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
+                secureJar = SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
             }
 
             return@Supplier secureJar
@@ -121,23 +100,23 @@ class ForgeMod(
     }
 
     override fun getModId(): String {
-        return modId
+        return this.definition.id
     }
 
     override fun getDisplayName(): String {
-        return displayName
+        return this.definition.displayName
     }
 
     override fun getDescription(): String {
-        return description
+        return this.definition.description
     }
 
     override fun getVersion(): ArtifactVersion {
-        return version
+        return DefaultArtifactVersion(this.definition.version.toString())
     }
 
     override fun getDependencies(): MutableList<out IModInfo.ModVersion> {
-        return dependencies.toMutableList()
+        return forgeDependencies
     }
 
     override fun getForgeFeatures(): MutableList<out ForgeFeature.Bound> {
@@ -157,11 +136,11 @@ class ForgeMod(
     }
 
     override fun getModURL(): Optional<URL> {
-        return Optional.ofNullable(modURL)
+        return Optional.empty()
     }
 
     override fun getLogoFile(): Optional<String> {
-        return Optional.ofNullable(logoFile)
+        return Optional.ofNullable(definition.icon)
     }
 
     override fun getLogoBlur(): Boolean {
@@ -199,17 +178,15 @@ class ForgeMod(
     }
 
     class ForgeModDependency(
-        private val modId: String,
-        private val versionRange: VersionRange,
-        private val isMandatory: Boolean,
-        private val ordering: IModInfo.Ordering,
-        private val side: IModInfo.DependencySide,
-        private val referralUrl: URL? = null
+        private val dependency: ModDependency
     ) : IModInfo.ModVersion {
         private var parent: IModInfo? = null
+        private val versionRange = (dependency.constraint as ForgeVersionConstraint).range
+        private val ordering: IModInfo.Ordering = dependency.additionalData["ordering"] as IModInfo.Ordering
+        private val referralUrl: URL? = dependency.additionalData["referralURL"] as? URL?
 
         override fun getModId(): String {
-            return modId
+            return dependency.id
         }
 
         override fun getVersionRange(): VersionRange {
@@ -217,7 +194,7 @@ class ForgeMod(
         }
 
         override fun isMandatory(): Boolean {
-            return isMandatory
+            return dependency.type == ModDependency.Type.REQUIRED
         }
 
         override fun getOrdering(): IModInfo.Ordering {
@@ -225,7 +202,11 @@ class ForgeMod(
         }
 
         override fun getSide(): IModInfo.DependencySide {
-            return side
+            return when (dependency.side) {
+                ModEnvironment.BOTH -> IModInfo.DependencySide.BOTH
+                ModEnvironment.CLIENT -> IModInfo.DependencySide.CLIENT
+                ModEnvironment.SERVER -> IModInfo.DependencySide.SERVER
+            }
         }
 
         override fun setOwner(owner: IModInfo?) {

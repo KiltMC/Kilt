@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.mod.fabric
+package xyz.bluspring.knit.loader.fabric.mod.metadata
 
 import net.fabricmc.loader.api.metadata.CustomValue
 

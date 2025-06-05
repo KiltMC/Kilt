@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.mod.fabric
+package xyz.bluspring.knit.loader.fabric.mod
 
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.Version
@@ -6,54 +6,63 @@ import net.fabricmc.loader.api.metadata.*
 import net.fabricmc.loader.impl.metadata.EntrypointMetadata
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata
 import net.fabricmc.loader.impl.metadata.NestedJarEntry
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.knit.loader.KnitModLoader
+import xyz.bluspring.knit.loader.fabric.mod.metadata.CustomStringValue
+import xyz.bluspring.knit.loader.fabric.mod.metadata.toMetadataValue
+import xyz.bluspring.knit.loader.mod.ModDefinition
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
+import xyz.bluspring.knit.loader.mod.ModEnvironment as KnitModEnvironment
 
-class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetadata {
+class FabricModMetadata(private val definition: ModDefinition, private val loader: KnitModLoader<*>) : ModMetadata, LoaderModMetadata {
     private val customValues = mutableMapOf<String, CustomValue>(
-        "name" to CustomStringValue(mod.displayName),
-        "description" to CustomStringValue(description),
-        "icon" to CustomStringValue(mod.logoFile.getOrNull() ?: "")
-    )
+        "name" to CustomStringValue(definition.displayName),
+        "description" to CustomStringValue(definition.description),
+        "icon" to CustomStringValue(definition.icon)
+    ).apply {
+        for ((key, value) in definition.loaderCustomData) {
+            this[key] = value.toMetadataValue()
+        }
+    }
 
     override fun getType(): String {
-        return "forge"
+        return loader.supportedLoader.lowercase()
     }
 
     override fun getId(): String {
-        return mod.modId
+        return definition.id
     }
 
     override fun getProvides(): MutableCollection<String> {
-        return mod.nestedMods.map {
-            it.modId
-        }.toMutableList()
+        return mutableListOf()
     }
 
     override fun getVersion(): Version {
-        return Version.parse(mod.version.toString())
+        return Version.parse(definition.version. toString())
     }
 
     override fun getEnvironment(): ModEnvironment {
-        return ModEnvironment.UNIVERSAL // TODO: add support for handling this in mods.toml
+        return when (definition.environment) {
+            KnitModEnvironment.CLIENT -> ModEnvironment.CLIENT
+            KnitModEnvironment.SERVER -> ModEnvironment.SERVER
+            KnitModEnvironment.BOTH -> ModEnvironment.UNIVERSAL
+        }
     }
 
     override fun getDependencies(): MutableCollection<ModDependency> {
-        return mutableListOf() // Already handled by Kilt
+        return mutableListOf()
     }
 
     override fun getName(): String {
-        return mod.displayName
+        return definition.displayName
     }
 
     override fun getDescription(): String {
-        return mod.description
+        return definition.description
     }
 
     override fun getAuthors(): MutableCollection<Person> {
         return mutableListOf<Person>().apply {
-            mod.authors.split(",").forEach {
+            definition.authors.forEach {
                 this.add(object : Person {
                     override fun getName(): String {
                         return it.trim()
@@ -93,19 +102,15 @@ class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetad
     }
 
     override fun getLicense(): MutableCollection<String> {
-        return mutableListOf(mod.license)
+        return mutableListOf(definition.license)
     }
 
     override fun getIconPath(size: Int): Optional<String> {
-        return mod.logoFile
+        return if (definition.icon.isBlank()) Optional.empty() else Optional.of(definition.icon)
     }
 
     override fun containsCustomValue(key: String?): Boolean {
-        // Trick ModMenu into giving us a Forge badge
-        if (key == "patchwork:patcherMeta")
-            return true
-
-        return false
+        return customValues.containsKey(key)
     }
 
     override fun getCustomValue(key: String): CustomValue? {
@@ -116,12 +121,16 @@ class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetad
         return customValues
     }
 
-    override fun containsCustomElement(key: String?): Boolean {
-        return false
+    override fun containsCustomElement(key: String): Boolean {
+        return customValues.containsKey(key)
     }
 
     override fun loadsInEnvironment(type: EnvType?): Boolean {
-        return true
+        return when (type) {
+            null -> definition.environment == KnitModEnvironment.BOTH
+            EnvType.CLIENT -> definition.environment.supportsClient()
+            EnvType.SERVER -> definition.environment.supportsServer()
+        }
     }
 
     override fun getEntrypoints(type: String?): MutableList<EntrypointMetadata> {
@@ -145,7 +154,13 @@ class FabricModMetadata(private val mod: ForgeMod) : ModMetadata, LoaderModMetad
     }
 
     override fun getMixinConfigs(type: EnvType?): MutableCollection<String> {
-        return mutableListOf()
+        return definition.mixinConfigs.filter {
+            (type == null && it.environment == KnitModEnvironment.BOTH)
+                || (type == EnvType.CLIENT && it.environment.supportsClient())
+                || (type == EnvType.SERVER && it.environment.supportsServer())
+        }
+            .map { it.config }
+            .toMutableList()
     }
 
     override fun getAccessWidener(): String? {

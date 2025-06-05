@@ -120,6 +120,10 @@ allprojects {
         maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
             name = "GeckoLib"
         }
+
+        maven("https://thedarkcolour.github.io/KotlinForForge/") {
+            name = "Kotlin for Forge"
+        }
     }
 
     // Avoid making the compats submodule use Loom, otherwise we break stuff
@@ -255,6 +259,13 @@ dependencies {
     // Knit Loader
     api(project(":loader"))
     runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+
+    // Kotlin for Forge
+    // We only need the language provider, as that's what we try to provide compatibility for.
+    // The end user still however has to provide KFF themselves.
+    compileOnly("thedarkcolour:kfflang:${property("kff_version")}") {
+        exclude("org.jetbrains.kotlin") // KFF ships an outdated version of Kotlin, we use latest.
+    }
 
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")

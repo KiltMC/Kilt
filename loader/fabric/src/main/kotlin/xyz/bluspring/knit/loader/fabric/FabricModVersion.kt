@@ -4,10 +4,9 @@ import net.fabricmc.loader.api.Version
 import xyz.bluspring.knit.loader.mod.ModVersion
 
 class FabricModVersion(val version: Version) : ModVersion {
-    override val asString: String
-        get() = version.friendlyString
+    override fun toString(): String = version.friendlyString
 
     override fun compareTo(other: ModVersion): Int {
-        return version.compareTo(Version.parse(other.asString))
+        return version.compareTo(Version.parse(other.toString()))
     }
 }

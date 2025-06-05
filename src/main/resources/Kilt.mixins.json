@@ -56,7 +56,6 @@
         "SheetsAccessor",
         "SpawnPlacementsAccessor",
         "SpawnPlacementsDataAccessor",
-        "SystemReportMixin",
         "TagAppenderAccessor",
         "TagsProviderAccessor",
         "TooltipRenderUtilAccessor",
