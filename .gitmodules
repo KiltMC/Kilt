@@ -3,4 +3,4 @@
 	url = https://github.com/KiltMC/NeoForge.git
 [submodule "loader"]
 	path = loader
-	url = git@github.com:KiltMC/KnitLoader.git
+	url = https://github.com/KiltMC/KnitLoader.git
