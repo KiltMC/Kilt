@@ -65,6 +65,7 @@
         "client.gui.components.ButtonBuilderAccessor",
         "client.renderer.item.ItemPropertiesAccessor",
         "compat.architectury.RegistrarManagerImplMixin",
+        "compat.forge.alexscaves.PotionUtilsMixin",
         "compat.forge.blueprint.RemoldedResourceManagerMixin",
         "compat.forge.decocraft.JsonParserMixin",
         "compat.forge.iceandfire.TabulaModelHandlerHelperMixin",
