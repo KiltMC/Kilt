@@ -70,6 +70,8 @@
         "compat.forge.blueprint.RemoldedResourceManagerMixin",
         "compat.forge.decocraft.JsonParserMixin",
         "compat.forge.iceandfire.TabulaModelHandlerHelperMixin",
+        "compat.forge.pixelmon.AbstractPokemonRendererMixin",
+        "compat.forge.pixelmon.GenericModelHolderMixin",
         "compat.forge.tacz.GetJarResourcesMixin",
         "compat.forge.zerocore.ClientProxyMixin",
         "compat.forgeconfigapiport.ConfigTrackerAccessor",
