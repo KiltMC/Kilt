@@ -117,7 +117,7 @@
     }
   },
   "breaks": {
-    "quilt-loader": "*"
+    "quilt-_loader": "*"
   },
   "accessWidener": "kilt.accesswidener"
 }
