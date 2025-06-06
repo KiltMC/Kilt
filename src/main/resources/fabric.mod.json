@@ -118,7 +118,7 @@
     }
   },
   "breaks": {
-    "quilt-loader": "*",
+    "quilt_loader": "*",
     "async": "*",
     "creativecore": "<2.12.33"
   },
