@@ -44,7 +44,15 @@ class Kilt : ModInitializer {
             val event = ForgeHooks.onRightClickBlock(player, hand, pos, hitResult)
             val stack = player.getItemInHand(hand)
 
-            if (!stack.isEmpty && event.useItem != Event.Result.DENY) {
+            val canUseItem = (player.isSecondaryUseActive && (!player.mainHandItem.isEmpty || !player.offhandItem.isEmpty)) && !(player.mainHandItem.doesSneakBypassUse(player.level(), pos, player) && player.offhandItem.doesSneakBypassUse(player.level(), pos, player))
+
+            if (event.useBlock == Event.Result.ALLOW || (event.useBlock != Event.Result.DENY && !canUseItem))
+                return@register eventBusToArchitectury(event.useBlock)
+
+            if (event.useItem == Event.Result.ALLOW || (!stack.isEmpty && !player.cooldowns.isOnCooldown(stack.item))) {
+                if (event.useItem == Event.Result.DENY)
+                    return@register EventResult.pass()
+
                 val result = stack.onItemUseFirst(UseOnContext(player, hand, hitResult))
 
                 if (result != InteractionResult.PASS && result != InteractionResult.FAIL) {
@@ -52,7 +60,7 @@ class Kilt : ModInitializer {
                 }
             }
 
-            eventBusToArchitectury(event.useBlock)
+            EventResult.pass()
         }
 
         InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
