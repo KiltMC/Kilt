@@ -398,6 +398,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
+
+        // Load all of the Forge access transformers
+        AccessTransformerLoader.runTransformers()
     }
 
     fun loadMods() {
@@ -643,7 +646,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     private fun loadTransformers(mod: ForgeMod) {
-        if (mod.modFile == null) {
+        if (mod.modFile == null || mod.definition.isBuiltin) {
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
 
             if (accessTransformer != null) {
