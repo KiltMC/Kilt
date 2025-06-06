@@ -194,20 +194,20 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
         if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
-            throw Exception("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
+            throw IncompatibleModException("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
         }
 
         val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion"))
         when (modLoader) {
             "kotlinforforge" -> {
                 if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
-                    throw Exception("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
 
             "javafml", "lowcodefml" -> {
                 if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION)) {
-                    throw Exception("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FORGE_SPEC_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FORGE_SPEC_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
         }
