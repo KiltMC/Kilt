@@ -13,7 +13,7 @@ import java.security.ProtectionDomain
 
 class KiltInstrumentationHandler : InstrumentationEntrypoint {
     override fun onGetInstrumentation(instrumentation: Instrumentation) {
-        val mixinPreProcessorClass = Class.forName("org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard")
+        val mixinPreProcessorClass = Class.forName("org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard", false, Thread.currentThread().contextClassLoader)
 
         instrumentation.addTransformer(object : ClassFileTransformer {
             override fun transform(
