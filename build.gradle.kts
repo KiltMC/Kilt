@@ -166,6 +166,7 @@ allprojects {
             implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
             modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
             include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
+            include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
         }
     }
 }

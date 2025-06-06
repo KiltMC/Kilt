@@ -32,6 +32,9 @@
     ],
     "mixinsquared": [
       "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
+    ],
+    "afl:instrumentation": [
+      "xyz.bluspring.kilt.loader.asm.KiltInstrumentationHandler"
     ]
   },
   "mixins": [
