@@ -62,10 +62,10 @@ public abstract class MultiPlayerGameModeInject {
         return original.call(instance, pos, newState, flags);
     }
 
-    @WrapWithCondition(method = "method_41936", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
+    /*@WrapWithCondition(method = "method_41936", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
     private boolean kilt$handleLeftClickBlock(MultiPlayerGameMode instance, BlockPos pos, @Local(argsOnly = true) Direction direction) {
         return !ForgeHooks.onLeftClickBlock(minecraft.player, pos, direction, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK).isCanceled();
-    }
+    }*/
 
     @Unique private PlayerInteractEvent.LeftClickBlock kilt$leftClickBlock;
 
