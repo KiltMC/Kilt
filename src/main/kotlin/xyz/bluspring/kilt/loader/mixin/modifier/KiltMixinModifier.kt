@@ -30,9 +30,11 @@ class KiltMixinModifier : IExtension {
             for (mixinInfo in ext.mixins) {
                 val modId = mixinInfo.config.getDecoration<String>(FabricUtil.KEY_MOD_ID)
 
-                // Ignore non-Forge mods
-                if (!Kilt.loader.hasMod(modId))
-                    continue
+                // Essential mod causes a null modId to appear
+                if (modId != null)
+                    // Ignore non-Forge mods
+                    if (!Kilt.loader.hasMod(modId))
+                        continue
 
                 val mixinClassNode = mixinInfo.getClassNode(0)
                 var wasModified = false
