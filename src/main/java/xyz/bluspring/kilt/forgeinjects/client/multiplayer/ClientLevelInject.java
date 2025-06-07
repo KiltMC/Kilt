@@ -22,6 +22,7 @@ import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.client.model.lighting.QuadLighter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -48,8 +49,7 @@ public abstract class ClientLevelInject extends Level {
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$initLevel(ClientPacketListener clientPacketListener, ClientLevel.ClientLevelData clientLevelData, ResourceKey resourceKey, Holder holder, int i, int j, Supplier supplier, LevelRenderer levelRenderer, boolean bl, long l, CallbackInfo ci) {
         this.gatherCapabilities();
-        // Kilt: handled via Fabric API
-        //MinecraftForge.EVENT_BUS.post(new LevelEvent.Load((ClientLevel) (Object) this));
+        MinecraftForge.EVENT_BUS.post(new LevelEvent.Load((ClientLevel) (Object) this));
     }
 
     @WrapWithCondition(method = "tickNonPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))

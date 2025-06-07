@@ -23,10 +23,7 @@ import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.TickEvent
-import net.minecraftforge.event.TickEvent.ClientTickEvent
 import net.minecraftforge.event.level.LevelEvent
-import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.ModLoader
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
@@ -197,19 +194,19 @@ class KiltClient : ClientModInitializer {
         }*/
 
         ClientTickEvents.START_CLIENT_TICK.register {
-            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.START))
+            ForgeEventFactory.onPreClientTick()
         }
 
         ClientTickEvents.END_CLIENT_TICK.register {
-            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.END))
+            ForgeEventFactory.onPostClientTick()
         }
 
         ClientTickEvents.START_WORLD_TICK.register {
-            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.START, it) { !it.dimensionType().hasFixedTime() })
+            ForgeEventFactory.onPreLevelTick(it) { true }
         }
 
         ClientTickEvents.END_WORLD_TICK.register {
-            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.END, it) { !it.dimensionType().hasFixedTime() })
+            ForgeEventFactory.onPostLevelTick(it) { true }
         }
 
         /*ClientWorldEvents.LOAD.register { client, level ->
