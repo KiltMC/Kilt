@@ -577,8 +577,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     try {
                         initMod(mod, mod.scanData)
                     } catch (e: Throwable) {
+                        Kilt.logger.error("Failed to load mod ${mod.displayName} (${mod.modId})!")
                         e.printStackTrace()
-                        exception.addSuppressed(e)
+                        exception.addSuppressed(RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})", e))
                     }
                 }
         }
