@@ -77,6 +77,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         return loadModDefinitions(path)
     }
 
+    override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
+        if (dependencyId == "cloth_config")
+            return "cloth-config"
+
+        return super.getNativeModId(dependencyId, nativeLoaderName)
+    }
+
     private fun loadModDefinitions(path: Path, parents: List<ModDefinition>? = null): List<ModDefinition> {
         val jarFile = JarFile(path.toFile())
 
