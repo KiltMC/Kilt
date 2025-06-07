@@ -2,12 +2,17 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import com.bawnorton.mixinsquared.TargetHandler;
+import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -28,6 +33,7 @@ import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -171,6 +177,19 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         }
 
         return null;
+    }
+
+    @WrapOperation(method = "getAttributeModifiers", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getDefaultAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))
+    private Multimap<Attribute, AttributeModifier> kilt$getModdedAttributeModifiers(Item instance, EquipmentSlot slot, Operation<Multimap<Attribute, AttributeModifier>> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getAttributeModifiers", EquipmentSlot.class, ItemStack.class)) {
+            return instance.getAttributeModifiers(slot,  (ItemStack) (Object) this);
+        }
+        return original.call(instance, slot);
+    }
+
+    @ModifyReturnValue(method = "getAttributeModifiers", at = @At("RETURN"))
+    private Multimap<Attribute, AttributeModifier> kilt$invokeAttributeModifiersEvent(Multimap<Attribute, AttributeModifier> original, EquipmentSlot slot) {
+        return ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original);
     }
 
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")
