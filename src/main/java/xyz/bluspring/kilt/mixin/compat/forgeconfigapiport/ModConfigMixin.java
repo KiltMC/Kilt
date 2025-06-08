@@ -1,11 +1,11 @@
 package xyz.bluspring.kilt.mixin.compat.forgeconfigapiport;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.loader.KiltModContainer;
 
 @Mixin(value = ModConfig.class, remap = false)
 public class ModConfigMixin {
@@ -14,11 +14,11 @@ public class ModConfigMixin {
 
     @CreateInitializer
     public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, ModContainer mod, final String fileName) {
-        this(type, spec, ((KiltModContainer) mod).getFabricModContainer(), fileName);
+        this(type, spec, FabricLoader.getInstance().getModContainer(mod.getModId()).orElseThrow(), fileName);
     }
 
     @CreateInitializer
     public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, ModContainer mod) {
-        this(type, spec, ((KiltModContainer) mod).getFabricModContainer());
+        this(type, spec, FabricLoader.getInstance().getModContainer(mod.getModId()).orElseThrow());
     }
 }

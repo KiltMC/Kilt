@@ -1,5 +1,8 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
+import com.google.gson.JsonObject
+import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
@@ -16,7 +19,11 @@ object MixinAdditionalRemapper {
     // Able to match: Lpackage/class/name;methodName(BZLother/type/name;)V
     val MIXIN_METHOD_EXPLICIT_REGEX = Regex("(L(?:\\w+(/)?)*;)\\w+(?:\\((?:Z|B|C|S|I|J|F|D|L(?:\\w+(/)?)*;)*\\)(?:Z|B|C|S|I|J|F|D|V|L(?:\\w+(/)?)*;))?")
 
-    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
+    val HARDCODED_REMAPPED_MIXINS = mapOf(
+        "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/Model;Z)V" to "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/HumanoidModel;Z)V"
+    )
+
+    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmapJsons: List<JsonObject>) {
         val remappedFields = mutableMapOf<String, String>()
         val remappedMethods = mutableMapOf<String, String>()
 
@@ -130,6 +137,11 @@ object MixinAdditionalRemapper {
                         val methodValue = values["method"]!!
 
                         if (methodValue is String) {
+                            if (HARDCODED_REMAPPED_MIXINS.containsKey(methodValue)) {
+                                values["method"] = HARDCODED_REMAPPED_MIXINS[methodValue]!!
+                                continue
+                            }
+
                             val owner = tryGetOwnerFromMethodValue(methodValue) ?: continue
                             val combined = methodValue.removePrefix(owner)
 
@@ -153,6 +165,11 @@ object MixinAdditionalRemapper {
                             for (value in methodValue) {
                                 if (value !is String) {
                                     list.add(value)
+                                    continue
+                                }
+
+                                if (HARDCODED_REMAPPED_MIXINS.containsKey(value)) {
+                                    list.add(HARDCODED_REMAPPED_MIXINS[value]!!)
                                     continue
                                 }
 
@@ -190,6 +207,28 @@ object MixinAdditionalRemapper {
                 }
             }
         }
+
+        // Increase priority if LevelRenderer
+        run {
+            val levelRenderer = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_761")
+            if (!values.contains("priority") && (targetClassNames.contains(levelRenderer.replace(".", "/")) || targetClassNames.contains(levelRenderer))) {
+                val modifiedValues = values.toMutableMap()
+                modifiedValues["priority"] = 1050
+
+                if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                }
+            }
+        }
+
     }
 
     private fun tryGetOwnerFromMethodValue(name: String): String? {

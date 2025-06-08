@@ -38,7 +38,6 @@ class Kilt : ModInitializer {
         registerFabricEvents()
 
         TransferInterop.init()
-        DeltaTimeProfiler.popAll()
     }
 
     @Suppress("removal")

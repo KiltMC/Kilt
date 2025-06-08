@@ -19,6 +19,7 @@ import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper
 import net.minecraftforge.fart.internal.RenamingTransformer
 import net.minecraftforge.srgutils.IMappingFile
+import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
@@ -36,6 +37,7 @@ import xyz.bluspring.knit.loader.util.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Path
+import java.util.*
 import java.util.function.Consumer
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -48,7 +50,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 164
+    const val REMAPPER_VERSION = 175
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -179,9 +181,9 @@ object KiltRemapper {
 
                 if (it.nameWithoutExtension.startsWith("minecraft_") &&
                     (
-                        !it.nameWithoutExtension.contains(KiltLoader.MC_VERSION.friendlyString) ||
-                        !it.nameWithoutExtension.endsWith("_$MC_MAPPED_JAR_VERSION")
-                    )
+                            !it.nameWithoutExtension.contains(KiltLoader.MC_VERSION.friendlyString) ||
+                                    !it.nameWithoutExtension.endsWith("_$MC_MAPPED_JAR_VERSION")
+                            )
                 ) {
                     markedForDeletion.add(it)
                 }
@@ -217,7 +219,7 @@ object KiltRemapper {
                     return@forEach
                 }
 
-                val currentHash = KiltHelper.md5Hash(mod.modFile.inputStream())
+                val currentHash = DigestUtils.md5Hex(mod.path.inputStream())
 
                 if (currentHash != fileHash) {
                     markedForDeletion.add(file)
@@ -288,6 +290,8 @@ object KiltRemapper {
             val refmaps = CaseInsensitiveStringHashSet()
             val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, mixinClasses)
             enhancedRemapper = remapper
+
+            val refmapJsons = Collections.synchronizedList(mutableListOf<JsonObject>())
 
             suspend fun processManifest(
                 jar: JarFile,
@@ -563,6 +567,8 @@ object KiltRemapper {
                     this.add("named:intermediary", newMappings)
                 })
 
+                refmapJsons.add(refmapData)
+
                 withContext(Dispatchers.IO) {
                     synchronized(jarOutput) {
                         jarOutput.putNextEntry(entry)
@@ -625,7 +631,8 @@ object KiltRemapper {
                 mixinClasses: ClassNameHashSet,
                 classesToProcess: List<ClassNode>,
                 jarOutput: JarOutputStream,
-                entry: JarEntry
+                entry: JarEntry,
+                refmapJsons: List<JsonObject>
             ) {
                 try {
                     val remappedNode = ClassNode(Opcodes.ASM9)
@@ -635,7 +642,8 @@ object KiltRemapper {
 
                     // only do this on mixin classes, please
                     if (remappedNode.name in mixinClasses) {
-                        MixinAdditionalRemapper.remapClass(remappedNode, remapper)
+                        MixinAdditionalRemapper.remapClass(remappedNode, remapper, refmapJsons)
+                        MixinSpecialAnnotationRemapper.remapClass(remappedNode, remapper, refmapJsons)
                     }
 
                     EventClassVisibilityFixer.fixClass(remappedNode)
@@ -643,7 +651,6 @@ object KiltRemapper {
                     ObjectHolderDefinalizer.processClass(remappedNode)
                     WorkaroundFixer.fixClass(remappedNode)
                     ConflictingStaticMethodFixer.fixClass(remappedNode)
-                    MixinSpecialAnnotationRemapper.remapClass(remappedNode)
                     EnvironmentRemapper.remapClass(remappedNode)
 
                     val classWriter = ClassWriter(0)
@@ -670,7 +677,8 @@ object KiltRemapper {
                         mixinClasses,
                         classesToProcess,
                         jarOutput,
-                        entry
+                        entry,
+                        refmapJsons
                     )
                 } catch (e: Throwable) {
                     exception.addSuppressed(e)
