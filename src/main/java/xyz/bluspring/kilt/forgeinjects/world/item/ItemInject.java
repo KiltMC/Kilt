@@ -6,7 +6,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.extensions.IForgeItem;
-import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,10 +30,10 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
         kilt$initClient();
     }
 
-    @Inject(method = "<clinit>", at = @At("TAIL"))
+    /*@Inject(method = "<clinit>", at = @At("TAIL"))
     private static void kilt$useForgeBlockItemMap(CallbackInfo ci) {
         BY_BLOCK = GameData.getBlockItemMap();
-    }
+    }*/
 
     private void kilt$initClient() {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {

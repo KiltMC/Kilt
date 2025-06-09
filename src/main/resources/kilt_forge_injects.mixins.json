@@ -84,6 +84,7 @@
         "tags.FluidTagsInject",
         "tags.ItemTagsInject",
         "tags.TagBuilderInject",
+        "tags.TagManagerInject",
         "world.effect.MobEffectInject",
         "world.effect.MobEffectInstanceInject",
         "world.entity.EntityInject",

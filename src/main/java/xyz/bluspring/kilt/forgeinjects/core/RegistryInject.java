@@ -1,19 +1,15 @@
 package xyz.bluspring.kilt.forgeinjects.core;
 
-import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Registry.class)
 public abstract class RegistryInject {
-    @ModifyVariable(method = "internalRegister", at = @At("HEAD"), argsOnly = true)
+    /*@ModifyVariable(method = "internalRegister", at = @At("HEAD"), argsOnly = true)
     private static <T, R extends WritableRegistry<T>> R kilt$wrapWithGameDataWrapper(R registry, @Local(argsOnly = true) ResourceKey<? extends Registry<T>> key, @Local(argsOnly = true) Lifecycle lifecycle) {
         R wrapper;
         if (registry instanceof DefaultedRegistry<?> defaulted)
@@ -25,6 +21,11 @@ public abstract class RegistryInject {
             return registry;
         else
             return wrapper;
+    }*/
+
+    @Inject(method = "<clinit>", at = @At("TAIL"))
+    private static void kilt$initGameDataRegistries(CallbackInfo ci) {
+        GameData.init();
     }
 
 }

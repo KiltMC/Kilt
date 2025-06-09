@@ -7,14 +7,17 @@ import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.RegistryManager;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
@@ -25,7 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Mixin(MappedRegistry.class)
-public abstract class MappedRegistryInject<T> implements MappedRegistryInjection {
+public abstract class MappedRegistryInject<T> extends WritableRegistry<T> implements MappedRegistryInjection {
     @Shadow public boolean frozen;
 
     @Shadow @Final @Nullable private Function<T, Holder.Reference<T>> customHolderProvider;
@@ -35,6 +38,10 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Shadow @Final private Map<ResourceKey<T>, Holder.Reference<T>> byKey;
     @CreateStatic
     private static final Set<ResourceLocation> KNOWN = MappedRegistryInjection.knownRegistries;
+
+    public MappedRegistryInject(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle) {
+        super(key, lifecycle);
+    }
 
     @CreateStatic
     private static Set<ResourceLocation> getKnownRegistries() {
@@ -61,5 +68,41 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         this.frozen = false;
         if (this.customHolderProvider != null && this.intrusiveHolderCache == null)
             this.intrusiveHolderCache = new IdentityHashMap<>();
+    }
+
+    @ModifyVariable(method = {
+        "get(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;",
+        "containsKey(Lnet/minecraft/resources/ResourceKey;)Z",
+        "getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;",
+        "getOrCreateHolderOrThrow"
+    }, at = @At("HEAD"), argsOnly = true)
+    private ResourceKey<T> kilt$tryGetAlias(ResourceKey<T> value) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null) {
+            var alias = registry.kilt$getAlias(value.location());
+
+            if (alias != null)
+                return ResourceKey.create(this.key(), alias);
+        }
+
+        return value;
+    }
+
+    @ModifyVariable(method = {
+        "get(Lnet/minecraft/resources/ResourceLocation;)Ljava/lang/Object;",
+        "containsKey(Lnet/minecraft/resources/ResourceLocation;)Z"
+    }, at = @At("HEAD"), argsOnly = true)
+    private ResourceLocation kilt$tryGetAlias(ResourceLocation value) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null) {
+            var alias = registry.kilt$getAlias(value);
+
+            if (alias != null)
+                return alias;
+        }
+
+        return value;
     }
 }

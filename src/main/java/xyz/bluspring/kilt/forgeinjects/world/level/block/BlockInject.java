@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.common.extensions.IForgeBlock;
-import net.minecraftforge.registries.GameData;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,10 +30,10 @@ public abstract class BlockInject implements IForgeBlock, RenderPropertiesInject
     @Unique
     private Object renderProperties;
 
-    @Inject(method = "<clinit>", at = @At("TAIL"))
+    /*@Inject(method = "<clinit>", at = @At("TAIL"))
     private static void kilt$useGameDataStateIdMap(CallbackInfo ci) {
         BLOCK_STATE_REGISTRY = GameData.getBlockStateIDMap();
-    }
+    }*/
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$initClient(BlockBehaviour.Properties properties, CallbackInfo ci) {

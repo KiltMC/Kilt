@@ -56,7 +56,12 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V")
     public void kilt$setFluidSupplier(FlowingFluid flowingFluid, BlockBehaviour.Properties properties, CallbackInfo ci) {
         fluidStateCacheInitialized = true;
-        supplier = ForgeRegistries.FLUIDS.getDelegateOrThrow(flowingFluid);
+
+        @SuppressWarnings("SimplifyOptionalCallChains")
+        var fluidSupplier = ForgeRegistries.FLUIDS.getDelegate(flowingFluid).orElse(null);
+
+        if (fluidSupplier != null)
+            supplier = fluidSupplier;
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", shift = At.Shift.BEFORE), method = "getFluidState")
