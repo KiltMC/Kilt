@@ -70,6 +70,7 @@
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
         "compat.supplementaries.ClientConfigsMixin",
+        "compat.unionlib.PlatformHelperMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.LootContextExtensionsMixin",
         "porting_lib.RegistryObjectAccessor",
