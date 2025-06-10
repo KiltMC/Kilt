@@ -29,7 +29,7 @@ public class ClientIntentionPacketInject implements ClientIntentionPacketInjecti
         return string + "\0" + NetworkConstants.NETVERSION + "\0";
     }
 
-    public String getFmlVersion() {
+    public String getFMLVersion() {
         return fmlVersion;
     }
 }
