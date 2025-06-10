@@ -113,6 +113,7 @@ gradle-app.setting
 
 # Common working directory
 run/
+run_server/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
