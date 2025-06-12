@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.stream.consumeAsFlow
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.MappingResolver
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
@@ -66,6 +67,9 @@ object KiltRemapper {
 
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
+
+    // Remapper extensions
+    fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
 
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
@@ -646,6 +650,7 @@ object KiltRemapper {
                         MixinSpecialAnnotationRemapper.remapClass(remappedNode, remapper, refmapJsons)
                     }
 
+                    ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                     EventClassVisibilityFixer.fixClass(remappedNode)
                     EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
                     ObjectHolderDefinalizer.processClass(remappedNode)
