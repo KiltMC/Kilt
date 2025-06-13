@@ -7,12 +7,12 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 import java.net.URL
 import java.util.*
 
-class ModInfo(private val kiltModInfo: ForgeMod? = null, private val fabricModContainer: ModContainer? = null) : IModInfo {
+class ModInfo(private val kiltModInfo: NeoForgeMod? = null, private val fabricModContainer: ModContainer? = null) : IModInfo {
     private val owningFile = ModFileInfo(kiltModInfo, if (fabricModContainer != null) FabricModFileInfoWrapper(fabricModContainer) else null)
 
     override fun getOwningFile(): IModFileInfo {

@@ -7,13 +7,13 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.stream.Stream
 
-class ModList private constructor(private val kiltMods: List<ForgeMod>) {
+class ModList private constructor(private val kiltMods: List<NeoForgeMod>) {
     val mods: List<IModInfo>
         get() = kiltMods.map { it }
 

@@ -4,10 +4,10 @@ import net.minecraftforge.forgespi.language.IConfigurable
 import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 
-open class ModFileInfo(private val kiltMod: ForgeMod?, private val wrapper: FabricModFileInfoWrapper? = null) : IModFileInfo {
+open class ModFileInfo(private val kiltMod: NeoForgeMod?, private val wrapper: FabricModFileInfoWrapper? = null) : IModFileInfo {
     override fun getMods(): MutableList<IModInfo> {
         if (wrapper != null)
             return wrapper.mods

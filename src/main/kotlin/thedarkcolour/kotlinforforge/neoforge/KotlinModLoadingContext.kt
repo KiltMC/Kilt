@@ -1,11 +1,11 @@
-package thedarkcolour.kotlinforforge
+package thedarkcolour.kotlinforforge.neoforge
 
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.ModLoadingContext
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.concurrent.ConcurrentHashMap
 
-class KotlinModLoadingContext(private val mod: ForgeMod) : ModLoadingContext() {
+class KotlinModLoadingContext(private val mod: NeoForgeMod) : ModLoadingContext() {
     fun getEventBus(): IEventBus {
         return mod.eventBus
     }
@@ -13,7 +13,7 @@ class KotlinModLoadingContext(private val mod: ForgeMod) : ModLoadingContext() {
     companion object {
         private val cachedContexts = ConcurrentHashMap<String, KotlinModLoadingContext>()
 
-        fun kiltGetContext(mod: ForgeMod): KotlinModLoadingContext {
+        fun kiltGetContext(mod: NeoForgeMod): KotlinModLoadingContext {
             val ctx = cachedContexts.computeIfAbsent(mod.modId) { KotlinModLoadingContext(mod) }
             ctx.setActiveContainer(mod.container)
             return ctx

@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
-import thedarkcolour.kotlinforforge.KotlinModContainer
+import thedarkcolour.kotlinforforge.neoforge.KotlinModContainer
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
@@ -35,7 +35,7 @@ import java.util.jar.JarFile
 import java.util.jar.Manifest
 import kotlin.io.path.toPath
 
-class ForgeMod(
+class NeoForgeMod(
     definition: ModDefinition,
 
     val showAsResourcePack: Boolean = false,
@@ -56,7 +56,7 @@ class ForgeMod(
     lateinit var scanData: ModFileScanData
     lateinit var modObject: Any
 
-    var parent: ForgeMod? = null
+    var parent: NeoForgeMod? = null
     var manifest: Manifest? = null
 
     private lateinit var secureJar: SecureJar
@@ -70,12 +70,12 @@ class ForgeMod(
 
     val paths: MutableList<Path>
         get() = mutableListOf<Path>().apply {
-            this.add(this@ForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
+            this.add(this@NeoForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
         }
 
     fun getSecureJar(): Supplier<SecureJar> {
         return Supplier {
-            if (!this@ForgeMod::secureJar.isInitialized) {
+            if (!this@NeoForgeMod::secureJar.isInitialized) {
                 secureJar = SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
             }
 
@@ -185,7 +185,7 @@ class ForgeMod(
         private val dependency: ModDependency
     ) : IModInfo.ModVersion {
         private var parent: IModInfo? = null
-        private val versionRange = (dependency.constraint as ForgeVersionConstraint).range
+        private val versionRange = (dependency.constraint as NeoForgeVersionConstraint).range
         private val ordering: IModInfo.Ordering = dependency.additionalData["ordering"] as IModInfo.Ordering
         private val referralUrl: URL? = dependency.additionalData["referralURL"] as? URL?
 

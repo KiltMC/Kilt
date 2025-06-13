@@ -10,7 +10,7 @@ import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.concurrent.Executor
 import java.util.function.BiConsumer
 import java.util.function.Function
@@ -50,7 +50,7 @@ class ModLoader {
         })
     }
 
-    fun <T> kiltPostEventWrappingModsBuildEvent(e: Function<ForgeMod, T>) where T : Event, T : IModBusEvent {
+    fun <T> kiltPostEventWrappingModsBuildEvent(e: Function<NeoForgeMod, T>) where T : Event, T : IModBusEvent {
         Kilt.loader.mods.forEach {
             ModLoadingContext.kiltActiveModId = it.modId
             it.eventBus.post(e.apply(it))

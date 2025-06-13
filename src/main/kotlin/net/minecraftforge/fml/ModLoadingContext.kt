@@ -4,8 +4,8 @@ import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
-import thedarkcolour.kotlinforforge.KotlinModContainer
-import thedarkcolour.kotlinforforge.KotlinModLoadingContext
+import thedarkcolour.kotlinforforge.neoforge.KotlinModContainer
+import thedarkcolour.kotlinforforge.neoforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.VanillaModContainer

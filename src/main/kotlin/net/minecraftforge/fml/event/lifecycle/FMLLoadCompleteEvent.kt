@@ -1,9 +1,9 @@
 package net.minecraftforge.fml.event.lifecycle
 
 import net.minecraftforge.fml.ModLoadingStage
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 
-class FMLLoadCompleteEvent(mod: ForgeMod?, stage: ModLoadingStage?) : ParallelDispatchEvent(mod, stage) {
+class FMLLoadCompleteEvent(mod: NeoForgeMod?, stage: ModLoadingStage?) : ParallelDispatchEvent(mod, stage) {
     constructor() : this(null, null)
 
     private fun littleFunkyWorkaround() {

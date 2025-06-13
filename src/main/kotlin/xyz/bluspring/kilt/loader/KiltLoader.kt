@@ -59,14 +59,14 @@ import java.util.jar.JarFile
 import java.util.jar.Manifest
 import kotlin.io.path.*
 
-class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
+class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
     private val tomlParser = TomlParser()
 
     // I have no fucking clue why this is needed, but for whatever fucking reason,
     // the mods ObjectArrayList is getting resorted *after* it's getting sorted in scanMods,
     // no matter what the fuck I do.
     // I don't have time to deal with this, so this works instead.
-    private lateinit var sortedModOrder: Collection<ForgeMod>
+    private lateinit var sortedModOrder: Collection<NeoForgeMod>
 
     private val environment = KiltEnvironment()
 
@@ -99,7 +99,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
 
         val definitions = mutableListOf<ModDefinition>()
-        val modsTomlEntry = jarFile.getEntry("META-INF/mods.toml")
+        val modsTomlEntry = jarFile.getEntry("META-INF/neoforge.mods.toml")
 
         // If no mods.toml even exists, just skip it, unless it's JiJ'd.
         if (modsTomlEntry == null && parents == null)
@@ -178,7 +178,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             "jij_${modFile.nameWithoutExtension.lowercase().replace(Regex("[^a-zA-Z0-9_-]"), "")}",
             "(Kilt JiJ) ${modFile.nameWithoutExtension}",
             description = "This is a JIJ'd (Jar-in-Jar) mod that doesn't contain a mods.toml file, but has been loaded anyway.",
-            version = ForgeModVersion(DefaultArtifactVersion("0.0.0")),
+            version = NeoForgeModVersion(DefaultArtifactVersion("0.0.0")),
             license = "All Rights Reserved",
 
             additionalData = mapOf(
@@ -228,7 +228,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 Exception("Forge mod file $fileName does not contain a mod ID!")
             }
 
-            val modVersion = ForgeModVersion(DefaultArtifactVersion(
+            val modVersion = NeoForgeModVersion(DefaultArtifactVersion(
                 // Forge custom-replaces mod versions with string templates, so we need to handle that.
                 metadata.getConfigElement<String>("version").orElse("1")
                     .run {
@@ -255,12 +255,11 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     id = forgeDep.getConfigElement<String>("modId").orElseThrow {
                         Exception("Forge mod file $fileName's dependencies contain a dependency without a mod ID!")
                     },
-                    // Forge doesn't have nearly as much control over the dependency type, so handle required and optional only.
                     type = if (forgeDep.getConfigElement<Boolean>("mandatory").orElse(false))
                         ModDependency.Type.REQUIRED
                     else
                         ModDependency.Type.OPTIONAL,
-                    constraint = ForgeVersionConstraint(versionRange),
+                    constraint = NeoForgeVersionConstraint(versionRange),
 
                     // Forge has sided dependencies. How did we get sided dependencies before sided mods?
                     side = when (forgeDep.getConfigElement<String>("side").orElse("BOTH")) {
@@ -356,7 +355,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
     }
 
-    override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<ForgeMod> {
+    override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<NeoForgeMod> {
         val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
             runCatching { createDirectories() }
         }
@@ -369,13 +368,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             throw RuntimeException("Errors occurred while remapping Forge mods!", e)
         }
 
-        val mods = mutableListOf<ForgeMod>()
+        val mods = mutableListOf<NeoForgeMod>()
 
         // Then creates the mod containers for each mod.
         for (definition in definitions) {
             val config = definition.additionalData["config"] as NightConfigWrapper
 
-            mods.add(ForgeMod(definition,
+            mods.add(NeoForgeMod(definition,
                 showAsResourcePack = config.getConfigElement<Boolean>("showAsResourcePack").orElse(false),
                 modConfig = config,
                 modFile = definition.path.run {
@@ -489,7 +488,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
     private val launcher = FabricLauncherBase.getLauncher()
 
-    private suspend fun registerAnnotations(mod: ForgeMod, scanData: ModFileScanData) {
+    private suspend fun registerAnnotations(mod: NeoForgeMod, scanData: ModFileScanData) {
         val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
 
         // Automatically subscribe events
@@ -597,7 +596,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
     }
 
-    suspend fun initMod(mod: ForgeMod, scanData: ModFileScanData) {
+    suspend fun initMod(mod: NeoForgeMod, scanData: ModFileScanData) {
         val exception = RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})!")
 
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
@@ -653,7 +652,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         ModLoadingContext.kiltActiveModId = null
     }
 
-    private fun loadTransformers(mod: ForgeMod) {
+    private fun loadTransformers(mod: NeoForgeMod) {
         if (mod.modFile == null || mod.definition.isBuiltin) {
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
 
@@ -688,7 +687,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
     }
 
-    fun getMod(id: String): ForgeMod? {
+    fun getMod(id: String): NeoForgeMod? {
         return mods.firstOrNull { it != null && it.modId == id }
     }
 
@@ -772,8 +771,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             get() = KnitLoader.instance.getLoaderById("kilt") as KiltLoader
 
         // These constants are to be updated each time we change versions
-        val SUPPORTED_FORGE_SPEC_VERSION = Constants.FORGE_LOADER_VERSION
-        val SUPPORTED_FORGE_API_VERSION = Constants.FORGE_API_VERSION
+        val SUPPORTED_FORGE_SPEC_VERSION = Constants.NEOFORGE_LOADER_VERSION
+        val SUPPORTED_FORGE_API_VERSION = Constants.NEOFORGE_API_VERSION
         val MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version
 
         private val MOD_ANNOTATION = Type.getType(Mod::class.java)

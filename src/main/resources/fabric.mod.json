@@ -3,12 +3,12 @@
   "id": "kilt",
   "version": "${version}",
   "name": "Kilt",
-  "description": "Allows the loading of Forge mods in the Fabric ecosystem. Very experimental.",
+  "description": "Allows the loading of NeoForge mods in the Fabric ecosystem. Very experimental.",
   "authors": [
     "BluSpring"
   ],
   "provides": [
-    "forge"
+    "neoforge"
   ],
   "contact": {
     "repo": "https://github.com/KiltMC/Kilt",

@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.loader.asm.coremod
 import com.google.gson.JsonParser
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import xyz.bluspring.kilt.loader.KiltFlags
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 
 
 // A reimplementation of Forge's coremodding system.
@@ -67,7 +67,7 @@ object CoreModLoader {
     val loadedCoreMods = mutableListOf<CoreMod>()
     val enableCoreMods = KiltFlags.DISABLE_COREMODS
 
-    fun scanAndLoadCoreMods(mod: ForgeMod) {
+    fun scanAndLoadCoreMods(mod: NeoForgeMod) {
         if (!enableCoreMods)
             return
 

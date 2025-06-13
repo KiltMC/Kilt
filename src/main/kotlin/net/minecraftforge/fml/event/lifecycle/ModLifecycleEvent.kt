@@ -3,11 +3,11 @@ package net.minecraftforge.fml.event.lifecycle
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.fml.InterModComms
 import net.minecraftforge.fml.event.IModBusEvent
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.function.Predicate
 import java.util.stream.Stream
 
-open class ModLifecycleEvent(private val mod: ForgeMod?) : Event(), IModBusEvent {
+open class ModLifecycleEvent(private val mod: NeoForgeMod?) : Event(), IModBusEvent {
     constructor() : this(null)
 
     val container = mod?.container

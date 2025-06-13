@@ -9,12 +9,12 @@ import net.minecraftforge.forgespi.locating.IModFile
 import net.minecraftforge.forgespi.locating.IModProvider
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModProvider
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.nio.file.Path
 import java.util.function.Supplier
 import kotlin.io.path.toPath
 
-class ModFile(private val kiltMod: ForgeMod) : IModFile {
+class ModFile(private val kiltMod: NeoForgeMod) : IModFile {
     override fun getLoaders(): MutableList<IModLanguageProvider> {
         return mutableListOf()
     }

@@ -11,7 +11,7 @@ import org.slf4j.MarkerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.asm.NashornHelper
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.nio.file.StandardOpenOption
 import javax.script.Bindings
@@ -19,7 +19,7 @@ import javax.script.Invocable
 import javax.script.ScriptEngine
 import kotlin.io.path.*
 
-class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
+class CoreMod(val mod: NeoForgeMod, val id: String, val file: String) {
     private val data = String(mod.getFile(file)!!.readAllBytes())
     private var bindings: Map<String, out Bindings> = mapOf()
     private var loaded = false

@@ -3,11 +3,11 @@ package xyz.bluspring.kilt.util
 import com.google.common.graph.GraphBuilder
 import com.google.common.graph.MutableGraph
 import net.minecraftforge.forgespi.language.IModInfo
-import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 
 @Suppress("UnstableApiUsage")
-fun Collection<ForgeMod>.buildGraph(): MutableGraph<ForgeMod> {
-    val graph = GraphBuilder.directed().build<ForgeMod>()
+fun Collection<NeoForgeMod>.buildGraph(): MutableGraph<NeoForgeMod> {
+    val graph = GraphBuilder.directed().build<NeoForgeMod>()
 
     for (mod in this) {
         graph.addNode(mod)
