@@ -13,8 +13,8 @@ repositories {
 
 dependencies {
     modImplementation("dev.emi:trinkets:${property("trinkets_version")}")
-    modCompileOnly("top.theillusivec4.curios:curios-forge:${property("curios_version")}:api")
-    modCompileOnly("top.theillusivec4.curios:curios-forge:${property("curios_version")}")
+    modCompileOnly("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}:api")
+    modCompileOnly("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
 }
 
 tasks {

@@ -1,8 +1,8 @@
 package xyz.bluspring.kilt.mixin.compat.forgeconfigapiport;
 
-import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 

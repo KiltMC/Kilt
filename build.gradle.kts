@@ -5,7 +5,7 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.9-SNAPSHOT"
+    id ("fabric-loom") version "1.10-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
@@ -160,10 +160,13 @@ allprojects {
         modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
         // TODO: remove this when 0.5 is mainlined into Fabric
-        include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
+        include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
+            exclude("org.ow2.asm")
+        })!!)
 
         include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
+            exclude("org.ow2.asm")
         })
 
         if (project.parent?.name != "loader") {
@@ -171,10 +174,16 @@ allprojects {
             modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
 
             // Cursed Fabric/Mixin stuff
-            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
+            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
+                exclude("org.ow2.asm")
+            })
             modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
-            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
-            include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
+            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
+                exclude("org.ow2.asm")
+            })!!)
+            include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}") {
+                exclude("org.ow2.asm")
+            })
         }
     }
 }
@@ -192,28 +201,31 @@ dependencies {
     modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // Forge stuff
-    api(include("net.neoforged:bus:${property("eventbus_version")}")!!)
-    implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}") {
-        exclude("cpw.mods", "modlauncher")
-        exclude("net.minecraftforge", "modlauncher")
-        exclude("net.minecraftforge", "securemodules")
+    api(include("net.neoforged:bus:${property("eventbus_version")}") {
+        exclude("org.ow2.asm")
     })
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
-    api(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
-    implementation(include("net.jodah:typetools:0.8.3")!!)
+    api(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}") {
+        exclude("org.ow2.asm")
+    })
+    implementation(include("net.jodah:typetools:0.6.3")!!)
     api(include("net.minecraftforge:unsafe:0.2.+")!!)
-    implementation(include("net.neoforged:mergetool:2.0.0")!!)
+    implementation(include("net.neoforged:mergetool:2.0.0") {
+        exclude("org.ow2.asm")
+    })
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
-    // Remapping SRG to Intermediary
+    // Remapping MojMap to Intermediary
     implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
     modApi(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
-    implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)
+    implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}") {
+        exclude("org.ow2.asm")
+    })
 
     fun modOptional(dependencyNotation: String, shouldRunInRuntime: Boolean, configuration: Action<ExternalModuleDependency> = Action {}) {
         if (shouldRunInRuntime) {
@@ -233,7 +245,7 @@ dependencies {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
-    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.0") {
+    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.0-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
@@ -262,9 +274,9 @@ dependencies {
     include(project(":loader:fabric")) {
         isTransitive = false
     }
-    include(project(":loader:quilt")) {
+    /*include(project(":loader:quilt")) {
         isTransitive = false
-    }
+    }*/
 
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
@@ -278,7 +290,7 @@ configurations.all {
     exclude("cpw.mods", "modlauncher")
 }
 
-val targetJavaVersion = "17"
+val targetJavaVersion = "21"
 
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -519,5 +531,5 @@ fun getVersionMetadata(): String {
     val commitHash =
         System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
+    return "-build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
 }

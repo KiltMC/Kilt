@@ -3,7 +3,7 @@
     "minVersion": "0.8",
     "package": "xyz.bluspring.kilt.mixin",
     "plugin": "xyz.bluspring.kilt.KiltMixinPlugin",
-    "compatibilityLevel": "JAVA_17",
+    "compatibilityLevel": "JAVA_21",
     "mixins": [
         "AbstractSelectionListAccessor",
         "ArgumentTypeInfosAccessor",

@@ -274,7 +274,7 @@ class KiltEarlyRiser : Runnable {
 
             val classWriter = ClassWriter(Opcodes.ASM9)
             classWriter.visit(
-                Opcodes.V17,
+                Opcodes.V21,
                 Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT,
                 colorModifierName,
                 null,

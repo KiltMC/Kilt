@@ -5,10 +5,10 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.fml.event.IModBusEvent
-import net.minecraftforge.fml.event.config.ModConfigEvent
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.ForgeFeature
+import net.neoforged.fml.event.IModBusEvent
+import net.neoforged.fml.event.config.ModConfigEvent
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.concurrent.Executor

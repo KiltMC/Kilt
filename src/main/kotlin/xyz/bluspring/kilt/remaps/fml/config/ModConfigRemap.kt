@@ -1,8 +1,8 @@
 package xyz.bluspring.kilt.remaps.fml.config
 
-import net.minecraftforge.fml.ModContainer
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
+import net.neoforged.fml.ModContainer
 import xyz.bluspring.kilt.loader.KiltModContainer
 
 open class ModConfigRemap : ModConfig {

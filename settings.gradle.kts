@@ -35,4 +35,4 @@ file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" &&
 
 include(":loader:cichlid")
 include(":loader:fabric")
-include(":loader:quilt")
+//include(":loader:quilt") // TODO: Quilt Loom is broken on 1.21.1 from the looks.

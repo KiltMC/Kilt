@@ -3,7 +3,7 @@ package net.neoforged.fml
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.config.IConfigEvent
-import net.minecraftforge.fml.event.config.ModConfigEvent
+import net.neoforged.fml.event.config.ModConfigEvent
 import java.util.function.Supplier
 
 object Bindings {
