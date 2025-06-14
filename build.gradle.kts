@@ -89,8 +89,8 @@ allprojects {
             name = "Fuzs Mod Resources"
         }
 
-        maven("https://maven.minecraftforge.net/") {
-            name = "MinecraftForge Maven"
+        maven("https://maven.neoforged.net/releases") {
+            name = "NeoForged Maven"
         }
 
         maven("https://maven.architectury.dev") {
@@ -180,29 +180,19 @@ allprojects {
 }
 
 dependencies {
-    // we require Indium due to us using Fabric Rendering API stuff.
-    // let's tell the users that too.
-    modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}") {
-        exclude("net.fabricmc", "fabric-loader")
-    })
-
     // Forge Reimplementations
-    val portingLibs = listOf("accessors", "asm", "attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "common", "core", "data", "entity", "extensions", "fluids", "gametest", "gui_utils", "items", "lazy_registration", "level_events", "loot", "mixin_extensions", "model_builders", "model_generators", "model_loader", "model_materials", "models", "networking", "obj_loader", "recipe_book_categories", "registries", "tags", "tool_actions", "transfer", "utility")
+    val portingLibs = listOf("accessors", "asm", "attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "common", "conditions", "core", "data", "entity", "extensions", "fluids", "gametest", "gui_utils", "item_abilities", "items", "lazy_registration", "level_events", "loot", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "render_types", "tags", "transfer")
     portingLibs.forEach { lib ->
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
-    modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
+    //modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
     modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // Forge stuff
-    api(include("xyz.bluspring:eventbus:${property("eventbus_version")}") {
-        exclude("cpw.mods", "modlauncher")
-        exclude("net.minecraftforge", "modlauncher")
-        exclude("net.minecraftforge", "securemodules")
-    })
+    api(include("net.neoforged:bus:${property("eventbus_version")}")!!)
     implementation(include("net.minecraftforge:forgespi:${property("forgespi_version")}") {
         exclude("cpw.mods", "modlauncher")
         exclude("net.minecraftforge", "modlauncher")
@@ -212,13 +202,12 @@ dependencies {
     api(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}")!!)
     implementation(include("net.jodah:typetools:0.8.3")!!)
     api(include("net.minecraftforge:unsafe:0.2.+")!!)
-    implementation(include("net.minecraftforge:mergetool-api:1.0")!!)
+    implementation(include("net.neoforged:mergetool:2.0.0")!!)
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
     // Remapping SRG to Intermediary
-    implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
     implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
     modApi(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
@@ -237,17 +226,16 @@ dependencies {
     val runSodium = true
 
     // Runtime mods for testing
-    modRuntimeOnly ("com.terraformersmc:modmenu:7.1.0") {
+    modRuntimeOnly ("com.terraformersmc:modmenu:11.0.3") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modRuntimeOnly ("maven.modrinth:ferrite-core:6.0.1-fabric") {
+    modRuntimeOnly ("maven.modrinth:ferrite-core:7.0.2-hotfix-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
-    modRuntimeOnly ("maven.modrinth:lithium:mc1.20.1-0.11.2") {
+    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.0") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modOptional ("maven.modrinth:indium:${property("indium_version")}", runSodium)
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
 
     // Need this for Iris
