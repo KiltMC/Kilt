@@ -4,6 +4,7 @@
     "package": "xyz.bluspring.kilt.compat.sodium.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "structure_gel.StructureTemplateMixin"
     ],
     "client": [
         "immersiveengineering.ChunkBuilderMeshingTaskMixin",

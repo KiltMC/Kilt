@@ -15,7 +15,7 @@ class OptionalMod<T> private constructor (var searched: Boolean, val modId: Stri
 
     private fun getValue(): T? {
         if (!searched) {
-            this.value = KiltLoader.INSTANCE.getMod(this.modId)?.modObject as? T
+            this.value = KiltLoader.instance.getMod(this.modId)?.modObject as? T
             searched = true
         }
 

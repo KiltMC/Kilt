@@ -17,6 +17,7 @@ import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.ExtendedBlockModelDeserializer;
 import net.minecraftforge.client.model.geometry.BlockGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
 import net.minecraftforge.common.util.TransformationHelper;
 import org.jetbrains.annotations.Nullable;
@@ -81,7 +82,7 @@ public class BlockModelInject implements BlockModelInjection {
                                    ModelState modelTransform, ResourceLocation modelLocation, boolean guiLight3d, CallbackInfoReturnable<BakedModel> cir) {
         // Avoid replacing the bake process entirely, unless there are any obvious tells that
         // the model data is from a Forge model
-        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData()) {
+        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData() || customData.getCustomGeometry() instanceof IUnbakedGeometry<?>) {
             cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, modelTransform, modelLocation, guiLight3d));
         }
     }

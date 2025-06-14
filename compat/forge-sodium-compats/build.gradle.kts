@@ -9,6 +9,7 @@ version = property("mod_version") as String
 dependencies {
     modCompileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
     modImplementation("maven.modrinth:sodium:${property("sodium_version")}")
+    modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
 }
 
 tasks {

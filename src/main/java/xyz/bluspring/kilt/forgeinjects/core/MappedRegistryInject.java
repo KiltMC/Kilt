@@ -4,22 +4,24 @@ package xyz.bluspring.kilt.forgeinjects.core;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraftforge.registries.RegistryManager;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +32,10 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Shadow @Nullable public Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
 
     @Shadow @Final private ResourceKey<? extends Registry<T>> key;
+
+    @Shadow public abstract ResourceKey<? extends Registry<T>> key();
+
+    @Shadow private volatile Map<TagKey<T>, HolderSet.Named<T>> tags;
 
     @CreateStatic
     private static Set<ResourceLocation> getKnownRegistries() {
@@ -62,5 +68,50 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Inject(method = "freeze", at = @At("RETURN"))
     private void kilt$forceSetUnregistered(CallbackInfoReturnable<Registry<T>> cir, @Share("kilt$unregisteredIntrusiveHolders") LocalRef<Map<T, Holder.Reference<T>>> unregistered) {
         this.unregisteredIntrusiveHolders = unregistered.get();
+    }
+
+    @ModifyVariable(method = {
+        "get(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;",
+        "containsKey(Lnet/minecraft/resources/ResourceKey;)Z",
+        "getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;",
+        "getOrCreateHolderOrThrow"
+    }, at = @At("HEAD"), argsOnly = true)
+    private ResourceKey<T> kilt$tryGetAlias(ResourceKey<T> value) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null) {
+            var alias = registry.kilt$getAlias(value.location());
+
+            if (alias != null)
+                return ResourceKey.create(this.key(), alias);
+        }
+
+        return value;
+    }
+
+    @ModifyVariable(method = {
+        "get(Lnet/minecraft/resources/ResourceLocation;)Ljava/lang/Object;",
+        "containsKey(Lnet/minecraft/resources/ResourceLocation;)Z"
+    }, at = @At("HEAD"), argsOnly = true)
+    private ResourceLocation kilt$tryGetAlias(ResourceLocation value) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null) {
+            var alias = registry.kilt$getAlias(value);
+
+            if (alias != null)
+                return alias;
+        }
+
+        return value;
+    }
+
+    @Inject(method = "bindTags", at = @At("TAIL"))
+    private void kilt$tryBindTags(Map<TagKey<T>, List<Holder<T>>> tagMap, CallbackInfo ci) {
+        var registry = RegistryManager.ACTIVE.getRegistry(this.key());
+
+        if (registry != null && registry.tags() != null) {
+            registry.tags().kilt$bindTags(this.tags);
+        }
     }
 }

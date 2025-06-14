@@ -13,7 +13,9 @@ class FMLJavaModLoadingContext(private val mod: ForgeMod) : ModLoadingContext() 
         private val cachedFMLContexts = ConcurrentHashMap<String, FMLJavaModLoadingContext>()
 
         fun kiltGetContext(mod: ForgeMod): FMLJavaModLoadingContext {
-            return cachedFMLContexts.computeIfAbsent(mod.modId) { FMLJavaModLoadingContext(mod) }
+            val ctx = cachedFMLContexts.computeIfAbsent(mod.modId) { FMLJavaModLoadingContext(mod) }
+            ctx.setActiveContainer(mod.container)
+            return ctx
         }
 
         @JvmStatic

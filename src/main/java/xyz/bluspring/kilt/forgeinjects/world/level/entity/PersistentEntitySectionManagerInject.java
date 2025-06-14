@@ -6,7 +6,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntitySection;
 import net.minecraft.world.level.entity.PersistentEntitySectionManager;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -63,10 +62,11 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
             oldSectionKey.set(this.currentSectionKey);
         }
 
-        @Inject(method = "onMove", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager$Callback;updateStatus(Lnet/minecraft/world/level/entity/Visibility;Lnet/minecraft/world/level/entity/Visibility;)V", shift = At.Shift.AFTER))
+        // Kilt: handled via Architectury
+        /*@Inject(method = "onMove", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager$Callback;updateStatus(Lnet/minecraft/world/level/entity/Visibility;Lnet/minecraft/world/level/entity/Visibility;)V", shift = At.Shift.AFTER))
         private void kilt$callForgeEntityEnterSection(CallbackInfo ci, @Share("oldSectionKey") LocalLongRef oldSectionKey) {
             if (this.realEntity != null)
                 ForgeHooks.onEntityEnterSection(this.realEntity, oldSectionKey.get(), this.currentSectionKey);
-        }
+        }*/
     }
 }

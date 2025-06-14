@@ -9,6 +9,8 @@ public interface LevelInjection {
         throw new IllegalStateException();
     }
 
-    void kilt$setCapturingSnapshots(boolean value);
-    void kilt$setRestoringSnapshots(boolean value);
+    boolean kilt$getRestoringBlockSnapshots();
+    boolean kilt$getCapturingBlockSnapshots();
+    void kilt$setCapturingBlockSnapshots(boolean value);
+    void kilt$setRestoringBlockSnapshots(boolean value);
 }

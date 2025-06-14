@@ -20,7 +20,7 @@ class KiltForgeSodiumCompatMixinPlugin : IMixinConfigPlugin {
     override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String): Boolean {
         return try {
             val modId = mixinClassName.removePrefix("$mixinPackage.").split(".")[0]
-            KiltLoader.INSTANCE.hasMod(modId) && MixinConstraints.shouldApplyMixin(mixinClassName)
+            KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(mixinClassName)
         } catch (_: Throwable) {
             MixinConstraints.shouldApplyMixin(mixinClassName)
         }

@@ -27,7 +27,7 @@ public abstract class ItemModelShaperInject {
     @Inject(method = "getItemModel(Lnet/minecraft/world/item/Item;)Lnet/minecraft/client/resources/model/BakedModel;", at = @At("HEAD"), cancellable = true)
     private void kilt$useForgeItemModel(Item item, CallbackInfoReturnable<BakedModel> cir) {
         // TODO: Run a check that ensures the model namespace is a Forge mod ID?
-        cir.setReturnValue(this.kilt$forgeModelShaper.getItemModel(item));
+        //cir.setReturnValue(this.kilt$forgeModelShaper.getItemModel(item));
     }
 
     @Inject(method = "register", at = @At("TAIL"))

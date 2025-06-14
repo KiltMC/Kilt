@@ -4,15 +4,12 @@ import com.google.common.collect.ImmutableMap
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
-import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback
-import io.github.fabricators_of_create.porting_lib.event.client.RenderHandCallback
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -21,20 +18,13 @@ import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.phys.EntityHitResult
-import net.minecraft.world.phys.HitResult
 import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.event.*
 import net.minecraftforge.client.gui.overlay.ForgeGui
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.TickEvent
-import net.minecraftforge.event.TickEvent.ClientTickEvent
 import net.minecraftforge.event.level.LevelEvent
-import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.ModLoader
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
@@ -51,11 +41,9 @@ class KiltClient : ClientModInitializer {
     private fun registerFabricEvents() {
         val mc = Minecraft.getInstance()
 
-        ParticleManagerRegistrationCallback.EVENT.register {
-            // i would call ForgeHooksClient.onRegisterParticleProviders,
-            // but that doesn't work. i don't know why. but it just doesn't.
+        /*ParticleManagerRegistrationCallback.EVENT.register {
             Kilt.loader.postEvent(RegisterParticleProvidersEvent(Minecraft.getInstance().particleEngine))
-        }
+        }*/
 
         ItemTooltipCallback.EVENT.register { stack, flag, components ->
             ForgeEventFactory.onItemTooltip(stack, null, components, flag)
@@ -93,27 +81,28 @@ class KiltClient : ClientModInitializer {
             MinecraftForge.EVENT_BUS.post(ContainerScreenEvent.Render.Foreground(screen, poseStack, x, y))
         }
 
-        ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
+        /*ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
             if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
                 EventResult.interruptFalse()
             else
                 EventResult.pass()
-        }
+        }*/
 
         ClientGuiEvent.RENDER_HUD.register { guiGraphics, delta ->
             forgeGui.render(guiGraphics, delta)
         }
 
-        ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
+        /*ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
             if (screen != null)
                 MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
-        }
+        }*/
 
         TextureStitchCallback.POST.register { atlas ->
             ModLoader.get().postEvent(TextureStitchEvent.Post(atlas))
         }
 
-        WorldRenderEvents.AFTER_ENTITIES.register {
+        /*WorldRenderEvents.AFTER_ENTITIES.register {
+            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_ENTITIES, it)
             postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, it)
         }
 
@@ -146,7 +135,7 @@ class KiltClient : ClientModInitializer {
 
                 else -> return@register false
             }
-        }
+        }*/
 
         RegisterGeometryLoadersCallback.EVENT.register { map ->
             shouldPostGeoLoaders = true
@@ -196,33 +185,33 @@ class KiltClient : ClientModInitializer {
             }
         }
 
-        RenderHandCallback.EVENT.register { event ->
+        /*RenderHandCallback.EVENT.register { event ->
             val forgeEvent = RenderHandEvent(event.hand, event.poseStack, event.multiBufferSource, event.packedLight, event.partialTicks, event.pitch, event.swingProgress, event.equipProgress, event.itemStack)
             MinecraftForge.EVENT_BUS.post(forgeEvent)
 
             if (forgeEvent.isCanceled)
                 event.isCanceled = true
-        }
+        }*/
 
         ClientTickEvents.START_CLIENT_TICK.register {
-            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.START))
+            ForgeEventFactory.onPreClientTick()
         }
 
         ClientTickEvents.END_CLIENT_TICK.register {
-            MinecraftForge.EVENT_BUS.post(ClientTickEvent(TickEvent.Phase.END))
+            ForgeEventFactory.onPostClientTick()
         }
 
         ClientTickEvents.START_WORLD_TICK.register {
-            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.START, it) { !it.dimensionType().hasFixedTime() })
+            ForgeEventFactory.onPreLevelTick(it) { true }
         }
 
         ClientTickEvents.END_WORLD_TICK.register {
-            MinecraftForge.EVENT_BUS.post(TickEvent.LevelTickEvent(LogicalSide.CLIENT, TickEvent.Phase.END, it) { !it.dimensionType().hasFixedTime() })
+            ForgeEventFactory.onPostLevelTick(it) { true }
         }
 
-        ClientWorldEvents.LOAD.register { client, level ->
+        /*ClientWorldEvents.LOAD.register { client, level ->
             MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
-        }
+        }*/
 
         ClientWorldEvents.UNLOAD.register { client, level ->
             MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))

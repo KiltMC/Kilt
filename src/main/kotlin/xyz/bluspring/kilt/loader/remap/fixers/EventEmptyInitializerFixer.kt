@@ -75,15 +75,15 @@ object EventEmptyInitializerFixer {
             val methodType = Type.getMethodType(firstInitMethod.desc)
             methodType.argumentTypes.forEach { arg ->
                 when (arg.descriptor) {
-                    "I" -> {
-                        initMethod.visitInsn(Opcodes.ICONST_0)
-                    } // int
                     "F" -> initMethod.visitInsn(Opcodes.FCONST_0) // float
                     "D" -> initMethod.visitInsn(Opcodes.DCONST_0) // double
                     "J" -> initMethod.visitInsn(Opcodes.LCONST_0) // long
-                    "Z" -> initMethod.visitInsn(Opcodes.ICONST_0) // boolean
-                    "S" -> initMethod.visitInsn(Opcodes.ICONST_0) // short
-                    "B" -> initMethod.visitInsn(Opcodes.ICONST_0) // byte
+                    "I", // int
+                    "Z", // boolean
+                    "S", // short
+                    "B", // byte
+                    "C" // char
+                        -> initMethod.visitInsn(Opcodes.ICONST_0)
 
                     else -> initMethod.visitInsn(Opcodes.ACONST_NULL)
                 }
@@ -111,15 +111,15 @@ object EventEmptyInitializerFixer {
                 initMethod.visitVarInsn(Opcodes.ALOAD, 0)
 
                 when (field.desc) {
-                    "I" -> {
-                        initMethod.visitInsn(Opcodes.ICONST_0)
-                    } // int
                     "F" -> initMethod.visitInsn(Opcodes.FCONST_0) // float
                     "D" -> initMethod.visitInsn(Opcodes.DCONST_0) // double
                     "J" -> initMethod.visitInsn(Opcodes.LCONST_0) // long
-                    "Z" -> initMethod.visitInsn(Opcodes.ICONST_0) // boolean
-                    "S" -> initMethod.visitInsn(Opcodes.ICONST_0) // short
-                    "B" -> initMethod.visitInsn(Opcodes.ICONST_0) // byte
+                    "I", // int
+                    "Z", // boolean
+                    "S", // short
+                    "B", // byte
+                    "C" // char
+                        -> initMethod.visitInsn(Opcodes.ICONST_0)
 
                     else -> initMethod.visitInsn(Opcodes.ACONST_NULL)
                 }

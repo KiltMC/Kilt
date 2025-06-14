@@ -16,12 +16,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.server.ServerLifecycleHooks
@@ -30,21 +30,37 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
-import xyz.bluspring.kilt.util.DeltaTimeProfiler
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
         registerFabricEvents()
-
-        DeltaTimeProfiler.popAll()
     }
 
     @Suppress("removal")
     private fun registerFabricEvents() {
         InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
-            val event = ForgeHooks.onRightClickBlock(player, hand, pos, BlockHitResult(pos.center, direction, pos, false))
-            eventBusToArchitectury(event.result)
+            val hitResult = BlockHitResult(pos.center, direction, pos, false)
+            val event = ForgeHooks.onRightClickBlock(player, hand, pos, hitResult)
+            val stack = player.getItemInHand(hand)
+
+            val canUseItem = (player.isSecondaryUseActive && (!player.mainHandItem.isEmpty || !player.offhandItem.isEmpty)) && !(player.mainHandItem.doesSneakBypassUse(player.level(), pos, player) && player.offhandItem.doesSneakBypassUse(player.level(), pos, player))
+
+            if (event.useBlock == Event.Result.ALLOW || (event.useBlock != Event.Result.DENY && !canUseItem))
+                return@register eventBusToArchitectury(event.useBlock)
+
+            if (event.useItem == Event.Result.ALLOW || (!stack.isEmpty && !player.cooldowns.isOnCooldown(stack.item))) {
+                if (event.useItem == Event.Result.DENY)
+                    return@register EventResult.pass()
+
+                val result = stack.onItemUseFirst(UseOnContext(player, hand, hitResult))
+
+                if (result != InteractionResult.PASS && result != InteractionResult.FAIL) {
+                    return@register vanillaToArchitectury(result)
+                }
+            }
+
+            EventResult.pass()
         }
 
         InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
@@ -87,10 +103,6 @@ class Kilt : ModInitializer {
 
         InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
             ForgeHooks.onEmptyClick(player, hand)
-        }
-
-        LivingEntityEvents.DROPS.register { entity, source, drops, level, recentlyHit ->
-            MinecraftForge.EVENT_BUS.post(LivingDropsEvent(entity, source, drops, level, recentlyHit))
         }
 
         LivingEntityEvents.LivingTickEvent.TICK.register { event ->
@@ -195,7 +207,8 @@ class Kilt : ModInitializer {
 
         lateinit var instance: Kilt
         val logger: Logger = LoggerFactory.getLogger(Kilt::class.java)
-        val loader: KiltLoader = KiltLoader.INSTANCE
+        val loader: KiltLoader
+            get() = KiltLoader.instance
         val gson = GsonBuilder().setPrettyPrinting().create()
 
         fun load(onServer: Boolean) {

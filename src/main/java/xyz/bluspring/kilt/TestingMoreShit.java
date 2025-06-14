@@ -75,8 +75,10 @@ public class TestingMoreShit {
     }
 
     public static class TestingDoubleTime extends TestingMoreShit {
+        private final char test;
         public TestingDoubleTime() {
             super(ForgeRegistries.BLOCKS);
+            this.test = '\u0000';
         }
     }
 

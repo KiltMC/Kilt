@@ -17,7 +17,7 @@ import xyz.bluspring.kilt.loader.KiltLoader;
 public abstract class ModMenuMixin {
     @ModifyReturnValue(method = "getConfigScreen", at = @At("RETURN"))
     private static Screen kilt$addForgeConfigScreenIfPossible(Screen original, @Local(argsOnly = true) String modId, @Local(argsOnly = true) Screen parent) {
-        var kiltMod = KiltLoader.INSTANCE.getMod(modId);
+        var kiltMod = KiltLoader.Companion.getInstance().getMod(modId);
         if (kiltMod != null) {
             // Kilt: Add Forge config screens to ModMenu
             var screenExtension = kiltMod.getContainer().getCustomExtension(ConfigScreenHandler.ConfigScreenFactory.class);

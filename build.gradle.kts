@@ -47,6 +47,17 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    tasks {
+        create("printConfigurations") {
+            doLast {
+                println("Project Name: ${project.name} configurations:")
+                configurations.forEach { config ->
+                    println("\t- ${config.name}")
+                }
+            }
+        }
+    }
+
     repositories {
         mavenCentral()
         mavenLocal()
@@ -120,10 +131,18 @@ allprojects {
         maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
             name = "GeckoLib"
         }
+
+        maven("https://thedarkcolour.github.io/KotlinForForge/") {
+            name = "Kotlin for Forge"
+        }
     }
 
     // Avoid making the compats submodule use Loom, otherwise we break stuff
     if (project.name == "compat")
+        return@allprojects
+
+    // Prevent other Knit Loader modules from going through Fabric Loom.
+    if (project.name == "loader" || (project.parent?.name == "loader"))
         return@allprojects
 
     apply(plugin = "fabric-loom")
@@ -137,23 +156,26 @@ allprojects {
         })
         modImplementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
-        // Fabric API. This is technically optional, but you probably want it anyway.
-        modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
-
         // Just because I like Kotlin more than Java
         modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
         // TODO: remove this when 0.5 is mainlined into Fabric
         include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
 
-        // Cursed Fabric/Mixin stuff
-        implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
-        modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
-        include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
-
         include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
         })
+
+        if (project.parent?.name != "loader") {
+            // Fabric API. This is technically optional, but you probably want it anyway.
+            modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
+
+            // Cursed Fabric/Mixin stuff
+            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
+            modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
+            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
+            include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
+        }
     }
 }
 
@@ -170,9 +192,6 @@ dependencies {
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
-
-    // Cursed Fabric/Mixin stuff
-    include(modImplementation("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
@@ -215,9 +234,6 @@ dependencies {
         }
     }
 
-    // Compatibility
-    modImplementation("software.bernie.geckolib:geckolib-fabric-${property("minecraft_version")}:${property("geckolib_version")}")
-
     val runSodium = true
 
     // Runtime mods for testing
@@ -244,17 +260,22 @@ dependencies {
 
     implementation(include("commons-codec:commons-codec:1.15")!!)
 
-    // Fabric compatibility stuff
-    modCompileOnly("maven.modrinth:modernkeybinding:${property("mkb_version")}") { // Modern Keybinding - The Maven repo is unstable, rely on Modrinth instead
-        isTransitive = false
-    }
-
     // Compatibility layers
     listOf(
         "transfer-api-compat", "forge-sodium-compats", "create-compat",
-        "curios-trinkets-compat"
+        "curios-trinkets-compat", "fabric-compats"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
+    }
+
+    // Knit Loader
+    api(project(":loader"))
+    runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+    include(project(":loader:fabric")) {
+        isTransitive = false
+    }
+    include(project(":loader:quilt")) {
+        isTransitive = false
     }
 
     // Test libraries
@@ -297,27 +318,43 @@ tasks {
 
         doFirst {
             // Scan Forge patches dir
-            var count = 0
-
-            fun readDir(file: File) {
+            fun readDir(file: File, list: MutableList<String> = mutableListOf(), root: File = file): List<String> {
                 val files = file.listFiles()!!
 
                 files.forEach {
                     if (it.isDirectory) {
-                        readDir(it)
+                        readDir(it, list, root)
                     } else {
-                        count++
+                        list.add(it.toRelativeString(root).replace("\\", "/").removePrefix("/"))
                     }
                 }
+
+                return list
             }
 
-            readDir(File("$projectDir/forge/patches"))
+            val forgePatches = readDir(File("$projectDir/forge/patches/minecraft"))
+            val forgePatchCount = forgePatches.size
 
-            val forgePatchCount = count
-            count = 0
+            val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            val kiltInjectCount = kiltInjects.size
 
-            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
-            val kiltInjectCount = count
+            forgePatches.filter {
+                if (it.startsWith("com/mojang/"))
+                    !kiltInjects.contains(it.removePrefix("com/mojang/").replace(".java.patch", "Inject.java"))
+                else
+                    !kiltInjects.contains(it.removePrefix("net/minecraft/").replace(".java.patch", "Inject.java"))
+            }.forEach {
+                println("[-] Missing patch: $it")
+            }
+
+            kiltInjects.filter {
+                if (it.startsWith("blaze3d") || it.startsWith("math") || it.startsWith("realmsclient"))
+                    !forgePatches.contains(("com/mojang/$it").replace("Inject.java", ".java.patch"))
+                else
+                    !forgePatches.contains(("net/minecraft/$it").replace("Inject.java", ".java.patch"))
+            }.forEach {
+                println("[!] Extra inject: $it")
+            }
 
             println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
         }

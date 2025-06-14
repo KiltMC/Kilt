@@ -14,6 +14,6 @@ class KiltCuriosTrinketsCompat : ModInitializer {
     }
 
     companion object {
-        val isActive = FabricLoader.getInstance().isModLoaded("trinkets") && KiltLoader.INSTANCE.hasMod("curios") && !FabricLoader.getInstance().isModLoaded("accessories")
+        val isActive = FabricLoader.getInstance().isModLoaded("trinkets") && KiltLoader.instance.hasMod("curios") && !FabricLoader.getInstance().isModLoaded("accessories")
     }
 }

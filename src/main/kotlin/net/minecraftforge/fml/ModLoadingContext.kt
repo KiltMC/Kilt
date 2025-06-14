@@ -4,6 +4,8 @@ import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
+import thedarkcolour.kotlinforforge.KotlinModContainer
+import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.VanillaModContainer
@@ -11,12 +13,6 @@ import java.util.function.BiPredicate
 import java.util.function.Supplier
 
 open class ModLoadingContext {
-    // this should be Any, but we're only handling Java mods here so
-    private val languageExtension: FMLJavaModLoadingContext
-        get() {
-            return this as? FMLJavaModLoadingContext ?: FMLJavaModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)
-        }
-
     internal var kiltActiveContainer: ModContainer? = null
 
     fun getActiveContainer(): ModContainer {
@@ -35,8 +31,11 @@ open class ModLoadingContext {
             return this.getActiveContainer().namespace
         }
 
-    fun extension(): FMLJavaModLoadingContext {
-        return languageExtension
+    fun <T> extension(): T {
+        return if (this.kiltActiveContainer is KotlinModContainer)
+            (this as? KotlinModLoadingContext ?: KotlinModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
+        else
+            (this as? FMLJavaModLoadingContext ?: FMLJavaModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
     }
 
     fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {

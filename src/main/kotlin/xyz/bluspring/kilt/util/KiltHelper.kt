@@ -2,9 +2,11 @@ package xyz.bluspring.kilt.util
 
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.minecraftforge.fml.ModLoadingContext
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.nio.file.Path
@@ -161,4 +163,31 @@ object KiltHelper {
         val methodName: String,
         vararg val methodArgs: Class<*>
     )
+
+    // Turns out, there are Forge mods that forcibly exit the game if Kilt or Porting Lib are detected, with zero information provided whatsoever.
+    // I don't exactly *want* to argue nor combat this, but because of how hostile this act is, the fact that it directly hinders Kilt development,
+    // that the users are provided with zero information as to why their game closed, that if Kilt grows popular enough these mods will not be able
+    // to be used alongside Kilt whatsoever, and any further reasons, I kind of have to do this, as a compromise between the mod developer's wishes
+    // and me trying to make Kilt even better.
+    // See: https://discord.com/channels/1062715218087645215/1373601947155693588, https://github.com/KiltMC/Kilt/issues/75
+    @JvmStatic
+    fun handleSystemExit(code: Int) {
+        Kilt.logger.error("Kilt: A Forge mod has called System.exit() directly from its code! Exit code: $code")
+
+        if (ModLoadingContext.get().kiltActiveContainer != null) {
+            val container = ModLoadingContext.get().getActiveContainer()
+            Kilt.logger.error("Kilt: Active mod container: ${container.modInfo.displayName} (${container.modId})")
+        }
+
+        val exception = IllegalStateException("A Forge mod has called System.exit($code) directly! Please check the logs, and report this to the Kilt issues page!")
+
+        if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            exception.printStackTrace()
+            Kilt.logger.error("Kilt: Because we're in the development environment, we will not exit the game!")
+
+            return
+        }
+
+        throw exception
+    }
 }

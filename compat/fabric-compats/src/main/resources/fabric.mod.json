@@ -1,0 +1,33 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_fabric_compat",
+    "version": "${version}",
+    "name": "Kilt: Fabric Mods Compat",
+    "description": "A compatibility layer to add support between Kilt and other Fabric mods.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+    },
+    "mixins": [
+        "kilt_fabric_compats.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "kilt": "*"
+    },
+    "custom": {
+        "modmenu": {
+            "parent": "kilt"
+        }
+    }
+}

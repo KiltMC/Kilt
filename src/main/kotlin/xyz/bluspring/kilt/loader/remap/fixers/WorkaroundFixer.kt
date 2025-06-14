@@ -45,6 +45,9 @@ object WorkaroundFixer {
                             newNodeMap[insnNode] = FieldInsnNode(Opcodes.GETFIELD, insnNode.owner, "kilt\$forgeGui", insnNode.desc)
                         }
                     }
+                } else if (insnNode is MethodInsnNode && insnNode.owner == "java/lang/System" && insnNode.name == "exit" && insnNode.desc == "(I)V") {
+                    // See: KiltHelper.handleSystemExit()
+                    newNodeMap[insnNode] = MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/util/KiltHelper", "handleSystemExit", insnNode.desc)
                 }
             }
 

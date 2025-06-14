@@ -102,13 +102,23 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
     }
 
     @Override
-    public void kilt$setCapturingSnapshots(boolean value) {
+    public void kilt$setCapturingBlockSnapshots(boolean value) {
         this.captureBlockSnapshots = value;
     }
 
     @Override
-    public void kilt$setRestoringSnapshots(boolean value) {
+    public void kilt$setRestoringBlockSnapshots(boolean value) {
         this.restoringBlockSnapshots = value;
+    }
+
+    @Override
+    public boolean kilt$getCapturingBlockSnapshots() {
+        return this.captureBlockSnapshots;
+    }
+
+    @Override
+    public boolean kilt$getRestoringBlockSnapshots() {
+        return this.restoringBlockSnapshots;
     }
 
     @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"), cancellable = true)
