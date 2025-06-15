@@ -6,6 +6,7 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
+import java.util.Optional
 
 open class ModFileInfo(private val kiltMod: ForgeMod?, private val wrapper: FabricModFileInfoWrapper? = null) : IModFileInfo {
     override fun getMods(): MutableList<IModInfo> {
@@ -70,5 +71,13 @@ open class ModFileInfo(private val kiltMod: ForgeMod?, private val wrapper: Fabr
             return wrapper.config
 
         return kiltMod!!.modConfig
+    }
+
+    fun getCodeSigningFingerprint(): Optional<String> {
+        return Optional.empty()
+    }
+
+    fun getTrustData(): Optional<String> {
+        return Optional.empty()
     }
 }

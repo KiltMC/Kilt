@@ -4,10 +4,15 @@ base {
     archivesName.set("Kilt-Forge-Sodium-Compats")
 }
 
+loom {
+    accessWidenerPath.set(file("src/main/resources/kilt-forge-compat.accesswidener"))
+}
+
 version = property("mod_version") as String
 
 dependencies {
     modCompileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
+    compileOnly("maven.modrinth:quark:${property("quark_version")}")
     modImplementation("maven.modrinth:sodium:${property("sodium_version")}")
     modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
 }

@@ -152,12 +152,17 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
     }*/
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V", ordinal = 0))
-    private void kilt$storeFrustum(ParticleEngine instance, PoseStack poseStack, MultiBufferSource.BufferSource buffer, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks, Operation<Void> original, @Local Frustum frustum, @Local(argsOnly = true) Matrix4f projectionMatrix) {
+    private void kilt$storeFrustumAndDispatchAfterParticles(ParticleEngine instance, PoseStack poseStack, MultiBufferSource.BufferSource buffer, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks, Operation<Void> original, @Local Frustum frustum, @Local(argsOnly = true) Matrix4f projectionMatrix) {
         ((ParticleEngineInjection) instance).kilt$setClippingHelper(frustum);
         original.call(instance, poseStack, buffer, lightTexture, activeRenderInfo, partialTicks);
         ((ParticleEngineInjection) instance).kilt$setClippingHelper(null);
 
         ForgeHooksClient.dispatchRenderStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, (LevelRenderer) (Object) this, poseStack, projectionMatrix, this.ticks, activeRenderInfo, frustum);
+    }
+
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V", ordinal = 1))
+    private void kilt$kilt$dispatchAfterParticles(PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local Frustum frustum) {
+        ForgeHooksClient.dispatchRenderStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, (LevelRenderer) (Object) this, poseStack, projectionMatrix, this.ticks, camera, frustum);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSnowAndRain(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", shift = At.Shift.AFTER))

@@ -648,7 +648,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
 
         ModLoadingContext.kiltActiveModId = mod.modId
-        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        mod.eventBus.post(FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT))
         ModLoadingContext.kiltActiveModId = null
     }
 
@@ -709,34 +709,34 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
             // COMMON_SETUP
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it.container, ModLoadingStage.COMMON_SETUP) }
 
             ModLoadingStage.COMMON_SETUP.deferredWorkQueue.runTasks()
 
             // SIDED_SETUP
             ModLoader.get().kiltPostEventWrappingModsBuildEvent {
                 if (FabricLoader.getInstance().environmentType == EnvType.CLIENT)
-                    FMLClientSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLClientSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
                 else
-                    FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLDedicatedServerSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
             }
 
             ModLoadingStage.SIDED_SETUP.deferredWorkQueue.runTasks()
 
             // ENQUEUE_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it.container, ModLoadingStage.ENQUEUE_IMC) }
 
             ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
 
             // PROCESS_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it.container, ModLoadingStage.PROCESS_IMC) }
 
             ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
 
             // COMPLETE
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it.container, ModLoadingStage.COMPLETE) }
 
             ModLoadingStage.COMPLETE.deferredWorkQueue.runTasks()
         }

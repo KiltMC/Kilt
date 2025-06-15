@@ -37,11 +37,14 @@ import java.util.List;
 import java.util.function.Function;
 
 @Mixin(BlockModel.class)
-public class BlockModelInject implements BlockModelInjection {
+public abstract class BlockModelInject implements BlockModelInjection {
     @Shadow @Nullable public ResourceLocation parentLocation;
     @Shadow @Final private List<ItemOverride> overrides;
     @Shadow public String name;
     @Shadow public static Gson GSON;
+
+    @Shadow public abstract BlockModel getRootModel();
+
     public final BlockGeometryBakingContext customData = new BlockGeometryBakingContext((BlockModel) (Object) this);
 
     @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/gson/GsonBuilder;registerTypeAdapter(Ljava/lang/reflect/Type;Ljava/lang/Object;)Lcom/google/gson/GsonBuilder;", ordinal = 0, remap = false), remap = false)
@@ -82,7 +85,7 @@ public class BlockModelInject implements BlockModelInjection {
                                    ModelState modelTransform, ResourceLocation modelLocation, boolean guiLight3d, CallbackInfoReturnable<BakedModel> cir) {
         // Avoid replacing the bake process entirely, unless there are any obvious tells that
         // the model data is from a Forge model
-        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData() || customData.getCustomGeometry() instanceof IUnbakedGeometry<?>) {
+        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData() || customData.getCustomGeometry() instanceof IUnbakedGeometry<?> || getRootModel() == ModelBakery.GENERATION_MARKER) {
             cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, modelTransform, modelLocation, guiLight3d));
         }
     }

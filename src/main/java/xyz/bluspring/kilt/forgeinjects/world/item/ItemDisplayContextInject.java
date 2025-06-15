@@ -2,6 +2,7 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.common.IExtensibleEnum;
@@ -53,5 +54,10 @@ public class ItemDisplayContextInject implements ItemDisplayContextInjection, IE
     private static void kilt$replaceWithExtraCodec(CallbackInfo ci) {
         CODEC = ExtraCodecs.lazyInitializedCodec(() -> ForgeRegistries.DISPLAY_CONTEXTS.get().getCodec());
         BY_ID = id -> Objects.requireNonNullElse(((IForgeRegistryInternal<ItemDisplayContext>) ForgeRegistries.DISPLAY_CONTEXTS.get()).getValue(id < 0 ? Byte.MAX_VALUE + -id : id), ItemDisplayContext.NONE);
+    }
+
+    @CreateStatic
+    private static ItemDisplayContext create(String keyName, ResourceLocation serializedName, @Nullable ItemDisplayContext fallback) {
+        return ItemDisplayContextInjection.create(keyName, serializedName, fallback);
     }
 }

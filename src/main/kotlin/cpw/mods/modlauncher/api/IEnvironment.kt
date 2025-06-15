@@ -26,5 +26,6 @@ interface IEnvironment {
         @JvmField val ASSETSDIR = buildKey("assetsdir", Path::class.java)
         @JvmField val UUID = buildKey("uuid", String::class.java)
         @JvmField val LAUNCHTARGET  = buildKey("launchtarget", String::class.java)
+        @JvmField val NAMING = buildKey("naming", String::class.java)
     }
 }
