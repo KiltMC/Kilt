@@ -282,7 +282,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
                 description = metadata.getConfigElement<String>("description").orElse("")
                     .replace("\r", ""), // Otherwise, the CR gets rendered weirdly into the newlines.
-                authors = metadata.getConfigElement<String>("authors").orElse("").split(","),
+                authors = try {
+                    metadata.getConfigElement<String>("authors").orElse("").split(",")
+                } catch (_: ClassCastException) {
+                    // this is apparently a possibility that I didn't know about? huh.
+                    metadata.getConfigElement<List<String>>("authors").orElse(listOf())
+                },
                 version = modVersion,
                 license = toml.get("license"),
 
