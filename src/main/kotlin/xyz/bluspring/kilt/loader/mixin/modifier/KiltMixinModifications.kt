@@ -179,6 +179,70 @@ object KiltMixinModifications {
 
                 visitEnd()
             }
+        },
+        AccessorModifier(
+            "net/minecraft/client/color/item/ItemColors",
+            listOf("getItemColors", "itemColors"),
+            "()Ljava/util/Map;"
+        ) { owner ->
+            MethodNode().apply {
+                visitCode()
+
+                val label0 = Label()
+                val label1 = Label()
+
+                visitLabel(label0)
+
+                visitVarInsn(Opcodes.ALOAD, 0)
+                visitTypeInsn(
+                    Opcodes.CHECKCAST,
+                    "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection"
+                )
+                visitMethodInsn(
+                    Opcodes.INVOKEINTERFACE,
+                    "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection",
+                    "kilt\$getItemColors", "()Ljava/util/Map;", true
+                )
+                visitInsn(Opcodes.ARETURN)
+
+                visitLabel(label1)
+                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
+                visitMaxs(1, 1)
+
+                visitEnd()
+            }
+        },
+        AccessorModifier(
+            "net/minecraft/world/level/storage/loot/LootTable",
+            listOf("getPools", "pools"),
+            "()Ljava/util/List;"
+        ) { owner ->
+            MethodNode().apply {
+                visitCode()
+
+                val label0 = Label()
+                val label1 = Label()
+
+                visitLabel(label0)
+
+                visitVarInsn(Opcodes.ALOAD, 0)
+                visitTypeInsn(
+                    Opcodes.CHECKCAST,
+                    "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection"
+                )
+                visitMethodInsn(
+                    Opcodes.INVOKEINTERFACE,
+                    "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection",
+                    "kilt\$getPools", "()Ljava/util/List;", true
+                )
+                visitInsn(Opcodes.ARETURN)
+
+                visitLabel(label1)
+                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
+                visitMaxs(1, 1)
+
+                visitEnd()
+            }
         }
     )
 

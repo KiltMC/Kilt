@@ -19,6 +19,7 @@
     "mixins": [
         "kilt_forge_sodium_compats.mixins.json"
     ],
+    "accessWidener": "kilt-forge-compat.accesswidener",
     "depends": {
         "fabricloader": ">=${loader_version}",
         "minecraft": "${minecraft_version}",

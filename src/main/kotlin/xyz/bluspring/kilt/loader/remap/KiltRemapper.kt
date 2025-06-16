@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.stream.consumeAsFlow
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.MappingResolver
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.SystemProperties
@@ -50,7 +51,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 175
+    const val REMAPPER_VERSION = 176
     const val MC_MAPPED_JAR_VERSION = 3
 
     // Kilt JVM flags
@@ -66,6 +67,9 @@ object KiltRemapper {
 
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
+
+    // Remapper extensions
+    fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
 
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
@@ -646,8 +650,10 @@ object KiltRemapper {
                         MixinSpecialAnnotationRemapper.remapClass(remappedNode, remapper, refmapJsons)
                     }
 
+                    ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                     EventClassVisibilityFixer.fixClass(remappedNode)
                     EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
+                    InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
                     ObjectHolderDefinalizer.processClass(remappedNode)
                     WorkaroundFixer.fixClass(remappedNode)
                     ConflictingStaticMethodFixer.fixClass(remappedNode)

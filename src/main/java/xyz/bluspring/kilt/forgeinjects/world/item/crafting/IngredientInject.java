@@ -11,6 +11,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -64,6 +66,14 @@ public class IngredientInject implements IngredientInjection {
     public void invalidate() {
         this.itemStacks = null;
         this.stackingIds = null;
+    }
+
+    @Override
+    public IIngredientSerializer<? extends Ingredient> getSerializer() {
+        if (!isVanilla())
+            throw new IllegalStateException();
+
+        return VanillaIngredientSerializer.INSTANCE;
     }
 
     @Override

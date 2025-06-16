@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.world.entity.player;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -96,6 +97,11 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
 
         if (blockPos != null)
             cir.setReturnValue(ForgeEventFactory.getBreakSpeed((Player) (Object) this, state, cir.getReturnValue(), blockPos));
+    }
+
+    @ModifyReturnValue(method = "hasCorrectToolForDrops", at = @At("RETURN"))
+    private boolean kilt$checkHarvest(boolean original, BlockState state) {
+        return ForgeEventFactory.doPlayerHarvestCheck((Player) (Object) this, state, original);
     }
 
     @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)

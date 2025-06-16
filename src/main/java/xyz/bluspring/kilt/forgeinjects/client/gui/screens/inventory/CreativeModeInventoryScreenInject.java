@@ -1,6 +1,7 @@
 // TRACKED HASH: 9169c1a016aa79fe41a22e24efb28b87a97545d4
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.inventory;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -17,18 +18,22 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.CreativeModeTabSearchRegistry;
+import net.minecraftforge.common.CreativeModeTabRegistry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.AbstractContainerScreenInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.CreativeModeInventoryScreenInjection;
 import xyz.bluspring.kilt.injections.world.inventory.SlotInjection;
 
-@Mixin(CreativeModeInventoryScreen.class)
+import java.util.List;
+
+@Mixin(value = CreativeModeInventoryScreen.class, priority = 1009)
 public abstract class CreativeModeInventoryScreenInject extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> implements CreativeModeInventoryScreenInjection {
     @Shadow private static CreativeModeTab selectedTab;
     @Shadow private EditBox searchBox;
@@ -155,6 +160,25 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
         this.searchBox.setWidth(selectedTab.getSearchBarWidth());
         this.searchBox.setX(this.leftPos + (82 + 89) - this.searchBox.getWidth());
     }
+
+//    Creative Tab sorting
+//    @TargetHandler(
+//            mixin = "net.fabricmc.fabric.mixin.itemgroup.client.CreativeInventoryScreenMixin",
+//            name = "fabric_updateSelection"
+//    )
+//    @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTabs;allTabs()Ljava/util/List;"))
+//    private List<CreativeModeTab> kilt$allTabs() {
+//        return CreativeModeTabRegistry.getSortedCreativeModeTabs();
+//    }
+//
+//    @TargetHandler(
+//            mixin = "net.fabricmc.fabric.mixin.itemgroup.client.CreativeInventoryScreenMixin",
+//            name = "fabric_hasGroupForPage"
+//    )
+//    @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTabs;tabs()Ljava/util/List;"))
+//    private static List<CreativeModeTab> kilt$tabs() {
+//        return CreativeModeTabRegistry.getSortedCreativeModeTabs();
+//    }
 
     @Mixin(targets = "net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen$SlotWrapper")
     public static class SlotWrapperInject implements SlotInjection {

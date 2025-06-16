@@ -17,15 +17,15 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
 
         instrumentation.addTransformer(object : ClassFileTransformer {
             override fun transform(
-                loader: ClassLoader,
+                loader: ClassLoader?,
                 className: String,
-                classBeingRedefined: Class<*>,
-                protectionDomain: ProtectionDomain,
+                classBeingRedefined: Class<*>?,
+                protectionDomain: ProtectionDomain?,
                 classfileBuffer: ByteArray
-            ): ByteArray {
+            ): ByteArray? {
                 // Basically, makes sure that all overwrites are able to upgrade to a higher visibility method where possible.
                 // I know, I know, I should *not* be doing this, but at this rate it's honestly easier.
-                if (classBeingRedefined == mixinPreProcessorClass) {
+                if (mixinPreProcessorClass == classBeingRedefined) {
                     val classReader = ClassReader(classfileBuffer)
                     val classNode = ClassNode(Opcodes.ASM9)
                     classReader.accept(classNode, 0)

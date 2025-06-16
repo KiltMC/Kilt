@@ -30,6 +30,9 @@
     "mm:early_risers": [
       "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
     ],
+    "mixinsquared-adjuster": [
+      "xyz.bluspring.kilt.loader.mixin.KiltAnnotationAdjuster"
+    ],
     "mixinsquared": [
       "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
     ],

@@ -20,12 +20,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.client.color.item.ItemColorsInjection;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(ItemColors.class)
-public class ItemColorsInject {
+public abstract class ItemColorsInject implements ItemColorsInjection {
     @Inject(at = @At("RETURN"), method = "createDefault")
     private static void kilt$initForgeItemColors(BlockColors blockColors, CallbackInfoReturnable<ItemColors> cir) {
         ForgeHooksClient.onItemColorsInit(cir.getReturnValue(), blockColors);
@@ -56,5 +57,10 @@ public class ItemColorsInject {
         if (delegate.isPresent()) {
             this.kilt$itemColors.put(delegate.get(), itemColor);
         }
+    }
+
+    @Override
+    public Map<Holder.Reference<Item>, ItemColor> kilt$getItemColors() {
+        return this.kilt$itemColors;
     }
 }
