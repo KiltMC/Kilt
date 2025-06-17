@@ -6,7 +6,6 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
-import org.spongepowered.asm.mixin.extensibility.IMixinConfig
 import java.lang.instrument.ClassFileTransformer
 import java.lang.instrument.Instrumentation
 import java.security.ProtectionDomain
@@ -36,7 +35,7 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
                     run {
                         val conformVisibilityInsn = instructions.firstOrNull { it is MethodInsnNode && it.opcode == Opcodes.INVOKEVIRTUAL && it.owner == "org/spongepowered/asm/mixin/transformer/MixinConfig" && it.name == "conformOverwriteVisibility" && it.desc == "()Z" } ?: return@run
 
-                        instructions.insert(conformVisibilityInsn, MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/loader/asm/KiltInstrumentationHandler", "checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z"))
+                        instructions.insert(conformVisibilityInsn, MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/loader/asm/KiltInstrumentationHelper", "checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z"))
                         instructions.remove(conformVisibilityInsn)
                     }
 
@@ -53,13 +52,5 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
         }, true)
 
         instrumentation.retransformClasses(mixinPreProcessorClass)
-    }
-
-    companion object {
-        @Suppress("unused")
-        @JvmStatic
-        fun checkShouldConformOverwriteVisibility(mixinConfig: IMixinConfig): Boolean {
-            return true
-        }
     }
 }
