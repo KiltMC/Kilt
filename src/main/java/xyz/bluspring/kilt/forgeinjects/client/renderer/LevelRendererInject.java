@@ -200,7 +200,7 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
         return ticks;
     }
 
-    @Unique private RecordItem kilt$currentRecordItem;
+    private RecordItem kilt$currentRecordItem;
 
     @Override
     public void playStreamingMusic(@Nullable SoundEvent soundEvent, BlockPos pos, @Nullable RecordItem musicDiscItem) {
