@@ -1,6 +1,9 @@
 // TRACKED HASH: 6e5ff0663e40cf957dd3b217b0541c32bd378ce0
 package xyz.bluspring.kilt.forgeinjects.blaze3d.vertex;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -9,8 +12,10 @@ import net.minecraftforge.client.extensions.IForgeVertexConsumer;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import xyz.bluspring.kilt.injections.blaze3d.vertex.VertexConsumerInjection;
 
 import java.nio.ByteBuffer;
@@ -24,6 +29,12 @@ public interface VertexConsumerInject extends VertexConsumerInjection, IForgeVer
         VertexConsumerInjection.alpha.set(alpha);
         putBulkData(pose, bakedQuad, fs, f, g, h, is, i, bl);
         VertexConsumerInjection.alpha.set(1F);
+    }
+
+    // Most certainly going to break in 1.21.1 so beware
+    @ModifyVariable(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", at = @At("STORE"), index = 28, name = "r")
+    private int kilt$applyLightmap(int original, @Local(ordinal = 0) ByteBuffer byteBuffer) {
+        return applyBakedLighting(original, byteBuffer);
     }
 
     @ModifyConstant(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", constant = @Constant(floatValue = 1.0F))
