@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader.asm
 import de.florianmichael.asmfabricloader.api.event.InstrumentationEntrypoint
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
@@ -33,9 +34,33 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
                     val instructions = conformVisibilityMethod.instructions
 
                     run {
+                        val method = classNode.visitMethod(Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC or Opcodes.ACC_SYNTHETIC, "kilt\$checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z", null, null)
+                        val l0 = Label()
+                        val l1 = Label()
+
+                        method.visitCode()
+
+                        /*
+                        private static boolean kilt$checkShouldConformOverwriteVisibility(IMixinConfig config) {
+                            return true;
+                        }
+                         */
+
+                        method.visitLabel(l0)
+                        method.visitInsn(Opcodes.ICONST_1)
+                        method.visitInsn(Opcodes.IRETURN)
+
+                        method.visitLabel(l1)
+                        method.visitLocalVariable("mixinConfig", "Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;", null, l0, l1, 0)
+                        method.visitMaxs(0, 0)
+
+                        method.visitEnd()
+                    }
+
+                    run {
                         val conformVisibilityInsn = instructions.firstOrNull { it is MethodInsnNode && it.opcode == Opcodes.INVOKEVIRTUAL && it.owner == "org/spongepowered/asm/mixin/transformer/MixinConfig" && it.name == "conformOverwriteVisibility" && it.desc == "()Z" } ?: return@run
 
-                        instructions.insert(conformVisibilityInsn, MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/loader/asm/KiltInstrumentationHelper", "checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z"))
+                        instructions.insert(conformVisibilityInsn, MethodInsnNode(Opcodes.INVOKESTATIC, "org/spongepowered/asm/mixin/transformer/MixinPreProcessorStandard", "kilt\$checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z"))
                         instructions.remove(conformVisibilityInsn)
                     }
 
