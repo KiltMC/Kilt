@@ -2,7 +2,7 @@ import org.ajoberstar.grgit.Grgit
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.9-SNAPSHOT"
+    id ("fabric-loom") version "1.10-SNAPSHOT"
     id ("maven-publish")
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
@@ -267,9 +267,9 @@ dependencies {
     include(project(":loader:fabric")) {
         isTransitive = false
     }
-    include(project(":loader:quilt")) {
+    /*include(project(":loader:quilt")) {
         isTransitive = false
-    }
+    }*/
 
     // Kotlin for Forge
     // We only need the language provider, as that's what we try to provide compatibility for.

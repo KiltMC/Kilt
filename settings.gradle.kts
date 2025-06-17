@@ -28,4 +28,4 @@ pluginManagement {
 
 include(":loader:cichlid")
 include(":loader:fabric")
-include(":loader:quilt")
+//include(":loader:quilt")
