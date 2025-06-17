@@ -274,9 +274,9 @@ dependencies {
     include(project(":loader:fabric")) {
         isTransitive = false
     }
-    include(project(":loader:quilt")) {
+    /*include(project(":loader:quilt")) {
         isTransitive = false
-    }
+    }*/
 
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
