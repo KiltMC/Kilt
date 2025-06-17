@@ -4,11 +4,13 @@
   "package": "xyz.bluspring.kilt.compat.sodium.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "quark.ConcretePowderBlockMixin",
     "structure_gel.StructureTemplateMixin"
   ],
   "client": [
     "immersiveengineering.ChunkBuilderMeshingTaskMixin",
-    "immersiveengineering.SodiumWorldRendererAccessor"
+    "immersiveengineering.SodiumWorldRendererAccessor",
+    "quark.LevelRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
