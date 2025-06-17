@@ -4,6 +4,7 @@ import com.bawnorton.mixinsquared.adjuster.tools.AdjustableAnnotationNode
 import com.bawnorton.mixinsquared.adjuster.tools.AdjustableInjectNode
 import com.bawnorton.mixinsquared.adjuster.tools.AdjustableModifyVariableNode
 import com.bawnorton.mixinsquared.api.MixinAnnotationAdjuster
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue
 import com.llamalad7.mixinextras.injector.ModifyReturnValue
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.injection.Inject
@@ -28,6 +29,11 @@ class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
             val injectNode = annotationNode.`as`(AdjustableInjectNode::class.java)
             // seriously wtf why
             injectNode.cancellable = false
+        }
+
+        // Optifine based moment
+        if (mixinClassName == "org.violetmoon.quark.mixin.mixins.client.HumanoidArmorLayerMixin" && annotationNode.`is`(ModifyExpressionValue::class.java) && handlerNode.name == "quark\$getArmorGlint") {
+            return null
         }
 
         return annotationNode
