@@ -8,7 +8,8 @@ data class MixinModifier(
 
     val variables: Map<String, Any> = mapOf(),
 
-    val replaceWith: List<AnnotationNode>
+    val replaceWith: List<AnnotationNode> = listOf(),
+    val remapMethodsTo: String? = null
 ) {
     lateinit var mappedOwner: String
 }

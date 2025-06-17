@@ -78,7 +78,14 @@ class KiltMixinModifier : IExtension {
                             continue
                         }
 
-                        newAnnotations.addAll(modifier.replaceWith)
+                        if (modifier.remapMethodsTo != null) {
+                            newAnnotations.add(
+                                KiltMixinModifications.createAnnotation(annotation.desc,
+                                KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
+                                    this["method"] = listOf(modifier.remapMethodsTo)
+                                })
+                            )
+                        } else newAnnotations.addAll(modifier.replaceWith)
                         wasModified = true
                     }
 
