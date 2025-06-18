@@ -5,14 +5,14 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.InsnNode
 import java.lang.instrument.ClassFileTransformer
 import java.lang.instrument.Instrumentation
 import java.security.ProtectionDomain
 
 class KiltInstrumentationHandler : InstrumentationEntrypoint {
     override fun onGetInstrumentation(instrumentation: Instrumentation) {
-        val mixinPreProcessorClass = Class.forName("org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard", false, Thread.currentThread().contextClassLoader)
+        val mixinConfigClass = Class.forName("org.spongepowered.asm.mixin.transformer.MixinConfig", false, Thread.currentThread().contextClassLoader)
 
         instrumentation.addTransformer(object : ClassFileTransformer {
             override fun transform(
@@ -24,19 +24,19 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
             ): ByteArray {
                 // Basically, makes sure that all overwrites are able to upgrade to a higher visibility method where possible.
                 // I know, I know, I should *not* be doing this, but at this rate it's honestly easier.
-                if (classBeingRedefined == mixinPreProcessorClass) {
+                if (classBeingRedefined == mixinConfigClass) {
                     val classReader = ClassReader(classfileBuffer)
                     val classNode = ClassNode(Opcodes.ASM9)
                     classReader.accept(classNode, 0)
 
-                    val conformVisibilityMethod = classNode.methods.first { it.name == "conformVisibility" }
+                    val conformVisibilityMethod = classNode.methods.first { it.name == "conformOverwriteVisibility" }
                     val instructions = conformVisibilityMethod.instructions
 
                     run {
-                        val conformVisibilityInsn = instructions.firstOrNull { it is MethodInsnNode && it.opcode == Opcodes.INVOKEVIRTUAL && it.owner == "org/spongepowered/asm/mixin/transformer/MixinConfig" && it.name == "conformOverwriteVisibility" && it.desc == "()Z" } ?: return@run
+                        instructions.clear()
 
-                        instructions.insert(conformVisibilityInsn, MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/loader/asm/KiltInstrumentationHelper", "checkShouldConformOverwriteVisibility", "(Lorg/spongepowered/asm/mixin/extensibility/IMixinConfig;)Z"))
-                        instructions.remove(conformVisibilityInsn)
+                        instructions.add(InsnNode(Opcodes.ICONST_1))
+                        instructions.add(InsnNode(Opcodes.IRETURN))
                     }
 
                     conformVisibilityMethod.instructions = instructions
@@ -51,6 +51,6 @@ class KiltInstrumentationHandler : InstrumentationEntrypoint {
             }
         }, true)
 
-        instrumentation.retransformClasses(mixinPreProcessorClass)
+        instrumentation.retransformClasses(mixinConfigClass)
     }
 }
