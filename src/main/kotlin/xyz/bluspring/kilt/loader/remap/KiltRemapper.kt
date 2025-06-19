@@ -294,8 +294,8 @@ object KiltRemapper {
 
             val entryToClassNodes = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<JarEntry, ClassNode>())
 
-            val mixinClasses = ClassNameHashSet()
-            val refmaps = CaseInsensitiveStringHashSet()
+            val mixinClasses = Collections.synchronizedSet(ClassNameHashSet())
+            val refmaps = Collections.synchronizedSet(CaseInsensitiveStringHashSet())
             val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, mixinClasses)
             enhancedRemapper = remapper
 
@@ -636,7 +636,7 @@ object KiltRemapper {
             suspend fun remapClass(
                 remapper: KiltEnhancedRemapper,
                 originalNode: ClassNode,
-                mixinClasses: ClassNameHashSet,
+                mixinClasses: Collection<String>,
                 classesToProcess: List<ClassNode>,
                 jarOutput: JarOutputStream,
                 entry: JarEntry,

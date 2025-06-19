@@ -7,11 +7,10 @@ import net.minecraftforge.srgutils.IMappingFile
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
-import xyz.bluspring.kilt.util.ClassNameHashSet
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-class KiltEnhancedRemapper(provider: ClassProvider, file: IMappingFile, log: Consumer<String>, val mixinClasses: ClassNameHashSet) : EnhancedRemapper(provider, file, log) {
+class KiltEnhancedRemapper(provider: ClassProvider, file: IMappingFile, log: Consumer<String>, val mixinClasses: Collection<String>) : EnhancedRemapper(provider, file, log) {
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
         if (mixinClasses.contains(owner))
             return super.mapMethodName(owner, name, descriptor)
