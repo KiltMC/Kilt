@@ -193,7 +193,10 @@ class KiltClient : ClientModInitializer {
         }
 
         ClientRawInputEvent.MOUSE_SCROLLED.register { client, amount ->
-            EventResult.interrupt(ForgeHooksClient.onMouseScroll(client.mouseHandler, amount))
+            if (ForgeHooksClient.onMouseScroll(client.mouseHandler, amount)) {
+                EventResult.interruptTrue()
+            }
+            EventResult.pass()
         }
 
         /*RenderHandCallback.EVENT.register { event ->
