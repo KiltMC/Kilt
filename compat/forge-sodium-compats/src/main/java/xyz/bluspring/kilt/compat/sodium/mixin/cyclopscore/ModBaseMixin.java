@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @IfModLoaded("cyclopscore")
 @Pseudo
-@Mixin(targets = "org.cyclops.cyclopscore.init.ModBase", remap = false)
+@Mixin(targets = "org.cyclops.cyclopscore.init.ModBase")
 public class ModBaseMixin {
     @ModifyExpressionValue(method = "beforeRegistriedFilled", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceKey;equals(Ljava/lang/Object;)Z"))
     private boolean kilt$fixDifferentRegistryOrder(boolean original, RegisterEvent event) {
