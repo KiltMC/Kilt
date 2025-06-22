@@ -65,6 +65,7 @@
     "client.gui.components.ButtonBuilderAccessor",
     "client.renderer.item.ItemPropertiesAccessor",
     "compat.architectury.RegistrarManagerImplMixin",
+    "compat.fabric_api.BlockInitTrackerMixin",
     "compat.fabric_api.Int2ObjectMapTrackerMixin",
     "compat.fabric_api.PackRepositoryMixin",
     "compat.forge.alexscaves.PotionUtilsMixin",

@@ -30,14 +30,8 @@ public abstract class FaceBakeryInject {
 
         var quad = data.ambientOcclusion() ? original.call(vertices, tintIndex, direction, sprite, shade) : BakedQuadInjection.withAo(vertices, tintIndex, direction, sprite, shade, false);
         if (!ForgeFaceData.DEFAULT.equals(data)) {
-            Renderer renderer = RendererAccess.INSTANCE.getRenderer();
-            QuadEmitter emitter = renderer.meshBuilder().getEmitter().fromVanilla(original.call(vertices, tintIndex, direction, sprite, shade), renderer.materialFinder().ambientOcclusion(TriState.of(data.ambientOcclusion())).find(), direction);
-            int light = LightTexture.pack(data.blockLight(), data.skyLight());
-            emitter.lightmap(light, light, light, light);
-            emitter.color(data.color(), data.color(), data.color(), data.color());
-            return emitter.toBakedQuad(sprite);
-//            QuadTransformers.applyingLightmap(data.blockLight(), data.skyLight()).processInPlace(quad);
-//            QuadTransformers.applyingColor(data.color()).processInPlace(quad);
+            QuadTransformers.applyingLightmap(data.blockLight(), data.skyLight()).processInPlace(quad);
+            QuadTransformers.applyingColor(data.color()).processInPlace(quad);
         }
 
         return quad;
