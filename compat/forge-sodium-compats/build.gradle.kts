@@ -22,7 +22,6 @@ dependencies {
     modCompileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
     compileOnly("maven.modrinth:quark:${property("quark_version")}")
     compileOnly("org.violetmoon.zeta:Zeta:${property("zeta_version")}")
-    compileOnly("maven.modrinth:cyclops-core:${property("cyclops_version")}")
     modImplementation("maven.modrinth:sodium:${property("sodium_version")}")
     modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
 }
