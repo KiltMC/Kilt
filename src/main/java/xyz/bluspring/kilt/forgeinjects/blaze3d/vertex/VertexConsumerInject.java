@@ -32,7 +32,7 @@ public interface VertexConsumerInject extends VertexConsumerInjection, IForgeVer
     }
 
     // Most certainly going to break in 1.21.1 so beware
-    @ModifyVariable(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", at = @At("STORE"), index = 28, name = "r")
+    @ModifyVariable(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", at = @At("STORE"), ordinal = 4)
     private int kilt$applyLightmap(int original, @Local(ordinal = 0) ByteBuffer byteBuffer) {
         return applyBakedLighting(original, byteBuffer);
     }

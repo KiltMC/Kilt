@@ -1,10 +1,13 @@
 package xyz.bluspring.kilt.compat.sodium.mixin.cyclopscore;
 
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Pseudo;
 
-@Mixin(value = MinecraftHelpers.class, remap = false)
+@IfModLoaded("cyclopscore")
+@Pseudo
+@Mixin(targets = "org.cyclops.cyclopscore.helper.MinecraftHelpers", remap = false)
 public class MinecraftHelpersMixin {
     /**
      * @author AlphaMode
