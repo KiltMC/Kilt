@@ -1,18 +1,14 @@
 package xyz.bluspring.kilt.forgeinjects.data;
 
-import net.minecraft.WorldVersion;
+import com.google.common.collect.Lists;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import org.apache.commons.compress.utils.Lists;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.data.DataGeneratorInjection;
 import xyz.bluspring.kilt.mixin.DataGeneratorAccessor;
 

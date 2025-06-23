@@ -70,7 +70,6 @@
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
         "compat.supplementaries.ClientConfigsMixin",
-        "compat.unionlib.PlatformHelperMixin",
         "porting_lib.ConditionalRecipeSerializerMixin",
         "porting_lib.LootContextExtensionsMixin",
         "porting_lib.RegistryObjectAccessor",
@@ -83,6 +82,7 @@
         "client.renderer.item.ItemPropertiesAccessor",
         "client.sounds.ChannelAccessHandleMixin",
         "compat.geckolib.BlockEntityWithoutLevelRendererMixin",
+        "compat.unionlib.PlatformHelperMixin",
         "fabric_api.FluidRenderHandlerRegistryImplMixin"
     ],
     "injectors": {
