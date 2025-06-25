@@ -12,7 +12,7 @@ import org.violetmoon.quark.content.tweaks.module.MagmaKeepsConcretePowderModule
 
 @Mixin(ConcretePowderBlock.class)
 public class ConcretePowderBlockMixin {
-    @Inject(method = "touchesLiquid", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "touchesLiquid", at = @At("HEAD"), cancellable = true)
     private static void kilt$quark$touchesLiquid(BlockGetter pLevel, BlockPos pPos, CallbackInfoReturnable<Boolean> cbi) {
         if(MagmaKeepsConcretePowderModule.preventSolidify(pLevel, pPos, pLevel.getBlockState(pPos))) {
             cbi.setReturnValue(false);
@@ -20,7 +20,7 @@ public class ConcretePowderBlockMixin {
         }
     }
 
-    @Inject(method = "shouldSolidify", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "shouldSolidify", at = @At("HEAD"), cancellable = true)
     private static void kilt$quark$shouldSolidify(BlockGetter pLevel, BlockPos pPos, BlockState pState, CallbackInfoReturnable<Boolean> cbi) {
         if(MagmaKeepsConcretePowderModule.preventSolidify(pLevel, pPos, pState)) {
             cbi.setReturnValue(false);
