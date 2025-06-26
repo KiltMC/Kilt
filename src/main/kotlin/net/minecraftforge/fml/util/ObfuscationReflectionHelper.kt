@@ -68,7 +68,11 @@ object ObfuscationReflectionHelper {
             val methodName = if (KiltRemapper.srgMappedMethods.containsKey(methodName)) {
                 val descriptor = Type.getMethodDescriptor(Type.VOID_TYPE, *parameterTypes.map { Type.getType(it) }.toTypedArray()).removeSuffix("V")
 
-                KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor) ?: methodName
+                val mapped = KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
+
+                if (mapped == methodName || mapped == null)
+                    KiltRemapper.srgMappedMethods[methodName]!!.values.first()
+                else mapped
             } else methodName
 
             val m = clazz.getDeclaredMethod(methodName, *parameterTypes)

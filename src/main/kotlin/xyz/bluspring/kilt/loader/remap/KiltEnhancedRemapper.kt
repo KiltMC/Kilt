@@ -13,6 +13,16 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
         name: String,
         descPrefix: String
     ): String? {
+        val hierarchy = getClassHierarchy(owner)
+
+        for (info in hierarchy) {
+            for (methodInfo in info.methods) {
+                if (methodInfo.name == name && methodInfo.descriptor.startsWith(descPrefix)) {
+                    return this.mapMethodName(info.name, methodInfo.name, methodInfo.descriptor)
+                }
+            }
+        }
+
         val cls = file.classes.firstOrNull { it.original == owner } ?: return this.mapMethodName(owner, name, descPrefix)
         for (method in cls.methods) {
             if (method.original == name && method.descriptor.startsWith(descPrefix)) {
