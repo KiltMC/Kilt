@@ -143,19 +143,19 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
         return ForgeHooksClient.onDrawHighlight((LevelRenderer) (Object) this, camera, hitResult, partialTick, poseStack, bufferSource) || original;
     }
 
-    // FIXME: not sure why, but this inject specifically fails. might need some testing.
-    /*@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/debug/DebugRenderer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDD)V"))
-    private void kilt$callDrawHighlightEvent(PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local HitResult hitResult, @Local MultiBufferSource.BufferSource bufferSource) {
-        if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/debug/DebugRenderer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDD)V"))
+    private void kilt$callDrawHighlightEvent(PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local MultiBufferSource.BufferSource bufferSource) {
+        HitResult hitResult = this.minecraft.hitResult;
+        if (!renderBlockOutline && hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
             ForgeHooksClient.onDrawHighlight((LevelRenderer) (Object) this, camera, hitResult, partialTick, poseStack, bufferSource);
         }
-    }*/
+    }
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V", ordinal = 0))
     private void kilt$storeFrustumAndDispatchAfterParticles(ParticleEngine instance, PoseStack poseStack, MultiBufferSource.BufferSource buffer, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks, Operation<Void> original, @Local Frustum frustum, @Local(argsOnly = true) Matrix4f projectionMatrix) {
-        ((ParticleEngineInjection) instance).kilt$setClippingHelper(frustum);
+        instance.kilt$setClippingHelper(frustum);
         original.call(instance, poseStack, buffer, lightTexture, activeRenderInfo, partialTicks);
-        ((ParticleEngineInjection) instance).kilt$setClippingHelper(null);
+        instance.kilt$setClippingHelper(null);
 
         ForgeHooksClient.dispatchRenderStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, (LevelRenderer) (Object) this, poseStack, projectionMatrix, this.ticks, activeRenderInfo, frustum);
     }
