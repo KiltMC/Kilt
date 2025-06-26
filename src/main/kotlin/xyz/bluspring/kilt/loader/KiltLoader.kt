@@ -54,6 +54,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 import kotlin.io.path.*
@@ -200,20 +201,20 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
         if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
-            throw Exception("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
+            throw IncompatibleModException("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
         }
 
         val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion"))
         when (modLoader) {
             "kotlinforforge" -> {
                 if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
-                    throw Exception("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
 
             "javafml", "lowcodefml" -> {
                 if (!loaderVersionRange.containsVersion(SUPPORTED_FORGE_SPEC_VERSION)) {
-                    throw Exception("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FORGE_SPEC_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FORGE_SPEC_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
         }
@@ -281,7 +282,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
                 description = metadata.getConfigElement<String>("description").orElse("")
                     .replace("\r", ""), // Otherwise, the CR gets rendered weirdly into the newlines.
-                authors = metadata.getConfigElement<String>("authors").orElse("").split(","),
+                authors = try {
+                    metadata.getConfigElement<String>("authors").orElse("").split(",")
+                } catch (_: ClassCastException) {
+                    // this is apparently a possibility that I didn't know about? huh.
+                    metadata.getConfigElement<List<String>>("authors").orElse(listOf())
+                },
                 version = modVersion,
                 license = toml.get("license"),
 
@@ -305,7 +311,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 additionalData = mapOf(
                     "manifest" to manifest,
-                    "config" to mainConfig
+                    "config" to mainConfig,
+                    "loader" to modLoader
                 ),
 
                 loaderCustomData = mapOf(
@@ -448,6 +455,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                         mod.scanData = scanData
 
+                        val classes = ConcurrentHashMap.newKeySet<ModFileScanData.ClassData>()
+                        val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
+
                         // basically emulate how Forge loads stuff
                         mod.jar.entries().asIterator().asFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
@@ -457,8 +467,11 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                                 val classReader = ClassReader(it)
 
                                 classReader.accept(visitor, 0)
-                                visitor.buildData(scanData.classes, scanData.annotations)
+                                visitor.buildData(classes, annotations)
                             }
+
+                        scanData.classes.addAll(classes)
+                        scanData.annotations.addAll(annotations)
 
                         mod
                     }
@@ -493,7 +506,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 try {
                     val modId = it.annotationData["modid"] as String?
-                        // Use the mod ID of the mod in the class instead
+                    // Use the mod ID of the mod in the class instead
                         ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, it.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
                         ?: mod.modId
 
@@ -516,11 +529,19 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     }
 
                     ModLoadingContext.kiltActiveModId = modId
-                    busType.bus().get().register(Class.forName(it.clazz.className, true, this::class.java.classLoader))
+
+                    val clazz = Class.forName(it.clazz.className, true, this::class.java.classLoader)
+                    val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
+
+                    if (obj != null)
+                        busType.bus().get().register(obj)
+                    else
+                        busType.bus().get().register(clazz)
+
                     ModLoadingContext.kiltActiveModId = null
 
                     Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
-                } catch (e: Throwable) {
+                } catch (e: Exception) {
                     Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
                     exception.addSuppressed(e)
@@ -561,8 +582,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     try {
                         initMod(mod, mod.scanData)
                     } catch (e: Throwable) {
+                        Kilt.logger.error("Failed to load mod ${mod.displayName} (${mod.modId})!")
                         e.printStackTrace()
-                        exception.addSuppressed(e)
+                        exception.addSuppressed(RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})", e))
                     }
                 }
         }
@@ -623,7 +645,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 }
             }
 
-        if (!hasInitialized && mod.shouldScan && !hasErrored) {
+        if (!hasInitialized && mod.shouldScan && !mod.modId.startsWith("jij_") && !hasErrored) {
             exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
         }
 
@@ -632,7 +654,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
 
         ModLoadingContext.kiltActiveModId = mod.modId
-        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        mod.eventBus.post(FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT))
         ModLoadingContext.kiltActiveModId = null
     }
 
@@ -693,34 +715,34 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
             // COMMON_SETUP
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it.container, ModLoadingStage.COMMON_SETUP) }
 
             ModLoadingStage.COMMON_SETUP.deferredWorkQueue.runTasks()
 
             // SIDED_SETUP
             ModLoader.get().kiltPostEventWrappingModsBuildEvent {
                 if (FabricLoader.getInstance().environmentType == EnvType.CLIENT)
-                    FMLClientSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLClientSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
                 else
-                    FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLDedicatedServerSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
             }
 
             ModLoadingStage.SIDED_SETUP.deferredWorkQueue.runTasks()
 
             // ENQUEUE_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it.container, ModLoadingStage.ENQUEUE_IMC) }
 
             ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
 
             // PROCESS_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it.container, ModLoadingStage.PROCESS_IMC) }
 
             ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
 
             // COMPLETE
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it.container, ModLoadingStage.COMPLETE) }
 
             ModLoadingStage.COMPLETE.deferredWorkQueue.runTasks()
         }

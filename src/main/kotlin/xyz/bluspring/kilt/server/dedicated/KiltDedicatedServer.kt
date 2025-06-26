@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.Kilt
 class KiltDedicatedServer : DedicatedServerModInitializer {
     override fun onInitializeServer() {
         Kilt.loader.mods.forEach { mod ->
-            mod.eventBus.post(FMLDedicatedServerSetupEvent(mod, ModLoadingStage.SIDED_SETUP))
+            mod.eventBus.post(FMLDedicatedServerSetupEvent(mod.container, ModLoadingStage.SIDED_SETUP))
         }
     }
 }
