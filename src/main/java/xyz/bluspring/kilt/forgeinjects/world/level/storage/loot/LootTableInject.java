@@ -59,6 +59,11 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
     }
 
     @Override
+    public List<LootPool> kilt$getPools() {
+        return this.kilt$pools;
+    }
+
+    @Override
     public boolean isFrozen() {
         return isFrozen;
     }
