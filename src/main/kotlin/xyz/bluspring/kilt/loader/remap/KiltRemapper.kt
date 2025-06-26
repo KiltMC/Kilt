@@ -58,7 +58,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 182
+    const val REMAPPER_VERSION = 184
     const val MC_MAPPED_JAR_VERSION = 5
 
     // Kilt JVM flags
@@ -436,22 +436,24 @@ object KiltRemapper {
                 }
             }
 
-            try {
-                for ((entry, originalNode) in entryToClassNodes) {
+            val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
+                this.collect { (entry, originalNode) ->
                     val remappedNode = ClassNode(Opcodes.ASM9)
-                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                     // only do this on mixin classes, please
-                    if (remappedNode.name in mixinClasses ||
+                    // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
+                    if (originalNode.name in mixinClasses ||
                         // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
                         // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
                         KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
                             .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
                     ) {
-                        MixinRemapper.remapClass(remappedNode, enhancedRemapper, refmapJsons.values)
-                        MixinShadowRemapper.remapClass(remappedNode, enhancedRemapper)
-                        MixinAdditionalRemapper.remapClass(remappedNode)
+                        MixinRemapper.remapClass(originalNode, enhancedRemapper, refmapJsons.values)
+                        MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
+                        MixinAdditionalRemapper.remapClass(originalNode)
                     }
+
+                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                     ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                     EventClassVisibilityFixer.fixClass(remappedNode)
@@ -465,12 +467,16 @@ object KiltRemapper {
                     val writer = ClassWriter(Opcodes.ASM9)
                     remappedNode.accept(writer)
 
-                    jarOutputStream.putNextEntry(entry)
-                    jarOutputStream.write(writer.toByteArray())
-                    jarOutputStream.closeEntry()
+                    synchronized(jarOutputStream) {
+                        jarOutputStream.putNextEntry(entry)
+                        jarOutputStream.write(writer.toByteArray())
+                        jarOutputStream.closeEntry()
+                    }
                 }
-            } catch (e: Throwable) {
-                exception.addSuppressed(e)
+            }.exceptionOrNull()
+
+            if (throwable != null) {
+                exception.addSuppressed(throwable)
             }
             
             // If for whatever reason the refmap remapping missed something, we need to remap it immediately.

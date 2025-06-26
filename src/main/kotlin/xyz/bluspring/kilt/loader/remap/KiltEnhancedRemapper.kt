@@ -57,12 +57,35 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
             }
         }
 
+        // Special handling for production libraries that rely on Intermediary-mapped libraries
+        if (!shouldTryRemap && intermediary == name) {
+            val hierarchy = getClassHierarchy(owner)
+            for (info in hierarchy) {
+                val mapped = super.mapFieldName(KiltRemapper.unmapClass(info.name), name, descriptor)
+
+                if (mapped != intermediary)
+                    return mapped
+            }
+
+            if (name.startsWith("f_") && name.endsWith("_")) {
+                // Worst case scenario, we need to ensure that it still gets mapped *somehow*, because in a bunch of cases, this is due to a missing library.
+                val mapped = KiltRemapper.srgMappedFields[name]
+
+                if (mapped != null) {
+                    return mapped.second
+                }
+
+                KiltRemapper.logger.warn("Failed to remap field $name:$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")
+            }
+        }
+
         return intermediary
     }
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
         val intermediary = super.mapMethodName(owner, name, descriptor)
 
+        // Special handling for dev environments
         if (shouldTryRemap && (intermediary.startsWith("method_") || intermediary.startsWith("comp_"))) {
             initDevRemapper()
 
@@ -71,6 +94,28 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
 
                 if (mapped != intermediary)
                     return mapped
+            }
+        }
+
+        // Special handling for production libraries that rely on Intermediary-mapped libraries
+        if (!shouldTryRemap && intermediary == name) {
+            val hierarchy = getClassHierarchy(owner)
+            for (info in hierarchy) {
+                val mapped = super.mapMethodName(KiltRemapper.unmapClass(info.name), name, descriptor)
+
+                if (mapped != intermediary)
+                    return mapped
+            }
+
+            if (name.startsWith("m_") && name.endsWith("_")) {
+                // Worst case scenario, we need to ensure that it still gets mapped *somehow*, because in a bunch of cases, this is due to a missing library.
+                val mappedList = KiltRemapper.srgMappedMethods[name]
+
+                if (mappedList != null && mappedList.values.isNotEmpty()) {
+                    return mappedList.values.first()
+                }
+
+                KiltRemapper.logger.warn("Failed to remap method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")
             }
         }
 
@@ -88,13 +133,17 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 break
             }
 
+            for (itf in currentClass.interfaces) {
+                hierarchy.addAll(getClassHierarchy(itf))
+            }
+
             currentClass = provider.getClass(currentClass.`super`).orElse(null) ?: break
 
             if (currentClass.name.startsWith("java/lang/") || currentClass.name.startsWith("com/google/")) {
                 break
             }
 
-            hierarchy.add(currentClass ?: break)
+            hierarchy.add(currentClass)
         } while (true)
 
         return hierarchy
