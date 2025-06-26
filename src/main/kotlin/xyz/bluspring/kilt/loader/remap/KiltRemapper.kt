@@ -220,7 +220,7 @@ object KiltRemapper {
             }
 
             remappedModsDir.walk().forEach { file ->
-                if (file.extension != "jar")
+                if (file.extension != "jar" && file.extension != "tmp")
                     return@forEach
 
                 val mod = modLoadingQueue.firstOrNull { file.nameWithoutExtension.startsWith(it.id) }
