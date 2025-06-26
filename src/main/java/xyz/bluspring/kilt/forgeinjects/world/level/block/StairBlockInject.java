@@ -1,6 +1,7 @@
 // TRACKED HASH: eab4aa77b994f9a00088ad36b92af4db566cd67f
 package xyz.bluspring.kilt.forgeinjects.world.level.block;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -12,7 +13,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 import java.util.function.Supplier;
@@ -27,10 +27,12 @@ public class StairBlockInject extends Block {
     private Block base;
     @Shadow @Final @Mutable private BlockState baseState;
     private Supplier<BlockState> stateSupplier;
+    private boolean kilt$isModded;
 
     @Inject(method = "<init>(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V", at = @At("TAIL"))
     public void kilt$setBaseStateAsBlockState(BlockState blockState, Properties properties, CallbackInfo ci) {
         this.stateSupplier = () -> blockState;
+        this.kilt$isModded = false;
     }
 
     @CreateInitializer
@@ -41,20 +43,23 @@ public class StairBlockInject extends Block {
         this.stateSupplier = stateSupplier;
         this.base = Blocks.AIR;
         this.baseState = Blocks.AIR.defaultBlockState();
-        // this is not accurate to what Forge does, but I can't be bothered to coremod *or* ASM these.
-        // if this bites me in the ass later, welp.
-        // update 6/10/2024: it did bite me in the ass later.
-        this.kilt$refreshState();
+        this.kilt$isModded = true;
     }
 
-    @Inject(method = {"animateTick", "attack", "destroy", "onPlace", "onRemove", "randomTick", "tick", "wasExploded"}, at = @At("HEAD"))
-    private void kilt$refreshBaseStateIfUnavailable(CallbackInfo ci) {
-        this.kilt$refreshState();
+    @ModifyExpressionValue(method = {"animateTick", "destroy", "getExplosionResistance", "onPlace", "stepOn", "isRandomlyTicking", "randomTick", "tick", "wasExploded"}, at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/block/StairBlock;base:Lnet/minecraft/world/level/block/Block;"))
+    private Block kilt$getBase(Block original) {
+        if (this.kilt$isModded) {
+            return getModelBlock();
+        }
+        return original;
     }
 
-    @Inject(method = {"getExplosionResistance", "isRandomlyTicking", "use"}, at = @At("HEAD"))
-    private void kilt$refreshBaseStateIfUnavailable2(CallbackInfoReturnable<Object> ci) {
-        this.kilt$refreshState();
+    @ModifyExpressionValue(method = {"attack", "onPlace", "onRemove", "use"}, at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/block/StairBlock;baseState:Lnet/minecraft/world/level/block/state/BlockState;"))
+    private BlockState kilt$getBaseState(BlockState original) {
+        if (this.kilt$isModded) {
+            return getModelState();
+        }
+        return original;
     }
 
     // i'm staring at this code, and i'm questioning.. why are these private?
@@ -70,16 +75,5 @@ public class StairBlockInject extends Block {
 
     private BlockState getModelState() {
         return this.stateSupplier.get();
-    }
-
-    @Unique
-    private void kilt$refreshState() {
-        if (this.base == Blocks.AIR) {
-            this.baseState = this.getModelState();
-
-            if (this.baseState != null && this.baseState.getBlock() != Blocks.AIR) {
-                this.base = this.getModelBlock();
-            }
-        }
     }
 }

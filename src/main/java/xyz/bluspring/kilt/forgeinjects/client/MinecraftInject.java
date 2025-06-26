@@ -1,9 +1,14 @@
 // TRACKED HASH: 8a008dde196be8f110c6df462a387035cbfd879c
 package xyz.bluspring.kilt.forgeinjects.client;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Timer;
@@ -11,20 +16,31 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.main.GameConfig;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.searchtree.SearchRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.CreativeModeTabSearchRegistry;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModLoader;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -33,6 +49,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +73,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
 
     @Mutable
     @Shadow @Final private BlockColors blockColors;
+    @Shadow @Nullable public LocalPlayer player;
     @Unique
     private float realPartialTick;
 
@@ -195,6 +213,47 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         KiltClient.Companion.setForgeGui(this.kilt$getForgeGui());
 
         return gui;
+    }
+
+    @WrapOperation(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
+    private BlockState kilt$checkIsEmptyBlock(ClientLevel instance, BlockPos blockPos, Operation<BlockState> original, @Local BlockPos pos, @Share("has_override") LocalBooleanRef hasOverride, @Share("is_empty") LocalBooleanRef isEmpty) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), LevelReader.class, "isEmptyBlock", BlockPos.class)) {
+            hasOverride.set(true);
+            isEmpty.set(instance.isEmptyBlock(blockPos));
+            return Blocks.AIR.defaultBlockState();
+        }
+        return original.call(instance, blockPos);
+    }
+
+    @WrapOperation(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z"))
+    private boolean kilt$replaceIsAirCheck(BlockState instance, Operation<Boolean> original, @Share("has_override") LocalBooleanRef hasOverride, @Share("is_empty") LocalBooleanRef isEmpty) {
+        if (hasOverride.get()) {
+            return isEmpty.get();
+        }
+        return original.call(instance);
+    }
+
+    @Inject(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/BlockHitResult;getDirection()Lnet/minecraft/core/Direction;"), cancellable = true)
+    private void kilt$onClickInputEvent(boolean leftClick, CallbackInfo ci, @Local BlockHitResult blockHitResult, @Local BlockPos blockPos, @Share("event") LocalRef<InputEvent.InteractionKeyMappingTriggered> eventRef) {
+        var inputEvent = ForgeHooksClient.onClickInput(0, this.options.keyAttack, InteractionHand.MAIN_HAND);
+        eventRef.set(inputEvent);
+        if (inputEvent.isCanceled()) {
+            if (inputEvent.shouldSwingHand()) {
+                this.particleEngine.addBlockHitEffects(blockPos, blockHitResult);
+                this.player.swing(InteractionHand.MAIN_HAND);
+            }
+            ci.cancel();
+        }
+    }
+
+    @ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;continueDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"))
+    private boolean kilt$checkHandSwing(boolean original, @Share("event") LocalRef<InputEvent.InteractionKeyMappingTriggered> eventRef) {
+        return original && eventRef.get().shouldSwingHand();
+    }
+
+    @WrapOperation(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;crack(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V"))
+    private void kilt$useKiltBlockHitEffects(ParticleEngine instance, BlockPos blockPos, Direction direction, Operation<Void> original, @Local BlockHitResult blockHitResult) {
+        instance.kilt$addBlockHitEffects(blockPos, blockHitResult, direction, original);
     }
 
     @Override

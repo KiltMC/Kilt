@@ -9,6 +9,7 @@ import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
@@ -84,8 +85,8 @@ class Kilt : ModInitializer {
             eventBusToArchitectury(event.result)
         }
 
-        InteractionEvent.CLIENT_LEFT_CLICK_AIR.register { player, hand ->
-            ForgeHooks.onEmptyLeftClick(player)
+        PlayerInteractionEvents.LEFT_CLICK_EMPTY.register { event ->
+            ForgeHooks.onEmptyLeftClick(event.player)
         }
 
         CriticalHitEvent.CRITICAL_HIT.register { event ->
