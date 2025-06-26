@@ -132,7 +132,7 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
     private void kilt$useModelDataRenderIfPossible(BlockRenderDispatcher instance, BlockState state, BlockPos pos, BlockAndTintGetter level, PoseStack poseStack, VertexConsumer consumer, Operation<Void> original) {
         var modelData = level.getModelDataManager().getAt(pos);
 
-        if (modelData == ModelData.EMPTY)
+        if (modelData == ModelData.EMPTY || modelData == null)
             original.call(instance, state, pos, level, poseStack, consumer);
         else
             ((BlockRenderDispatcherInjection) instance).renderBreakingTexture(state, pos, level, poseStack, consumer, modelData);

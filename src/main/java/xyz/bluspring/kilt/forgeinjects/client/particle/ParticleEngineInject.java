@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client.particle;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -105,9 +106,17 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
 
     @Override
     public void addBlockHitEffects(BlockPos pos, BlockHitResult target) {
+        kilt$addBlockHitEffects(pos, target, target.getDirection(), args -> {
+            ((ParticleEngine) args[0]).crack((BlockPos) args[1], (Direction) args[2]);
+            return null;
+        });
+    }
+
+    @Override
+    public void kilt$addBlockHitEffects(BlockPos pos, BlockHitResult target, Direction direction, Operation<Void> original) {
         var state = this.level.getBlockState(pos);
 
         if (!IClientBlockExtensions.of(state).addHitEffects(state, this.level, target, (ParticleEngine) (Object) this))
-            this.crack(pos, target.getDirection());
+            original.call(this, pos, direction);
     }
 }

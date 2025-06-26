@@ -1,7 +1,10 @@
 package xyz.bluspring.kilt.forgeinjects.client;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,5 +46,13 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
         if (windowPointer == this.minecraft.getWindow().getWindow()) {
             ForgeHooksClient.onMouseButtonPost(button, action, modifiers);
         }
+    }
+
+    @WrapOperation(method = "method_1602", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseDragged(DDIDD)Z"))
+    private boolean kilt$MouseDragEvents(Screen instance, double mouseX, double mouseY, int button, double dragX, double dragY, Operation<Boolean> original) {
+        if (ForgeHooksClient.onScreenMouseDragPre(instance, mouseX, mouseY, button, dragX, dragY)) return true;
+        if (original.call(instance, mouseX, mouseY, button, dragX, dragY)) return true;
+        ForgeHooksClient.onScreenMouseDragPost(instance, mouseX, mouseY, button, dragX, dragY);
+        return false;
     }
 }

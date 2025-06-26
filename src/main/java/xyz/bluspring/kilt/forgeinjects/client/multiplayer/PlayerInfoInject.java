@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client.multiplayer;
 
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.world.level.GameType;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.ClientPlayerChangeGameTypeEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,10 +17,7 @@ public class PlayerInfoInject {
     @Shadow private GameType gameMode;
 
     @Inject(method = "setGameMode", at = @At("HEAD"))
-    public void kilt$hookGameTypeEvent(GameType gameType, CallbackInfo ci) {
-        if (this.gameMode != gameType) {
-            var event = new ClientPlayerChangeGameTypeEvent((PlayerInfo) (Object) this, this.gameMode, gameType);
-            MinecraftForge.EVENT_BUS.post(event);
-        }
+    public void kilt$hookGameTypeEvent(GameType pGameMode, CallbackInfo ci) {
+        ForgeHooksClient.onClientChangeGameType((PlayerInfo) (Object) this, this.gameMode, pGameMode);
     }
 }
