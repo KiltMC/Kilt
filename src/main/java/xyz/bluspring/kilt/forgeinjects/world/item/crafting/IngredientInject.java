@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -83,9 +84,12 @@ public class IngredientInject implements IngredientInjection {
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/google/gson/JsonElement;isJsonObject()Z", shift = At.Shift.BEFORE), method = "fromJson", cancellable = true)
     private static void kilt$checkForgeRecipeFromJson(JsonElement jsonElement, CallbackInfoReturnable<Ingredient> cir) {
-        var ret = CraftingHelper.getIngredient(jsonElement);
-        if (ret != null)
-            cir.setReturnValue(ret);
+        try {
+            var ret = CraftingHelper.getIngredient(jsonElement);
+            if (ret != null)
+                cir.setReturnValue(ret);
+        } catch (JsonSyntaxException ignored) {
+        }
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/Ingredient;dissolve()V", shift = At.Shift.AFTER), method = "toNetwork", cancellable = true)
