@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -85,6 +86,13 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
     @Shadow protected abstract void onEffectRemoved(MobEffectInstance effectInstance);
 
     @Shadow private boolean effectsDirty;
+    @Shadow protected ItemStack useItem;
+    @Shadow protected int useItemRemaining;
+
+    @Shadow public abstract int getUseItemRemainingTicks();
+
+    @Shadow public abstract InteractionHand getUsedItemHand();
+
     private LazyOptional<?>[] handlers = EntityEquipmentInvWrapper.create((LivingEntity) (Object) this);
 
     @WrapWithCondition(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"))
@@ -349,6 +357,47 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
     public void kilt$useForgeLootTables(DamageSource damageSource, boolean hitByPlayer, CallbackInfo ci, ResourceLocation resourceLocation, LootTable lootTable, LootParams.Builder builder, LootParams lootParams) {
         var ctx = builder.create(LootContextParamSets.ENTITY);
         lootTable.getRandomItems(ctx).forEach(((LivingEntity) (Object) this)::spawnAtLocation);
+    }
+
+    @Inject(method = "updateUsingItem", at = @At("HEAD"))
+    private void kilt$onUseTickEvent(ItemStack usingItem, CallbackInfo ci) {
+        if (!usingItem.isEmpty())
+            this.useItemRemaining = ForgeEventFactory.onItemUseTick((LivingEntity) (Object) this, usingItem, getUseItemRemainingTicks());
+    }
+
+    @WrapWithCondition(method = "updateUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onUseTick(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;I)V"))
+    private boolean kilt$checkUseTick(ItemStack instance, Level level, LivingEntity livingEntity, int count) {
+        return getUseItemRemainingTicks() > 0;
+    }
+
+    @Inject(method = "startUsingItem", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;useItem:Lnet/minecraft/world/item/ItemStack;"))
+    private void kilt$storeLastUsedItem(CallbackInfo ci, @Share("lastUsed") LocalRef<ItemStack> lastUsed) {
+        lastUsed.set(this.useItem);
+    }
+
+    @ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseDuration()I"))
+    private int kilt$onItemUseEvent(int original, @Local ItemStack itemStack, @Cancellable CallbackInfo ci, @Share("lastUsed") LocalRef<ItemStack> lastUsed) {
+        int duration = ForgeEventFactory.onItemUseStart((LivingEntity) (Object) this, itemStack, original);
+        if (duration <= 0) {
+            ci.cancel();
+            this.useItem = lastUsed.get();
+        }
+        return duration;
+    }
+
+    @WrapOperation(method = "completeUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;finishUsingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack kilt$onItemUseFinishEvent(ItemStack instance, Level level, LivingEntity livingEntity, Operation<ItemStack> original) {
+        ItemStack copy = this.useItem.copy();
+        return ForgeEventFactory.onItemUseFinish((LivingEntity) (Object) this, copy, getUseItemRemainingTicks(), original.call(instance, level, livingEntity));
+    }
+
+    @WrapOperation(method = "releaseUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;releaseUsing(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;I)V"))
+    private void kilt$onStopUsingItemEvent(ItemStack instance, Level level, LivingEntity livingEntity, int timeLeft, Operation<Void> original) {
+        if (!ForgeEventFactory.onUseItemStop((LivingEntity) (Object) this, useItem, getUseItemRemainingTicks())) {
+            ItemStack copy = (LivingEntity) (Object) this instanceof Player ? useItem.copy() : null;
+            original.call(instance, level, livingEntity, timeLeft);
+            if (copy != null && useItem.isEmpty()) ForgeEventFactory.onPlayerDestroyItem((Player) (Object) this, copy, getUsedItemHand());
+        }
     }
 
     /*@ModifyReturnValue(method = "createLivingAttributes", at = @At("RETURN"))

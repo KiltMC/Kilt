@@ -212,6 +212,11 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         return (Optional<T>) respawnPos;
     }
 
+    @Inject(method = "causeFallDamage", at = @At(value = "RETURN", ordinal = 0))
+    private void kilt$onPlayerFallEvent(float fallDistance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        ForgeEventFactory.onPlayerFall((Player) (Object) this, fallDistance, fallDistance);
+    }
+
     /*@ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
     private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
         return original
