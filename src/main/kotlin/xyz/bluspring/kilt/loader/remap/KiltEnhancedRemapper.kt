@@ -49,7 +49,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
 
         if (shouldTryRemap && (intermediary.startsWith("field_") || intermediary.startsWith("comp_"))) {
             initDevRemapper()
-            for (info in getClassHierarchy(name)) {
+            for (info in getClassHierarchy(owner)) {
                 val mapped = devRemapper.mapFieldName(KiltRemapper.remapClass(info.name, toIntermediary = true, ignoreWorkaround = true), intermediary, KiltRemapper.remapDescriptor(descriptor, toIntermediary = true))
 
                 if (mapped != intermediary)
@@ -66,7 +66,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
         if (shouldTryRemap && (intermediary.startsWith("method_") || intermediary.startsWith("comp_"))) {
             initDevRemapper()
 
-            for (info in getClassHierarchy(name)) {
+            for (info in getClassHierarchy(owner)) {
                 val mapped = devRemapper.mapMethodName(KiltRemapper.remapClass(info.name, toIntermediary = true, ignoreWorkaround = true), intermediary, KiltRemapper.remapDescriptor(descriptor, toIntermediary = true))
 
                 if (mapped != intermediary)
@@ -88,7 +88,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 break
             }
 
-            currentClass = provider.getClass(currentClass.`super`).orElse(null)
+            currentClass = provider.getClass(currentClass.`super`).orElse(null) ?: break
 
             if (currentClass.name.startsWith("java/lang/") || currentClass.name.startsWith("com/google/")) {
                 break

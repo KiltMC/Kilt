@@ -265,12 +265,12 @@ object MixinRemapper {
     private fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
-            return KiltRemapper.remapClass(value, ignoreWorkaround = true)
+            return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()
         }
 
         // Special case for NEW target in @At, the target becomes a descriptor if there's a constructor reference.
         if (value.startsWith("(") && value.endsWith(";")) {
-            return KiltRemapper.remapDescriptor(value)
+            return KiltRemapper.remapDescriptor(value).breakpoint()
         }
 
         // Usually the format consists of a descriptor at the beginning for the target class.
@@ -320,29 +320,29 @@ object MixinRemapper {
                 val mapped = remapper.mapFieldName(className, member, descriptor)
                 // If we found a target that actually remaps, we can safely assume it works correctly.
                 if (mapped != member)
-                    return "$mappedClassDescriptor$mapped:$mappedDescriptor"
+                    return "$mappedClassDescriptor$mapped:$mappedDescriptor".breakpoint()
             }
 
             for (target in classTargets) {
                 val mapped = remapper.mapFieldName(target, member, descriptor)
                 // If we found a target that actually remaps, we can safely assume it works correctly.
                 if (mapped != member)
-                    return "$mappedClassDescriptor$mapped:$mappedDescriptor"
+                    return "$mappedClassDescriptor$mapped:$mappedDescriptor".breakpoint()
             }
 
             if (classDescriptor.isBlank()) {
                 // Guesswork time! Thankfully, with fields it's much safer for SRG.
                 val mapped = KiltRemapper.srgMappedFields[member]?.second
                 if (mapped != null)
-                    return "$mapped:$mappedDescriptor"
+                    return "$mapped:$mappedDescriptor".breakpoint()
             }
 
             // If not, let's return the member but with remapped descriptors
-            return "$mappedClassDescriptor$member:$mappedDescriptor"
+            return "$mappedClassDescriptor$member:$mappedDescriptor".breakpoint()
         } else if (isMethod) {
             if (member == "<init>" || member == "<clinit>") {
                 // We can safely escape here.
-                return "$mappedClassDescriptor$member$mappedDescriptor"
+                return "$mappedClassDescriptor$member$mappedDescriptor".breakpoint()
             }
 
             // Same with over here, we can safely use both member + descriptor here.
@@ -350,14 +350,14 @@ object MixinRemapper {
                 val mapped = remapper.mapMethodName(className, member, descriptor)
                 // If we found a target that actually remaps, we can safely assume it works correctly.
                 if (mapped != member)
-                    return "$mappedClassDescriptor$mapped$mappedDescriptor"
+                    return "$mappedClassDescriptor$mapped$mappedDescriptor".breakpoint()
             }
 
             for (target in classTargets) {
                 val mapped = remapper.mapMethodName(target, member, descriptor)
                 // If we found a target that actually remaps, we can safely assume it works correctly.
                 if (mapped != member)
-                    return "$mappedClassDescriptor$mapped$mappedDescriptor"
+                    return "$mappedClassDescriptor$mapped$mappedDescriptor".breakpoint()
             }
         }
 
@@ -367,13 +367,13 @@ object MixinRemapper {
         // So, guesswork time. Hopefully this doesn't come up too often, if at all.
         if (descriptor.isBlank()) {
             if (KiltRemapper.srgMappedFields.contains(member)) {
-                return "$mappedClassDescriptor${KiltRemapper.srgMappedFields[member]!!.second}"
+                return "$mappedClassDescriptor${KiltRemapper.srgMappedFields[member]!!.second}".breakpoint()
             }
 
             if (KiltRemapper.srgMappedMethods.contains(member)) {
                 for ((ownerClass, mappedName) in KiltRemapper.srgMappedMethods[member]!!) {
                     if (classTargets.contains(ownerClass))
-                        return "$mappedClassDescriptor$mappedName"
+                        return "$mappedClassDescriptor$mappedName".breakpoint()
                 }
 
                 return KiltRemapper.srgMappedMethods[member]!!.values.first()
@@ -384,25 +384,29 @@ object MixinRemapper {
             for (classTarget in classTargets) {
                 val mappedField = remapper.mapFieldName(classTarget, member, descriptor)
                 if (mappedField != member)
-                    return "L${remapper.map(classTarget)};$mappedField:$mappedDescriptor"
+                    return "L${remapper.map(classTarget)};$mappedField:$mappedDescriptor".breakpoint()
 
                 val mappedMethod = remapper.mapMethodName(classTarget, member, descriptor)
                 if (mappedMethod != member)
-                    return "L${remapper.map(classTarget)};$mappedMethod$mappedDescriptor"
+                    return "L${remapper.map(classTarget)};$mappedMethod$mappedDescriptor".breakpoint()
             }
         } else {
             // I think we can properly remap, just guess I guess.
             val mappedField = remapper.mapFieldName(classDescriptor.removeSurrounding("L", ";"), member, descriptor)
             if (mappedField != member)
-                return "$mappedClassDescriptor$mappedField:$mappedDescriptor"
+                return "$mappedClassDescriptor$mappedField:$mappedDescriptor".breakpoint()
 
             val mappedMethod = remapper.mapMethodName(classDescriptor.removeSurrounding("L", ";"), member, descriptor)
             if (mappedMethod != member)
-                return "$mappedClassDescriptor$mappedMethod$mappedDescriptor"
+                return "$mappedClassDescriptor$mappedMethod$mappedDescriptor".breakpoint()
         }
 
         // if all else fails, we can return this, as the descriptors and class descriptors need to be remapped too.
-        return "$mappedClassDescriptor$member$mappedDescriptor"
+        return "$mappedClassDescriptor$member$mappedDescriptor".breakpoint()
+    }
+
+    private fun String.breakpoint(): String {
+        return this
     }
 
     fun getMixinClassTargets(

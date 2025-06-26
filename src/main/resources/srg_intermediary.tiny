@@ -139,10 +139,13 @@ c	com/mojang/blaze3d/audio/SoundBuffer	net/minecraft/class_4231
 	m	()Ljava/util/OptionalInt;	m_83802_	method_19688
 c	com/mojang/blaze3d/audio/package-info	net/minecraft/class_6180
 c	com/mojang/blaze3d/font/GlyphInfo	net/minecraft/class_379
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
 	m	()F	m_5619_	method_16799
 	m	()F	m_5645_	method_16800
+	m	()F	m_7403_	getAdvance
 	m	(Z)F	m_83827_	method_16798
 c	com/mojang/blaze3d/font/GlyphInfo$SpaceGlyphInfo	net/minecraft/class_379$class_7167
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
 c	com/mojang/blaze3d/font/GlyphProvider	net/minecraft/class_390
 	m	(I)Lcom/mojang/blaze3d/font/GlyphInfo;	m_214022_	method_2040
 	m	()Lit/unimi/dsi/fastutil/ints/IntSet;	m_6990_	method_27442
@@ -194,6 +197,8 @@ c	com/mojang/blaze3d/font/TrueTypeGlyphProvider$Glyph	net/minecraft/class_395$cl
 	f	F	f_83877_	field_2333
 	f	F	f_83878_	field_2332
 	f	I	f_83879_	field_2335
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
+	m	()F	m_7403_	getAdvance
 c	com/mojang/blaze3d/font/TrueTypeGlyphProvider$Glyph$1	net/minecraft/class_395$class_397$1
 	f	Lcom/mojang/blaze3d/font/TrueTypeGlyphProvider$Glyph;	f_231121_	field_37843
 	m	(II)V	m_213958_	method_2030
@@ -228,6 +233,7 @@ c	com/mojang/blaze3d/pipeline/MainTarget$Dimension	net/minecraft/class_6364$clas
 	f	I	f_166169_	field_33734
 	m	(II)Ljava/util/List;	m_166173_	method_36808
 c	com/mojang/blaze3d/pipeline/RenderCall	net/minecraft/class_4573
+	m	()V	m_83909_	execute
 c	com/mojang/blaze3d/pipeline/RenderPipeline	net/minecraft/class_4491
 	f	Z	f_166180_	field_31899
 	f	Z	f_166181_	field_31900
@@ -631,6 +637,7 @@ c	com/mojang/blaze3d/platform/Monitor	net/minecraft/class_313
 	m	()I	m_84953_	method_1621
 	m	()J	m_84954_	method_1622
 c	com/mojang/blaze3d/platform/MonitorCreator	net/minecraft/class_3676
+	m	(J)Lcom/mojang/blaze3d/platform/Monitor;	m_84956_	createMonitor
 c	com/mojang/blaze3d/platform/NativeImage	net/minecraft/class_1011
 	f	Lorg/slf4j/Logger;	f_84958_	field_21684
 	f	Ljava/util/Set;	f_84959_	field_4992
@@ -1032,6 +1039,7 @@ c	com/mojang/blaze3d/systems/RenderSystem$AutoStorageIndexBuffer	com/mojang/blaz
 	m	(I)Z	m_221944_	method_43409
 	m	(I)V	m_221946_	method_43410
 c	com/mojang/blaze3d/systems/RenderSystem$AutoStorageIndexBuffer$IndexGenerator	com/mojang/blaze3d/systems/RenderSystem$class_5590$class_5591
+	m	(Lit/unimi/dsi/fastutil/ints/IntConsumer;I)V	m_157487_	accept
 c	com/mojang/blaze3d/systems/TimerQuery	net/minecraft/class_7168
 	f	I	f_231138_	field_37844
 	m	()Ljava/util/Optional;	m_231140_	method_41719
@@ -1390,7 +1398,9 @@ c	com/mojang/blaze3d/vertex/VertexFormatElement$Usage	net/minecraft/class_296$cl
 	m	(IIIJII)V	m_167042_	method_22667
 	m	()Ljava/lang/String;	m_86097_	method_1392
 c	com/mojang/blaze3d/vertex/VertexFormatElement$Usage$ClearState	net/minecraft/class_296$class_298$class_5938
+	m	(II)V	m_167049_	clearBufferState
 c	com/mojang/blaze3d/vertex/VertexFormatElement$Usage$SetupState	net/minecraft/class_296$class_298$class_4575
+	m	(IIIJII)V	m_167052_	setupBufferState
 c	com/mojang/blaze3d/vertex/VertexMultiConsumer	net/minecraft/class_4720
 	m	()Lcom/mojang/blaze3d/vertex/VertexConsumer;	m_167060_	method_35668
 	m	(Lcom/mojang/blaze3d/vertex/VertexConsumer;)Lcom/mojang/blaze3d/vertex/VertexConsumer;	m_167061_	method_35669
@@ -1435,11 +1445,13 @@ c	com/mojang/blaze3d/vertex/VertexSorting	net/minecraft/class_8251
 	f	Lcom/mojang/blaze3d/vertex/VertexSorting;	f_276633_	field_43361
 	m	([FII)I	m_276941_	method_49910
 	m	(Lorg/joml/Vector3f;)Lcom/mojang/blaze3d/vertex/VertexSorting;	m_276997_	method_49909
+	m	([Lorg/joml/Vector3f;)[I	m_277065_	sort
 	m	(FFF)Lcom/mojang/blaze3d/vertex/VertexSorting;	m_277071_	method_49906
 	m	(Lcom/mojang/blaze3d/vertex/VertexSorting$DistanceFunction;[Lorg/joml/Vector3f;)[I	m_277155_	method_49908
 	m	(Lorg/joml/Vector3f;)F	m_277160_	method_49911
 	m	(Lcom/mojang/blaze3d/vertex/VertexSorting$DistanceFunction;)Lcom/mojang/blaze3d/vertex/VertexSorting;	m_277161_	method_49907
 c	com/mojang/blaze3d/vertex/VertexSorting$DistanceFunction	net/minecraft/class_8251$class_8252
+	m	(Lorg/joml/Vector3f;)F	m_276875_	apply
 c	com/mojang/blaze3d/vertex/package-info	net/minecraft/class_6190
 c	com/mojang/math/Axis	net/minecraft/class_7833
 	f	Lcom/mojang/math/Axis;	f_252392_	field_40715
@@ -1450,6 +1462,8 @@ c	com/mojang/math/Axis	net/minecraft/class_7833
 	f	Lcom/mojang/math/Axis;	f_252529_	field_40714
 	m	(F)Lorg/joml/Quaternionf;	m_252774_	method_46349
 	m	(Lorg/joml/Vector3f;F)Lorg/joml/Quaternionf;	m_252822_	method_46350
+	m	(F)Lorg/joml/Quaternionf;	m_252961_	rotation
+	m	(F)Lorg/joml/Quaternionf;	m_252977_	rotationDegrees
 	m	(F)Lorg/joml/Quaternionf;	m_252978_	method_46355
 	m	(F)Lorg/joml/Quaternionf;	m_253050_	method_46353
 	m	(Lorg/joml/Vector3f;)Lcom/mojang/math/Axis;	m_253057_	method_46356
@@ -1921,6 +1935,7 @@ c	com/mojang/realmsclient/RealmsMainScreen$RealmSelectionList	net/minecraft/clas
 	m	(Lnet/minecraft/client/gui/components/AbstractSelectionList$Entry;)V	m_6987_	method_25313
 	m	(Lcom/mojang/realmsclient/RealmsMainScreen$Entry;)V	m_6987_	method_25024
 c	com/mojang/realmsclient/RealmsMainScreen$RealmsCall	net/minecraft/class_4325$class_8203
+	m	(Lcom/mojang/realmsclient/client/RealmsClient;)Ljava/lang/Object;	m_274420_	request
 c	com/mojang/realmsclient/RealmsMainScreen$ServerEntry	net/minecraft/class_4325$class_4330
 	f	I	f_167228_	field_32054
 	f	Lcom/mojang/realmsclient/RealmsMainScreen;	f_86852_	field_19519
@@ -3822,6 +3837,7 @@ c	net/minecraft/BlockUtil$IntBounds	net/minecraft/class_5459$class_5461
 	f	I	f_124355_	field_25939
 	f	I	f_124356_	field_25940
 c	net/minecraft/CharPredicate	net/minecraft/class_5462
+	m	(C)Z	m_125854_	test
 	m	()Lnet/minecraft/CharPredicate;	m_178283_	method_36123
 	m	(C)Z	m_178284_	method_36124
 	m	(Lnet/minecraft/CharPredicate;)Lnet/minecraft/CharPredicate;	m_178286_	method_36125
@@ -4581,6 +4597,7 @@ c	net/minecraft/advancements/RequirementsStrategy	net/minecraft/class_193
 	f	Lnet/minecraft/advancements/RequirementsStrategy;	f_15979_	field_1257
 	m	(Ljava/util/Collection;)[[Ljava/lang/String;	m_15981_	method_16773
 	m	(Ljava/util/Collection;)[[Ljava/lang/String;	m_15983_	method_16774
+	m	(Ljava/util/Collection;)[[Ljava/lang/String;	m_15985_	createRequirements
 c	net/minecraft/advancements/TreeNodePosition	net/minecraft/class_194
 	f	Lnet/minecraft/advancements/Advancement;	f_16554_	field_1263
 	f	Lnet/minecraft/advancements/TreeNodePosition;	f_16555_	field_1258
@@ -5027,6 +5044,7 @@ c	net/minecraft/advancements/critereon/EntitySubPredicate$1	net/minecraft/class_
 	m	()Lcom/google/gson/JsonObject;	m_213616_	method_22494
 	m	()Lnet/minecraft/advancements/critereon/EntitySubPredicate$Type;	m_213836_	method_43099
 c	net/minecraft/advancements/critereon/EntitySubPredicate$Type	net/minecraft/class_7376$class_7377
+	m	(Lcom/google/gson/JsonObject;)Lnet/minecraft/advancements/critereon/EntitySubPredicate;	m_218845_	deserialize
 c	net/minecraft/advancements/critereon/EntitySubPredicate$Types	net/minecraft/class_7376$class_7378
 	f	Lnet/minecraft/advancements/critereon/EntitySubPredicate$Type;	f_218847_	field_38724
 	f	Lnet/minecraft/advancements/critereon/EntitySubPredicate$Type;	f_218848_	field_38725
@@ -5410,7 +5428,9 @@ c	net/minecraft/advancements/critereon/MinMaxBounds	net/minecraft/class_2096
 	m	()Z	m_55327_	method_9041
 	m	()Lcom/google/gson/JsonElement;	m_55328_	method_9036
 c	net/minecraft/advancements/critereon/MinMaxBounds$BoundsFactory	net/minecraft/class_2096$class_2097
+	m	(Ljava/lang/Number;Ljava/lang/Number;)Lnet/minecraft/advancements/critereon/MinMaxBounds;	m_55329_	create
 c	net/minecraft/advancements/critereon/MinMaxBounds$BoundsFromReaderFactory	net/minecraft/class_2096$class_2098
+	m	(Lcom/mojang/brigadier/StringReader;Ljava/lang/Number;Ljava/lang/Number;)Lnet/minecraft/advancements/critereon/MinMaxBounds;	m_55332_	create
 c	net/minecraft/advancements/critereon/MinMaxBounds$Doubles	net/minecraft/class_2096$class_2099
 	f	Lnet/minecraft/advancements/critereon/MinMaxBounds$Doubles;	f_154779_	field_9705
 	f	Ljava/lang/Double;	f_154780_	field_9703
@@ -6594,6 +6614,7 @@ c	net/minecraft/client/OptionInstance$AltEnum	net/minecraft/class_7172$class_727
 	m	()Lnet/minecraft/client/gui/components/CycleButton$ValueListSupplier;	m_213889_	method_42721
 	m	(Ljava/lang/Object;)Ljava/util/Optional;	m_214064_	method_41758
 c	net/minecraft/client/OptionInstance$CaptionBasedToString	net/minecraft/class_7172$class_7303
+	m	(Lnet/minecraft/network/chat/Component;Ljava/lang/Object;)Lnet/minecraft/network/chat/Component;	m_231580_	toString
 c	net/minecraft/client/OptionInstance$ClampingLazyMaxIntRange	net/minecraft/class_7172$class_7304
 	f	I	f_231583_	comp_593
 	f	Ljava/util/function/IntSupplier;	f_231584_	comp_690
@@ -6616,6 +6637,7 @@ c	net/minecraft/client/OptionInstance$CycleableValueSet	net/minecraft/class_7172
 	m	(Lnet/minecraft/client/OptionInstance$TooltipSupplier;IIILnet/minecraft/client/Options;Ljava/util/function/Consumer;Lnet/minecraft/client/OptionInstance;)Lnet/minecraft/client/gui/components/AbstractWidget;	m_260738_	method_42723
 	m	(Lnet/minecraft/client/OptionInstance;Lnet/minecraft/client/Options;Ljava/util/function/Consumer;Lnet/minecraft/client/gui/components/CycleButton;Ljava/lang/Object;)V	m_260739_	method_42724
 c	net/minecraft/client/OptionInstance$CycleableValueSet$ValueSetter	net/minecraft/class_7172$class_7305$class_7274
+	m	(Lnet/minecraft/client/OptionInstance;Ljava/lang/Object;)V	m_231622_	set
 c	net/minecraft/client/OptionInstance$Enum	net/minecraft/class_7172$class_7173
 	f	Ljava/util/List;	f_231625_	comp_592
 	f	Lcom/mojang/serialization/Codec;	f_231626_	comp_675
@@ -6672,6 +6694,7 @@ c	net/minecraft/client/OptionInstance$SliderableValueSet	net/minecraft/class_717
 	m	(Lnet/minecraft/client/OptionInstance$TooltipSupplier;Lnet/minecraft/client/Options;IIILjava/util/function/Consumer;)Ljava/util/function/Function;	m_213823_	method_41756
 	m	(Lnet/minecraft/client/Options;IIILnet/minecraft/client/OptionInstance$TooltipSupplier;Ljava/util/function/Consumer;Lnet/minecraft/client/OptionInstance;)Lnet/minecraft/client/gui/components/AbstractWidget;	m_260740_	method_42725
 c	net/minecraft/client/OptionInstance$TooltipSupplier	net/minecraft/class_7172$class_7277
+	m	(Ljava/lang/Object;)Lnet/minecraft/client/gui/components/Tooltip;	m_257630_	apply
 c	net/minecraft/client/OptionInstance$UnitDouble	net/minecraft/class_7172$class_7177
 	f	[Lnet/minecraft/client/OptionInstance$UnitDouble;	$VALUES	field_37876
 	f	Lnet/minecraft/client/OptionInstance$UnitDouble;	INSTANCE	field_37875
@@ -7286,6 +7309,7 @@ c	net/minecraft/client/StringSplitter$1	net/minecraft/class_5225$1
 	f	Lnet/minecraft/client/StringSplitter$WidthLimitedCharSink;	f_92436_	field_24217
 	f	Lnet/minecraft/client/StringSplitter;	f_92437_	field_24218
 	f	Lnet/minecraft/client/ComponentCollector;	f_92438_	field_24219
+	m	(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;	m_7164_	accept
 c	net/minecraft/client/StringSplitter$FlatComponents	net/minecraft/class_5225$class_5226
 	f	Ljava/util/List;	f_92445_	field_24220
 	f	Ljava/lang/String;	f_92446_	field_24221
@@ -7304,6 +7328,7 @@ c	net/minecraft/client/StringSplitter$LineBreakFinder	net/minecraft/class_5225$c
 	f	Lnet/minecraft/network/chat/Style;	f_92467_	field_24229
 	f	I	f_92468_	field_24230
 	f	I	f_92469_	field_24231
+	m	(ILnet/minecraft/network/chat/Style;I)Z	m_6411_	accept
 	m	()I	m_92473_	method_27505
 	m	(I)V	m_92474_	method_27506
 	m	(ILnet/minecraft/network/chat/Style;)Z	m_92476_	method_27507
@@ -7315,13 +7340,16 @@ c	net/minecraft/client/StringSplitter$LineComponent	net/minecraft/class_5225$cla
 	m	(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;	m_5651_	method_27657
 	m	(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;	m_7451_	method_27658
 c	net/minecraft/client/StringSplitter$LinePosConsumer	net/minecraft/class_5225$class_5229
+	m	(Lnet/minecraft/network/chat/Style;II)V	m_92499_	accept
 c	net/minecraft/client/StringSplitter$WidthLimitedCharSink	net/minecraft/class_5225$class_5230
 	f	Lnet/minecraft/client/StringSplitter;	f_92503_	field_24234
 	f	F	f_92504_	field_24235
 	f	I	f_92505_	field_24236
+	m	(ILnet/minecraft/network/chat/Style;I)Z	m_6411_	accept
 	m	()I	m_92509_	method_27513
 	m	()V	m_92514_	method_27514
 c	net/minecraft/client/StringSplitter$WidthProvider	net/minecraft/class_5225$class_5231
+	m	(ILnet/minecraft/network/chat/Style;)F	m_92515_	getWidth
 c	net/minecraft/client/Timer	net/minecraft/class_317
 	f	F	f_92518_	field_1970
 	f	F	f_92519_	field_1969
@@ -7365,12 +7393,14 @@ c	net/minecraft/client/animation/AnimationChannel	net/minecraft/class_7179
 	m	()Lnet/minecraft/client/animation/AnimationChannel$Target;	f_232211_	comp_595
 	m	()[Lnet/minecraft/client/animation/Keyframe;	f_232212_	comp_596
 c	net/minecraft/client/animation/AnimationChannel$Interpolation	net/minecraft/class_7179$class_7180
+	m	(Lorg/joml/Vector3f;F[Lnet/minecraft/client/animation/Keyframe;IIF)Lorg/joml/Vector3f;	m_232222_	apply
 c	net/minecraft/client/animation/AnimationChannel$Interpolations	net/minecraft/class_7179$class_7181
 	f	Lnet/minecraft/client/animation/AnimationChannel$Interpolation;	f_232229_	field_37884
 	f	Lnet/minecraft/client/animation/AnimationChannel$Interpolation;	f_232230_	field_37885
 	m	(Lorg/joml/Vector3f;F[Lnet/minecraft/client/animation/Keyframe;IIF)Lorg/joml/Vector3f;	m_232233_	method_41815
 	m	(Lorg/joml/Vector3f;F[Lnet/minecraft/client/animation/Keyframe;IIF)Lorg/joml/Vector3f;	m_252556_	method_41816
 c	net/minecraft/client/animation/AnimationChannel$Target	net/minecraft/class_7179$class_7182
+	m	(Lnet/minecraft/client/model/geom/ModelPart;Lorg/joml/Vector3f;)V	m_232247_	apply
 c	net/minecraft/client/animation/AnimationChannel$Targets	net/minecraft/class_7179$class_7183
 	f	Lnet/minecraft/client/animation/AnimationChannel$Target;	f_232250_	field_37886
 	f	Lnet/minecraft/client/animation/AnimationChannel$Target;	f_232251_	field_37887
@@ -7441,6 +7471,7 @@ c	net/minecraft/client/animation/definitions/WardenAnimation	net/minecraft/class
 c	net/minecraft/client/animation/definitions/package-info	net/minecraft/class_7189
 c	net/minecraft/client/animation/package-info	net/minecraft/class_7190
 c	net/minecraft/client/color/block/BlockColor	net/minecraft/class_322
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;I)I	m_92566_	getColor
 c	net/minecraft/client/color/block/BlockColors	net/minecraft/class_324
 	f	I	f_168640_	field_32163
 	f	Lnet/minecraft/core/IdMapper;	f_92571_	field_1995
@@ -7490,6 +7521,7 @@ c	net/minecraft/client/color/block/BlockTintCache$LatestCacheInfo	net/minecraft/
 	f	Lnet/minecraft/client/color/block/BlockTintCache$CacheData;	f_92667_	field_21524
 c	net/minecraft/client/color/block/package-info	net/minecraft/class_6202
 c	net/minecraft/client/color/item/ItemColor	net/minecraft/class_326
+	m	(Lnet/minecraft/world/item/ItemStack;I)I	m_92671_	getColor
 c	net/minecraft/client/color/item/ItemColors	net/minecraft/class_325
 	f	I	f_168642_	field_32165
 	f	Lnet/minecraft/core/IdMapper;	f_92674_	field_1996
@@ -7579,6 +7611,7 @@ c	net/minecraft/client/gui/Font$StringRenderOutput	net/minecraft/class_327$class
 	f	F	f_92948_	field_24250
 	f	F	f_92949_	field_24251
 	f	Ljava/util/List;	f_92950_	field_24252
+	m	(ILnet/minecraft/network/chat/Style;I)Z	m_6411_	accept
 	m	(IF)F	m_92961_	method_27531
 	m	(Lnet/minecraft/client/gui/font/glyphs/BakedGlyph$Effect;)V	m_92964_	method_27532
 c	net/minecraft/client/gui/Gui	net/minecraft/class_329
@@ -8108,7 +8141,9 @@ c	net/minecraft/client/gui/components/Button$Builder	net/minecraft/class_4185$cl
 	m	()Lnet/minecraft/client/gui/components/Button;	m_253136_	method_46431
 	m	(Lnet/minecraft/client/gui/components/Tooltip;)Lnet/minecraft/client/gui/components/Button$Builder;	m_257505_	method_46436
 c	net/minecraft/client/gui/components/Button$CreateNarration	net/minecraft/class_4185$class_7841
+	m	(Ljava/util/function/Supplier;)Lnet/minecraft/network/chat/MutableComponent;	m_253229_	createNarrationMessage
 c	net/minecraft/client/gui/components/Button$OnPress	net/minecraft/class_4185$class_4241
+	m	(Lnet/minecraft/client/gui/components/Button;)V	m_93750_	onPress
 c	net/minecraft/client/gui/components/ChatComponent	net/minecraft/class_338
 	f	I	f_168843_	field_32180
 	f	I	f_240336_	field_39771
@@ -8327,6 +8362,7 @@ c	net/minecraft/client/gui/components/CycleButton$Builder	net/minecraft/class_56
 	m	(Ljava/util/Collection;)Lnet/minecraft/client/gui/components/CycleButton$Builder;	m_232502_	method_32620
 	m	(Ljava/lang/Object;)Lnet/minecraft/client/gui/components/Tooltip;	m_257070_	method_32625
 c	net/minecraft/client/gui/components/CycleButton$OnValueChange	net/minecraft/class_5676$class_5678
+	m	(Lnet/minecraft/client/gui/components/CycleButton;Ljava/lang/Object;)V	m_168965_	onValueChange
 c	net/minecraft/client/gui/components/CycleButton$ValueListSupplier	net/minecraft/class_5676$class_5680
 	m	()Ljava/util/List;	m_142477_	method_32626
 	m	()Ljava/util/List;	m_142478_	method_32629
@@ -9181,6 +9217,7 @@ c	net/minecraft/client/gui/font/CodepointMap	net/minecraft/class_8532
 	m	(ILjava/lang/Object;)Ljava/lang/Object;	m_284506_	method_51599
 	m	(Lit/unimi/dsi/fastutil/ints/IntOpenHashSet;ILjava/lang/Object;)V	m_284551_	method_51602
 c	net/minecraft/client/gui/font/CodepointMap$Output	net/minecraft/class_8532$class_8533
+	m	(ILjava/lang/Object;)V	m_284511_	accept
 c	net/minecraft/client/gui/font/FontManager	net/minecraft/class_378
 	f	Ljava/lang/String;	f_169089_	field_32226
 	f	Lnet/minecraft/resources/FileToIdConverter;	f_244245_	field_40409
@@ -9410,12 +9447,14 @@ c	net/minecraft/client/gui/font/glyphs/SpecialGlyphs	net/minecraft/class_7191
 	f	Lnet/minecraft/client/gui/font/glyphs/SpecialGlyphs;	MISSING	field_37899
 	f	Lnet/minecraft/client/gui/font/glyphs/SpecialGlyphs;	WHITE	field_37898
 	f	Lcom/mojang/blaze3d/platform/NativeImage;	f_232598_	field_37900
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
 	m	(II)I	m_232605_	method_41833
 	m	(IILnet/minecraft/client/gui/font/glyphs/SpecialGlyphs$PixelProvider;)Lcom/mojang/blaze3d/platform/NativeImage;	m_232608_	method_41834
 	m	(II)I	m_232612_	method_41835
 	m	()Lcom/mojang/blaze3d/platform/NativeImage;	m_232617_	method_41836
 	m	()Lcom/mojang/blaze3d/platform/NativeImage;	m_232618_	method_41837
 	m	()[Lnet/minecraft/client/gui/font/glyphs/SpecialGlyphs;	m_232619_	method_41838
+	m	()F	m_7403_	getAdvance
 c	net/minecraft/client/gui/font/glyphs/SpecialGlyphs$1	net/minecraft/class_7191$1
 	f	Lnet/minecraft/client/gui/font/glyphs/SpecialGlyphs;	f_232624_	field_37902
 	m	(II)V	m_213958_	method_2030
@@ -9424,6 +9463,7 @@ c	net/minecraft/client/gui/font/glyphs/SpecialGlyphs$1	net/minecraft/class_7191$
 	m	()F	m_213963_	method_2035
 	m	()Z	m_213965_	method_2033
 c	net/minecraft/client/gui/font/glyphs/SpecialGlyphs$PixelProvider	net/minecraft/class_7191$class_7192
+	m	(II)I	m_232634_	getColor
 c	net/minecraft/client/gui/font/glyphs/package-info	net/minecraft/class_6209
 c	net/minecraft/client/gui/font/package-info	net/minecraft/class_6210
 c	net/minecraft/client/gui/font/providers/BitmapProvider	net/minecraft/class_386
@@ -9475,6 +9515,8 @@ c	net/minecraft/client/gui/font/providers/BitmapProvider$Glyph	net/minecraft/cla
 	m	()I	f_95368_	comp_608
 	m	()I	f_95369_	comp_609
 	m	()I	f_95370_	comp_610
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
+	m	()F	m_7403_	getAdvance
 c	net/minecraft/client/gui/font/providers/BitmapProvider$Glyph$1	net/minecraft/class_386$class_388$1
 	f	Lnet/minecraft/client/gui/font/providers/BitmapProvider$Glyph;	f_232653_	field_37903
 	m	(II)V	m_213958_	method_2030
@@ -9489,6 +9531,7 @@ c	net/minecraft/client/gui/font/providers/GlyphProviderDefinition	net/minecraft/
 	m	()Lnet/minecraft/client/gui/font/providers/GlyphProviderType;	m_285843_	method_51731
 	m	(Lnet/minecraft/client/gui/font/providers/GlyphProviderType;)Lcom/mojang/serialization/Codec;	m_286025_	method_51757
 c	net/minecraft/client/gui/font/providers/GlyphProviderDefinition$Loader	net/minecraft/class_389$class_8539
+	m	(Lnet/minecraft/server/packs/resources/ResourceManager;)Lcom/mojang/blaze3d/font/GlyphProvider;	m_285964_	load
 c	net/minecraft/client/gui/font/providers/GlyphProviderDefinition$Reference	net/minecraft/class_389$class_8540
 	f	Lnet/minecraft/resources/ResourceLocation;	f_285563_	comp_1504
 	m	()Lnet/minecraft/resources/ResourceLocation;	f_285563_	comp_1504
@@ -9600,9 +9643,11 @@ c	net/minecraft/client/gui/font/providers/UnihexProvider$Glyph	net/minecraft/cla
 	m	()I	f_283848_	comp_1510
 	m	()Lnet/minecraft/client/gui/font/providers/UnihexProvider$LineData;	f_283857_	comp_1508
 	m	()I	f_283887_	comp_1509
+	m	(Ljava/util/function/Function;)Lnet/minecraft/client/gui/font/glyphs/BakedGlyph;	m_213604_	bake
 	m	()I	m_284480_	method_51675
 	m	()F	m_5619_	method_16799
 	m	()F	m_5645_	method_16800
+	m	()F	m_7403_	getAdvance
 c	net/minecraft/client/gui/font/providers/UnihexProvider$Glyph$1	net/minecraft/class_391$class_393$1
 	f	Lnet/minecraft/client/gui/font/providers/UnihexProvider$Glyph;	f_283899_	field_37906
 	m	(II)V	m_213958_	method_2030
@@ -9637,6 +9682,7 @@ c	net/minecraft/client/gui/font/providers/UnihexProvider$OverrideRange	net/minec
 	m	(Lnet/minecraft/client/gui/font/providers/UnihexProvider$OverrideRange;)Lcom/mojang/serialization/DataResult;	m_284184_	method_51681
 	m	(Lnet/minecraft/client/gui/font/providers/UnihexProvider$OverrideRange;)Ljava/lang/String;	m_284308_	method_51682
 c	net/minecraft/client/gui/font/providers/UnihexProvider$ReaderOutput	net/minecraft/class_391$class_8546
+	m	(ILnet/minecraft/client/gui/font/providers/UnihexProvider$LineData;)V	m_284281_	accept
 c	net/minecraft/client/gui/font/providers/UnihexProvider$ShortContents	net/minecraft/class_391$class_8547
 	f	[S	f_283874_	comp_1516
 	m	()[S	f_283874_	comp_1516
@@ -10063,6 +10109,7 @@ c	net/minecraft/client/gui/screens/BackupConfirmScreen	net/minecraft/class_405
 	m	(Lnet/minecraft/client/gui/components/Button;)V	m_95561_	method_19792
 	m	(Lnet/minecraft/client/gui/components/Button;)V	m_95563_	method_19793
 c	net/minecraft/client/gui/screens/BackupConfirmScreen$Listener	net/minecraft/class_405$class_406
+	m	(ZZ)V	m_95565_	proceed
 c	net/minecraft/client/gui/screens/BanNoticeScreen	net/minecraft/class_7588
 	f	Lnet/minecraft/network/chat/Component;	f_238586_	field_39720
 	f	Lnet/minecraft/network/chat/Component;	f_238702_	field_39721
@@ -10484,6 +10531,7 @@ c	net/minecraft/client/gui/screens/MenuScreens	net/minecraft/class_3929
 	m	(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;)V	m_96206_	method_17542
 c	net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor	net/minecraft/class_3929$class_3930
 	m	(Lnet/minecraft/network/chat/Component;Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;I)V	m_96209_	method_17543
+	m	(Lnet/minecraft/world/inventory/AbstractContainerMenu;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/client/gui/screens/Screen;	m_96214_	create
 c	net/minecraft/client/gui/screens/MouseSettingsScreen	net/minecraft/class_4288
 	f	Lnet/minecraft/client/gui/components/OptionsList;	f_96218_	field_19246
 	m	(I)[Lnet/minecraft/client/OptionInstance;	m_232746_	method_21671
@@ -10961,6 +11009,7 @@ c	net/minecraft/client/gui/screens/WinScreen	net/minecraft/class_445
 	m	(Lnet/minecraft/client/gui/GuiGraphics;IIF)V	m_88315_	method_25394
 	m	()V	m_96895_	method_2257
 c	net/minecraft/client/gui/screens/WinScreen$CreditsReader	net/minecraft/class_445$class_6824
+	m	(Ljava/io/Reader;)V	m_232821_	read
 c	net/minecraft/client/gui/screens/achievement/StatsScreen	net/minecraft/class_447
 	f	I	f_169484_	field_32276
 	f	I	f_169485_	field_32277
@@ -13596,6 +13645,7 @@ c	net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen$CategoryRu
 	m	(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V	m_142291_	method_37020
 	m	()Lnet/minecraft/client/gui/narration/NarratableEntry$NarrationPriority;	m_142684_	method_37018
 c	net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen$EntryFactory	net/minecraft/class_5235$class_5238
+	m	(Lnet/minecraft/network/chat/Component;Ljava/util/List;Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Value;)Lnet/minecraft/client/gui/screens/worldselection/EditGameRulesScreen$RuleEntry;	m_101154_	create
 c	net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen$GameRuleEntry	net/minecraft/class_5235$class_5400
 	f	Ljava/util/List;	f_101159_	field_25629
 	f	Ljava/util/List;	f_101160_	field_25630
@@ -13690,6 +13740,7 @@ c	net/minecraft/client/gui/screens/worldselection/PresetEditor	net/minecraft/cla
 	m	(Lnet/minecraft/core/Holder;)Lnet/minecraft/client/gui/screens/worldselection/WorldCreationContext$DimensionsUpdater;	m_232952_	method_41861
 	m	(Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;Lnet/minecraft/client/gui/screens/worldselection/WorldCreationContext;)Lnet/minecraft/client/gui/screens/Screen;	m_232961_	method_41859
 	m	(Lnet/minecraft/world/level/levelgen/flat/FlatLevelGeneratorSettings;)Lnet/minecraft/client/gui/screens/worldselection/WorldCreationContext$DimensionsUpdater;	m_232967_	method_41856
+	m	(Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;Lnet/minecraft/client/gui/screens/worldselection/WorldCreationContext;)Lnet/minecraft/client/gui/screens/Screen;	m_232976_	createEditScreen
 	m	(Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;Lnet/minecraft/client/gui/screens/worldselection/WorldCreationContext;)Lnet/minecraft/client/gui/screens/Screen;	m_254760_	method_41863
 	m	(Lnet/minecraft/world/level/levelgen/flat/FlatLevelGeneratorSettings;Lnet/minecraft/core/RegistryAccess$Frozen;Lnet/minecraft/world/level/levelgen/WorldDimensions;)Lnet/minecraft/world/level/levelgen/WorldDimensions;	m_254761_	method_41857
 	m	(Lnet/minecraft/core/Holder;Lnet/minecraft/core/RegistryAccess$Frozen;Lnet/minecraft/world/level/levelgen/WorldDimensions;)Lnet/minecraft/world/level/levelgen/WorldDimensions;	m_257080_	method_41862
@@ -16661,6 +16712,7 @@ c	net/minecraft/client/multiplayer/chat/report/ChatReportContextBuilder$Collecto
 	m	(Lnet/minecraft/network/chat/PlayerChatMessage;)Z	m_245354_	method_45763
 	m	()Z	m_246153_	method_45762
 c	net/minecraft/client/multiplayer/chat/report/ChatReportContextBuilder$Handler	net/minecraft/class_7757$class_7632
+	m	(ILnet/minecraft/client/multiplayer/chat/LoggedChatMessage$Player;)V	m_247017_	accept
 c	net/minecraft/client/multiplayer/chat/report/ReportEnvironment	net/minecraft/class_7569
 	f	Lnet/minecraft/client/multiplayer/chat/report/ReportEnvironment$Server;	f_238655_	comp_881
 	f	Ljava/lang/String;	f_238774_	comp_880
@@ -16736,6 +16788,7 @@ c	net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$Server
 	m	(I)Lnet/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState;	m_233881_	method_41944
 	m	(Lnet/minecraft/world/level/block/state/BlockState;)V	m_233883_	method_41945
 c	net/minecraft/client/multiplayer/prediction/PredictiveAction	net/minecraft/class_7204
+	m	(I)Lnet/minecraft/network/protocol/Packet;	m_233885_	predict
 c	net/minecraft/client/multiplayer/prediction/package-info	net/minecraft/class_7205
 c	net/minecraft/client/multiplayer/resolver/AddressCheck	net/minecraft/class_6394
 	m	(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Z	m_142408_	method_37099
@@ -16772,6 +16825,7 @@ c	net/minecraft/client/multiplayer/resolver/ServerAddressResolver	net/minecraft/
 	f	Lorg/slf4j/Logger;	f_171874_	field_33743
 	f	Lnet/minecraft/client/multiplayer/resolver/ServerAddressResolver;	f_171875_	field_33744
 	m	(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;	m_171877_	method_36903
+	m	(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;	m_171879_	resolve
 c	net/minecraft/client/multiplayer/resolver/ServerNameResolver	net/minecraft/class_6370
 	f	Lnet/minecraft/client/multiplayer/resolver/ServerNameResolver;	f_171881_	field_33745
 	f	Lnet/minecraft/client/multiplayer/resolver/ServerAddressResolver;	f_171882_	field_33746
@@ -16784,6 +16838,7 @@ c	net/minecraft/client/multiplayer/resolver/ServerRedirectHandler	net/minecraft/
 	m	()Lnet/minecraft/client/multiplayer/resolver/ServerRedirectHandler;	m_171895_	method_36909
 	m	(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;	m_171896_	method_36910
 	m	(Ljavax/naming/directory/DirContext;Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;	m_171898_	method_36911
+	m	(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;	m_171901_	lookupRedirect
 c	net/minecraft/client/multiplayer/resolver/package-info	net/minecraft/class_6372
 c	net/minecraft/client/package-info	net/minecraft/class_6236
 c	net/minecraft/client/particle/AshParticle	net/minecraft/class_4792
@@ -17281,9 +17336,11 @@ c	net/minecraft/client/particle/ParticleEngine$MutableSpriteSet	net/minecraft/cl
 	m	(Lnet/minecraft/util/RandomSource;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	m_213979_	method_18139
 	m	(II)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	m_5819_	method_18138
 c	net/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration	net/minecraft/class_702$class_4091
+	m	(Lnet/minecraft/client/particle/SpriteSet;)Lnet/minecraft/client/particle/ParticleProvider;	m_107419_	create
 c	net/minecraft/client/particle/ParticleProvider	net/minecraft/class_707
 	m	(Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDD)Lnet/minecraft/client/particle/Particle;	m_6966_	method_3090
 c	net/minecraft/client/particle/ParticleProvider$Sprite	net/minecraft/class_707$class_8187
+	m	(Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDD)Lnet/minecraft/client/particle/TextureSheetParticle;	m_272232_	createParticle
 c	net/minecraft/client/particle/ParticleRenderType	net/minecraft/class_3999
 	f	Lnet/minecraft/client/particle/ParticleRenderType;	f_107429_	field_17827
 	f	Lnet/minecraft/client/particle/ParticleRenderType;	f_107430_	field_17828
@@ -18725,6 +18782,7 @@ c	net/minecraft/client/renderer/LightTexture	net/minecraft/class_765
 c	net/minecraft/client/renderer/MultiBufferSource	net/minecraft/class_4597
 	m	(Lcom/mojang/blaze3d/vertex/BufferBuilder;)Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	m_109898_	method_22991
 	m	(Ljava/util/Map;Lcom/mojang/blaze3d/vertex/BufferBuilder;)Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	m_109900_	method_22992
+	m	(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;	m_6299_	getBuffer
 c	net/minecraft/client/renderer/MultiBufferSource$BufferSource	net/minecraft/class_4597$class_4598
 	f	Lcom/mojang/blaze3d/vertex/BufferBuilder;	f_109904_	field_20952
 	f	Ljava/util/Map;	f_109905_	field_20953
@@ -18735,6 +18793,7 @@ c	net/minecraft/client/renderer/MultiBufferSource$BufferSource	net/minecraft/cla
 	m	(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/BufferBuilder;	m_109914_	method_22995
 	m	(Lnet/minecraft/client/renderer/RenderType;)V	m_109916_	method_24213
 	m	()V	m_173043_	method_37104
+	m	(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;	m_6299_	getBuffer
 c	net/minecraft/client/renderer/OutlineBufferSource	net/minecraft/class_4618
 	f	Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	f_109920_	field_21058
 	f	Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	f_109921_	field_21059
@@ -18744,6 +18803,7 @@ c	net/minecraft/client/renderer/OutlineBufferSource	net/minecraft/class_4618
 	f	I	f_109925_	field_21063
 	m	()V	m_109928_	method_23285
 	m	(IIII)V	m_109929_	method_23286
+	m	(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;	m_6299_	getBuffer
 c	net/minecraft/client/renderer/OutlineBufferSource$EntityOutlineGenerator	net/minecraft/class_4618$class_4586
 	f	Lcom/mojang/blaze3d/vertex/VertexConsumer;	f_109936_	field_20897
 	f	D	f_109937_	field_21064
@@ -19888,6 +19948,7 @@ c	net/minecraft/client/renderer/block/model/multipart/AndCondition	net/minecraft
 	m	(Lnet/minecraft/world/level/block/state/StateDefinition;Lnet/minecraft/client/renderer/block/model/multipart/Condition;)Ljava/util/function/Predicate;	m_111914_	method_3508
 	m	(Ljava/util/List;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_111917_	method_3506
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Ljava/util/function/Predicate;)Z	m_173500_	method_3507
+	m	(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;	m_7289_	getPredicate
 c	net/minecraft/client/renderer/block/model/multipart/Condition	net/minecraft/class_815
 	f	Lnet/minecraft/client/renderer/block/model/multipart/Condition;	f_111922_	field_16900
 	f	Lnet/minecraft/client/renderer/block/model/multipart/Condition;	f_111923_	field_16901
@@ -19895,6 +19956,7 @@ c	net/minecraft/client/renderer/block/model/multipart/Condition	net/minecraft/cl
 	m	(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;	m_111931_	method_16808
 	m	(Lnet/minecraft/world/level/block/state/BlockState;)Z	m_173503_	method_16811
 	m	(Lnet/minecraft/world/level/block/state/BlockState;)Z	m_173505_	method_16809
+	m	(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;	m_7289_	getPredicate
 c	net/minecraft/client/renderer/block/model/multipart/KeyValueCondition	net/minecraft/class_818
 	f	Lcom/google/common/base/Splitter;	f_111934_	field_4334
 	f	Ljava/lang/String;	f_111935_	field_4333
@@ -19904,6 +19966,7 @@ c	net/minecraft/client/renderer/block/model/multipart/KeyValueCondition	net/mine
 	m	(Ljava/util/List;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_111952_	method_3524
 	m	(Lnet/minecraft/world/level/block/state/StateDefinition;Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/String;)Ljava/util/function/Predicate;	m_111955_	method_3526
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Ljava/util/function/Predicate;)Z	m_173507_	method_3527
+	m	(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;	m_7289_	getPredicate
 c	net/minecraft/client/renderer/block/model/multipart/MultiPart	net/minecraft/class_816
 	f	Lnet/minecraft/world/level/block/state/StateDefinition;	f_111962_	field_4329
 	f	Ljava/util/List;	f_111963_	field_4330
@@ -19924,6 +19987,7 @@ c	net/minecraft/client/renderer/block/model/multipart/OrCondition	net/minecraft/
 	m	(Lnet/minecraft/world/level/block/state/StateDefinition;Lnet/minecraft/client/renderer/block/model/multipart/Condition;)Ljava/util/function/Predicate;	m_112007_	method_3540
 	m	(Ljava/util/List;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_112010_	method_3538
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Ljava/util/function/Predicate;)Z	m_173511_	method_3539
+	m	(Lnet/minecraft/world/level/block/state/StateDefinition;)Ljava/util/function/Predicate;	m_7289_	getPredicate
 c	net/minecraft/client/renderer/block/model/multipart/Selector	net/minecraft/class_819
 	f	Lnet/minecraft/client/renderer/block/model/multipart/Condition;	f_112015_	field_4335
 	f	Lnet/minecraft/client/renderer/block/model/MultiVariant;	f_112016_	field_4336
@@ -20013,6 +20077,7 @@ c	net/minecraft/client/renderer/blockentity/BlockEntityRenderer	net/minecraft/cl
 	m	(Lnet/minecraft/world/level/block/entity/BlockEntity;)Z	m_5932_	method_3563
 	m	(Lnet/minecraft/world/level/block/entity/BlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V	m_6922_	method_3569
 c	net/minecraft/client/renderer/blockentity/BlockEntityRendererProvider	net/minecraft/class_5614
+	m	(Lnet/minecraft/client/renderer/blockentity/BlockEntityRendererProvider$Context;)Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderer;	m_173570_	create
 c	net/minecraft/client/renderer/blockentity/BlockEntityRendererProvider$Context	net/minecraft/class_5614$class_5615
 	f	Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;	f_173572_	field_27748
 	f	Lnet/minecraft/client/renderer/block/BlockRenderDispatcher;	f_173573_	field_27749
@@ -21191,6 +21256,7 @@ c	net/minecraft/client/renderer/entity/EntityRenderer	net/minecraft/class_897
 	m	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V	m_7649_	method_3926
 	m	(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/world/phys/Vec3;	m_7860_	method_23169
 c	net/minecraft/client/renderer/entity/EntityRendererProvider	net/minecraft/class_5617
+	m	(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;)Lnet/minecraft/client/renderer/entity/EntityRenderer;	m_174009_	create
 c	net/minecraft/client/renderer/entity/EntityRendererProvider$Context	net/minecraft/class_5617$class_5618
 	f	Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;	f_174011_	field_27762
 	f	Lnet/minecraft/client/renderer/entity/ItemRenderer;	f_174012_	field_27763
@@ -22147,7 +22213,9 @@ c	net/minecraft/client/renderer/entity/layers/WardenEmissiveLayer	net/minecraft/
 	m	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V	m_6494_	method_4199
 	m	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/monster/warden/Warden;FFFFFF)V	m_6494_	method_42613
 c	net/minecraft/client/renderer/entity/layers/WardenEmissiveLayer$AlphaFunction	net/minecraft/class_7288$class_7289
+	m	(Lnet/minecraft/world/entity/monster/warden/Warden;FF)F	m_234919_	apply
 c	net/minecraft/client/renderer/entity/layers/WardenEmissiveLayer$DrawSelector	net/minecraft/class_7288$class_7311
+	m	(Lnet/minecraft/client/model/EntityModel;)Ljava/util/List;	m_234923_	getPartsToDraw
 c	net/minecraft/client/renderer/entity/layers/WitchItemLayer	net/minecraft/class_1005
 	m	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V	m_6494_	method_4199
 	m	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V	m_6494_	method_4208
@@ -22184,11 +22252,14 @@ c	net/minecraft/client/renderer/entity/player/PlayerRenderer	net/minecraft/class
 	m	(Lnet/minecraft/client/player/AbstractClientPlayer;F)Lnet/minecraft/world/phys/Vec3;	m_7860_	method_23206
 c	net/minecraft/client/renderer/entity/player/package-info	net/minecraft/class_6259
 c	net/minecraft/client/renderer/item/ClampedItemPropertyFunction	net/minecraft/class_6395
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/entity/LivingEntity;I)F	m_141951_	call
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/entity/LivingEntity;I)F	m_142187_	unclampedCall
 c	net/minecraft/client/renderer/item/CompassItemPropertyFunction	net/minecraft/class_7391
 	f	I	f_234928_	field_38798
 	f	Lnet/minecraft/client/renderer/item/CompassItemPropertyFunction$CompassTarget;	f_234929_	field_38799
 	f	Lnet/minecraft/client/renderer/item/CompassItemPropertyFunction$CompassWobble;	f_234930_	field_24449
 	f	Lnet/minecraft/client/renderer/item/CompassItemPropertyFunction$CompassWobble;	f_234931_	field_24450
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/entity/LivingEntity;I)F	m_142187_	unclampedCall
 	m	(I)I	m_234934_	method_32800
 	m	(IJ)F	m_234936_	method_43212
 	m	(Lnet/minecraft/world/entity/Entity;)D	m_234939_	method_43213
@@ -22198,6 +22269,7 @@ c	net/minecraft/client/renderer/item/CompassItemPropertyFunction	net/minecraft/c
 	m	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/GlobalPos;)Z	m_234951_	method_43217
 	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;ILnet/minecraft/world/entity/Entity;)F	m_234954_	method_43218
 c	net/minecraft/client/renderer/item/CompassItemPropertyFunction$CompassTarget	net/minecraft/class_7391$class_7392
+	m	(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/core/GlobalPos;	m_234964_	getPos
 c	net/minecraft/client/renderer/item/CompassItemPropertyFunction$CompassWobble	net/minecraft/class_7391$class_5171
 	f	D	f_234968_	field_23980
 	f	D	f_234969_	field_23981
@@ -22244,7 +22316,9 @@ c	net/minecraft/client/renderer/item/ItemProperties$1	net/minecraft/class_5272$1
 	f	D	f_117900_	field_7910
 	f	J	f_117901_	field_7913
 	m	(Lnet/minecraft/world/level/Level;D)D	m_117903_	method_7736
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/entity/LivingEntity;I)F	m_142187_	unclampedCall
 c	net/minecraft/client/renderer/item/ItemPropertyFunction	net/minecraft/class_1800
+	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/world/entity/LivingEntity;I)F	m_141951_	call
 c	net/minecraft/client/renderer/item/package-info	net/minecraft/class_6260
 c	net/minecraft/client/renderer/package-info	net/minecraft/class_6261
 c	net/minecraft/client/renderer/texture/AbstractTexture	net/minecraft/class_1044
@@ -22489,6 +22563,7 @@ c	net/minecraft/client/renderer/texture/Stitcher$Region	net/minecraft/class_1055
 	m	()I	m_118226_	method_4567
 	m	(Lnet/minecraft/client/renderer/texture/Stitcher$SpriteLoader;)V	m_246763_	method_4568
 c	net/minecraft/client/renderer/texture/Stitcher$SpriteLoader	net/minecraft/class_1055$class_4726
+	m	(Lnet/minecraft/client/renderer/texture/Stitcher$Entry;II)V	m_118228_	load
 c	net/minecraft/client/renderer/texture/StitcherException	net/minecraft/class_1054
 	f	Ljava/util/Collection;	f_118254_	field_20311
 	m	()Ljava/util/Collection;	m_118258_	method_21687
@@ -22831,6 +22906,7 @@ c	net/minecraft/client/resources/SkinManager$1	net/minecraft/class_1071$1
 c	net/minecraft/client/resources/SkinManager$2	net/minecraft/class_1071$2
 	f	[I	f_242484_	field_39908
 c	net/minecraft/client/resources/SkinManager$SkinTextureCallback	net/minecraft/class_1071$class_1072
+	m	(Lcom/mojang/authlib/minecraft/MinecraftProfileTexture$Type;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/authlib/minecraft/MinecraftProfileTexture;)V	m_118856_	onSkinTextureAvailable
 c	net/minecraft/client/resources/SplashManager	net/minecraft/class_4008
 	f	Lnet/minecraft/resources/ResourceLocation;	f_118860_	field_17904
 	f	Lnet/minecraft/util/RandomSource;	f_118861_	field_17905
@@ -22915,6 +22991,7 @@ c	net/minecraft/client/resources/metadata/animation/AnimationMetadataSection	net
 c	net/minecraft/client/resources/metadata/animation/AnimationMetadataSection$1	net/minecraft/class_1079$1
 	m	(II)Lnet/minecraft/client/resources/metadata/animation/FrameSize;	m_245821_	method_24143
 c	net/minecraft/client/resources/metadata/animation/AnimationMetadataSection$FrameOutput	net/minecraft/class_1079$class_5792
+	m	(II)V	m_174863_	accept
 c	net/minecraft/client/resources/metadata/animation/AnimationMetadataSectionSerializer	net/minecraft/class_1081
 	m	(ILcom/google/gson/JsonElement;)Lnet/minecraft/client/resources/metadata/animation/AnimationFrame;	m_119058_	method_4693
 	m	(Lcom/google/gson/JsonObject;)Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;	m_6322_	method_4692
@@ -23539,6 +23616,7 @@ c	net/minecraft/client/searchtree/PlainTextSearchTree	net/minecraft/class_7454
 	m	(Lnet/minecraft/client/searchtree/SuffixArray;Ljava/lang/Object;Ljava/lang/String;)V	m_235191_	method_43794
 	m	(Ljava/lang/String;)Ljava/util/List;	m_235195_	method_43795
 	m	(Ljava/util/List;Ljava/util/function/Function;)Lnet/minecraft/client/searchtree/PlainTextSearchTree;	m_235197_	method_43796
+	m	(Ljava/lang/String;)Ljava/util/List;	m_235200_	search
 c	net/minecraft/client/searchtree/RefreshableSearchTree	net/minecraft/class_1123
 	m	()V	m_214078_	method_4799
 	m	(Ljava/lang/String;)Ljava/util/List;	m_235202_	method_43797
@@ -23707,6 +23785,7 @@ c	net/minecraft/client/sounds/LoopingAudioStream	net/minecraft/class_4856
 	m	()Ljavax/sound/sampled/AudioFormat;	m_6206_	method_19719
 	m	(I)Ljava/nio/ByteBuffer;	m_7118_	method_19720
 c	net/minecraft/client/sounds/LoopingAudioStream$AudioStreamProvider	net/minecraft/class_4856$class_4857
+	m	(Ljava/io/InputStream;)Lnet/minecraft/client/sounds/AudioStream;	m_120169_	create
 c	net/minecraft/client/sounds/LoopingAudioStream$NoCloseBuffer	net/minecraft/class_4856$class_4858
 c	net/minecraft/client/sounds/MusicManager	net/minecraft/class_1142
 	f	Lnet/minecraft/util/RandomSource;	f_120177_	field_5571
@@ -23930,10 +24009,13 @@ c	net/minecraft/client/telemetry/TelemetryEventLog	net/minecraft/class_7963
 	m	()V	m_261095_	method_47715
 	m	(Lnet/minecraft/client/telemetry/TelemetryEventInstance;)V	m_261271_	method_47714
 c	net/minecraft/client/telemetry/TelemetryEventLogger	net/minecraft/class_7964
+	m	(Lnet/minecraft/client/telemetry/TelemetryEventInstance;)V	m_260877_	log
 c	net/minecraft/client/telemetry/TelemetryEventSender	net/minecraft/class_7965
 	f	Lnet/minecraft/client/telemetry/TelemetryEventSender;	f_260501_	field_41434
 	m	(Lnet/minecraft/client/telemetry/TelemetryEventType;Ljava/util/function/Consumer;)V	m_260869_	method_47717
+	m	(Lnet/minecraft/client/telemetry/TelemetryEventType;Ljava/util/function/Consumer;)V	m_260919_	send
 	m	(Ljava/util/function/Consumer;Lnet/minecraft/client/telemetry/TelemetryEventType;Ljava/util/function/Consumer;)V	m_261129_	method_47718
+	m	(Ljava/util/function/Consumer;)Lnet/minecraft/client/telemetry/TelemetryEventSender;	m_261189_	decorate
 	m	(Ljava/util/function/Consumer;Ljava/util/function/Consumer;Lnet/minecraft/client/telemetry/TelemetryPropertyMap$Builder;)V	m_261277_	method_47719
 c	net/minecraft/client/telemetry/TelemetryEventType	net/minecraft/class_7966
 	f	Ljava/util/List;	f_260446_	field_41441
@@ -24044,6 +24126,7 @@ c	net/minecraft/client/telemetry/TelemetryProperty	net/minecraft/class_7969
 	m	(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/client/telemetry/TelemetryProperty;	m_285885_	method_51799
 	m	(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/client/telemetry/TelemetryProperty;	m_286063_	method_51798
 c	net/minecraft/client/telemetry/TelemetryProperty$Exporter	net/minecraft/class_7969$class_7970
+	m	(Lcom/mojang/authlib/minecraft/TelemetryPropertyContainer;Ljava/lang/String;Ljava/lang/Object;)V	m_261109_	apply
 c	net/minecraft/client/telemetry/TelemetryProperty$GameMode	net/minecraft/class_7969$class_7971
 	f	[Lnet/minecraft/client/telemetry/TelemetryProperty$GameMode;	$VALUES	field_41489
 	f	Lnet/minecraft/client/telemetry/TelemetryProperty$GameMode;	ADVENTURE	field_41483
@@ -24549,6 +24632,7 @@ c	net/minecraft/commands/Commands$CommandSelection	net/minecraft/class_2170$clas
 	f	Z	f_82145_	field_25423
 	m	()[Lnet/minecraft/commands/Commands$CommandSelection;	m_165687_	method_36791
 c	net/minecraft/commands/Commands$ParseFunction	net/minecraft/class_2170$class_2171
+	m	(Lcom/mojang/brigadier/StringReader;)V	m_82160_	parse
 c	net/minecraft/commands/SharedSuggestionProvider	net/minecraft/class_2172
 	m	(Ljava/lang/Iterable;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/util/concurrent/CompletableFuture;	m_165916_	method_35510
 	m	(Ljava/util/stream/Stream;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;	m_205106_	method_40182
@@ -24629,6 +24713,7 @@ c	net/minecraft/commands/arguments/ArgumentSignatures$Entry	net/minecraft/class_
 	m	()Ljava/lang/String;	f_240910_	comp_913
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)V	m_241062_	method_44800
 c	net/minecraft/commands/arguments/ArgumentSignatures$Signer	net/minecraft/class_7450$class_7600
+	m	(Ljava/lang/String;)Lnet/minecraft/network/chat/MessageSignature;	m_241068_	sign
 c	net/minecraft/commands/arguments/ColorArgument	net/minecraft/class_2177
 	f	Lcom/mojang/brigadier/exceptions/DynamicCommandExceptionType;	f_85459_	field_9840
 	f	Ljava/util/Collection;	f_85460_	field_9839
@@ -24734,8 +24819,10 @@ c	net/minecraft/commands/arguments/GameProfileArgument	net/minecraft/class_2191
 	m	(Ljava/lang/String;Lnet/minecraft/commands/CommandSourceStack;)Ljava/util/Collection;	m_94593_	method_9328
 	m	(Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/commands/arguments/GameProfileArgument$Result;	parse	method_9331
 c	net/minecraft/commands/arguments/GameProfileArgument$Result	net/minecraft/class_2191$class_2192
+	m	(Lnet/minecraft/commands/CommandSourceStack;)Ljava/util/Collection;	m_6474_	getNames
 c	net/minecraft/commands/arguments/GameProfileArgument$SelectorResult	net/minecraft/class_2191$class_2193
 	f	Lnet/minecraft/commands/arguments/selector/EntitySelector;	f_94603_	field_9870
+	m	(Lnet/minecraft/commands/CommandSourceStack;)Ljava/util/Collection;	m_6474_	getNames
 c	net/minecraft/commands/arguments/HeightmapTypeArgument	net/minecraft/class_8199
 	f	Lcom/mojang/serialization/Codec;	f_273851_	field_42994
 	m	(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/world/level/levelgen/Heightmap$Types;	m_274370_	method_49544
@@ -24913,7 +25000,10 @@ c	net/minecraft/commands/arguments/OperationArgument	net/minecraft/class_2218
 	m	(II)I	m_263893_	method_9411
 	m	(Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/commands/arguments/OperationArgument$Operation;	parse	method_9412
 c	net/minecraft/commands/arguments/OperationArgument$Operation	net/minecraft/class_2218$class_2219
+	m	(Lnet/minecraft/world/scores/Score;Lnet/minecraft/world/scores/Score;)V	m_6407_	apply
 c	net/minecraft/commands/arguments/OperationArgument$SimpleOperation	net/minecraft/class_2218$class_2220
+	m	(II)I	m_103308_	apply
+	m	(Lnet/minecraft/world/scores/Score;Lnet/minecraft/world/scores/Score;)V	m_6407_	apply
 c	net/minecraft/commands/arguments/ParticleArgument	net/minecraft/class_2223
 	f	Lcom/mojang/brigadier/exceptions/DynamicCommandExceptionType;	f_103927_	field_9936
 	f	Ljava/util/Collection;	f_103928_	field_9935
@@ -25147,8 +25237,10 @@ c	net/minecraft/commands/arguments/ScoreHolderArgument$Info$Template	net/minecra
 	m	(Lnet/minecraft/commands/CommandBuildContext;)Lcom/mojang/brigadier/arguments/ArgumentType;	m_213879_	method_41730
 	m	(Lnet/minecraft/commands/CommandBuildContext;)Lnet/minecraft/commands/arguments/ScoreHolderArgument;	m_213879_	method_41915
 c	net/minecraft/commands/arguments/ScoreHolderArgument$Result	net/minecraft/class_2233$class_2234
+	m	(Lnet/minecraft/commands/CommandSourceStack;Ljava/util/function/Supplier;)Ljava/util/Collection;	m_6582_	getNames
 c	net/minecraft/commands/arguments/ScoreHolderArgument$SelectorResult	net/minecraft/class_2233$class_2235
 	f	Lnet/minecraft/commands/arguments/selector/EntitySelector;	f_108254_	field_9952
+	m	(Lnet/minecraft/commands/CommandSourceStack;Ljava/util/function/Supplier;)Ljava/util/Collection;	m_6582_	getNames
 c	net/minecraft/commands/arguments/ScoreboardSlotArgument	net/minecraft/class_2239
 	f	Lcom/mojang/brigadier/exceptions/DynamicCommandExceptionType;	f_109192_	field_9954
 	f	Ljava/util/Collection;	f_109193_	field_9953
@@ -25797,6 +25889,7 @@ c	net/minecraft/commands/arguments/selector/options/EntitySelectorOptions	net/mi
 	m	(Lnet/minecraft/commands/arguments/selector/EntitySelectorParser;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;Ljava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;	m_257090_	method_9921
 	m	(Lnet/minecraft/resources/ResourceLocation;ZLnet/minecraft/world/entity/Entity;)Z	m_287024_	method_22823
 c	net/minecraft/commands/arguments/selector/options/EntitySelectorOptions$Modifier	net/minecraft/class_2306$class_2307
+	m	(Lnet/minecraft/commands/arguments/selector/EntitySelectorParser;)V	m_121563_	handle
 c	net/minecraft/commands/arguments/selector/options/EntitySelectorOptions$Option	net/minecraft/class_2306$class_2308
 	f	Lnet/minecraft/commands/arguments/selector/options/EntitySelectorOptions$Modifier;	f_121565_	comp_1063
 	f	Lnet/minecraft/network/chat/Component;	f_121567_	comp_1065
@@ -26907,6 +27000,7 @@ c	net/minecraft/core/RegistrySetBuilder$RegisteredValue	net/minecraft/class_7877
 	m	()Lcom/mojang/serialization/Lifecycle;	f_254641_	comp_1141
 	m	()Ljava/lang/Object;	f_254685_	comp_1140
 c	net/minecraft/core/RegistrySetBuilder$RegistryBootstrap	net/minecraft/class_7877$class_7882
+	m	(Lnet/minecraft/data/worldgen/BootstapContext;)V	m_254966_	run
 c	net/minecraft/core/RegistrySetBuilder$RegistryContents	net/minecraft/class_7877$class_7883
 	f	Ljava/util/Map;	f_254715_	comp_1143
 	f	Lcom/mojang/serialization/Lifecycle;	f_271144_	comp_1306
@@ -27164,6 +27258,7 @@ c	net/minecraft/core/cauldron/CauldronInteraction	net/minecraft/class_5620
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175689_	method_32698
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175696_	method_32218
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175703_	method_32219
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175710_	interact
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175717_	method_32220
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175724_	method_32221
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	m_175731_	method_32222
@@ -27185,6 +27280,7 @@ c	net/minecraft/core/dispenser/BoatDispenseItemBehavior	net/minecraft/class_2967
 c	net/minecraft/core/dispenser/DefaultDispenseItemBehavior	net/minecraft/class_2347
 	m	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;ILnet/minecraft/core/Direction;Lnet/minecraft/core/Position;)V	m_123378_	method_10134
 	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/core/Direction;)V	m_123387_	method_10133
+	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_6115_	dispense
 	m	(Lnet/minecraft/core/BlockSource;)V	m_6823_	method_10136
 	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_7498_	method_10135
 c	net/minecraft/core/dispenser/DispenseItemBehavior	net/minecraft/class_2357
@@ -27193,6 +27289,7 @@ c	net/minecraft/core/dispenser/DispenseItemBehavior	net/minecraft/class_2357
 	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/Direction;)V	m_123395_	method_27042
 	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_123399_	method_16812
 	m	()V	m_123402_	method_18346
+	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_6115_	dispense
 c	net/minecraft/core/dispenser/DispenseItemBehavior$1	net/minecraft/class_2357$1
 	m	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/Position;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/Projectile;	m_6895_	method_12844
 c	net/minecraft/core/dispenser/DispenseItemBehavior$10	net/minecraft/class_2357$2
@@ -27260,6 +27357,7 @@ c	net/minecraft/core/dispenser/DispenseItemBehavior$6	net/minecraft/class_2357$2
 	m	()F	m_7101_	method_12845
 	m	()F	m_7104_	method_12846
 c	net/minecraft/core/dispenser/DispenseItemBehavior$7	net/minecraft/class_2357$25
+	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_6115_	dispense
 c	net/minecraft/core/dispenser/DispenseItemBehavior$7$1	net/minecraft/class_2357$25$1
 	f	Lnet/minecraft/core/dispenser/DispenseItemBehavior$7;	f_123493_	field_13369
 	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/projectile/ThrownPotion;)V	m_123497_	method_17203
@@ -27267,6 +27365,7 @@ c	net/minecraft/core/dispenser/DispenseItemBehavior$7$1	net/minecraft/class_2357
 	m	()F	m_7101_	method_12845
 	m	()F	m_7104_	method_12846
 c	net/minecraft/core/dispenser/DispenseItemBehavior$8	net/minecraft/class_2357$26
+	m	(Lnet/minecraft/core/BlockSource;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;	m_6115_	dispense
 c	net/minecraft/core/dispenser/DispenseItemBehavior$8$1	net/minecraft/class_2357$26$1
 	f	Lnet/minecraft/core/dispenser/DispenseItemBehavior$8;	f_123509_	field_13366
 	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/projectile/ThrownPotion;)V	m_123513_	method_17202
@@ -27693,6 +27792,7 @@ c	net/minecraft/core/registries/BuiltInRegistries	net/minecraft/class_7923
 	m	(Lnet/minecraft/core/Registry;)Lnet/minecraft/world/level/levelgen/feature/treedecorators/TreeDecoratorType;	m_258095_	method_47495
 	m	(Lnet/minecraft/core/Registry;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/RuleBlockEntityModifierType;	m_276709_	method_49927
 c	net/minecraft/core/registries/BuiltInRegistries$RegistryBootstrap	net/minecraft/class_7923$class_6889
+	m	(Lnet/minecraft/core/Registry;)Ljava/lang/Object;	m_257957_	run
 c	net/minecraft/core/registries/Registries	net/minecraft/class_7924
 	f	Lnet/minecraft/resources/ResourceKey;	f_256720_	field_41268
 	f	Lnet/minecraft/resources/ResourceKey;	f_256723_	field_41220
@@ -27951,6 +28051,7 @@ c	net/minecraft/data/DataProvider	net/minecraft/class_2405
 	m	(Lnet/minecraft/data/CachedOutput;Lcom/google/gson/JsonElement;Ljava/nio/file/Path;)Ljava/util/concurrent/CompletableFuture;	m_253162_	method_10320
 	m	()Ljava/lang/String;	m_6055_	method_10321
 c	net/minecraft/data/DataProvider$Factory	net/minecraft/class_2405$class_7857
+	m	(Lnet/minecraft/data/PackOutput;)Lnet/minecraft/data/DataProvider;	m_253034_	create
 c	net/minecraft/data/HashCache	net/minecraft/class_2408
 	f	Lorg/slf4j/Logger;	f_123926_	field_11287
 	f	Ljava/lang/String;	f_236078_	field_38912
@@ -27999,6 +28100,7 @@ c	net/minecraft/data/HashCache$ProviderCacheBuilder	net/minecraft/class_2408$cla
 	m	(Ljava/nio/file/Path;Lcom/google/common/hash/HashCode;)V	m_252796_	method_46574
 	m	()Lnet/minecraft/data/HashCache$ProviderCache;	m_252979_	method_46573
 c	net/minecraft/data/HashCache$UpdateFunction	net/minecraft/class_2408$class_7859
+	m	(Lnet/minecraft/data/CachedOutput;)Ljava/util/concurrent/CompletableFuture;	m_252999_	update
 c	net/minecraft/data/HashCache$UpdateResult	net/minecraft/class_2408$class_7860
 	f	Ljava/lang/String;	f_252422_	comp_1124
 	f	I	f_252492_	comp_1126
@@ -28229,6 +28331,7 @@ c	net/minecraft/data/loot/LootTableProvider	net/minecraft/class_2438
 c	net/minecraft/data/loot/LootTableProvider$1	net/minecraft/class_2438$1
 	f	Ljava/util/Map;	f_278445_	field_44579
 	f	Lnet/minecraft/data/loot/LootTableProvider;	f_278446_	field_44580
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataId;)Ljava/lang/Object;	m_278667_	getElement
 c	net/minecraft/data/loot/LootTableProvider$SubProviderEntry	net/minecraft/class_2438$class_7790
 	f	Ljava/util/function/Supplier;	f_243941_	comp_1068
 	f	Lnet/minecraft/world/level/storage/loot/parameters/LootContextParamSet;	f_244144_	comp_1069
@@ -28824,6 +28927,7 @@ c	net/minecraft/data/models/BlockModelGenerators$BlockFamilyProvider	net/minecra
 	m	(Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/data/models/BlockModelGenerators$BlockFamilyProvider;	m_245757_	method_46195
 	m	(Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/data/models/BlockModelGenerators$BlockFamilyProvider;	m_246414_	method_46194
 c	net/minecraft/data/models/BlockModelGenerators$BlockStateGeneratorSupplier	net/minecraft/class_4910$class_5879
+	m	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/data/models/model/TextureMapping;Ljava/util/function/BiConsumer;)Lnet/minecraft/data/models/blockstates/BlockStateGenerator;	m_176277_	create
 c	net/minecraft/data/models/BlockModelGenerators$BookSlotModelCacheKey	net/minecraft/class_4910$class_7987
 	f	Ljava/lang/String;	f_260626_	comp_1176
 	f	Lnet/minecraft/data/models/model/ModelTemplate;	f_260721_	comp_1175
@@ -29046,6 +29150,7 @@ c	net/minecraft/data/models/blockstates/PropertyDispatch$PentaFunction	net/minec
 c	net/minecraft/data/models/blockstates/PropertyDispatch$QuadFunction	net/minecraft/class_4926$class_6291
 	m	(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;	m_176446_	method_35906
 c	net/minecraft/data/models/blockstates/PropertyDispatch$TriFunction	net/minecraft/class_4926$class_4932
+	m	(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;	m_125475_	apply
 c	net/minecraft/data/models/blockstates/Selector	net/minecraft/class_4934
 	f	Lnet/minecraft/data/models/blockstates/Selector;	f_125479_	field_22881
 	f	Ljava/util/Comparator;	f_125480_	field_22882
@@ -29119,6 +29224,7 @@ c	net/minecraft/data/models/model/ModelTemplate	net/minecraft/class_4942
 	m	(Lnet/minecraft/resources/ResourceLocation;Ljava/util/Map;)Lcom/google/gson/JsonObject;	m_266532_	method_48524
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/data/models/model/TextureMapping;Ljava/util/function/BiConsumer;Lnet/minecraft/data/models/model/ModelTemplate$JsonFactory;)Lnet/minecraft/resources/ResourceLocation;	m_266561_	method_48525
 c	net/minecraft/data/models/model/ModelTemplate$JsonFactory	net/minecraft/class_4942$class_8073
+	m	(Lnet/minecraft/resources/ResourceLocation;Ljava/util/Map;)Lcom/google/gson/JsonObject;	m_266264_	create
 c	net/minecraft/data/models/model/ModelTemplates	net/minecraft/class_4943
 	f	Lnet/minecraft/data/models/model/ModelTemplate;	f_125621_	field_22996
 	f	Lnet/minecraft/data/models/model/ModelTemplate;	f_125622_	field_22904
@@ -29430,6 +29536,7 @@ c	net/minecraft/data/models/model/TexturedModel$Provider	net/minecraft/class_494
 	m	(Lnet/minecraft/world/level/block/Block;Ljava/util/function/BiConsumer;)Lnet/minecraft/resources/ResourceLocation;	m_125956_	method_25923
 	m	(Ljava/util/function/Consumer;)Lnet/minecraft/data/models/model/TexturedModel$Provider;	m_125959_	method_35912
 	m	(Ljava/util/function/Consumer;Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/data/models/model/TexturedModel;	m_125961_	method_35913
+	m	(Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/data/models/model/TexturedModel;	m_125964_	get
 c	net/minecraft/data/models/model/package-info	net/minecraft/class_6293
 c	net/minecraft/data/models/package-info	net/minecraft/class_6294
 c	net/minecraft/data/package-info	net/minecraft/class_6295
@@ -29979,7 +30086,9 @@ c	net/minecraft/data/tags/TagsProvider$TagAppender	net/minecraft/class_2474$clas
 	m	([Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/data/tags/TagsProvider$TagAppender;	m_211101_	method_40565
 	m	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/data/tags/TagsProvider$TagAppender;	m_255204_	method_46835
 c	net/minecraft/data/tags/TagsProvider$TagLookup	net/minecraft/class_2474$class_8211
+	m	(Lnet/minecraft/tags/TagKey;)Z	m_274455_	contains
 	m	(Lnet/minecraft/tags/TagKey;)Ljava/util/Optional;	m_274467_	method_49664
+	m	()Lnet/minecraft/data/tags/TagsProvider$TagLookup;	m_274566_	empty
 c	net/minecraft/data/tags/VanillaBlockTagsProvider	net/minecraft/class_2466
 	m	(Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/resources/ResourceKey;	m_255382_	method_46837
 	m	(Lnet/minecraft/world/level/block/Block;)Z	m_283987_	method_51274
@@ -32699,8 +32808,10 @@ c	net/minecraft/network/FriendlyByteBuf$1	net/minecraft/class_2540$1
 	f	[I	f_263134_	field_41713
 c	net/minecraft/network/FriendlyByteBuf$Reader	net/minecraft/class_2540$class_7461
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)Ljava/util/Optional;	m_236877_	method_43828
+	m	()Lnet/minecraft/network/FriendlyByteBuf$Reader;	m_236879_	asOptional
 c	net/minecraft/network/FriendlyByteBuf$Writer	net/minecraft/class_2540$class_7462
 	m	(Lnet/minecraft/network/FriendlyByteBuf;Ljava/util/Optional;)V	m_236880_	method_43829
+	m	()Lnet/minecraft/network/FriendlyByteBuf$Writer;	m_236883_	asOptional
 c	net/minecraft/network/PacketBundlePacker	net/minecraft/class_8035
 	f	Lnet/minecraft/network/protocol/BundlerInfo;	f_263732_	field_41870
 	f	Lnet/minecraft/network/protocol/PacketFlow;	f_263798_	field_41871
@@ -32748,6 +32859,7 @@ c	net/minecraft/network/Varint21LengthFieldPrepender	net/minecraft/class_2552
 c	net/minecraft/network/chat/ChatDecorator	net/minecraft/class_7492
 	f	Lnet/minecraft/network/chat/ChatDecorator;	f_236947_	field_39384
 	m	(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/Component;)Ljava/util/concurrent/CompletableFuture;	m_236949_	method_44303
+	m	(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/Component;)Ljava/util/concurrent/CompletableFuture;	m_236961_	decorate
 c	net/minecraft/network/chat/ChatType	net/minecraft/class_2556
 	f	Lnet/minecraft/resources/ResourceKey;	f_130598_	field_11737
 	f	Lcom/mojang/serialization/Codec;	f_237005_	field_39227
@@ -32820,6 +32932,7 @@ c	net/minecraft/network/chat/ChatTypeDecoration$Parameter	net/minecraft/class_74
 	m	(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/ChatType$Bound;)Lnet/minecraft/network/chat/Component;	m_240974_	method_43837
 	m	()Ljava/lang/String;	m_7912_	method_15434
 c	net/minecraft/network/chat/ChatTypeDecoration$Parameter$Selector	net/minecraft/class_7463$class_7464$class_7465
+	m	(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/ChatType$Bound;)Lnet/minecraft/network/chat/Component;	m_239619_	select
 c	net/minecraft/network/chat/ClickEvent	net/minecraft/class_2558
 	f	Lnet/minecraft/network/chat/ClickEvent$Action;	f_130617_	field_11741
 	f	Ljava/lang/String;	f_130618_	field_11740
@@ -33009,7 +33122,9 @@ c	net/minecraft/network/chat/FormattedText$4	net/minecraft/class_5348$4
 	m	(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;	m_5651_	method_27657
 	m	(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;	m_7451_	method_27658
 c	net/minecraft/network/chat/FormattedText$ContentConsumer	net/minecraft/class_5348$class_5245
+	m	(Ljava/lang/String;)Ljava/util/Optional;	m_130809_	accept
 c	net/minecraft/network/chat/FormattedText$StyledContentConsumer	net/minecraft/class_5348$class_5246
+	m	(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;	m_7164_	accept
 c	net/minecraft/network/chat/HoverEvent	net/minecraft/class_2568
 	f	Lorg/slf4j/Logger;	f_130813_	field_24341
 	f	Lnet/minecraft/network/chat/HoverEvent$Action;	f_130814_	field_11756
@@ -33281,10 +33396,13 @@ c	net/minecraft/network/chat/SignedMessageChain$DecodeException	net/minecraft/cl
 	m	()Z	m_246459_	method_46314
 c	net/minecraft/network/chat/SignedMessageChain$Decoder	net/minecraft/class_7610$class_7611
 	f	Lnet/minecraft/network/chat/SignedMessageChain$Decoder;	f_252472_	field_40848
+	m	(Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/network/chat/SignedMessageBody;)Lnet/minecraft/network/chat/PlayerChatMessage;	m_240945_	unpack
 	m	(Ljava/util/UUID;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/network/chat/SignedMessageBody;)Lnet/minecraft/network/chat/PlayerChatMessage;	m_244797_	method_46315
+	m	(Ljava/util/UUID;)Lnet/minecraft/network/chat/SignedMessageChain$Decoder;	m_246683_	unsigned
 	m	(Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/network/chat/SignedMessageBody;)Lnet/minecraft/network/chat/PlayerChatMessage;	m_252649_	method_46613
 c	net/minecraft/network/chat/SignedMessageChain$Encoder	net/minecraft/class_7610$class_7612
 	f	Lnet/minecraft/network/chat/SignedMessageChain$Encoder;	f_243849_	field_40694
+	m	(Lnet/minecraft/network/chat/SignedMessageBody;)Lnet/minecraft/network/chat/MessageSignature;	m_240988_	pack
 	m	(Lnet/minecraft/network/chat/SignedMessageBody;)Lnet/minecraft/network/chat/MessageSignature;	m_245588_	method_46316
 c	net/minecraft/network/chat/SignedMessageLink	net/minecraft/class_7826
 	f	I	f_244066_	comp_1094
@@ -34248,6 +34366,7 @@ c	net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData$BlockEntit
 	m	(Lnet/minecraft/world/level/block/entity/BlockEntity;)Lnet/minecraft/network/protocol/game/ClientboundLevelChunkPacketData$BlockEntityInfo;	m_195691_	method_38596
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)V	m_195693_	method_38597
 c	net/minecraft/network/protocol/game/ClientboundLevelChunkPacketData$BlockEntityTagOutput	net/minecraft/class_6603$class_6605
+	m	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntityType;Lnet/minecraft/nbt/CompoundTag;)V	m_195695_	accept
 c	net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket	net/minecraft/class_2672
 	f	I	f_195699_	field_12236
 	f	I	f_195700_	field_12235
@@ -34583,7 +34702,9 @@ c	net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Action	n
 	m	(Lnet/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$EntryBuilder;Lnet/minecraft/network/FriendlyByteBuf;)V	m_252650_	method_46340
 	m	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Entry;)V	m_252651_	method_46339
 c	net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Action$Reader	net/minecraft/class_2703$class_5893$class_7829
+	m	(Lnet/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$EntryBuilder;Lnet/minecraft/network/FriendlyByteBuf;)V	m_247322_	read
 c	net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Action$Writer	net/minecraft/class_2703$class_5893$class_7830
+	m	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Entry;)V	m_247205_	write
 c	net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$Entry	net/minecraft/class_2703$class_2705
 	f	Lcom/mojang/authlib/GameProfile;	f_243688_	comp_1107
 	f	Z	f_243700_	comp_1108
@@ -36342,6 +36463,7 @@ c	net/minecraft/resources/RegistryDataLoader$1	net/minecraft/class_7655$1
 	f	Ljava/util/Map;	f_254620_	field_40851
 	m	(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;	m_254838_	method_46623
 c	net/minecraft/resources/RegistryDataLoader$Loader	net/minecraft/class_7655$class_7656
+	m	(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;)V	m_245441_	load
 c	net/minecraft/resources/RegistryDataLoader$RegistryData	net/minecraft/class_7655$class_7657
 	f	Lnet/minecraft/resources/ResourceKey;	f_243794_	comp_985
 	f	Lcom/mojang/serialization/Codec;	f_244580_	comp_986
@@ -37107,7 +37229,9 @@ c	net/minecraft/server/WorldLoader$PackConfig	net/minecraft/class_7237$class_723
 	m	()Lnet/minecraft/world/level/WorldDataConfiguration;	f_244366_	comp_636
 	m	()Lcom/mojang/datafixers/util/Pair;	m_214399_	method_42099
 c	net/minecraft/server/WorldLoader$ResultFactory	net/minecraft/class_7237$class_7239
+	m	(Lnet/minecraft/server/packs/resources/CloseableResourceManager;Lnet/minecraft/server/ReloadableServerResources;Lnet/minecraft/core/LayeredRegistryAccess;Ljava/lang/Object;)Ljava/lang/Object;	m_214407_	create
 c	net/minecraft/server/WorldLoader$WorldDataSupplier	net/minecraft/class_7237$class_6907
+	m	(Lnet/minecraft/server/WorldLoader$DataLoadContext;)Lnet/minecraft/server/WorldLoader$DataLoadOutput;	m_214412_	get
 c	net/minecraft/server/WorldStem	net/minecraft/class_6904
 	f	Lnet/minecraft/server/packs/resources/CloseableResourceManager;	f_206892_	comp_356
 	f	Lnet/minecraft/server/ReloadableServerResources;	f_206893_	comp_357
@@ -37124,6 +37248,7 @@ c	net/minecraft/server/advancements/AdvancementVisibilityEvaluator	net/minecraft
 	m	(Lnet/minecraft/advancements/Advancement;Z)Lnet/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule;	m_264339_	method_48032
 	m	(Lnet/minecraft/advancements/Advancement;Lit/unimi/dsi/fastutil/Stack;Ljava/util/function/Predicate;Lnet/minecraft/server/advancements/AdvancementVisibilityEvaluator$Output;)Z	m_264402_	method_48030
 c	net/minecraft/server/advancements/AdvancementVisibilityEvaluator$Output	net/minecraft/class_8005$class_8006
+	m	(Lnet/minecraft/advancements/Advancement;Z)V	m_264135_	accept
 c	net/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule	net/minecraft/class_8005$class_8007
 	f	[Lnet/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule;	$VALUES	field_41741
 	f	Lnet/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule;	HIDE	field_41739
@@ -37499,6 +37624,7 @@ c	net/minecraft/server/commands/CloneCommands$CloneBlockInfo	net/minecraft/class
 	f	Lnet/minecraft/world/level/block/state/BlockState;	f_136780_	field_13495
 	f	Lnet/minecraft/nbt/CompoundTag;	f_136781_	field_13494
 c	net/minecraft/server/commands/CloneCommands$CommandFunction	net/minecraft/class_3023$class_8009
+	m	(Ljava/lang/Object;)Ljava/lang/Object;	m_264253_	apply
 c	net/minecraft/server/commands/CloneCommands$DimensionAndPosition	net/minecraft/class_3023$class_8010
 	f	Lnet/minecraft/server/level/ServerLevel;	f_263735_	comp_1185
 	f	Lnet/minecraft/core/BlockPos;	f_263824_	comp_1186
@@ -37570,6 +37696,7 @@ c	net/minecraft/server/commands/DataPackCommand	net/minecraft/class_3027
 	m	()Lnet/minecraft/network/chat/Component;	m_287862_	method_51942
 	m	(Ljava/util/Collection;)Lnet/minecraft/network/chat/Component;	m_287863_	method_51943
 c	net/minecraft/server/commands/DataPackCommand$Inserter	net/minecraft/class_3027$class_3028
+	m	(Ljava/util/List;Lnet/minecraft/server/packs/repository/Pack;)V	m_136883_	apply
 c	net/minecraft/server/commands/DeOpCommands	net/minecraft/class_3030
 	f	Lcom/mojang/brigadier/exceptions/SimpleCommandExceptionType;	f_136886_	field_13507
 	m	(Lcom/mojang/brigadier/CommandDispatcher;)V	m_136888_	method_13143
@@ -37803,7 +37930,9 @@ c	net/minecraft/server/commands/ExecuteCommand	net/minecraft/class_3050
 	m	(Lnet/minecraft/server/commands/ExecuteCommand$CommandNumericPredicate;Lcom/mojang/brigadier/context/CommandContext;)I	m_287888_	method_13296
 	m	(ZLnet/minecraft/server/commands/ExecuteCommand$CommandPredicate;Lcom/mojang/brigadier/context/CommandContext;)I	m_287889_	method_13270
 c	net/minecraft/server/commands/ExecuteCommand$CommandNumericPredicate	net/minecraft/class_3050$class_3051
+	m	(Lcom/mojang/brigadier/context/CommandContext;)I	m_137300_	test
 c	net/minecraft/server/commands/ExecuteCommand$CommandPredicate	net/minecraft/class_3050$class_3052
+	m	(Lcom/mojang/brigadier/context/CommandContext;)Z	m_137302_	test
 c	net/minecraft/server/commands/ExperienceCommand	net/minecraft/class_3054
 	f	Lcom/mojang/brigadier/exceptions/SimpleCommandExceptionType;	f_137304_	field_13638
 	m	(Lcom/mojang/brigadier/CommandDispatcher;)V	m_137306_	method_13330
@@ -38143,8 +38272,11 @@ c	net/minecraft/server/commands/LootCommand	net/minecraft/class_3039
 	m	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/network/chat/Component;	m_287935_	method_52009
 	m	(Ljava/util/List;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/network/chat/Component;	m_287936_	method_52011
 c	net/minecraft/server/commands/LootCommand$Callback	net/minecraft/class_3039$class_3040
+	m	(Ljava/util/List;)V	m_138047_	accept
 c	net/minecraft/server/commands/LootCommand$DropConsumer	net/minecraft/class_3039$class_3041
+	m	(Lcom/mojang/brigadier/context/CommandContext;Ljava/util/List;Lnet/minecraft/server/commands/LootCommand$Callback;)I	m_138049_	accept
 c	net/minecraft/server/commands/LootCommand$TailProvider	net/minecraft/class_3039$class_3042
+	m	(Lcom/mojang/brigadier/builder/ArgumentBuilder;Lnet/minecraft/server/commands/LootCommand$DropConsumer;)Lcom/mojang/brigadier/builder/ArgumentBuilder;	m_138053_	construct
 c	net/minecraft/server/commands/MsgCommand	net/minecraft/class_3082
 	m	(Lcom/mojang/brigadier/CommandDispatcher;)V	m_138060_	method_13461
 	m	(Lcom/mojang/brigadier/context/CommandContext;Ljava/util/Collection;Lnet/minecraft/network/chat/PlayerChatMessage;)V	m_244847_	method_45153
@@ -38492,6 +38624,7 @@ c	net/minecraft/server/commands/SetBlockCommand	net/minecraft/class_3119
 	m	(Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandBuildContext;)V	m_214730_	method_13623
 	m	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/network/chat/Component;	m_288008_	method_52076
 c	net/minecraft/server/commands/SetBlockCommand$Filter	net/minecraft/class_3119$class_3120
+	m	(Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/core/BlockPos;Lnet/minecraft/commands/arguments/blocks/BlockInput;Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/commands/arguments/blocks/BlockInput;	m_138619_	filter
 c	net/minecraft/server/commands/SetBlockCommand$Mode	net/minecraft/class_3119$class_3121
 	f	[Lnet/minecraft/server/commands/SetBlockCommand$Mode;	$VALUES	field_13720
 	f	Lnet/minecraft/server/commands/SetBlockCommand$Mode;	DESTROY	field_13721
@@ -38993,11 +39126,14 @@ c	net/minecraft/server/commands/data/DataCommands	net/minecraft/class_3164
 	m	(Ljava/util/List;Lnet/minecraft/server/commands/data/DataCommands$StringProcessor;)Ljava/util/List;	m_288215_	method_48095
 	m	(Ljava/lang/String;II)Ljava/lang/String;	m_288220_	method_52165
 c	net/minecraft/server/commands/data/DataCommands$DataManipulator	net/minecraft/class_3164$class_3165
+	m	(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;Ljava/util/List;)I	m_139495_	modify
 c	net/minecraft/server/commands/data/DataCommands$DataManipulatorDecorator	net/minecraft/class_3164$class_3166
+	m	(Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;)Lcom/mojang/brigadier/builder/ArgumentBuilder;	m_139500_	create
 c	net/minecraft/server/commands/data/DataCommands$DataProvider	net/minecraft/class_3164$class_3167
 	m	(Lcom/mojang/brigadier/context/CommandContext;)Lnet/minecraft/server/commands/data/DataAccessor;	m_7018_	method_13924
 	m	(Lcom/mojang/brigadier/builder/ArgumentBuilder;Ljava/util/function/Function;)Lcom/mojang/brigadier/builder/ArgumentBuilder;	m_7621_	method_13925
 c	net/minecraft/server/commands/data/DataCommands$StringProcessor	net/minecraft/class_3164$class_8569
+	m	(Ljava/lang/String;)Ljava/lang/String;	m_288227_	process
 c	net/minecraft/server/commands/data/EntityDataAccessor	net/minecraft/class_3169
 	f	Ljava/util/function/Function;	f_139505_	field_13800
 	f	Lcom/mojang/brigadier/exceptions/SimpleCommandExceptionType;	f_139506_	field_13799
@@ -40581,6 +40717,7 @@ c	net/minecraft/server/level/progress/ChunkProgressListener	net/minecraft/class_
 	m	(Lnet/minecraft/world/level/ChunkPos;)V	m_7647_	method_17669
 	m	()V	m_9662_	method_17675
 c	net/minecraft/server/level/progress/ChunkProgressListenerFactory	net/minecraft/class_3950
+	m	(I)Lnet/minecraft/server/level/progress/ChunkProgressListener;	m_9620_	create
 c	net/minecraft/server/level/progress/LoggerChunkProgressListener	net/minecraft/class_3951
 	f	Lorg/slf4j/Logger;	f_9622_	field_17467
 	f	I	f_9623_	field_17468
@@ -40838,6 +40975,7 @@ c	net/minecraft/server/network/ServerGamePacketListenerImpl$2	net/minecraft/clas
 	f	[I	f_143691_	field_28966
 	f	[I	f_143692_	field_28967
 c	net/minecraft/server/network/ServerGamePacketListenerImpl$EntityInteraction	net/minecraft/class_3244$class_5860
+	m	(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;	m_143694_	run
 c	net/minecraft/server/network/ServerHandshakePacketListenerImpl	net/minecraft/class_3246
 	f	Lnet/minecraft/network/chat/Component;	f_9964_	field_24457
 	f	Lnet/minecraft/server/MinecraftServer;	f_9965_	field_14154
@@ -40947,11 +41085,14 @@ c	net/minecraft/server/network/TextFilterClient$IgnoreStrategy	net/minecraft/cla
 	f	Lnet/minecraft/server/network/TextFilterClient$IgnoreStrategy;	f_10163_	field_26835
 	m	(Ljava/lang/String;I)Z	m_10165_	method_31310
 	m	(Ljava/lang/String;I)Z	m_10168_	method_31312
+	m	(Ljava/lang/String;I)Z	m_10171_	shouldIgnore
 	m	(I)Lnet/minecraft/server/network/TextFilterClient$IgnoreStrategy;	m_143738_	method_33806
 	m	(ILjava/lang/String;I)Z	m_143740_	method_33807
 	m	(I)Lnet/minecraft/server/network/TextFilterClient$IgnoreStrategy;	m_143744_	method_33808
 c	net/minecraft/server/network/TextFilterClient$JoinOrLeaveEncoder	net/minecraft/class_5514$class_7241
+	m	(Lcom/mojang/authlib/GameProfile;)Lcom/google/gson/JsonObject;	m_215317_	encode
 c	net/minecraft/server/network/TextFilterClient$MessageEncoder	net/minecraft/class_5514$class_7242
+	m	(Lcom/mojang/authlib/GameProfile;Ljava/lang/String;)Lcom/google/gson/JsonObject;	m_215319_	encode
 c	net/minecraft/server/network/TextFilterClient$PlayerContext	net/minecraft/class_5514$class_5516
 	f	Lnet/minecraft/server/network/TextFilterClient;	f_10174_	field_26836
 	f	Lcom/mojang/authlib/GameProfile;	f_10175_	field_26837
@@ -41276,6 +41417,7 @@ c	net/minecraft/server/packs/repository/Pack$Position	net/minecraft/class_3288$c
 	m	(Ljava/util/List;Ljava/lang/Object;Ljava/util/function/Function;Z)I	m_10470_	method_14468
 	m	()[Lnet/minecraft/server/packs/repository/Pack$Position;	m_143881_	method_36583
 c	net/minecraft/server/packs/repository/Pack$ResourcesSupplier	net/minecraft/class_3288$class_7680
+	m	(Ljava/lang/String;)Lnet/minecraft/server/packs/PackResources;	m_247679_	open
 c	net/minecraft/server/packs/repository/PackCompatibility	net/minecraft/class_3281
 	f	[Lnet/minecraft/server/packs/repository/PackCompatibility;	$VALUES	field_14221
 	f	Lnet/minecraft/server/packs/repository/PackCompatibility;	COMPATIBLE	field_14224
@@ -41411,7 +41553,10 @@ c	net/minecraft/server/packs/resources/FallbackResourceManager$ResourceWithSourc
 	m	()Lnet/minecraft/server/packs/resources/IoSupplier;	f_244331_	comp_1009
 c	net/minecraft/server/packs/resources/IoSupplier	net/minecraft/class_7367
 	m	(Ljava/nio/file/Path;)Ljava/io/InputStream;	m_246383_	method_45301
+	m	(Ljava/nio/file/Path;)Lnet/minecraft/server/packs/resources/IoSupplier;	m_246697_	create
+	m	(Ljava/util/zip/ZipFile;Ljava/util/zip/ZipEntry;)Lnet/minecraft/server/packs/resources/IoSupplier;	m_247178_	create
 	m	(Ljava/util/zip/ZipFile;Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;	m_247182_	method_45302
+	m	()Ljava/lang/Object;	m_247737_	get
 c	net/minecraft/server/packs/resources/MultiPackResourceManager	net/minecraft/class_6861
 	f	Ljava/util/Map;	f_203794_	field_36389
 	f	Ljava/util/List;	f_203795_	field_36390
@@ -41523,7 +41668,11 @@ c	net/minecraft/server/packs/resources/ResourceMetadata$2	net/minecraft/class_73
 c	net/minecraft/server/packs/resources/ResourceProvider	net/minecraft/class_5912
 	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;	m_213713_	method_14486
 	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/io/FileNotFoundException;	m_215590_	method_43043
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/server/packs/resources/Resource;	m_215593_	getResourceOrThrow
+	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/io/InputStream;	m_215595_	open
+	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/io/BufferedReader;	m_215597_	openAsReader
 	m	(Ljava/util/Map;Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;	m_244907_	method_45307
+	m	(Ljava/util/Map;)Lnet/minecraft/server/packs/resources/ResourceProvider;	m_247621_	fromMap
 c	net/minecraft/server/packs/resources/SimpleJsonResourceReloadListener	net/minecraft/class_4309
 	f	Lorg/slf4j/Logger;	f_10762_	field_19377
 	f	Lcom/google/gson/Gson;	f_10764_	field_19379
@@ -41567,6 +41716,7 @@ c	net/minecraft/server/packs/resources/SimpleReloadInstance$1	net/minecraft/clas
 	m	(Ljava/lang/Object;Lnet/minecraft/util/Unit;Ljava/lang/Object;)Ljava/lang/Object;	m_10859_	method_18373
 	m	(Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;	m_6769_	method_18352
 c	net/minecraft/server/packs/resources/SimpleReloadInstance$StateFactory	net/minecraft/class_4014$class_4047
+	m	(Lnet/minecraft/server/packs/resources/PreparableReloadListener$PreparationBarrier;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/server/packs/resources/PreparableReloadListener;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;	m_10863_	create
 c	net/minecraft/server/packs/resources/package-info	net/minecraft/class_5988
 c	net/minecraft/server/players/BanListEntry	net/minecraft/class_3309
 	f	Ljava/text/SimpleDateFormat;	f_10943_	field_14308
@@ -43600,6 +43750,7 @@ c	net/minecraft/stats/StatFormatter	net/minecraft/class_3446
 	m	(Ljava/text/DecimalFormat;)V	m_12880_	method_16817
 	m	(I)Ljava/lang/String;	m_12882_	method_16816
 	m	(I)Ljava/lang/String;	m_12884_	method_16818
+	m	(I)Ljava/lang/String;	m_12886_	format
 c	net/minecraft/stats/StatType	net/minecraft/class_3448
 	f	Lnet/minecraft/core/Registry;	f_12888_	field_15323
 	f	Ljava/util/Map;	f_12889_	field_15324
@@ -44264,12 +44415,15 @@ c	net/minecraft/tags/TagNetworkSerialization$NetworkPayload	net/minecraft/class_
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)V	m_203967_	method_33159
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/tags/TagNetworkSerialization$NetworkPayload;	m_203969_	method_33160
 c	net/minecraft/tags/TagNetworkSerialization$TagOutput	net/minecraft/class_6864$class_6865
+	m	(Lnet/minecraft/tags/TagKey;Ljava/util/List;)V	m_203971_	accept
 c	net/minecraft/tags/WorldPresetTags	net/minecraft/class_7089
 	f	Lnet/minecraft/tags/TagKey;	f_216053_	field_37406
 	f	Lnet/minecraft/tags/TagKey;	f_216054_	field_37407
 	m	(Ljava/lang/String;)Lnet/minecraft/tags/TagKey;	m_216057_	method_41293
 c	net/minecraft/tags/package-info	net/minecraft/class_5994
 c	net/minecraft/util/AbortableIterationConsumer	net/minecraft/class_7927
+	m	(Ljava/util/function/Consumer;)Lnet/minecraft/util/AbortableIterationConsumer;	m_260908_	forConsumer
+	m	(Ljava/lang/Object;)Lnet/minecraft/util/AbortableIterationConsumer$Continuation;	m_260972_	accept
 	m	(Ljava/util/function/Consumer;Ljava/lang/Object;)Lnet/minecraft/util/AbortableIterationConsumer$Continuation;	m_261257_	method_47542
 c	net/minecraft/util/AbortableIterationConsumer$Continuation	net/minecraft/class_7927$class_7928
 	f	[Lnet/minecraft/util/AbortableIterationConsumer$Continuation;	$VALUES	field_41285
@@ -44411,6 +44565,7 @@ c	net/minecraft/util/Crypt	net/minecraft/class_3515
 	m	(Ljava/lang/String;)Lcom/mojang/serialization/DataResult;	m_274116_	method_43526
 	m	(Ljava/lang/String;)Lcom/mojang/serialization/DataResult;	m_274117_	method_43527
 c	net/minecraft/util/Crypt$ByteArrayToKeyFunction	net/minecraft/class_3515$class_7424
+	m	([B)Ljava/security/Key;	m_216088_	apply
 c	net/minecraft/util/Crypt$SaltSignaturePair	net/minecraft/class_3515$class_7425
 	f	Lnet/minecraft/util/Crypt$SaltSignaturePair;	f_216090_	field_39040
 	f	J	f_216091_	comp_739
@@ -44443,6 +44598,7 @@ c	net/minecraft/util/CubicSampler	net/minecraft/class_6491
 	f	I	f_177980_	field_33223
 	m	(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;	m_130038_	method_24895
 c	net/minecraft/util/CubicSampler$Vec3Fetcher	net/minecraft/class_6491$class_4859
+	m	(III)Lnet/minecraft/world/phys/Vec3;	m_130041_	fetch
 c	net/minecraft/util/CubicSpline	net/minecraft/class_6492
 	m	()Ljava/lang/String;	m_183628_	method_39225
 	m	(F)Lnet/minecraft/util/CubicSpline;	m_184239_	method_39427
@@ -44486,6 +44642,7 @@ c	net/minecraft/util/CubicSpline$Constant	net/minecraft/class_6492$class_6494
 	m	()F	m_213849_	comp_533
 	m	()F	m_213850_	comp_532
 c	net/minecraft/util/CubicSpline$CoordinateVisitor	net/minecraft/class_6492$class_7073
+	m	(Ljava/lang/Object;)Ljava/lang/Object;	m_216122_	visit
 c	net/minecraft/util/CubicSpline$Multipoint	net/minecraft/class_6492$class_6738
 	f	Lnet/minecraft/util/ToFloatFunction;	f_184319_	comp_229
 	f	[F	f_184320_	comp_230
@@ -44775,6 +44932,7 @@ c	net/minecraft/util/FormattedCharSequence	net/minecraft/class_5481
 	m	(Ljava/util/List;)Lnet/minecraft/util/FormattedCharSequence;	m_13722_	method_30749
 	m	(Ljava/util/List;Lnet/minecraft/util/FormattedCharSink;)Z	m_13724_	method_30750
 	m	(Lnet/minecraft/network/chat/Style;ILnet/minecraft/util/FormattedCharSink;)Z	m_13727_	method_30751
+	m	(Lnet/minecraft/util/FormattedCharSink;)Z	m_13731_	accept
 	m	(Lnet/minecraft/util/FormattedCharSequence;Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/util/FormattedCharSequence;	m_13733_	method_30752
 	m	(Ljava/lang/String;Lnet/minecraft/network/chat/Style;Lnet/minecraft/util/FormattedCharSink;)Z	m_13736_	method_30753
 	m	(Ljava/lang/String;Lnet/minecraft/network/chat/Style;Lit/unimi/dsi/fastutil/ints/Int2IntFunction;)Lnet/minecraft/util/FormattedCharSequence;	m_13740_	method_30754
@@ -44787,6 +44945,7 @@ c	net/minecraft/util/FormattedCharSequence	net/minecraft/class_5481
 	m	(Ljava/lang/String;Lnet/minecraft/network/chat/Style;)Lnet/minecraft/util/FormattedCharSequence;	m_144723_	method_34910
 	m	(Ljava/lang/String;Lnet/minecraft/network/chat/Style;Lit/unimi/dsi/fastutil/ints/Int2IntFunction;Lnet/minecraft/util/FormattedCharSink;)Z	m_144726_	method_34911
 c	net/minecraft/util/FormattedCharSink	net/minecraft/class_5224
+	m	(ILnet/minecraft/network/chat/Style;I)Z	m_6411_	accept
 c	net/minecraft/util/FrameTimer	net/minecraft/class_3517
 	f	[J	f_13749_	field_15653
 	f	I	f_13750_	field_15656
@@ -44806,6 +44965,7 @@ c	net/minecraft/util/FutureChain	net/minecraft/class_7619
 	f	Ljava/util/concurrent/CompletableFuture;	f_241623_	field_39829
 	f	Z	f_243910_	field_40112
 	f	Ljava/util/concurrent/Executor;	f_244461_	field_39830
+	m	(Lnet/minecraft/util/TaskChainer$DelayedTask;)V	m_241849_	append
 	m	(Ljava/lang/Throwable;)Ljava/lang/Object;	m_241881_	method_44904
 	m	(Lnet/minecraft/util/TaskChainer$DelayedTask;Ljava/lang/Object;)Ljava/util/concurrent/CompletionStage;	m_244909_	method_44903
 	m	(Ljava/util/concurrent/Executor;Ljava/lang/Runnable;)V	m_244910_	method_45308
@@ -45157,7 +45317,9 @@ c	net/minecraft/util/SegmentedAnglePrecision	net/minecraft/class_8013
 	m	()I	m_264451_	method_48120
 	m	(F)I	m_264592_	method_48121
 c	net/minecraft/util/SignatureUpdater	net/minecraft/class_7498
+	m	(Lnet/minecraft/util/SignatureUpdater$Output;)V	m_216344_	update
 c	net/minecraft/util/SignatureUpdater$Output	net/minecraft/class_7498$class_7499
+	m	([B)V	m_216346_	update
 c	net/minecraft/util/SignatureValidator	net/minecraft/class_7500
 	f	Lnet/minecraft/util/SignatureValidator;	f_216348_	field_39397
 	f	Lorg/slf4j/Logger;	f_216349_	field_39398
@@ -45168,6 +45330,7 @@ c	net/minecraft/util/SignatureValidator	net/minecraft/class_7500
 	m	(Ljava/security/PublicKey;Ljava/lang/String;)Lnet/minecraft/util/SignatureValidator;	m_216369_	method_44175
 	m	([BLnet/minecraft/util/SignatureUpdater$Output;)V	m_216372_	method_44176
 	m	([B[B)Z	m_216375_	method_44177
+	m	(Lnet/minecraft/util/SignatureUpdater;[B)Z	m_216378_	validate
 	m	(Ljava/util/Collection;Lnet/minecraft/util/SignatureUpdater;[B)Z	m_284009_	method_51496
 	m	(Lcom/mojang/authlib/yggdrasil/ServicesKeySet;Lcom/mojang/authlib/yggdrasil/ServicesKeyType;)Lnet/minecraft/util/SignatureValidator;	m_284488_	method_44172
 c	net/minecraft/util/Signer	net/minecraft/class_7501
@@ -45176,6 +45339,7 @@ c	net/minecraft/util/Signer	net/minecraft/class_7501
 	m	(Ljava/security/PrivateKey;Ljava/lang/String;)Lnet/minecraft/util/Signer;	m_216387_	method_44179
 	m	([B)[B	m_216390_	method_44180
 	m	([BLnet/minecraft/util/SignatureUpdater$Output;)V	m_216392_	method_44181
+	m	(Lnet/minecraft/util/SignatureUpdater;)[B	m_216395_	sign
 c	net/minecraft/util/SimpleBitStorage	net/minecraft/class_3508
 	f	[I	f_184706_	field_24078
 	f	[J	f_184707_	field_15631
@@ -45239,6 +45403,7 @@ c	net/minecraft/util/SpawnUtil$Strategy	net/minecraft/class_7244$class_7502
 	f	Lnet/minecraft/util/SpawnUtil$Strategy;	f_216412_	field_39400
 	f	Lnet/minecraft/util/SpawnUtil$Strategy;	f_216413_	field_39401
 	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_216415_	method_44182
+	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_216427_	canSpawnOn
 	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z	m_289712_	method_44183
 c	net/minecraft/util/StringDecomposer	net/minecraft/class_5223
 	f	Ljava/util/Optional;	f_14298_	field_24215
@@ -45291,8 +45456,11 @@ c	net/minecraft/util/StringUtil	net/minecraft/class_3544
 c	net/minecraft/util/TaskChainer	net/minecraft/class_7620
 	f	Lorg/slf4j/Logger;	f_241683_	field_39831
 	m	(Ljava/lang/Throwable;)Ljava/lang/Object;	m_241791_	method_45311
+	m	(Lnet/minecraft/util/TaskChainer$DelayedTask;)V	m_241849_	append
 	m	(Ljava/util/concurrent/Executor;Lnet/minecraft/util/TaskChainer$DelayedTask;)V	m_244911_	method_45312
+	m	(Ljava/util/concurrent/Executor;)Lnet/minecraft/util/TaskChainer;	m_247687_	immediate
 c	net/minecraft/util/TaskChainer$DelayedTask	net/minecraft/class_7620$class_7621
+	m	(Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;	m_245608_	submit
 c	net/minecraft/util/ThreadingDetector	net/minecraft/class_5798
 	f	Lorg/slf4j/Logger;	f_199407_	field_36293
 	f	Ljava/lang/String;	f_199408_	field_36294
@@ -45305,7 +45473,9 @@ c	net/minecraft/util/ThreadingDetector	net/minecraft/class_5798
 	m	(Ljava/lang/Thread;)Ljava/lang/String;	m_199420_	method_39936
 	m	()V	m_199422_	method_39937
 c	net/minecraft/util/TimeSource	net/minecraft/class_7576
+	m	(Ljava/util/concurrent/TimeUnit;)J	m_239336_	get
 c	net/minecraft/util/TimeSource$NanoTimeSource	net/minecraft/class_7576$class_7577
+	m	(Ljava/util/concurrent/TimeUnit;)J	m_239336_	get
 c	net/minecraft/util/TimeUtil	net/minecraft/class_4802
 	f	J	f_145016_	field_33868
 	f	J	f_145017_	field_33869
@@ -47612,6 +47782,7 @@ c	net/minecraft/util/profiling/jfr/SummaryReporter	net/minecraft/class_6507
 	m	(Ljava/util/function/Supplier;)V	m_201932_	method_37991
 	m	(Ljava/util/function/Supplier;Ljava/lang/Throwable;)V	m_201934_	method_37992
 c	net/minecraft/util/profiling/jfr/callback/ProfiledDuration	net/minecraft/class_6613
+	m	()V	m_185413_	finish
 c	net/minecraft/util/profiling/jfr/callback/package-info	net/minecraft/class_6614
 c	net/minecraft/util/profiling/jfr/event/ChunkGenerationEvent	net/minecraft/util/profiling/jfr/event/ChunkGenerationEvent
 c	net/minecraft/util/profiling/jfr/event/ChunkGenerationEvent$Fields	net/minecraft/util/profiling/jfr/event/ChunkGenerationEvent$class_6602
@@ -48334,6 +48505,7 @@ c	net/minecraft/util/valueproviders/FloatProviderType	net/minecraft/class_5864
 	f	Lnet/minecraft/util/valueproviders/FloatProviderType;	f_146522_	field_29011
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_146524_	method_33924
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/util/valueproviders/FloatProviderType;	m_146526_	method_33925
+	m	()Lcom/mojang/serialization/Codec;	m_146529_	codec
 c	net/minecraft/util/valueproviders/IntProvider	net/minecraft/class_6017
 	f	Lcom/mojang/serialization/Codec;	f_146530_	field_29945
 	f	Lcom/mojang/serialization/Codec;	f_146531_	field_29946
@@ -48360,6 +48532,7 @@ c	net/minecraft/util/valueproviders/IntProviderType	net/minecraft/class_6018
 	f	Lnet/minecraft/util/valueproviders/IntProviderType;	f_185908_	field_35357
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_146555_	method_35013
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/util/valueproviders/IntProviderType;	m_146557_	method_35014
+	m	()Lcom/mojang/serialization/Codec;	m_146560_	codec
 c	net/minecraft/util/valueproviders/MultipliedFloats	net/minecraft/class_7372
 	f	[Lnet/minecraft/util/valueproviders/SampledFloat;	f_216856_	field_38707
 	m	(Lnet/minecraft/util/RandomSource;)F	m_214084_	method_33920
@@ -48697,6 +48870,7 @@ c	net/minecraft/world/SimpleMenuProvider	net/minecraft/class_747
 	f	Lnet/minecraft/network/chat/Component;	f_19199_	field_3947
 	f	Lnet/minecraft/world/inventory/MenuConstructor;	f_19200_	field_17280
 	m	()Lnet/minecraft/network/chat/Component;	m_5446_	method_5476
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 c	net/minecraft/world/WorldlyContainer	net/minecraft/class_1278
 	m	(Lnet/minecraft/core/Direction;)[I	m_7071_	method_5494
 	m	(ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/Direction;)Z	m_7155_	method_5492
@@ -49326,11 +49500,14 @@ c	net/minecraft/world/entity/Display$ColorInterpolator	net/minecraft/class_8113$
 c	net/minecraft/world/entity/Display$FloatInterpolator	net/minecraft/class_8113$class_8117
 	m	(F)F	m_269229_	method_48886
 	m	(FF)F	m_276789_	method_49779
+	m	(F)Lnet/minecraft/world/entity/Display$FloatInterpolator;	m_277016_	constant
 c	net/minecraft/world/entity/Display$GenericInterpolator	net/minecraft/class_8113$class_8118
 	m	(F)Ljava/lang/Object;	m_269136_	method_48888
 	m	(Ljava/lang/Object;F)Ljava/lang/Object;	m_276793_	method_49780
+	m	(Ljava/lang/Object;)Lnet/minecraft/world/entity/Display$GenericInterpolator;	m_277024_	constant
 c	net/minecraft/world/entity/Display$IntInterpolator	net/minecraft/class_8113$class_8119
 	m	(F)I	m_269120_	method_48889
+	m	(I)Lnet/minecraft/world/entity/Display$IntInterpolator;	m_276859_	constant
 	m	(IF)I	m_276992_	method_49781
 c	net/minecraft/world/entity/Display$ItemDisplay	net/minecraft/class_8113$class_8122
 	f	Lnet/minecraft/world/entity/SlotAccess;	f_268451_	field_42425
@@ -49453,6 +49630,7 @@ c	net/minecraft/world/entity/Display$TextDisplay$CachedLine	net/minecraft/class_
 	m	()I	f_268443_	comp_1250
 	m	()Lnet/minecraft/util/FormattedCharSequence;	f_268516_	comp_1249
 c	net/minecraft/world/entity/Display$TextDisplay$LineSplitter	net/minecraft/class_8113$class_8123$class_8127
+	m	(Lnet/minecraft/network/chat/Component;I)Lnet/minecraft/world/entity/Display$TextDisplay$CachedInfo;	m_269487_	split
 c	net/minecraft/world/entity/Display$TextDisplay$TextRenderState	net/minecraft/class_8113$class_8123$class_8230
 	f	Lnet/minecraft/network/chat/Component;	f_276477_	comp_1334
 	f	B	f_276556_	comp_1338
@@ -50024,6 +50202,7 @@ c	net/minecraft/world/entity/Entity$1	net/minecraft/class_1297$1
 	f	[I	f_20369_	field_6041
 	f	[I	f_20370_	field_6040
 c	net/minecraft/world/entity/Entity$MoveFunction	net/minecraft/class_1297$class_4738
+	m	(Lnet/minecraft/world/entity/Entity;DDD)V	m_20372_	accept
 c	net/minecraft/world/entity/Entity$MovementEmission	net/minecraft/class_1297$class_5799
 	f	[Lnet/minecraft/world/entity/Entity$MovementEmission;	$VALUES	field_28636
 	f	Lnet/minecraft/world/entity/Entity$MovementEmission;	ALL	field_28633
@@ -50364,6 +50543,7 @@ c	net/minecraft/world/entity/EntityType$Builder	net/minecraft/class_1299$class_1
 	m	()Lnet/minecraft/world/entity/EntityType$Builder;	m_20720_	method_20815
 	m	([Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/entity/EntityType$Builder;	m_246346_	method_45323
 c	net/minecraft/world/entity/EntityType$EntityFactory	net/minecraft/class_1299$class_4049
+	m	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)Lnet/minecraft/world/entity/Entity;	m_20721_	create
 c	net/minecraft/world/entity/EquipmentSlot	net/minecraft/class_1304
 	f	[Lnet/minecraft/world/entity/EquipmentSlot;	$VALUES	field_6176
 	f	Lnet/minecraft/world/entity/EquipmentSlot;	CHEST	field_6174
@@ -51346,6 +51526,7 @@ c	net/minecraft/world/entity/SpawnPlacements$Data	net/minecraft/class_1317$class
 	f	Lnet/minecraft/world/entity/SpawnPlacements$Type;	f_21768_	field_6315
 	f	Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;	f_21769_	field_19349
 c	net/minecraft/world/entity/SpawnPlacements$SpawnPredicate	net/minecraft/class_1317$class_4306
+	m	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)Z	m_217080_	test
 c	net/minecraft/world/entity/SpawnPlacements$Type	net/minecraft/class_1317$class_1319
 	f	[Lnet/minecraft/world/entity/SpawnPlacements$Type;	$VALUES	field_6319
 	f	Lnet/minecraft/world/entity/SpawnPlacements$Type;	IN_LAVA	field_23221
@@ -52812,6 +52993,7 @@ c	net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder	net/minecra
 c	net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$1	net/minecraft/class_7898$1
 	f	Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$TriggerWithResult;	f_256727_	field_40999
 	m	()Ljava/lang/String;	m_22566_	method_46910
+	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;J)Z	m_257808_	trigger
 c	net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Constant	net/minecraft/class_7898$class_7899
 	m	(Ljava/lang/Object;)Ljava/lang/String;	m_257783_	method_47230
 c	net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Constant$1	net/minecraft/class_7898$class_7899$1
@@ -52915,6 +53097,7 @@ c	net/minecraft/world/entity/ai/behavior/declarative/MemoryCondition$Registered	
 	m	(Lnet/minecraft/world/entity/ai/Brain;Ljava/util/Optional;)Lnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;	m_257513_	method_47253
 	m	()Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;	m_257588_	comp_1151
 c	net/minecraft/world/entity/ai/behavior/declarative/Trigger	net/minecraft/class_7911
+	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;J)Z	m_257808_	trigger
 c	net/minecraft/world/entity/ai/behavior/declarative/package-info	net/minecraft/class_7912
 c	net/minecraft/world/entity/ai/behavior/package-info	net/minecraft/class_6034
 c	net/minecraft/world/entity/ai/behavior/warden/Digging	net/minecraft/class_7249
@@ -62439,6 +62622,7 @@ c	net/minecraft/world/entity/vehicle/AbstractMinecartContainer	net/minecraft/cla
 	m	()V	m_6596_	method_5431
 	m	(ILnet/minecraft/world/item/ItemStack;)V	m_6836_	method_5447
 	m	()V	m_7114_	method_7525
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 	m	(Lnet/minecraft/nbt/CompoundTag;)V	m_7378_	method_5749
 	m	(Lnet/minecraft/nbt/CompoundTag;)V	m_7380_	method_5652
 	m	(ILnet/minecraft/world/entity/player/Inventory;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7402_	method_17357
@@ -62604,6 +62788,7 @@ c	net/minecraft/world/entity/vehicle/ChestBoat	net/minecraft/class_7264
 	m	()V	m_6596_	method_5431
 	m	()I	m_6643_	method_5439
 	m	(ILnet/minecraft/world/item/ItemStack;)V	m_6836_	method_5447
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 	m	(Lnet/minecraft/nbt/CompoundTag;)V	m_7378_	method_5749
 	m	(Lnet/minecraft/nbt/CompoundTag;)V	m_7380_	method_5652
 	m	(II)Lnet/minecraft/world/item/ItemStack;	m_7407_	method_5434
@@ -63624,6 +63809,7 @@ c	net/minecraft/world/inventory/LoomMenu$6	net/minecraft/class_1726$6
 	m	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V	m_39951_	method_17433
 	m	(Lnet/minecraft/world/item/ItemStack;)Z	m_5857_	method_7680
 c	net/minecraft/world/inventory/MenuConstructor	net/minecraft/class_1270
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 c	net/minecraft/world/inventory/MenuType	net/minecraft/class_3917
 	f	Lnet/minecraft/world/flag/FeatureFlagSet;	f_265869_	field_41923
 	f	Lnet/minecraft/world/inventory/MenuType;	f_39957_	field_18664
@@ -63657,6 +63843,7 @@ c	net/minecraft/world/inventory/MenuType	net/minecraft/class_3917
 	m	(Ljava/lang/String;Lnet/minecraft/world/inventory/MenuType$MenuSupplier;)Lnet/minecraft/world/inventory/MenuType;	m_39988_	method_17435
 	m	(ILnet/minecraft/world/entity/player/Inventory;)Lnet/minecraft/world/inventory/LecternMenu;	m_39991_	method_17436
 c	net/minecraft/world/inventory/MenuType$MenuSupplier	net/minecraft/class_3917$class_3918
+	m	(ILnet/minecraft/world/entity/player/Inventory;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_39994_	create
 c	net/minecraft/world/inventory/MerchantContainer	net/minecraft/class_1725
 	f	Lnet/minecraft/world/item/trading/Merchant;	f_39997_	field_7844
 	f	Lnet/minecraft/core/NonNullList;	f_39998_	field_7845
@@ -64260,6 +64447,7 @@ c	net/minecraft/world/item/CreativeModeTab$Builder	net/minecraft/class_1761$clas
 	m	(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/world/item/CreativeModeTab$Builder;	m_257941_	method_47321
 	m	(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V	m_257969_	method_47316
 c	net/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator	net/minecraft/class_1761$class_7914
+	m	(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V	m_257865_	accept
 c	net/minecraft/world/item/CreativeModeTab$ItemDisplayBuilder	net/minecraft/class_1761$class_7703
 	f	Lnet/minecraft/world/flag/FeatureFlagSet;	f_243878_	field_40190
 	f	Lnet/minecraft/world/item/CreativeModeTab;	f_244054_	field_40189
@@ -67218,6 +67406,7 @@ c	net/minecraft/world/item/crafting/SimpleCookingSerializer	net/minecraft/class_
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/Recipe;	m_8005_	method_8122
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/AbstractCookingRecipe;	m_8005_	method_17737
 c	net/minecraft/world/item/crafting/SimpleCookingSerializer$CookieBaker	net/minecraft/class_3957$class_3958
+	m	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CookingBookCategory;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/ItemStack;FI)Lnet/minecraft/world/item/crafting/AbstractCookingRecipe;	m_44352_	create
 c	net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer	net/minecraft/class_1866
 	f	Lnet/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer$Factory;	f_244567_	field_9046
 	m	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/minecraft/world/item/crafting/CraftingRecipe;)V	m_6178_	method_45442
@@ -67227,6 +67416,7 @@ c	net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer	net/minecraft
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/Recipe;	m_8005_	method_8122
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/CraftingRecipe;	m_8005_	method_45444
 c	net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer$Factory	net/minecraft/class_1866$class_7711
+	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/crafting/CraftingBookCategory;)Lnet/minecraft/world/item/crafting/CraftingRecipe;	m_247316_	create
 c	net/minecraft/world/item/crafting/SingleItemRecipe	net/minecraft/class_3972
 	f	Lnet/minecraft/world/item/crafting/Ingredient;	f_44409_	field_17642
 	f	Lnet/minecraft/world/item/ItemStack;	f_44410_	field_17643
@@ -67251,6 +67441,7 @@ c	net/minecraft/world/item/crafting/SingleItemRecipe$Serializer	net/minecraft/cl
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/Recipe;	m_8005_	method_8122
 	m	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/SingleItemRecipe;	m_8005_	method_17882
 c	net/minecraft/world/item/crafting/SingleItemRecipe$Serializer$SingleItemMaker	net/minecraft/class_3972$class_3973$class_3974
+	m	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/crafting/SingleItemRecipe;	m_44454_	create
 c	net/minecraft/world/item/crafting/SmeltingRecipe	net/minecraft/class_3861
 	m	()Lnet/minecraft/world/item/crafting/RecipeSerializer;	m_7707_	method_8119
 	m	()Lnet/minecraft/world/item/ItemStack;	m_8042_	method_17447
@@ -67514,6 +67705,7 @@ c	net/minecraft/world/item/enchantment/EnchantmentHelper	net/minecraft/class_189
 	m	(Lnet/minecraft/world/item/ItemStack;)Z	m_44940_	method_24366
 	m	(Lnet/minecraft/world/entity/LivingEntity;)Z	m_44942_	method_25951
 c	net/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor	net/minecraft/class_1890$class_1891
+	m	(Lnet/minecraft/world/item/enchantment/Enchantment;I)V	m_44944_	accept
 c	net/minecraft/world/item/enchantment/EnchantmentInstance	net/minecraft/class_1889
 	f	Lnet/minecraft/world/item/enchantment/Enchantment;	f_44947_	field_9093
 	f	I	f_44948_	field_9094
@@ -67934,6 +68126,7 @@ c	net/minecraft/world/level/ClipContext$Block	net/minecraft/class_3959$class_396
 	f	Lnet/minecraft/world/level/ClipContext$ShapeGetter;	f_45706_	field_17560
 	m	()[Lnet/minecraft/world/level/ClipContext$Block;	m_151407_	method_36690
 	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;	m_201981_	method_40007
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;	m_7544_	get
 c	net/minecraft/world/level/ClipContext$Fluid	net/minecraft/class_3959$class_242
 	f	[Lnet/minecraft/world/level/ClipContext$Fluid;	$VALUES	field_1349
 	f	Lnet/minecraft/world/level/ClipContext$Fluid;	ANY	field_1347
@@ -67947,6 +68140,7 @@ c	net/minecraft/world/level/ClipContext$Fluid	net/minecraft/class_3959$class_242
 	m	(Lnet/minecraft/world/level/material/FluidState;)Z	m_45733_	method_1018
 	m	(Lnet/minecraft/world/level/material/FluidState;)Z	m_45735_	method_1017
 c	net/minecraft/world/level/ClipContext$ShapeGetter	net/minecraft/class_3959$class_3961
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;	m_7544_	get
 c	net/minecraft/world/level/CollisionGetter	net/minecraft/class_1941
 	m	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/shapes/VoxelShape;Lnet/minecraft/world/phys/Vec3;DDD)Ljava/util/Optional;	m_151418_	method_33594
 	m	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;	m_183134_	method_20743
@@ -67971,6 +68165,7 @@ c	net/minecraft/world/level/CollisionGetter	net/minecraft/class_1941
 	m	()Lnet/minecraft/world/level/border/WorldBorder;	m_6857_	method_8621
 	m	(II)Lnet/minecraft/world/level/BlockGetter;	m_7925_	method_22338
 c	net/minecraft/world/level/ColorResolver	net/minecraft/class_6539
+	m	(Lnet/minecraft/world/level/biome/Biome;DD)I	m_130045_	getColor
 c	net/minecraft/world/level/CommonLevelAccessor	net/minecraft/class_5423
 	m	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntityType;)Ljava/util/Optional;	m_141902_	method_35230
 	m	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;	m_183134_	method_20743
@@ -68228,6 +68423,7 @@ c	net/minecraft/world/level/GameRules$Value	net/minecraft/class_1928$class_4315
 	m	()I	m_6855_	method_20781
 	m	(Ljava/lang/String;)V	m_7377_	method_20777
 c	net/minecraft/world/level/GameRules$VisitorCaller	net/minecraft/class_1928$class_5199
+	m	(Lnet/minecraft/world/level/GameRules$GameRuleTypeVisitor;Lnet/minecraft/world/level/GameRules$Key;Lnet/minecraft/world/level/GameRules$Type;)V	m_46374_	call
 c	net/minecraft/world/level/GameType	net/minecraft/class_1934
 	f	[Lnet/minecraft/world/level/GameType;	$VALUES	field_9222
 	f	Lnet/minecraft/world/level/GameType;	ADVENTURE	field_9216
@@ -68622,8 +68818,11 @@ c	net/minecraft/world/level/NaturalSpawner	net/minecraft/class_1948
 c	net/minecraft/world/level/NaturalSpawner$1	net/minecraft/class_1948$1
 	f	[I	f_47098_	field_9293
 c	net/minecraft/world/level/NaturalSpawner$AfterSpawnCallback	net/minecraft/class_1948$class_5259
+	m	(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/level/chunk/ChunkAccess;)V	m_47100_	run
 c	net/minecraft/world/level/NaturalSpawner$ChunkGetter	net/minecraft/class_1948$class_5260
+	m	(JLjava/util/function/Consumer;)V	m_47103_	query
 c	net/minecraft/world/level/NaturalSpawner$SpawnPredicate	net/minecraft/class_1948$class_5261
+	m	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/ChunkAccess;)Z	m_47106_	test
 c	net/minecraft/world/level/NaturalSpawner$SpawnState	net/minecraft/class_1948$class_5262
 	f	Lnet/minecraft/world/level/LocalMobCapCalculator;	f_186542_	field_34459
 	f	I	f_47110_	field_24394
@@ -69127,6 +69326,7 @@ c	net/minecraft/world/level/biome/Climate	net/minecraft/class_6544
 	m	()Lnet/minecraft/world/level/biome/Climate$Sampler;	m_207841_	method_40443
 	m	(Ljava/util/List;Lnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/BlockPos;	m_207842_	method_39164
 c	net/minecraft/world/level/biome/Climate$DistanceMetric	net/minecraft/class_6544$class_6545
+	m	(Lnet/minecraft/world/level/biome/Climate$RTree$Node;[J)J	m_186809_	distance
 c	net/minecraft/world/level/biome/Climate$Parameter	net/minecraft/class_6544$class_6546
 	f	Lcom/mojang/serialization/Codec;	f_186812_	field_34478
 	f	J	f_186813_	comp_103
@@ -69370,8 +69570,11 @@ c	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterList$Preset	net/
 	m	()Ljava/util/stream/Stream;	m_274593_	method_49514
 	m	(Ljava/util/function/Function;)Lnet/minecraft/world/level/biome/Climate$ParameterList;	m_276781_	method_49193
 c	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterList$Preset$1	net/minecraft/class_8197$class_5305$1
+	m	(Ljava/util/function/Function;)Lnet/minecraft/world/level/biome/Climate$ParameterList;	m_274430_	apply
 c	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterList$Preset$2	net/minecraft/class_8197$class_5305$2
+	m	(Ljava/util/function/Function;)Lnet/minecraft/world/level/biome/Climate$ParameterList;	m_274430_	apply
 c	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterList$Preset$SourceProvider	net/minecraft/class_8197$class_5305$class_8165
+	m	(Ljava/util/function/Function;)Lnet/minecraft/world/level/biome/Climate$ParameterList;	m_274430_	apply
 c	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterLists	net/minecraft/class_8198
 	f	Lnet/minecraft/resources/ResourceKey;	f_273830_	field_42991
 	f	Lnet/minecraft/resources/ResourceKey;	f_273878_	field_42992
@@ -71569,6 +71772,7 @@ c	net/minecraft/world/level/block/ChestBlock$2$1	net/minecraft/class_2281$2$1
 	f	Lnet/minecraft/world/Container;	f_51614_	field_17360
 	f	Lnet/minecraft/world/level/block/ChestBlock$2;	f_51615_	field_17361
 	m	()Lnet/minecraft/network/chat/Component;	m_5446_	method_5476
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 c	net/minecraft/world/level/block/ChestBlock$3	net/minecraft/class_2281$3
 	f	Lnet/minecraft/world/level/block/entity/LidBlockEntity;	f_51626_	field_21782
 	m	(Lnet/minecraft/world/level/block/entity/ChestBlockEntity;Lnet/minecraft/world/level/block/entity/ChestBlockEntity;F)F	m_51635_	method_23900
@@ -72017,11 +72221,14 @@ c	net/minecraft/world/level/block/DoubleBlockCombiner$Combiner	net/minecraft/cla
 	m	(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;	m_6959_	method_17465
 	m	(Ljava/lang/Object;)Ljava/lang/Object;	m_7693_	method_17464
 c	net/minecraft/world/level/block/DoubleBlockCombiner$NeighborCombineResult	net/minecraft/class_4732$class_4734
+	m	(Lnet/minecraft/world/level/block/DoubleBlockCombiner$Combiner;)Ljava/lang/Object;	m_5649_	apply
 c	net/minecraft/world/level/block/DoubleBlockCombiner$NeighborCombineResult$Double	net/minecraft/class_4732$class_4734$class_4735
 	f	Ljava/lang/Object;	f_52846_	field_21787
 	f	Ljava/lang/Object;	f_52847_	field_21788
+	m	(Lnet/minecraft/world/level/block/DoubleBlockCombiner$Combiner;)Ljava/lang/Object;	m_5649_	apply
 c	net/minecraft/world/level/block/DoubleBlockCombiner$NeighborCombineResult$Single	net/minecraft/class_4732$class_4734$class_4736
 	f	Ljava/lang/Object;	f_52853_	field_21789
+	m	(Lnet/minecraft/world/level/block/DoubleBlockCombiner$Combiner;)Ljava/lang/Object;	m_5649_	apply
 c	net/minecraft/world/level/block/DoublePlantBlock	net/minecraft/class_2320
 	f	Lnet/minecraft/world/level/block/state/properties/EnumProperty;	f_52858_	field_10929
 	m	(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;I)V	m_153173_	method_10021
@@ -73079,6 +73286,7 @@ c	net/minecraft/world/level/block/MultifaceSpreader$SpreadPos	net/minecraft/clas
 	m	()Lnet/minecraft/core/BlockPos;	f_221717_	comp_534
 	m	()Lnet/minecraft/core/Direction;	f_221718_	comp_535
 c	net/minecraft/world/level/block/MultifaceSpreader$SpreadPredicate	net/minecraft/class_7118$class_7122
+	m	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/MultifaceSpreader$SpreadPos;)Z	m_221728_	test
 c	net/minecraft/world/level/block/MultifaceSpreader$SpreadType	net/minecraft/class_7118$class_7123
 	f	[Lnet/minecraft/world/level/block/MultifaceSpreader$SpreadType;	$VALUES	field_37601
 	f	Lnet/minecraft/world/level/block/MultifaceSpreader$SpreadType;	SAME_PLANE	field_37599
@@ -75028,6 +75236,7 @@ c	net/minecraft/world/level/block/entity/BaseContainerBlockEntity	net/minecraft/
 	m	(Lnet/minecraft/network/chat/Component;)V	m_58638_	method_17488
 	m	(ILnet/minecraft/world/entity/player/Inventory;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_6555_	method_5465
 	m	()Lnet/minecraft/network/chat/Component;	m_6820_	method_17823
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 	m	(Lnet/minecraft/world/entity/player/Player;)Z	m_7525_	method_17489
 	m	()Lnet/minecraft/network/chat/Component;	m_7755_	method_5477
 	m	()Lnet/minecraft/network/chat/Component;	m_7770_	method_5797
@@ -75064,6 +75273,7 @@ c	net/minecraft/world/level/block/entity/BeaconBlockEntity	net/minecraft/class_2
 	m	(I)Lnet/minecraft/world/effect/MobEffect;	m_58686_	method_10934
 	m	()Ljava/util/List;	m_58702_	method_10937
 	m	()Lnet/minecraft/nbt/CompoundTag;	m_5995_	method_16887
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 	m	()V	m_7651_	method_11012
 	m	()Lnet/minecraft/network/chat/Component;	m_7755_	method_5477
 	m	()Lnet/minecraft/network/chat/Component;	m_7770_	method_5797
@@ -75164,6 +75374,7 @@ c	net/minecraft/world/level/block/entity/BellBlockEntity	net/minecraft/class_372
 	m	()V	m_58845_	method_20219
 	m	(II)Z	m_7531_	method_11004
 c	net/minecraft/world/level/block/entity/BellBlockEntity$ResonationEndAction	net/minecraft/class_3721$class_5557
+	m	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/util/List;)V	m_155220_	run
 c	net/minecraft/world/level/block/entity/BlastFurnaceBlockEntity	net/minecraft/class_3720
 	m	(ILnet/minecraft/world/entity/player/Inventory;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_6555_	method_5465
 	m	()Lnet/minecraft/network/chat/Component;	m_6820_	method_17823
@@ -75208,6 +75419,7 @@ c	net/minecraft/world/level/block/entity/BlockEntity	net/minecraft/class_2586
 	m	(II)Z	m_7531_	method_11004
 	m	()V	m_7651_	method_11012
 c	net/minecraft/world/level/block/entity/BlockEntityTicker	net/minecraft/class_5558
+	m	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BlockEntity;)V	m_155252_	tick
 c	net/minecraft/world/level/block/entity/BlockEntityType	net/minecraft/class_2591
 	f	Lnet/minecraft/world/level/block/entity/BlockEntityType;	f_155257_	field_28117
 	f	Lnet/minecraft/world/level/block/entity/BlockEntityType;	f_222758_	field_37647
@@ -75260,6 +75472,7 @@ c	net/minecraft/world/level/block/entity/BlockEntityType	net/minecraft/class_259
 	m	(Lnet/minecraft/world/level/block/entity/BlockEntityType;)Lnet/minecraft/resources/ResourceLocation;	m_58954_	method_11033
 	m	(Ljava/lang/String;Lnet/minecraft/world/level/block/entity/BlockEntityType$Builder;)Lnet/minecraft/world/level/block/entity/BlockEntityType;	m_58956_	method_11030
 c	net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier	net/minecraft/class_2591$class_5559
+	m	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/entity/BlockEntity;	m_155267_	create
 c	net/minecraft/world/level/block/entity/BlockEntityType$Builder	net/minecraft/class_2591$class_2592
 	f	Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;	f_58959_	field_11915
 	f	Ljava/util/Set;	f_58960_	field_19316
@@ -75793,6 +76006,7 @@ c	net/minecraft/world/level/block/entity/LecternBlockEntity	net/minecraft/class_
 	m	()V	m_59570_	method_17525
 	m	()V	m_6211_	method_5448
 	m	()Z	m_6326_	method_11011
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 c	net/minecraft/world/level/block/entity/LecternBlockEntity$1	net/minecraft/class_3722$1
 	f	Lnet/minecraft/world/level/block/entity/LecternBlockEntity;	f_59572_	field_17391
 	m	()V	m_6211_	method_5448
@@ -75828,6 +76042,7 @@ c	net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	net/mi
 	m	(Lnet/minecraft/world/entity/player/Player;)Z	m_6542_	method_5443
 	m	(ILnet/minecraft/world/item/ItemStack;)V	m_6836_	method_5447
 	m	()Lnet/minecraft/core/NonNullList;	m_7086_	method_11282
+	m	(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/inventory/AbstractContainerMenu;	m_7208_	createMenu
 	m	(II)Lnet/minecraft/world/item/ItemStack;	m_7407_	method_5434
 	m	(Lnet/minecraft/world/entity/player/Player;)Z	m_7525_	method_17489
 	m	()Z	m_7983_	method_5442
@@ -76625,6 +76840,7 @@ c	net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase$Cache	net/
 	m	(Lnet/minecraft/core/Direction;Lnet/minecraft/world/level/block/SupportType;)Z	m_60861_	method_30369
 	m	(Lnet/minecraft/core/Direction;Lnet/minecraft/world/level/block/SupportType;)I	m_60866_	method_30370
 c	net/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction	net/minecraft/class_4970$class_8176
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;	m_271794_	evaluate
 c	net/minecraft/world/level/block/state/BlockBehaviour$OffsetType	net/minecraft/class_4970$class_2250
 	f	[Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;	$VALUES	field_10658
 	f	Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;	NONE	field_10656
@@ -76714,7 +76930,9 @@ c	net/minecraft/world/level/block/state/BlockBehaviour$Properties	net/minecraft/
 	m	()Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;	m_60996_	method_26250
 	m	()Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;	m_60999_	method_29292
 c	net/minecraft/world/level/block/state/BlockBehaviour$StateArgumentPredicate	net/minecraft/class_4970$class_4972
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Ljava/lang/Object;)Z	m_61030_	test
 c	net/minecraft/world/level/block/state/BlockBehaviour$StatePredicate	net/minecraft/class_4970$class_4973
+	m	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z	m_61035_	test
 c	net/minecraft/world/level/block/state/BlockState	net/minecraft/class_2680
 	f	Lcom/mojang/serialization/Codec;	f_61039_	field_24734
 	m	()Lnet/minecraft/world/level/block/state/BlockState;	m_7160_	method_26233
@@ -76744,6 +76962,7 @@ c	net/minecraft/world/level/block/state/StateDefinition$Builder	net/minecraft/cl
 	m	(Ljava/util/function/Function;Lnet/minecraft/world/level/block/state/StateDefinition$Factory;)Lnet/minecraft/world/level/block/state/StateDefinition;	m_61101_	method_11668
 	m	([Lnet/minecraft/world/level/block/state/properties/Property;)Lnet/minecraft/world/level/block/state/StateDefinition$Builder;	m_61104_	method_11667
 c	net/minecraft/world/level/block/state/StateDefinition$Factory	net/minecraft/class_2689$class_2691
+	m	(Ljava/lang/Object;Lcom/google/common/collect/ImmutableMap;Lcom/mojang/serialization/MapCodec;)Ljava/lang/Object;	m_61106_	create
 c	net/minecraft/world/level/block/state/StateHolder	net/minecraft/class_2688
 	f	Ljava/lang/String;	f_155962_	field_31385
 	f	Ljava/lang/String;	f_155963_	field_31386
@@ -77508,6 +77727,7 @@ c	net/minecraft/world/level/chunk/CarvingMask	net/minecraft/class_6643
 	m	(Lnet/minecraft/world/level/chunk/CarvingMask$Mask;)V	m_196710_	method_39785
 	m	(III)Z	m_196712_	method_39786
 c	net/minecraft/world/level/chunk/CarvingMask$Mask	net/minecraft/class_6643$class_6828
+	m	(III)Z	m_196716_	test
 c	net/minecraft/world/level/chunk/ChunkAccess	net/minecraft/class_2791
 	f	[Lit/unimi/dsi/fastutil/shorts/ShortList;	f_187602_	field_34536
 	f	Z	f_187603_	field_34537
@@ -77774,8 +77994,12 @@ c	net/minecraft/world/level/chunk/ChunkStatus$ChunkType	net/minecraft/class_2806
 	f	Lnet/minecraft/world/level/chunk/ChunkStatus$ChunkType;	PROTOCHUNK	field_12808
 	m	()[Lnet/minecraft/world/level/chunk/ChunkStatus$ChunkType;	m_156312_	method_36741
 c	net/minecraft/world/level/chunk/ChunkStatus$GenerationTask	net/minecraft/class_2806$class_2807
+	m	(Lnet/minecraft/world/level/chunk/ChunkStatus;Ljava/util/concurrent/Executor;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/server/level/ThreadedLevelLightEngine;Ljava/util/function/Function;Ljava/util/List;Lnet/minecraft/world/level/chunk/ChunkAccess;)Ljava/util/concurrent/CompletableFuture;	m_214024_	doWork
 c	net/minecraft/world/level/chunk/ChunkStatus$LoadingTask	net/minecraft/class_2806$class_4305
+	m	(Lnet/minecraft/world/level/chunk/ChunkStatus;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/server/level/ThreadedLevelLightEngine;Ljava/util/function/Function;Lnet/minecraft/world/level/chunk/ChunkAccess;)Ljava/util/concurrent/CompletableFuture;	m_223381_	doWork
 c	net/minecraft/world/level/chunk/ChunkStatus$SimpleGenerationTask	net/minecraft/class_2806$class_3768
+	m	(Lnet/minecraft/world/level/chunk/ChunkStatus;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkGenerator;Ljava/util/List;Lnet/minecraft/world/level/chunk/ChunkAccess;)V	m_156322_	doWork
+	m	(Lnet/minecraft/world/level/chunk/ChunkStatus;Ljava/util/concurrent/Executor;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/server/level/ThreadedLevelLightEngine;Ljava/util/function/Function;Ljava/util/List;Lnet/minecraft/world/level/chunk/ChunkAccess;)Ljava/util/concurrent/CompletableFuture;	m_214024_	doWork
 c	net/minecraft/world/level/chunk/DataLayer	net/minecraft/class_2804
 	f	I	f_156338_	field_31403
 	f	I	f_156339_	field_31404
@@ -77967,6 +78191,7 @@ c	net/minecraft/world/level/chunk/LevelChunk$EntityCreationType	net/minecraft/cl
 	f	Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;	QUEUED	field_12861
 	m	()[Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;	m_156442_	method_36742
 c	net/minecraft/world/level/chunk/LevelChunk$PostLoadProcessor	net/minecraft/class_2818$class_6829
+	m	(Lnet/minecraft/world/level/chunk/LevelChunk;)V	m_196866_	run
 c	net/minecraft/world/level/chunk/LevelChunk$RebindableTickingBlockEntityWrapper	net/minecraft/class_2818$class_5564
 	f	Lnet/minecraft/world/level/chunk/LevelChunk;	f_156443_	field_27227
 	f	Lnet/minecraft/world/level/block/entity/TickingBlockEntity;	f_156444_	field_27228
@@ -78011,6 +78236,7 @@ c	net/minecraft/world/level/chunk/LevelChunkSection$1BlockCounter	net/minecraft/
 	f	I	f_204439_	field_36410
 	f	Lnet/minecraft/world/level/chunk/LevelChunkSection;	f_204440_	field_36411
 	m	(Lnet/minecraft/world/level/block/state/BlockState;I)V	m_63144_	method_40155
+	m	(Ljava/lang/Object;I)V	m_63144_	accept
 c	net/minecraft/world/level/chunk/LightChunk	net/minecraft/class_8527
 	m	(Ljava/util/function/BiConsumer;)V	m_284254_	method_51524
 	m	()Lnet/minecraft/world/level/lighting/ChunkSkyLightSources;	m_284400_	method_12018
@@ -78044,7 +78270,9 @@ c	net/minecraft/world/level/chunk/Palette	net/minecraft/class_2837
 	m	()I	m_6429_	method_12290
 	m	(Ljava/lang/Object;)I	m_6796_	method_12291
 c	net/minecraft/world/level/chunk/Palette$Factory	net/minecraft/class_2837$class_6559
+	m	(ILnet/minecraft/core/IdMap;Lnet/minecraft/world/level/chunk/PaletteResize;Ljava/util/List;)Lnet/minecraft/world/level/chunk/Palette;	m_188026_	create
 c	net/minecraft/world/level/chunk/PaletteResize	net/minecraft/class_2835
+	m	(ILjava/lang/Object;)I	m_7248_	onResize
 c	net/minecraft/world/level/chunk/PalettedContainer	net/minecraft/class_2841
 	f	I	f_188031_	field_34557
 	f	Lnet/minecraft/world/level/chunk/PalettedContainer$Data;	f_188032_	field_34560
@@ -78090,6 +78318,7 @@ c	net/minecraft/world/level/chunk/PalettedContainer	net/minecraft/class_2841
 	m	(Lnet/minecraft/network/FriendlyByteBuf;)V	m_63135_	method_12325
 	m	()I	m_63137_	method_12327
 	m	(Lnet/minecraft/world/level/chunk/PalettedContainer$CountConsumer;Lit/unimi/dsi/fastutil/ints/Int2IntMap$Entry;)V	m_63138_	method_21733
+	m	(ILjava/lang/Object;)I	m_7248_	onResize
 c	net/minecraft/world/level/chunk/PalettedContainer$Configuration	net/minecraft/class_2841$class_6560
 	f	Lnet/minecraft/world/level/chunk/Palette$Factory;	f_188085_	comp_72
 	f	I	f_188086_	comp_73
@@ -78097,6 +78326,7 @@ c	net/minecraft/world/level/chunk/PalettedContainer$Configuration	net/minecraft/
 	m	()I	f_188086_	comp_73
 	m	(Lnet/minecraft/core/IdMap;Lnet/minecraft/world/level/chunk/PaletteResize;I)Lnet/minecraft/world/level/chunk/PalettedContainer$Data;	m_188091_	method_38305
 c	net/minecraft/world/level/chunk/PalettedContainer$CountConsumer	net/minecraft/class_2841$class_4464
+	m	(Ljava/lang/Object;I)V	m_63144_	accept
 c	net/minecraft/world/level/chunk/PalettedContainer$Data	net/minecraft/class_2841$class_6561
 	f	Lnet/minecraft/world/level/chunk/PalettedContainer$Configuration;	f_188100_	comp_74
 	f	Lnet/minecraft/util/BitStorage;	f_188101_	comp_118
@@ -78139,6 +78369,7 @@ c	net/minecraft/world/level/chunk/PalettedContainerRO$PackedData	net/minecraft/c
 	m	()Ljava/util/Optional;	f_238179_	comp_76
 	m	()Ljava/util/List;	f_238184_	comp_75
 c	net/minecraft/world/level/chunk/PalettedContainerRO$Unpacker	net/minecraft/class_7522$class_7523
+	m	(Lnet/minecraft/core/IdMap;Lnet/minecraft/world/level/chunk/PalettedContainer$Strategy;Lnet/minecraft/world/level/chunk/PalettedContainerRO$PackedData;)Lcom/mojang/serialization/DataResult;	m_238363_	read
 c	net/minecraft/world/level/chunk/ProtoChunk	net/minecraft/class_2839
 	f	Lnet/minecraft/world/level/levelgen/BelowZeroRetrogen;	f_188164_	field_35473
 	f	Lnet/minecraft/world/ticks/ProtoChunkTicks;	f_188165_	field_35475
@@ -78429,6 +78660,7 @@ c	net/minecraft/world/level/chunk/storage/RegionFile$ChunkBuffer	net/minecraft/c
 	f	Lnet/minecraft/world/level/chunk/storage/RegionFile;	f_63692_	field_13035
 	f	Lnet/minecraft/world/level/ChunkPos;	f_63693_	field_17656
 c	net/minecraft/world/level/chunk/storage/RegionFile$CommitOp	net/minecraft/class_2861$class_4549
+	m	()V	m_63698_	run
 c	net/minecraft/world/level/chunk/storage/RegionFileStorage	net/minecraft/class_2867
 	f	Ljava/lang/String;	f_156615_	field_31425
 	f	I	f_156616_	field_31426
@@ -78461,6 +78693,7 @@ c	net/minecraft/world/level/chunk/storage/RegionFileVersion	net/minecraft/class_
 	m	(Ljava/io/InputStream;)Ljava/io/InputStream;	m_63766_	method_39805
 	m	(Ljava/io/OutputStream;)Ljava/io/OutputStream;	m_63768_	method_39806
 c	net/minecraft/world/level/chunk/storage/RegionFileVersion$StreamWrapper	net/minecraft/class_4486$class_4487
+	m	(Ljava/lang/Object;)Ljava/lang/Object;	m_63770_	wrap
 c	net/minecraft/world/level/chunk/storage/SectionStorage	net/minecraft/class_4180
 	f	Ljava/lang/String;	f_156617_	field_31427
 	f	Lnet/minecraft/world/level/LevelHeightAccessor;	f_156618_	field_27240
@@ -78696,6 +78929,7 @@ c	net/minecraft/world/level/entity/ChunkEntities	net/minecraft/class_5566
 	m	()Ljava/util/stream/Stream;	m_156792_	method_31742
 	m	()Z	m_156793_	method_31743
 c	net/minecraft/world/level/entity/ChunkStatusUpdateListener	net/minecraft/class_5567
+	m	(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/server/level/FullChunkStatus;)V	m_156794_	onChunkStatusChange
 c	net/minecraft/world/level/entity/EntityAccess	net/minecraft/class_5568
 	m	(Lnet/minecraft/world/level/entity/EntityInLevelCallback;)V	m_141960_	method_31744
 	m	()Z	m_142389_	method_31747
@@ -78982,6 +79216,7 @@ c	net/minecraft/world/level/gameevent/EuclideanGameEventListenerRegistry	net/min
 	m	(Lnet/minecraft/world/level/gameevent/GameEventListener;)V	m_246052_	method_32945
 	m	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/gameevent/GameEventListener;)Ljava/util/Optional;	m_247048_	method_32936
 c	net/minecraft/world/level/gameevent/EuclideanGameEventListenerRegistry$OnEmptyAction	net/minecraft/class_5711$class_8512
+	m	(I)V	m_280077_	apply
 c	net/minecraft/world/level/gameevent/GameEvent	net/minecraft/class_5712
 	f	Lnet/minecraft/world/level/gameevent/GameEvent;	f_157769_	field_28166
 	f	Lnet/minecraft/world/level/gameevent/GameEvent;	f_157770_	field_28159
@@ -79101,6 +79336,7 @@ c	net/minecraft/world/level/gameevent/GameEventListenerRegistry$1	net/minecraft/
 	m	(Lnet/minecraft/world/level/gameevent/GameEventListener;)V	m_245531_	method_32944
 	m	(Lnet/minecraft/world/level/gameevent/GameEventListener;)V	m_246052_	method_32945
 c	net/minecraft/world/level/gameevent/GameEventListenerRegistry$ListenerVisitor	net/minecraft/class_5713$class_7721
+	m	(Lnet/minecraft/world/level/gameevent/GameEventListener;Lnet/minecraft/world/phys/Vec3;)V	m_247726_	visit
 c	net/minecraft/world/level/gameevent/PositionSource	net/minecraft/class_5716
 	f	Lcom/mojang/serialization/Codec;	f_157868_	field_28184
 	m	(Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	m_142502_	method_32956
@@ -79219,6 +79455,7 @@ c	net/minecraft/world/level/levelgen/Aquifer$1	net/minecraft/class_6350$1
 	m	()Z	m_142203_	method_33742
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;D)Lnet/minecraft/world/level/block/state/BlockState;	m_207104_	method_38317
 c	net/minecraft/world/level/levelgen/Aquifer$FluidPicker	net/minecraft/class_6350$class_6565
+	m	(III)Lnet/minecraft/world/level/levelgen/Aquifer$FluidStatus;	m_183538_	computeFluid
 c	net/minecraft/world/level/levelgen/Aquifer$FluidStatus	net/minecraft/class_6350$class_6351
 	f	I	f_188400_	field_33576
 	f	Lnet/minecraft/world/level/block/state/BlockState;	f_188401_	field_33577
@@ -79443,6 +79680,7 @@ c	net/minecraft/world/level/levelgen/DensityFunction$SinglePointContext	net/mine
 	m	()I	m_207115_	comp_371
 c	net/minecraft/world/level/levelgen/DensityFunction$Visitor	net/minecraft/class_6910$class_6915
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;	m_213918_	method_42358
+	m	(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_214017_	apply
 c	net/minecraft/world/level/levelgen/DensityFunctions	net/minecraft/class_6916
 	f	D	f_208257_	field_37060
 	f	Lcom/mojang/serialization/Codec;	f_208258_	field_37061
@@ -80134,6 +80372,7 @@ c	net/minecraft/world/level/levelgen/NoiseChunk$BlendOffset	net/minecraft/class_
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_207456_	method_40469
 	m	()Lnet/minecraft/util/KeyDispatchDataCodec;	m_214023_	method_41062
 c	net/minecraft/world/level/levelgen/NoiseChunk$BlockStateFiller	net/minecraft/class_6568$class_6569
+	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)Lnet/minecraft/world/level/block/state/BlockState;	m_207387_	calculate
 c	net/minecraft/world/level/levelgen/NoiseChunk$Cache2D	net/minecraft/class_6568$class_6948
 	f	Lnet/minecraft/world/level/levelgen/DensityFunction;	f_209284_	field_36599
 	f	J	f_209285_	field_36600
@@ -80507,6 +80746,7 @@ c	net/minecraft/world/level/levelgen/RandomState	net/minecraft/class_7138
 c	net/minecraft/world/level/levelgen/RandomState$1	net/minecraft/class_7138$1
 	f	Lnet/minecraft/world/level/levelgen/RandomState;	f_244167_	field_40361
 	f	Ljava/util/Map;	f_244328_	field_40362
+	m	(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_214017_	apply
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_246139_	method_45512
 c	net/minecraft/world/level/levelgen/RandomState$1NoiseWiringHelper	net/minecraft/class_7138$class_7271
 	f	J	f_224583_	field_38264
@@ -80514,6 +80754,7 @@ c	net/minecraft/world/level/levelgen/RandomState$1NoiseWiringHelper	net/minecraf
 	f	Lnet/minecraft/world/level/levelgen/RandomState;	f_224585_	field_38266
 	f	Ljava/util/Map;	f_224586_	field_38267
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;	m_213918_	method_42358
+	m	(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_214017_	apply
 	m	(J)Lnet/minecraft/util/RandomSource;	m_224591_	method_42375
 	m	(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;	m_224595_	method_42376
 c	net/minecraft/world/level/levelgen/RandomSupport	net/minecraft/class_6673
@@ -80715,6 +80956,7 @@ c	net/minecraft/world/level/levelgen/SurfaceRules$RuleSource	net/minecraft/class
 c	net/minecraft/world/level/levelgen/SurfaceRules$SequenceRule	net/minecraft/class_6686$class_6709
 	f	Ljava/util/List;	f_189685_	comp_208
 	m	()Ljava/util/List;	f_189685_	comp_208
+	m	(III)Lnet/minecraft/world/level/block/state/BlockState;	m_183550_	tryApply
 c	net/minecraft/world/level/levelgen/SurfaceRules$SequenceRuleSource	net/minecraft/class_6686$class_6710
 	f	Ljava/util/List;	f_189697_	comp_209
 	f	Lnet/minecraft/util/KeyDispatchDataCodec;	f_189698_	field_35253
@@ -80724,6 +80966,7 @@ c	net/minecraft/world/level/levelgen/SurfaceRules$SequenceRuleSource	net/minecra
 c	net/minecraft/world/level/levelgen/SurfaceRules$StateRule	net/minecraft/class_6686$class_6711
 	f	Lnet/minecraft/world/level/block/state/BlockState;	f_189712_	comp_210
 	m	()Lnet/minecraft/world/level/block/state/BlockState;	f_189712_	comp_210
+	m	(III)Lnet/minecraft/world/level/block/state/BlockState;	m_183550_	tryApply
 c	net/minecraft/world/level/levelgen/SurfaceRules$Steep	net/minecraft/class_6686$class_6712
 	f	[Lnet/minecraft/world/level/levelgen/SurfaceRules$Steep;	$VALUES	field_35256
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$Steep;	INSTANCE	field_35254
@@ -80750,6 +80993,7 @@ c	net/minecraft/world/level/levelgen/SurfaceRules$StoneDepthCheck$1StoneDepthCon
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$StoneDepthCheck;	f_189768_	field_35259
 	m	()Z	m_183479_	method_39074
 c	net/minecraft/world/level/levelgen/SurfaceRules$SurfaceRule	net/minecraft/class_6686$class_6715
+	m	(III)Lnet/minecraft/world/level/block/state/BlockState;	m_183550_	tryApply
 c	net/minecraft/world/level/levelgen/SurfaceRules$Temperature	net/minecraft/class_6686$class_6716
 	f	[Lnet/minecraft/world/level/levelgen/SurfaceRules$Temperature;	$VALUES	field_35262
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$Temperature;	INSTANCE	field_35260
@@ -80762,6 +81006,7 @@ c	net/minecraft/world/level/levelgen/SurfaceRules$TestRule	net/minecraft/class_6
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$SurfaceRule;	f_189794_	comp_214
 	m	()Lnet/minecraft/world/level/levelgen/SurfaceRules$Condition;	f_189793_	comp_213
 	m	()Lnet/minecraft/world/level/levelgen/SurfaceRules$SurfaceRule;	f_189794_	comp_214
+	m	(III)Lnet/minecraft/world/level/block/state/BlockState;	m_183550_	tryApply
 c	net/minecraft/world/level/levelgen/SurfaceRules$TestRuleSource	net/minecraft/class_6686$class_6718
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$ConditionSource;	f_189808_	comp_215
 	f	Lnet/minecraft/world/level/levelgen/SurfaceRules$RuleSource;	f_189809_	comp_216
@@ -81074,7 +81319,9 @@ c	net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput	net/minecra
 	m	()D	f_209729_	comp_435
 	m	()D	f_209730_	comp_436
 c	net/minecraft/world/level/levelgen/blending/Blender$CellValueGetter	net/minecraft/class_6748$class_6781
+	m	(Lnet/minecraft/world/level/levelgen/blending/BlendingData;III)D	m_190233_	get
 c	net/minecraft/world/level/levelgen/blending/Blender$DistanceGetter	net/minecraft/class_6748$class_6831
+	m	(DDD)D	m_197061_	getDistance
 c	net/minecraft/world/level/levelgen/blending/BlendingData	net/minecraft/class_6749
 	f	I	f_190252_	field_35511
 	f	D	f_190253_	field_35513
@@ -81134,8 +81381,11 @@ c	net/minecraft/world/level/levelgen/blending/BlendingData	net/minecraft/class_6
 	m	(Lnet/minecraft/world/level/levelgen/blending/BlendingData;)Ljava/lang/Integer;	m_224766_	method_41569
 	m	()Ljava/lang/String;	m_274287_	method_49533
 c	net/minecraft/world/level/levelgen/blending/BlendingData$BiomeConsumer	net/minecraft/class_6749$class_6853
+	m	(IILnet/minecraft/core/Holder;)V	m_204673_	consume
 c	net/minecraft/world/level/levelgen/blending/BlendingData$DensityConsumer	net/minecraft/class_6749$class_6750
+	m	(IIID)V	m_190361_	consume
 c	net/minecraft/world/level/levelgen/blending/BlendingData$HeightConsumer	net/minecraft/class_6749$class_6751
+	m	(IID)V	m_190366_	consume
 c	net/minecraft/world/level/levelgen/blending/package-info	net/minecraft/class_6753
 c	net/minecraft/world/level/levelgen/blockpredicates/AllOfPredicate	net/minecraft/class_6644
 	f	Lcom/mojang/serialization/Codec;	f_190370_	field_35052
@@ -81192,6 +81442,7 @@ c	net/minecraft/world/level/levelgen/blockpredicates/BlockPredicateType	net/mine
 	f	Lnet/minecraft/world/level/levelgen/blockpredicates/BlockPredicateType;	f_198314_	field_36283
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_190447_	method_38888
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/blockpredicates/BlockPredicateType;	m_190449_	method_38889
+	m	()Lcom/mojang/serialization/Codec;	m_190452_	codec
 c	net/minecraft/world/level/levelgen/blockpredicates/CombiningPredicate	net/minecraft/class_6648
 	f	Ljava/util/List;	f_190453_	field_35061
 	m	(Lnet/minecraft/world/level/levelgen/blockpredicates/CombiningPredicate;)Ljava/util/List;	m_190456_	method_38890
@@ -81409,6 +81660,7 @@ c	net/minecraft/world/level/levelgen/carver/WorldCarver	net/minecraft/class_2939
 	m	()Lcom/mojang/serialization/Codec;	m_65072_	method_28616
 	m	()I	m_65073_	method_12710
 c	net/minecraft/world/level/levelgen/carver/WorldCarver$CarveSkipChecker	net/minecraft/class_2939$class_5874
+	m	(Lnet/minecraft/world/level/levelgen/carver/CarvingContext;DDDI)Z	m_159425_	shouldSkip
 c	net/minecraft/world/level/levelgen/carver/package-info	net/minecraft/class_6109
 c	net/minecraft/world/level/levelgen/feature/AbstractHugeMushroomFeature	net/minecraft/class_4625
 	m	(Lnet/minecraft/world/level/levelgen/feature/FeaturePlaceContext;)Z	m_142674_	method_13151
@@ -83090,6 +83342,7 @@ c	net/minecraft/world/level/levelgen/heightproviders/HeightProviderType	net/mine
 	f	Lnet/minecraft/world/level/levelgen/heightproviders/HeightProviderType;	f_191531_	field_35711
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_161987_	method_35393
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/heightproviders/HeightProviderType;	m_161989_	method_35394
+	m	()Lcom/mojang/serialization/Codec;	m_161992_	codec
 c	net/minecraft/world/level/levelgen/heightproviders/TrapezoidHeight	net/minecraft/class_6342
 	f	Lcom/mojang/serialization/Codec;	f_161993_	field_33522
 	f	Lorg/slf4j/Logger;	f_161994_	field_33523
@@ -83140,6 +83393,7 @@ c	net/minecraft/world/level/levelgen/heightproviders/package-info	net/minecraft/
 c	net/minecraft/world/level/levelgen/material/MaterialRuleList	net/minecraft/class_6582
 	f	Ljava/util/List;	f_191545_	comp_437
 	m	()Ljava/util/List;	f_191545_	comp_437
+	m	(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)Lnet/minecraft/world/level/block/state/BlockState;	m_207387_	calculate
 c	net/minecraft/world/level/levelgen/material/WorldGenMaterialRule	net/minecraft/class_6583
 	m	(Lnet/minecraft/world/level/levelgen/NoiseChunk;III)Lnet/minecraft/world/level/block/state/BlockState;	m_183577_	method_40553
 c	net/minecraft/world/level/levelgen/material/package-info	net/minecraft/class_6657
@@ -83315,6 +83569,7 @@ c	net/minecraft/world/level/levelgen/placement/PlacementModifierType	net/minecra
 	f	Lnet/minecraft/world/level/levelgen/placement/PlacementModifierType;	f_191862_	field_35751
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_191864_	method_39654
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/placement/PlacementModifierType;	m_191866_	method_39655
+	m	()Lcom/mojang/serialization/Codec;	m_191869_	codec
 c	net/minecraft/world/level/levelgen/placement/RandomOffsetPlacement	net/minecraft/class_6732
 	f	Lcom/mojang/serialization/Codec;	f_191870_	field_35419
 	f	Lnet/minecraft/util/valueproviders/IntProvider;	f_191871_	field_35420
@@ -83541,6 +83796,7 @@ c	net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece	net/min
 c	net/minecraft/world/level/levelgen/structure/PostPlacementProcessor	net/minecraft/class_6621
 	f	Lnet/minecraft/world/level/levelgen/structure/PostPlacementProcessor;	f_192427_	field_34938
 	m	(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V	m_226517_	method_38701
+	m	(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/chunk/ChunkGenerator;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/world/level/levelgen/structure/pieces/PiecesContainer;)V	m_226525_	afterPlace
 c	net/minecraft/world/level/levelgen/structure/ScatteredFeaturePiece	net/minecraft/class_3418
 	f	I	f_72787_	field_15244
 	f	I	f_72788_	field_15243
@@ -83557,6 +83813,7 @@ c	net/minecraft/world/level/levelgen/structure/SinglePieceStructure	net/minecraf
 	m	(Lnet/minecraft/world/level/levelgen/structure/Structure$GenerationContext;Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder;)V	m_226543_	method_41605
 	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder;Lnet/minecraft/world/level/levelgen/structure/Structure$GenerationContext;)V	m_226546_	method_41606
 c	net/minecraft/world/level/levelgen/structure/SinglePieceStructure$PieceConstructor	net/minecraft/class_7147$class_7148
+	m	(Lnet/minecraft/world/level/levelgen/WorldgenRandom;II)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_226549_	construct
 c	net/minecraft/world/level/levelgen/structure/Structure	net/minecraft/class_3195
 	f	Lcom/mojang/serialization/Codec;	f_226553_	field_37744
 	f	Lcom/mojang/serialization/Codec;	f_226554_	field_37745
@@ -83808,6 +84065,7 @@ c	net/minecraft/world/level/levelgen/structure/StructureType	net/minecraft/class
 	f	Lnet/minecraft/world/level/levelgen/structure/StructureType;	f_226877_	field_37767
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_226879_	method_41622
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/StructureType;	m_226881_	method_41623
+	m	()Lcom/mojang/serialization/Codec;	m_226884_	codec
 c	net/minecraft/world/level/levelgen/structure/TemplateStructurePiece	net/minecraft/class_3470
 	f	Ljava/lang/String;	f_163658_	field_31664
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;	f_73656_	field_15433
@@ -83835,6 +84093,7 @@ c	net/minecraft/world/level/levelgen/structure/TerrainAdjustment	net/minecraft/c
 	m	()Ljava/lang/String;	m_7912_	method_15434
 c	net/minecraft/world/level/levelgen/structure/package-info	net/minecraft/class_6131
 c	net/minecraft/world/level/levelgen/structure/pieces/PieceGenerator	net/minecraft/class_6622
+	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder;Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGenerator$Context;)V	m_197325_	generatePieces
 c	net/minecraft/world/level/levelgen/structure/pieces/PieceGenerator$Context	net/minecraft/class_6622$class_6623
 	f	Lnet/minecraft/world/level/chunk/ChunkGenerator;	f_192703_	comp_125
 	f	Lnet/minecraft/world/level/ChunkPos;	f_192705_	comp_127
@@ -83853,6 +84112,9 @@ c	net/minecraft/world/level/levelgen/structure/pieces/PieceGenerator$Context	net
 c	net/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier	net/minecraft/class_6834
 	m	(Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier$Context;)Z	m_197338_	method_39844
 	m	(Ljava/util/function/Predicate;Ljava/util/Optional;Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier$Context;)Ljava/util/Optional;	m_197341_	method_39845
+	m	(Lnet/minecraft/world/level/levelgen/Heightmap$Types;)Ljava/util/function/Predicate;	m_197345_	checkForBiomeOnTop
+	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier$Context;)Ljava/util/Optional;	m_197347_	createGenerator
+	m	(Ljava/util/function/Predicate;Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGenerator;)Lnet/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier;	m_197349_	simple
 c	net/minecraft/world/level/levelgen/structure/pieces/PieceGeneratorSupplier$Context	net/minecraft/class_6834$class_6835
 	f	Lnet/minecraft/world/level/chunk/ChunkGenerator;	f_197352_	comp_306
 	f	Lnet/minecraft/world/level/biome/BiomeSource;	f_197353_	comp_307
@@ -83951,11 +84213,16 @@ c	net/minecraft/world/level/levelgen/structure/pieces/StructurePieceType	net/min
 	f	Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	f_210148_	field_16959
 	f	Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	f_210149_	field_16939
 	f	Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	f_210150_	field_16948
+	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_207333_	load
 	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType$ContextlessType;Ljava/lang/String;)Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	m_210152_	method_16813
 	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType$StructureTemplateType;Ljava/lang/String;)Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	m_210155_	method_38691
 	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;Ljava/lang/String;)Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceType;	m_210158_	method_38692
 c	net/minecraft/world/level/levelgen/structure/pieces/StructurePieceType$ContextlessType	net/minecraft/class_3773$class_6615
+	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_207333_	load
+	m	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_210166_	load
 c	net/minecraft/world/level/levelgen/structure/pieces/StructurePieceType$StructureTemplateType	net/minecraft/class_3773$class_6616
+	m	(Lnet/minecraft/world/level/levelgen/structure/pieces/StructurePieceSerializationContext;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_207333_	load
+	m	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_226962_	load
 c	net/minecraft/world/level/levelgen/structure/pieces/StructurePiecesBuilder	net/minecraft/class_6626
 	f	Ljava/util/List;	f_192778_	field_34944
 	m	(Lnet/minecraft/world/level/levelgen/structure/BoundingBox;)Lnet/minecraft/world/level/levelgen/structure/StructurePiece;	m_141921_	method_35461
@@ -84038,6 +84305,7 @@ c	net/minecraft/world/level/levelgen/structure/placement/StructurePlacement$Excl
 	m	(Lnet/minecraft/world/level/chunk/ChunkGeneratorStructureState;II)Z	m_254908_	method_41648
 	m	(Lcom/mojang/serialization/codecs/RecordCodecBuilder$Instance;)Lcom/mojang/datafixers/kinds/App;	m_257362_	method_41647
 c	net/minecraft/world/level/levelgen/structure/placement/StructurePlacement$FrequencyReducer	net/minecraft/class_6874$class_7153
+	m	(JIIIF)Z	m_227098_	shouldGenerate
 c	net/minecraft/world/level/levelgen/structure/placement/StructurePlacement$FrequencyReductionMethod	net/minecraft/class_6874$class_7154
 	f	[Lnet/minecraft/world/level/levelgen/structure/placement/StructurePlacement$FrequencyReductionMethod;	$VALUES	field_37789
 	f	Lnet/minecraft/world/level/levelgen/structure/placement/StructurePlacement$FrequencyReductionMethod;	DEFAULT	field_37782
@@ -84055,6 +84323,7 @@ c	net/minecraft/world/level/levelgen/structure/placement/StructurePlacementType	
 	f	Lnet/minecraft/world/level/levelgen/structure/placement/StructurePlacementType;	f_205042_	field_36430
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_205044_	method_40176
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/placement/StructurePlacementType;	m_205046_	method_40177
+	m	()Lcom/mojang/serialization/Codec;	m_205049_	codec
 c	net/minecraft/world/level/levelgen/structure/placement/package-info	net/minecraft/class_6876
 c	net/minecraft/world/level/levelgen/structure/pools/EmptyPoolElement	net/minecraft/class_3777
 	f	Lcom/mojang/serialization/Codec;	f_210174_	field_24947
@@ -84196,6 +84465,7 @@ c	net/minecraft/world/level/levelgen/structure/pools/StructurePoolElementType	ne
 	f	Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElementType;	f_210546_	field_24016
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_210548_	method_28884
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElementType;	m_210550_	method_28885
+	m	()Lcom/mojang/serialization/Codec;	m_210553_	codec
 c	net/minecraft/world/level/levelgen/structure/pools/StructureTemplatePool	net/minecraft/class_3785
 	f	Lcom/mojang/serialization/Codec;	f_210554_	field_25853
 	f	Lcom/mojang/serialization/Codec;	f_210555_	field_24954
@@ -85309,6 +85579,7 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType	ne
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType;	f_74207_	field_23346
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_74209_	method_28983
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType;	m_74211_	method_26409
+	m	()Lcom/mojang/serialization/Codec;	m_74214_	codec
 c	net/minecraft/world/level/levelgen/structure/templatesystem/ProcessorRule	net/minecraft/class_3821
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/RuleBlockEntityModifier;	f_276504_	field_43334
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/Passthrough;	f_276568_	field_43333
@@ -85369,6 +85640,7 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType	net/m
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType;	f_74317_	field_16984
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_74319_	method_28997
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType;	m_74321_	method_16821
+	m	()Lcom/mojang/serialization/Codec;	m_74324_	codec
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings	net/minecraft/class_3492
 	f	Lnet/minecraft/world/level/block/Mirror;	f_74361_	field_15564
 	f	Lnet/minecraft/world/level/block/Rotation;	f_74362_	field_15569
@@ -85433,6 +85705,7 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessor
 	m	(Lcom/mojang/datafixers/util/Either;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorList;	m_74470_	method_31028
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_74472_	method_28998
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorType;	m_74476_	method_16822
+	m	()Lcom/mojang/serialization/Codec;	m_74481_	codec
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate	net/minecraft/class_3499
 	f	Ljava/lang/String;	f_163789_	field_31687
 	f	Ljava/lang/String;	f_163790_	field_31688
@@ -85559,6 +85832,7 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateM
 	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;	m_230431_	method_15092
 	m	(Lnet/minecraft/resources/ResourceLocation;)Ljava/io/InputStream;	m_230437_	method_44249
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager$InputStreamOpener	net/minecraft/class_3485$class_7513
+	m	()Ljava/io/InputStream;	m_230439_	open
 c	net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager$Source	net/minecraft/class_3485$class_7514
 	f	Ljava/util/function/Function;	f_230440_	comp_852
 	f	Ljava/util/function/Supplier;	f_230441_	comp_853
@@ -85607,6 +85881,7 @@ c	net/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/R
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/RuleBlockEntityModifierType;	f_276528_	field_43347
 	f	Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/RuleBlockEntityModifierType;	f_276561_	field_43349
 	m	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/RuleBlockEntityModifierType;	m_276888_	method_49899
+	m	()Lcom/mojang/serialization/Codec;	m_276894_	codec
 	m	(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;	m_276912_	method_49898
 c	net/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/package-info	net/minecraft/class_8250
 c	net/minecraft/world/level/levelgen/synth/BlendedNoise	net/minecraft/class_5822
@@ -87474,7 +87749,9 @@ c	net/minecraft/world/level/storage/loot/IntRange	net/minecraft/class_42
 	m	(Lnet/minecraft/world/level/storage/loot/LootContext;I)I	m_165049_	method_279
 	m	(Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider;Lnet/minecraft/world/level/storage/loot/LootContext;I)I	m_165052_	method_32398
 c	net/minecraft/world/level/storage/loot/IntRange$IntChecker	net/minecraft/class_42$class_5638
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;I)Z	m_165056_	test
 c	net/minecraft/world/level/storage/loot/IntRange$IntLimiter	net/minecraft/class_42$class_5639
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;I)I	m_165059_	apply
 c	net/minecraft/world/level/storage/loot/IntRange$Serializer	net/minecraft/class_42$class_62
 	m	(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/world/level/storage/loot/IntRange;	deserialize	method_381
 	m	(Lnet/minecraft/world/level/storage/loot/IntRange;Ljava/lang/reflect/Type;Lcom/google/gson/JsonSerializationContext;)Lcom/google/gson/JsonElement;	serialize	method_382
@@ -87539,6 +87816,7 @@ c	net/minecraft/world/level/storage/loot/LootDataManager	net/minecraft/class_60
 	m	(I)[Ljava/util/concurrent/CompletableFuture;	m_278638_	method_51188
 	m	(Ljava/lang/String;Ljava/lang/String;)V	m_278659_	method_51197
 	m	(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/world/level/storage/loot/LootDataType;Ljava/util/Map;)V	m_278660_	method_51189
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataId;)Ljava/lang/Object;	m_278667_	getElement
 	m	(Ljava/util/Map;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/Object;)V	m_278668_	method_51198
 	m	(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/concurrent/Executor;Ljava/util/Map;Lnet/minecraft/world/level/storage/loot/LootDataType;)Ljava/util/concurrent/CompletableFuture;	m_278675_	method_51190
 	m	([Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;	m_278704_	method_51200
@@ -87555,6 +87833,7 @@ c	net/minecraft/world/level/storage/loot/LootDataManager	net/minecraft/class_60
 c	net/minecraft/world/level/storage/loot/LootDataManager$1	net/minecraft/class_60$1
 	f	Ljava/util/Map;	f_278380_	field_44494
 	f	Lnet/minecraft/world/level/storage/loot/LootDataManager;	f_278498_	field_44495
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataId;)Ljava/lang/Object;	m_278667_	getElement
 c	net/minecraft/world/level/storage/loot/LootDataManager$CompositePredicate	net/minecraft/class_60$class_5334
 	f	Ljava/util/function/Predicate;	f_278433_	field_25203
 	f	[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	f_278503_	field_25202
@@ -87568,6 +87847,11 @@ c	net/minecraft/world/level/storage/loot/LootDataManager$FunctionSequence	net/mi
 	m	(Lnet/minecraft/world/level/storage/loot/ValidationContext;)V	m_6169_	method_292
 	m	()Lnet/minecraft/world/level/storage/loot/functions/LootItemFunctionType;	m_7162_	method_29321
 c	net/minecraft/world/level/storage/loot/LootDataResolver	net/minecraft/class_8489
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataType;Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;	m_278615_	getElementOptional
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataId;)Ljava/lang/Object;	m_278667_	getElement
+	m	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootTable;	m_278676_	getLootTable
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataId;)Ljava/util/Optional;	m_278739_	getElementOptional
+	m	(Lnet/minecraft/world/level/storage/loot/LootDataType;Lnet/minecraft/resources/ResourceLocation;)Ljava/lang/Object;	m_278789_	getElement
 c	net/minecraft/world/level/storage/loot/LootDataType	net/minecraft/class_8490
 	f	Lnet/minecraft/world/level/storage/loot/LootDataType;	f_278407_	field_44496
 	f	Lnet/minecraft/world/level/storage/loot/LootDataType;	f_278413_	field_44498
@@ -87593,6 +87877,7 @@ c	net/minecraft/world/level/storage/loot/LootDataType	net/minecraft/class_8490
 	m	(Lnet/minecraft/world/level/storage/loot/ValidationContext;Lnet/minecraft/world/level/storage/loot/LootDataId;Lnet/minecraft/world/level/storage/loot/LootTable;)V	m_278847_	method_51208
 	m	()Lcom/google/gson/Gson;	m_278857_	method_51203
 c	net/minecraft/world/level/storage/loot/LootDataType$Validator	net/minecraft/class_8490$class_8491
+	m	(Lnet/minecraft/world/level/storage/loot/ValidationContext;Lnet/minecraft/world/level/storage/loot/LootDataId;Ljava/lang/Object;)V	m_278714_	run
 c	net/minecraft/world/level/storage/loot/LootParams	net/minecraft/class_8567
 	f	Ljava/util/Map;	f_286955_	field_44885
 	f	F	f_286957_	field_44886
@@ -87619,6 +87904,7 @@ c	net/minecraft/world/level/storage/loot/LootParams$Builder	net/minecraft/class_
 	m	(Lnet/minecraft/world/level/storage/loot/parameters/LootContextParam;Ljava/lang/Object;)Lnet/minecraft/world/level/storage/loot/LootParams$Builder;	m_287286_	method_51874
 	m	(Lnet/minecraft/world/level/storage/loot/parameters/LootContextParam;Ljava/lang/Object;)Lnet/minecraft/world/level/storage/loot/LootParams$Builder;	m_287289_	method_51877
 c	net/minecraft/world/level/storage/loot/LootParams$DynamicDrop	net/minecraft/class_8567$class_49
+	m	(Ljava/util/function/Consumer;)V	m_287291_	add
 c	net/minecraft/world/level/storage/loot/LootPool	net/minecraft/class_55
 	f	[Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;	f_79023_	field_953
 	f	[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	f_79024_	field_954
@@ -87735,6 +88021,7 @@ c	net/minecraft/world/level/storage/loot/entries/AlternativesEntry$Builder	net/m
 c	net/minecraft/world/level/storage/loot/entries/ComposableEntryContainer	net/minecraft/class_64
 	f	Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;	f_79405_	field_16883
 	f	Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;	f_79406_	field_16884
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_6562_	expand
 	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_79408_	method_16776
 	m	(Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;)Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;	m_79411_	method_16778
 	m	(Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_79413_	method_16777
@@ -87746,6 +88033,7 @@ c	net/minecraft/world/level/storage/loot/entries/CompositeEntryBase	net/minecraf
 	f	Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;	f_79429_	field_983
 	m	([Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;)Lnet/minecraft/world/level/storage/loot/entries/ComposableEntryContainer;	m_5690_	method_394
 	m	(Lnet/minecraft/world/level/storage/loot/ValidationContext;)V	m_6165_	method_415
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_6562_	expand
 	m	(Lnet/minecraft/world/level/storage/loot/entries/CompositeEntryBase$CompositeEntryConstructor;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer$Serializer;	m_79435_	method_395
 c	net/minecraft/world/level/storage/loot/entries/CompositeEntryBase$1	net/minecraft/class_69$1
 	f	Lnet/minecraft/world/level/storage/loot/entries/CompositeEntryBase$CompositeEntryConstructor;	f_79441_	field_25205
@@ -87754,6 +88042,7 @@ c	net/minecraft/world/level/storage/loot/entries/CompositeEntryBase$1	net/minecr
 	m	(Lcom/google/gson/JsonObject;Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;Lcom/google/gson/JsonSerializationContext;)V	m_7219_	method_422
 	m	(Lcom/google/gson/JsonObject;Lnet/minecraft/world/level/storage/loot/entries/CompositeEntryBase;Lcom/google/gson/JsonSerializationContext;)V	m_7219_	method_29314
 c	net/minecraft/world/level/storage/loot/entries/CompositeEntryBase$CompositeEntryConstructor	net/minecraft/class_69$class_70
+	m	([Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/entries/CompositeEntryBase;	m_79460_	create
 c	net/minecraft/world/level/storage/loot/entries/DynamicLoot	net/minecraft/class_67
 	f	Lnet/minecraft/resources/ResourceLocation;	f_79463_	field_980
 	m	()Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryType;	m_6751_	method_29318
@@ -87846,6 +88135,7 @@ c	net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	net/
 	f	Ljava/util/function/BiFunction;	f_79678_	field_997
 	f	Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntry;	f_79679_	field_998
 	m	(Lnet/minecraft/world/level/storage/loot/ValidationContext;)V	m_6165_	method_415
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_6562_	expand
 	m	(Ljava/util/function/Consumer;Lnet/minecraft/world/level/storage/loot/LootContext;)V	m_6948_	method_433
 	m	(Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$EntryConstructor;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Builder;	m_79687_	method_434
 c	net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$1	net/minecraft/class_85$1
@@ -87870,6 +88160,7 @@ c	net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Entr
 	f	Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer;	f_79721_	field_1004
 	m	(F)I	m_7067_	method_427
 c	net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$EntryConstructor	net/minecraft/class_85$class_89
+	m	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer;	m_79726_	build
 c	net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Serializer	net/minecraft/class_85$class_90
 	m	(Lcom/google/gson/JsonObject;Lcom/google/gson/JsonDeserializationContext;[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;	m_5921_	method_424
 	m	(Lcom/google/gson/JsonObject;Lcom/google/gson/JsonDeserializationContext;[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer;	m_5921_	method_441
@@ -87910,6 +88201,7 @@ c	net/minecraft/world/level/storage/loot/entries/TagEntry	net/minecraft/class_91
 	m	(Ljava/util/function/Consumer;Lnet/minecraft/core/Holder;)V	m_205092_	method_449
 	m	(Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Builder;	m_205095_	method_445
 	m	(Lnet/minecraft/tags/TagKey;II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)Lnet/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer;	m_205097_	method_35518
+	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_6562_	expand
 	m	()Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryType;	m_6751_	method_29318
 	m	(Ljava/util/function/Consumer;Lnet/minecraft/world/level/storage/loot/LootContext;)V	m_6948_	method_433
 	m	(Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)Z	m_79845_	method_447
@@ -87952,6 +88244,7 @@ c	net/minecraft/world/level/storage/loot/functions/ApplyBonusCount$Formula	net/m
 	m	()Lnet/minecraft/resources/ResourceLocation;	m_5713_	method_466
 	m	(Lcom/google/gson/JsonObject;Lcom/google/gson/JsonSerializationContext;)V	m_6417_	method_465
 c	net/minecraft/world/level/storage/loot/functions/ApplyBonusCount$FormulaDeserializer	net/minecraft/class_94$class_97
+	m	(Lcom/google/gson/JsonObject;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/world/level/storage/loot/functions/ApplyBonusCount$Formula;	m_79970_	deserialize
 c	net/minecraft/world/level/storage/loot/functions/ApplyBonusCount$OreDrops	net/minecraft/class_94$class_98
 	f	Lnet/minecraft/resources/ResourceLocation;	f_79973_	field_1015
 	m	(Lnet/minecraft/util/RandomSource;II)I	m_213779_	method_467
@@ -88642,6 +88935,7 @@ c	net/minecraft/world/level/storage/loot/predicates/AllOfCondition	net/minecraft
 	m	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;)Lnet/minecraft/world/level/storage/loot/predicates/AllOfCondition$Builder;	m_285871_	method_51723
 	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemConditionType;	m_7940_	method_29325
 c	net/minecraft/world/level/storage/loot/predicates/AllOfCondition$Builder	net/minecraft/class_8548$class_8549
+	m	(Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;)Lnet/minecraft/world/level/storage/loot/predicates/AllOfCondition$Builder;	m_285747_	and
 	m	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_285950_	method_51724
 c	net/minecraft/world/level/storage/loot/predicates/AllOfCondition$Serializer	net/minecraft/class_8548$class_8550
 	m	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition;	m_285830_	method_51726
@@ -88679,6 +88973,7 @@ c	net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition$B
 	m	(I)[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_285756_	method_51729
 	m	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_285950_	method_51724
 	m	(Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;)V	m_286010_	method_51730
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 c	net/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition$Serializer	net/minecraft/class_186$class_188
 	m	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)Lnet/minecraft/world/level/storage/loot/predicates/CompositeLootItemCondition;	m_285830_	method_51726
 	m	(Lcom/google/gson/JsonObject;Ljava/lang/Object;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_516
@@ -88729,6 +89024,7 @@ c	net/minecraft/world/level/storage/loot/predicates/EntityHasScoreCondition$Buil
 	f	Ljava/util/Map;	f_165496_	field_31869
 	f	Lnet/minecraft/world/level/storage/loot/LootContext$EntityTarget;	f_165497_	field_31870
 	m	(Ljava/lang/String;Lnet/minecraft/world/level/storage/loot/IntRange;)Lnet/minecraft/world/level/storage/loot/predicates/EntityHasScoreCondition$Builder;	m_165500_	method_35558
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 c	net/minecraft/world/level/storage/loot/predicates/EntityHasScoreCondition$Serializer	net/minecraft/class_199$class_200
 	m	(Lcom/google/gson/JsonObject;Ljava/lang/Object;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_516
 	m	(Lcom/google/gson/JsonObject;Lnet/minecraft/world/level/storage/loot/predicates/EntityHasScoreCondition;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_868
@@ -88783,6 +89079,7 @@ c	net/minecraft/world/level/storage/loot/predicates/LootItemBlockStatePropertyCo
 c	net/minecraft/world/level/storage/loot/predicates/LootItemBlockStatePropertyCondition$Builder	net/minecraft/class_212$class_213
 	f	Lnet/minecraft/world/level/block/Block;	f_81780_	field_1290
 	f	Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	f_81781_	field_1291
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 	m	(Lnet/minecraft/advancements/critereon/StatePropertiesPredicate$Builder;)Lnet/minecraft/world/level/storage/loot/predicates/LootItemBlockStatePropertyCondition$Builder;	m_81784_	method_22584
 c	net/minecraft/world/level/storage/loot/predicates/LootItemBlockStatePropertyCondition$Serializer	net/minecraft/class_212$class_214
 	m	(Lcom/google/gson/JsonObject;Ljava/lang/Object;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_516
@@ -88794,7 +89091,9 @@ c	net/minecraft/world/level/storage/loot/predicates/LootItemBlockStatePropertyCo
 c	net/minecraft/world/level/storage/loot/predicates/LootItemCondition	net/minecraft/class_5341
 	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemConditionType;	m_7940_	method_29325
 c	net/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder	net/minecraft/class_5341$class_210
+	m	(Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;)Lnet/minecraft/world/level/storage/loot/predicates/AllOfCondition$Builder;	m_285747_	and
 	m	(Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;)Lnet/minecraft/world/level/storage/loot/predicates/AnyOfCondition$Builder;	m_285888_	method_893
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;	m_81807_	method_16780
 c	net/minecraft/world/level/storage/loot/predicates/LootItemConditionType	net/minecraft/class_5342
 c	net/minecraft/world/level/storage/loot/predicates/LootItemConditions	net/minecraft/class_217
@@ -88899,6 +89198,7 @@ c	net/minecraft/world/level/storage/loot/predicates/TimeCheck$Builder	net/minecr
 	f	Ljava/lang/Long;	f_165512_	field_31871
 	f	Lnet/minecraft/world/level/storage/loot/IntRange;	f_165513_	field_31872
 	m	(J)Lnet/minecraft/world/level/storage/loot/predicates/TimeCheck$Builder;	m_165516_	method_35560
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 	m	()Lnet/minecraft/world/level/storage/loot/predicates/TimeCheck;	m_6409_	method_35561
 c	net/minecraft/world/level/storage/loot/predicates/TimeCheck$Serializer	net/minecraft/class_4571$class_4572
 	m	(Lcom/google/gson/JsonObject;Ljava/lang/Object;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_516
@@ -88930,6 +89230,7 @@ c	net/minecraft/world/level/storage/loot/predicates/WeatherCheck$Builder	net/min
 	m	(Ljava/lang/Boolean;)Lnet/minecraft/world/level/storage/loot/predicates/WeatherCheck$Builder;	m_165556_	method_35565
 	m	(Ljava/lang/Boolean;)Lnet/minecraft/world/level/storage/loot/predicates/WeatherCheck$Builder;	m_165559_	method_35567
 	m	()Lnet/minecraft/world/level/storage/loot/predicates/WeatherCheck;	m_6409_	method_35566
+	m	()Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	m_6409_	build
 c	net/minecraft/world/level/storage/loot/predicates/WeatherCheck$Serializer	net/minecraft/class_227$class_228
 	m	(Lcom/google/gson/JsonObject;Ljava/lang/Object;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_516
 	m	(Lcom/google/gson/JsonObject;Lnet/minecraft/world/level/storage/loot/predicates/WeatherCheck;Lcom/google/gson/JsonSerializationContext;)V	m_6170_	method_960
@@ -89210,6 +89511,7 @@ c	net/minecraft/world/level/validation/PathAllowList$EntryType	net/minecraft/cla
 	f	Lnet/minecraft/world/level/validation/PathAllowList$EntryType;	f_289838_	field_44963
 	m	(Ljava/nio/file/FileSystem;Ljava/lang/String;)Ljava/nio/file/PathMatcher;	m_289851_	method_52261
 	m	(Ljava/lang/String;Ljava/nio/file/Path;)Z	m_289860_	method_52260
+	m	(Ljava/nio/file/FileSystem;Ljava/lang/String;)Ljava/nio/file/PathMatcher;	m_289905_	compile
 c	net/minecraft/world/level/validation/package-info	net/minecraft/class_8585
 c	net/minecraft/world/package-info	net/minecraft/class_6172
 c	net/minecraft/world/phys/AABB	net/minecraft/class_238
@@ -89407,6 +89709,7 @@ c	net/minecraft/world/phys/shapes/BooleanOp	net/minecraft/class_247
 	f	Lnet/minecraft/world/phys/shapes/BooleanOp;	f_82695_	field_1366
 	f	Lnet/minecraft/world/phys/shapes/BooleanOp;	f_82696_	field_16895
 	m	(ZZ)Z	m_82698_	method_16795
+	m	(ZZ)Z	m_82701_	apply
 	m	(ZZ)Z	m_82704_	method_16785
 	m	(ZZ)Z	m_82707_	method_16794
 	m	(ZZ)Z	m_82710_	method_16790
@@ -89465,7 +89768,9 @@ c	net/minecraft/world/phys/shapes/DiscreteVoxelShape	net/minecraft/class_251
 	m	(Lnet/minecraft/core/Direction$Axis;)I	m_82850_	method_1051
 	m	()I	m_82852_	method_1048
 c	net/minecraft/world/phys/shapes/DiscreteVoxelShape$IntFaceConsumer	net/minecraft/class_251$class_252
+	m	(Lnet/minecraft/core/Direction;III)V	m_82853_	consume
 c	net/minecraft/world/phys/shapes/DiscreteVoxelShape$IntLineConsumer	net/minecraft/class_251$class_253
+	m	(IIIIII)V	m_82858_	consume
 c	net/minecraft/world/phys/shapes/EntityCollisionContext	net/minecraft/class_3727
 	f	Lnet/minecraft/world/entity/Entity;	f_166002_	field_27935
 	f	Lnet/minecraft/world/phys/shapes/CollisionContext;	f_82865_	field_17593
@@ -89490,6 +89795,7 @@ c	net/minecraft/world/phys/shapes/IndexMerger	net/minecraft/class_255
 	m	(Lnet/minecraft/world/phys/shapes/IndexMerger$IndexConsumer;)Z	m_6200_	method_1065
 	m	()Lit/unimi/dsi/fastutil/doubles/DoubleList;	m_6241_	method_1066
 c	net/minecraft/world/phys/shapes/IndexMerger$IndexConsumer	net/minecraft/class_255$class_256
+	m	(III)Z	m_82908_	merge
 c	net/minecraft/world/phys/shapes/IndirectMerger	net/minecraft/class_254
 	f	Lit/unimi/dsi/fastutil/doubles/DoubleList;	f_166021_	field_27346
 	f	I	f_166022_	field_27347
@@ -89539,6 +89845,7 @@ c	net/minecraft/world/phys/shapes/Shapes	net/minecraft/class_259
 	m	()Lnet/minecraft/world/phys/shapes/CubeVoxelShape;	m_83156_	method_1087
 	m	(Lnet/minecraft/world/phys/shapes/VoxelShape;Lnet/minecraft/world/phys/shapes/VoxelShape;Lnet/minecraft/world/phys/shapes/BooleanOp;)Z	m_83157_	method_1074
 c	net/minecraft/world/phys/shapes/Shapes$DoubleLineConsumer	net/minecraft/class_259$class_260
+	m	(DDDDDD)V	m_83161_	consume
 c	net/minecraft/world/phys/shapes/SliceShape	net/minecraft/class_263
 	f	Lnet/minecraft/world/phys/shapes/VoxelShape;	f_83168_	field_1397
 	f	Lnet/minecraft/core/Direction$Axis;	f_83169_	field_1396
@@ -89905,6 +90212,7 @@ c	net/minecraft/world/ticks/LevelTicks	net/minecraft/class_6757
 	m	(Ljava/util/function/Predicate;Ljava/util/List;JLnet/minecraft/world/ticks/LevelChunkTicks;)V	m_200928_	method_48169
 	m	(Lnet/minecraft/world/ticks/LevelTicks;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Lnet/minecraft/core/Vec3i;)V	m_264560_	method_48167
 c	net/minecraft/world/ticks/LevelTicks$PosAndContainerConsumer	net/minecraft/class_6757$class_6758
+	m	(JLnet/minecraft/world/ticks/LevelChunkTicks;)V	m_193288_	accept
 c	net/minecraft/world/ticks/ProtoChunkTicks	net/minecraft/class_4296
 	f	Ljava/util/List;	f_193291_	field_19275
 	f	Ljava/util/Set;	f_193292_	field_35541
