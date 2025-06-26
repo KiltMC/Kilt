@@ -193,7 +193,7 @@ public final class MixinExtensionHelper {
 
         List<MethodNode> replacementNodes = new LinkedList<>();
 
-        if (extend != null) {
+        /*if (extend != null) {
             if (targetClass.superName.equals("net/minecraftforge/common/capabilities/CapabilityProvider")) {
                 for (MethodNode node : targetClass.methods.stream().filter((node) -> node.name.equals("<init>")).toList()) {
                     if (containsThisCall(targetClass, node.instructions))
@@ -221,7 +221,7 @@ public final class MixinExtensionHelper {
                     replacementNodes.add(newNode);
                 }
             }
-        }
+        }*/
 
         for (FieldNode fieldNode : fieldsToRemove) {
             classNode.fields.remove(fieldNode);
