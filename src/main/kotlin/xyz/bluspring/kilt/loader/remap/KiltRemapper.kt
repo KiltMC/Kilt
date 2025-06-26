@@ -1,17 +1,19 @@
 package xyz.bluspring.kilt.loader.remap
 
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap
-import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.stream.consumeAsFlow
 import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.MappingResolver
 import net.fabricmc.loader.impl.game.GameProviderHelper
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.launch.MappingConfiguration
 import net.fabricmc.loader.impl.util.SystemProperties
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.minecraftforge.fart.api.ClassProvider
@@ -19,6 +21,7 @@ import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.EnhancedRemapper
 import net.minecraftforge.fart.internal.RenamingTransformer
 import net.minecraftforge.srgutils.IMappingFile
+import net.minecraftforge.srgutils.INamedMappingFile
 import org.apache.commons.codec.digest.DigestUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -29,14 +32,19 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.fixers.*
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinShadowRemapper
+import xyz.bluspring.kilt.loader.remap.resource.IgnoreSignatureResourceRemapper
+import xyz.bluspring.kilt.loader.remap.resource.ManifestResourceRemapper
 import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
 import xyz.bluspring.kilt.util.ClassNameHashSet
 import xyz.bluspring.kilt.util.KiltHelper
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.util.*
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.*
 import java.util.function.Consumer
 import java.util.jar.JarEntry
@@ -50,45 +58,61 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 180
-    const val MC_MAPPED_JAR_VERSION = 3
+    const val REMAPPER_VERSION = 184
+    const val MC_MAPPED_JAR_VERSION = 5
 
     // Kilt JVM flags
     private val forceRemap = KiltFlags.FORCE_REMAPPING
     private val disableRemaps = KiltFlags.DISABLE_REMAPPING
     internal val forceProductionRemap = KiltFlags.FORCE_PRODUCTION_REMAPPING
 
+    // GSON stuff for pretty printing
+    private val gson = GsonBuilder()
+        .setPrettyPrinting()
+        .disableHtmlEscaping()
+        .create()
+
     val logConsumer = Consumer<String> {
         logger.debug(it)
     }
 
-    private val logger = LoggerFactory.getLogger("Kilt Remapper")
+    internal val logger = LoggerFactory.getLogger("Kilt Remapper")
 
     private val launcher = FabricLauncherBase.getLauncher()
     internal val useNamed = launcher.targetNamespace != "intermediary"
 
+    // Remapper extensions
+    fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
+
+    private val mappingResolver = if (forceProductionRemap)
+        NoopMappingResolver()
+    else
+        FabricLoader.getInstance().mappingResolver
+
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
-    val srgIntermediaryMapping =
-        IMappingFile.load(this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.buffered())
-            .run {
-                if (!forceProductionRemap)
-                    this.rename(DevMappingRenamer())
-                else
-                    this
-            }
-    val intermediarySrgMapping = srgIntermediaryMapping.reverse()
+    val srgIntermediaryMapping: IMappingFile = this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.buffered().use { IMappingFile.load(it) }
+    val fabricMappings: INamedMappingFile = MappingConfiguration::class.java.classLoader.getResourceAsStream("mappings/mappings.tiny")!!.use { INamedMappingFile.load(it) }
+
+    private val devSrgIntermediaryMapping = srgIntermediaryMapping.run {
+        if (!forceProductionRemap)
+            this.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
+        else
+            this
+    }
+
+    val intermediarySrgMapping: IMappingFile = srgIntermediaryMapping.reverse()
+    private val devIntermediarySrgMapping = devSrgIntermediaryMapping.reverse()
+
+    // if for whatever reason we need these, they're available
+    //val srgIntermediaryTree = TinyConverter.convert(srgIntermediaryMapping, "srg", "intermediary")
+    //val intermediarySrgTree = TinyConverter.convert(intermediarySrgMapping, "intermediary", "srg")
 
     // Some workaround mappings, to remap some names to Kilt equivalents.
     // This fixes some compatibility issues.
     private val kiltWorkaroundTree = TinyMappingFactory.load(
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
-
-    private val mappingResolver = if (forceProductionRemap)
-        NoopMappingResolver()
-    else
-        FabricLoader.getInstance().mappingResolver
 
     private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
 
@@ -104,7 +128,8 @@ object KiltRemapper {
         Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
 
     init {
-        val srgIntermediaryMapping = srgIntermediaryMapping
+        // Magical field references that are required because otherwise the remapper will deadlock
+        val srgIntermediaryMapping = devSrgIntermediaryMapping
         val forceProductionRemap = forceProductionRemap
         val mappingResolver = mappingResolver
         val srgMappedMethods = srgMappedMethods
@@ -158,6 +183,7 @@ object KiltRemapper {
 
     fun init() {}
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
@@ -185,16 +211,16 @@ object KiltRemapper {
 
                 if (it.nameWithoutExtension.startsWith("minecraft_") &&
                     (
-                            !it.nameWithoutExtension.contains(KiltLoader.MC_VERSION.friendlyString) ||
-                                    !it.nameWithoutExtension.endsWith("_$MC_MAPPED_JAR_VERSION")
-                            )
+                        !it.nameWithoutExtension.contains(KiltLoader.MC_VERSION.friendlyString) ||
+                        !it.nameWithoutExtension.endsWith("_$MC_MAPPED_JAR_VERSION")
+                    )
                 ) {
                     markedForDeletion.add(it)
                 }
             }
 
             remappedModsDir.walk().forEach { file ->
-                if (file.extension != "jar")
+                if (file.extension != "jar" && file.extension != "tmp")
                     return@forEach
 
                 val mod = modLoadingQueue.firstOrNull { file.nameWithoutExtension.startsWith(it.id) }
@@ -236,33 +262,72 @@ object KiltRemapper {
             }
         }
 
-        srgGamePath = remapMinecraft()
+        srgGamePath = remapMinecraft("srg", devIntermediarySrgMapping)
 
         val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
         logger.info("Remapping Forge mods...")
 
-        val mods = modLoadingQueue.asFlow().concurrent().filter { !it.isBuiltin }.merge(false).toSet()
+        val mods = modLoadingQueue.filter { !it.isBuiltin }.toSet()
 
         // Use the regular mod file
         val classProvider = ClassProvider.builder().apply {
-            merge(
-                flow { emit(srgGamePath) },
+            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
+            listOf(
+                srgGamePath,
                 // List down Forge paths
-                KiltHelper.getKiltPaths().asFlow(),
+                *KiltHelper.getKiltPaths().toTypedArray(),
                 // Add all Fabric mods
-                FabricLoader.getInstance().allMods.asFlow().concurrent()
-                    .flatMap { container -> container.rootPaths.asFlow() }.merge(false),
+                *FabricLoader.getInstance().allMods
+                    .flatMap { container -> container.rootPaths }.toTypedArray(),
                 // add mapped path too
-                getGameClassPath().asFlow(),
+                *getGameClassPath(),
                 // Add all Forge mods to the library path, because dependencies don't have to be specified
                 // in order to use mods lmao
-                modLoadingQueue.asFlow().mapNotNull { mod -> mod.path }
-            ).collect { addLibrary(it) }
+                *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
+            ).forEach {
+                addLibrary(it)
+            }
         }.build()
 
+        val intermediaryMap = if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap)
+            remapMinecraft("intermediary", fabricMappings.getMap("named", "intermediary").rename(DevMojClassMappingRenamer(FabricLoader.getInstance().mappingResolver)))
+        else null
+
         // Initialize a global remapper state
-        enhancedRemapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, ClassNameHashSet())
+        enhancedRemapper = KiltEnhancedRemapper(classProvider, devSrgIntermediaryMapping, logConsumer) {
+            // Initialize this a bit later, cuz we need the same libraries.
+            ClassProvider.builder().apply {
+                // time to add Intermediary mappings to the mix! :,D
+                if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
+                    addLibrary(intermediaryMap)
+                }
+
+                // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
+                listOf(
+                    // List down Forge paths
+                    *KiltHelper.getKiltPaths().toTypedArray(),
+                    // Add all Fabric mods
+                    *FabricLoader.getInstance().allMods
+                        .flatMap { container -> container.rootPaths }.toTypedArray(),
+                    // add mapped path too
+                    *runBlocking { getGameClassPath() },
+                    // Add all Forge mods to the library path, because dependencies don't have to be specified
+                    // in order to use mods lmao
+                    *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
+                ).forEach {
+                    addLibrary(it)
+                }
+            }.build()
+        }
+
+        //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, srgIntermediaryMapping, classProvider)
+        val resourceRemappers = listOf(
+            ManifestResourceRemapper,
+            IgnoreSignatureResourceRemapper
+        )
+
+        enhancedRemapper.initDevRemapper()
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
@@ -284,417 +349,165 @@ object KiltRemapper {
                 return
             }
 
+            // Make a temporary file, so if any errors occur in remapping, we don't end up with a broken state.
+            val tempModifiedJarFile = KiltRemapper.remappedModsDir / "${mod.id}_${REMAPPER_VERSION}_$hash.jar.tmp"
             val jar = withContext(Dispatchers.IO) { JarFile(file.toFile()) }
-            val output = modifiedJarFile.outputStream()
-            val jarOutput = withContext(Dispatchers.IO) { JarOutputStream(output) }
+            val jarOutputStream = withContext(Dispatchers.IO) { JarOutputStream(tempModifiedJarFile.outputStream(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) }
 
             val entryToClassNodes = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<JarEntry, ClassNode>())
+            val classesToProcess = entryToClassNodes.values.intersect(KiltHelper.getForgeClassNodes().toSet()).toList()
 
-            val mixinClasses = ClassNameHashSet()
-            val refmaps = CaseInsensitiveStringHashSet()
-            val remapper = KiltEnhancedRemapper(classProvider, srgIntermediaryMapping, logConsumer, mixinClasses)
-            enhancedRemapper = remapper
-
-            val refmapJsons = Collections.synchronizedList(mutableListOf<JsonObject>())
-
-            suspend fun processManifest(
-                jar: JarFile,
-                manifestEntry: JarEntry,
-                jarOutput: JarOutputStream
-            ): Manifest {
-                // Modify the manifest to avoid hash checking, because if
-                // hash checking occurs, the JAR will fail to load entirely.
-                val manifest = Manifest(jar.getInputStream(manifestEntry))
-
-                manifest.entries.keys.removeIf { it == "SHA-256-Digest" || it == "SHA-1-Digest" }
-
-                withContext(Dispatchers.IO) {
-                    synchronized(jarOutput) {
-                        jarOutput.putNextEntry(manifestEntry)
-                        jarOutput.write(ByteArrayOutputStream().also { manifest.write(it) }.toByteArray())
-                        jarOutput.closeEntry()
-                    }
-                }
-
-                return manifest
-            }
+            val mixinClasses = Collections.synchronizedSet(ClassNameHashSet())
+            val refmaps = Collections.synchronizedSet(CaseInsensitiveStringHashSet())
+            val refmapJsons = Collections.synchronizedMap<JarEntry, JsonObject>(mutableMapOf())
 
             // JAR validation information stripping.
             // If we can find out how to use this to our advantage prior to remapping,
             // we may still be able to use this information safely.
             val manifestEntry = jar.getJarEntry("META-INF/MANIFEST.MF")
             if (manifestEntry != null) {
-                val manifest = processManifest(jar, manifestEntry, jarOutput)
+                val manifest = jar.getInputStream(manifestEntry).use { Manifest(it) }
+                val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
 
-                suspend fun processMixinConfigs(
-                    manifest: Manifest,
-                    jar: JarFile,
-                    mixinClasses: MutableSet<String>,
-                    refmaps: MutableSet<String>
-                ) {
-                    val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
-
-                    // Read mixin configs and add them to the list of mixins to fix
-                    mixinConfigs.asFlow().concurrent().collect { config ->
-                        val jsonEntry = jar.getJarEntry(config) ?: return@collect
-                        val json = jar.getInputStream(jsonEntry).use {
-                            JsonParser.parseReader(it.reader())
-                        }.asJsonObject
-
-                        if (!json.has("package")) return@collect
-
-                        val mixinPackage = json.get("package").asString
-
-                        merge(
-                            (json.get("mixins") as? JsonArray)?.asFlow() ?: emptyFlow(),
-                            (json.get("client") as? JsonArray)?.asFlow() ?: emptyFlow(),
-                            (json.get("server") as? JsonArray)?.asFlow() ?: emptyFlow()
-                        ).collect {
-                            mixinClasses.add("$mixinPackage.${it.asString}")
-                        }
-
-                        runCatching { json.get("refmap")!!.asString }.onSuccess { refmaps.add(it) }
-                    }
-                }
-
-                processMixinConfigs(manifest, jar, mixinClasses, refmaps)
-            }
-
-            suspend fun remapRefmap(
-                jar: JarFile,
-                entry: JarEntry,
-                remapper: KiltEnhancedRemapper,
-                jarOutput: JarOutputStream
-            ) {
-                val refmapData = withContext<JsonObject>(Dispatchers.IO) {
-                    jar.getInputStream(entry).use {
-                        JsonParser.parseReader(it.reader(Charsets.UTF_8))
+                // Read mixin configs and add them to the list of mixins to fix
+                mixinConfigs.asFlow().concurrent().collect { config ->
+                    val jsonEntry = jar.getJarEntry(config) ?: return@collect
+                    val json = jar.getInputStream(jsonEntry).use {
+                        JsonParser.parseReader(it.reader())
                     }.asJsonObject
-                }
 
-                val refmapMappings = refmapData.getAsJsonObject("mappings")
-                val newMappings = JsonObject()
+                    if (!json.has("package")) return@collect
 
-                refmapMappings.keySet().forEach { className ->
-                    val mapped = refmapMappings.getAsJsonObject(className)
-                    val properMapped = JsonObject()
+                    val mixinPackage = json.get("package").asString
 
-                    mapped.entrySet().forEach mapper@{ (name, element) ->
-                        val srgMappedString = element.asString
-                        val srgClass = if (srgMappedString.startsWith("L"))
-                            srgMappedString.replaceAfter(";", "")
-                        else
-                            ""
-                        val intermediaryClass = if (srgClass.isNotBlank()) remapDescriptor(
-                            srgClass,
-                            toIntermediary = forceProductionRemap
-                        ) else ""
-
-                        if (srgMappedString.contains(":")) {
-                            // field
-
-                            val split = srgMappedString.split(":")
-                            val srgField = split[0].removePrefix(srgClass)
-                            val srgDesc = split[1]
-
-                            val intermediaryDesc = remapDescriptor(srgDesc, toIntermediary = forceProductionRemap)
-
-                            val intermediaryField = "".run {
-                                if (srgClass.isNotBlank()) {
-                                    if (nameMappingCache.contains(srgField) && nameMappingCache[srgField]!!.containsKey(srgClass)) {
-                                        return@run nameMappingCache[srgField]!![srgClass]
-                                    }
-
-                                    // Remap SRG to Intermediary, then to whatever the current FabricMC environment
-                                    // is using.
-                                    mappingResolver.mapFieldName(
-                                        "intermediary",
-                                        intermediaryClass
-                                            .replace("/", ".")
-                                            .removePrefix("L").removeSuffix(";"),
-                                        (remapper.mapFieldName(
-                                            srgClass.removePrefix("L").removeSuffix(";"),
-                                            srgField,
-                                            srgDesc
-                                        ).run a@{
-                                            if (this == srgField) {
-                                                val possibleClass = srgIntermediaryMapping.classes.firstOrNull {
-                                                    it.getField(srgField) != null
-                                                } ?: return@run srgField
-
-                                                mappingResolver.mapFieldName(
-                                                    "intermediary",
-                                                    possibleClass.mapped.replace("/", "."),
-                                                    possibleClass.remapField(srgField),
-                                                    intermediaryDesc
-                                                )
-                                            } else this
-                                        }).apply {
-                                            // Cache the field we found, so we don't have to go through this again
-                                            nameMappingCache.computeIfAbsent(srgField) { mutableMapOf() }
-                                                .put(srgClass, this)
-                                        } ?: srgField,
-                                        intermediaryDesc
-                                    )
-                                } else {
-                                    // If the refmap is missing an owner class, try to figure it out
-                                    if (!srgField.startsWith("f_") || !srgField.endsWith("_"))
-                                        srgField // short-circuit if it doesn't look like a field
-                                    else {
-                                        if (nameMappingCache.contains(srgField))
-                                            nameMappingCache[srgField]!!.values.first()
-                                        else {
-                                            val possibleClass =
-                                                srgIntermediaryMapping.classes.firstOrNull { it.getField(srgField) != null }
-                                                    ?: return@run srgField
-
-                                            mappingResolver.mapFieldName(
-                                                "intermediary",
-                                                possibleClass.mapped.replace("/", "."),
-                                                possibleClass.remapField(srgField),
-                                                intermediaryDesc
-                                            ).apply {
-                                                // Cache the field we found, so we don't have to go through this again
-                                                nameMappingCache.computeIfAbsent(srgField) { mutableMapOf() }
-                                                    .put(possibleClass.mapped, this)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            properMapped.addProperty(name, "$intermediaryClass$intermediaryField:$intermediaryDesc")
-                        } else {
-                            // method
-
-                            // If this isn't done, it ends up becoming "<init><init>".
-                            // Don't ask.
-                            if (srgMappedString == "<init>") {
-                                properMapped.addProperty(name, "<init>")
-                                return@mapper
-                            }
-
-                            val srgMethod = srgMappedString.replaceAfter("(", "").removeSuffix("(").removePrefix(srgClass)
-                            val srgDesc = srgMappedString.replaceBefore("(", "")
-
-                            val intermediaryDesc = remapDescriptor(srgDesc, toIntermediary = forceProductionRemap)
-                            val intermediaryMethod = "".run {
-                                if (srgClass.isNotBlank()) {
-                                    if (nameMappingCache.contains(srgMethod) && nameMappingCache[srgMethod]!!.containsKey(srgClass)) {
-                                        return@run nameMappingCache[srgMethod]!![srgClass]!!
-                                    }
-
-                                    mappingResolver.mapMethodName(
-                                        "intermediary",
-                                        intermediaryClass
-                                            .replace("/", ".")
-                                            .removePrefix("L").removeSuffix(";"),
-                                        (remapper.mapMethodName(
-                                            srgClass
-                                                .removePrefix("L").removeSuffix(";"),
-                                            srgMethod, srgDesc
-                                        ).run a@{
-                                            if (this == srgMethod) {
-                                                val possibleClass = srgIntermediaryMapping.classes.firstOrNull {
-                                                    it.getMethod(
-                                                        srgMethod,
-                                                        srgDesc
-                                                    ) != null
-                                                } ?: return@a srgMethod
-
-                                                mappingResolver.mapMethodName(
-                                                    "intermediary",
-                                                    possibleClass.mapped.replace("/", "."),
-                                                    possibleClass.remapMethod(srgMethod, srgDesc),
-                                                    intermediaryDesc
-                                                )
-                                            } else this
-                                        }).apply {
-                                            nameMappingCache.computeIfAbsent(srgMethod) { mutableMapOf() }
-                                                .put(srgClass, this)
-                                        } ?: srgMethod,
-                                        intermediaryDesc
-                                    )
-                                } else {
-                                    // If the refmap is missing an owner class, try to figure it out
-                                    // Since record classes can provide methods with f_num_, these have to be
-                                    // taken into account.
-                                    if (!(srgMethod.startsWith("f_") || srgMethod.startsWith("m_")) || !srgMethod.endsWith(
-                                            "_"
-                                        )
-                                    )
-                                        srgMethod // short-circuit if it doesn't look like a method
-                                    else {
-                                        if (nameMappingCache.contains(srgMethod))
-                                            nameMappingCache[srgMethod]!!.values.first()
-                                        else {
-                                            val possibleClass = srgIntermediaryMapping.classes.firstOrNull {
-                                                it.getMethod(
-                                                    srgMethod,
-                                                    srgDesc
-                                                ) != null
-                                            } ?: return@run srgMethod
-
-                                            mappingResolver.mapMethodName(
-                                                "intermediary",
-                                                possibleClass.mapped.replace("/", "."),
-                                                possibleClass.remapMethod(srgMethod, srgDesc),
-                                                intermediaryDesc
-                                            ).apply {
-                                                // Cache the method we found, so we don't have to go through this again
-                                                nameMappingCache.computeIfAbsent(srgMethod) { mutableMapOf() }
-                                                    .put(possibleClass.mapped, this)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            properMapped.addProperty(name, "$intermediaryClass$intermediaryMethod$intermediaryDesc")
-
-                            // Add special handling for removed explicit targets
-                            if (name.startsWith("L")) {
-                                val owner = name.replaceAfter(";", "")
-
-                                if (owner != name) {
-                                    properMapped.addProperty(name.removePrefix(owner), "$intermediaryMethod$intermediaryDesc")
-                                }
-                            }
-                        }
+                    merge(
+                        (json.get("mixins") as? JsonArray)?.asFlow() ?: emptyFlow(),
+                        (json.get("client") as? JsonArray)?.asFlow() ?: emptyFlow(),
+                        (json.get("server") as? JsonArray)?.asFlow() ?: emptyFlow()
+                    ).collect {
+                        mixinClasses.add("$mixinPackage.${it.asString}")
                     }
 
-                    newMappings.add(className, properMapped)
+                    runCatching { json.get("refmap")!!.asString }.onSuccess { refmaps.add(it) }
                 }
-
-                refmapData.add("mappings", newMappings)
-                refmapData.add("data", JsonObject().apply {
-                    this.add("named:intermediary", newMappings)
-                })
-
-                refmapJsons.add(refmapData)
-
-                withContext(Dispatchers.IO) {
-                    synchronized(jarOutput) {
-                        jarOutput.putNextEntry(entry)
-                        jarOutput.write(refmapData.toString().toByteArray())
-                        jarOutput.closeEntry()
-                    }
-                }
-
-                return
             }
 
-            jar.stream().consumeAsFlow()
-                .filter { !it.name.equals("META-INF/MANIFEST.MF", true) }
-                .filter {
-                    val isHash = it.name.endsWith(".rsa", true) || it.name.endsWith(".sf", true)
-                    if (isHash) {
-                        // ignore JAR signatures.
-                        // Due to Kilt remapping the JAR files, we are unable to use this to our advantage.
-                        // TODO: Maybe run a verification step in the mod loading process prior to remapping?
-                        logger.warn("Detected that ${mod.displayName} (${mod.id}) is a signed JAR! This is a security measure by mod developers to verify that the distributed mod JARs are theirs, however Kilt is unable to use this verification step properly, and isthus stripping this information.")
-                    }
-                    !isHash
-                }
-                .collect { entry ->
-                    when {
-                        entry.name in refmaps -> remapRefmap(jar, entry, remapper, jarOutput)
+            withContext(Dispatchers.IO) {
+                jar.stream().consumeAsFlow().collect { entry ->
+                    // Transform some specific files
+                    for (remapper in resourceRemappers) {
+                        if (remapper.canTransform(entry.name)) {
+                            val data = jar.getInputStream(entry).use { remapper.transform(entry.name, it) }
 
-                        // Keep the other resources
-                        !entry.name.endsWith(".class") -> {
-                            withContext(Dispatchers.IO) {
-                                synchronized(jarOutput) {
-                                    jarOutput.putNextEntry(entry)
-                                    jar.getInputStream(entry).use { it.copyTo(jarOutput) }
-                                    jarOutput.closeEntry()
-                                }
+                            if (data != null) {
+                                jarOutputStream.putNextEntry(entry)
+                                jarOutputStream.write(data)
+                                jarOutputStream.closeEntry()
                             }
-                        }
 
-                        else -> {
-                            val classReader = jar.getInputStream(entry).use { ClassReader(it) }
-
-                            // we need the info for this for the class writer
-                            val classNode = ClassNode(Opcodes.ASM9)
-                            classReader.accept(classNode, 0)
-
-                            entryToClassNodes[JarEntry(entry.name)] = classNode
+                            return@collect
                         }
                     }
+
+                    // Store refmap JSONs
+                    if (refmaps.contains(entry.name)) {
+                        val json = jar.getInputStream(entry).use { it.reader(Charsets.UTF_8).use { r -> JsonParser.parseReader(r) } }
+
+                        if (json.isJsonObject) {
+                            refmapJsons[entry] = json.asJsonObject
+                        }
+
+                        return@collect
+                    }
+
+                    if (entry.name.endsWith(".class")) {
+                        // Add the class files for remapping
+                        val classReader = jar.getInputStream(entry).use { ClassReader(it) }
+
+                        // we need the info for this for the class writer
+                        val classNode = ClassNode(Opcodes.ASM9)
+                        classReader.accept(classNode, 0)
+
+                        entryToClassNodes[entry] = classNode
+                    } else {
+                        // Otherwise, add the entry directly if everything's already been processed.
+                        jarOutputStream.putNextEntry(entry)
+                        jar.getInputStream(entry).use { it.copyTo(jarOutputStream) }
+                        jarOutputStream.closeEntry()
+                    }
                 }
+            }
 
-            val classesToProcess =
-                entryToClassNodes
-                    .values
-                    .intersect(KiltHelper.getForgeClassNodes().toSet())
-                    .toList()
-
-            suspend fun remapClass(
-                remapper: KiltEnhancedRemapper,
-                originalNode: ClassNode,
-                mixinClasses: ClassNameHashSet,
-                classesToProcess: List<ClassNode>,
-                jarOutput: JarOutputStream,
-                entry: JarEntry,
-                refmapJsons: List<JsonObject>
-            ) {
-                try {
+            val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
+                this.collect { (entry, originalNode) ->
                     val remappedNode = ClassNode(Opcodes.ASM9)
 
-                    val visitor = EnhancedClassRemapper(remappedNode, remapper, RenamingTransformer(remapper, false))
-                    originalNode.accept(visitor)
-
                     // only do this on mixin classes, please
-                    if (remappedNode.name in mixinClasses) {
-                        MixinAdditionalRemapper.remapClass(remappedNode, remapper, refmapJsons)
-                        MixinSpecialAnnotationRemapper.remapClass(remappedNode, remapper, refmapJsons)
+                    // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
+                    if (originalNode.name in mixinClasses ||
+                        // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
+                        // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
+                        KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
+                            .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
+                    ) {
+                        MixinRemapper.remapClass(originalNode, enhancedRemapper, refmapJsons.values)
+                        MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
+                        MixinAdditionalRemapper.remapClass(originalNode)
                     }
 
+                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
+
+                    ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                     EventClassVisibilityFixer.fixClass(remappedNode)
                     EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
+                    InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
                     ObjectHolderDefinalizer.processClass(remappedNode)
                     WorkaroundFixer.fixClass(remappedNode)
                     ConflictingStaticMethodFixer.fixClass(remappedNode)
                     EnvironmentRemapper.remapClass(remappedNode)
 
-                    val classWriter = ClassWriter(0)
-                    remappedNode.accept(classWriter)
+                    val writer = ClassWriter(Opcodes.ASM9)
+                    remappedNode.accept(writer)
 
-                    withContext(Dispatchers.IO) {
-                        synchronized(jarOutput) {
-                            jarOutput.putNextEntry(entry)
-                            classWriter.toByteArray().inputStream().buffered().copyTo(jarOutput)
-                            jarOutput.closeEntry()
-                        }
+                    synchronized(jarOutputStream) {
+                        jarOutputStream.putNextEntry(entry)
+                        jarOutputStream.write(writer.toByteArray())
+                        jarOutputStream.closeEntry()
                     }
-                } catch (e: Exception) {
-                    logger.error("Failed to remap class ${entry.name}!", e)
-                    throw RuntimeException("Failed to remap class ${entry.name}!", e)
                 }
+            }.exceptionOrNull()
+
+            if (throwable != null) {
+                exception.addSuppressed(throwable)
+            }
+            
+            // If for whatever reason the refmap remapping missed something, we need to remap it immediately.
+            MixinRemapper.remapUnmappedRefmaps(refmapJsons.values, enhancedRemapper)
+
+            // Now, let's write the refmap JSONs
+            for ((entry, json) in refmapJsons) {
+                // First, let's remove the "searge" data map.
+                json.getAsJsonObject("data").remove("searge")
+
+                // Now, let's add the mappings data map directly to "named:intermediary"
+                json.getAsJsonObject("data").add("named:intermediary", json.getAsJsonObject("mappings"))
+
+                jarOutputStream.putNextEntry(entry)
+                jarOutputStream.write(gson.toJson(json).toByteArray(Charsets.UTF_8))
+                jarOutputStream.closeEntry()
             }
 
-            entryToClassNodes.forEach { (entry, originalNode) ->
-                try {
-                    remapClass(
-                        remapper,
-                        originalNode,
-                        mixinClasses,
-                        classesToProcess,
-                        jarOutput,
-                        entry,
-                        refmapJsons
-                    )
-                } catch (e: Throwable) {
-                    exception.addSuppressed(e)
-                }
-            }
+            jarOutputStream.close()
+            jar.close()
 
-            if (exception.suppressed.isNotEmpty())
+            if (exception.suppressed.isNotEmpty()) {
                 throw exception
+            } else {
+                // We've finished writing the mod file successfully, so let's not make it temporary anymore.
+                tempModifiedJarFile.moveTo(modifiedJarFile, true)
+            }
 
             mod.path = modifiedJarFile
-            jarOutput.close()
-            jar.close()
 
             return
         }
@@ -725,8 +538,6 @@ object KiltRemapper {
         }
     }
 
-    private val nameMappingCache = Collections.synchronizedMap(mutableMapOf<String, MutableMap<String, String>>())
-
     fun remapClass(name: String, toIntermediary: Boolean = false, ignoreWorkaround: Boolean = false): String {
         val workaround = if (!ignoreWorkaround)
             kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
@@ -741,6 +552,9 @@ object KiltRemapper {
         else name).replace(".", "/")
     }
 
+    /**
+     * Converts Intermediary (or Mojmap in dev) mappings to SRG mappings.
+     */
     fun unmapClass(name: String): String {
         val intermediary = mappingResolver.unmapClassName("intermediary", name.replace("/", "."))
         return intermediarySrgMapping.remapClass(intermediary.replace(".", "/"))
@@ -822,9 +636,9 @@ object KiltRemapper {
             }.toTypedArray()
     }
 
-    private suspend fun remapMinecraft(): Path {
+    private suspend fun remapMinecraft(mappingName: String, mappingFile: IMappingFile): Path {
         val srgFile =
-            KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-srg_$MC_MAPPED_JAR_VERSION.jar"
+            KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-${mappingName}_$MC_MAPPED_JAR_VERSION.jar"
 
         if (srgFile.exists() && !forceRemap) {
             logger.info("SRG-mapped Minecraft JAR detected, not creating a new remapped file.")
@@ -835,7 +649,7 @@ object KiltRemapper {
             throw IllegalStateException("Minecraft JAR was not found!")
         }
 
-        logger.info("Creating SRG-mapped Minecraft JAR for remapping Forge mods...")
+        logger.info("Creating ${mappingName}-mapped Minecraft JAR for remapping Forge mods...")
         val startTime = System.currentTimeMillis()
 
         val classProvider = ClassProvider.builder().apply {
@@ -844,7 +658,7 @@ object KiltRemapper {
                 this.addLibrary(path)
             }
         }.build()
-        val srgRemapper = EnhancedRemapper(classProvider, intermediarySrgMapping, logConsumer)
+        val srgRemapper = EnhancedRemapper(classProvider, mappingFile, logConsumer)
 
         val gameJar = withContext(Dispatchers.IO) { JarFile(gameFile.toFile()) }
         runCatching { srgFile.createFile() }
@@ -860,14 +674,12 @@ object KiltRemapper {
 
                         val classWriter = ClassWriter(0)
 
-                        val visitor =
-                            EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
+                        val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
                         classNode.accept(visitor)
                         ConflictingStaticMethodFixer.fixClass(classNode)
 
-                        // We need to remap to the SRG name, otherwise the remapper completely fails in production environments.
-                        val srgName =
-                            intermediarySrgMapping.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
+                        // We need to remap to the correct name, otherwise the remapper completely fails in production environments.
+                        val srgName = mappingFile.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
 
                         outputJar.putNextEntry(JarEntry("$srgName.class"))
                         outputJar.write(classWriter.toByteArray())
@@ -880,7 +692,7 @@ object KiltRemapper {
                 }
         }
 
-        logger.info("Remapped Minecraft from Intermediary to SRG. (took ${System.currentTimeMillis() - startTime} ms)")
+        logger.info("Remapped Minecraft to $mappingName. (took ${System.currentTimeMillis() - startTime} ms)")
 
         return srgFile
     }

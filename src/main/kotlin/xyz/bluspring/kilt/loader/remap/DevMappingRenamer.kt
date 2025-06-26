@@ -1,12 +1,10 @@
 package xyz.bluspring.kilt.loader.remap
 
-import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.MappingResolver
 import net.minecraftforge.srgutils.IMappingFile
 import net.minecraftforge.srgutils.IRenamer
 
-class DevMappingRenamer : IRenamer {
-    private val resolver = FabricLoader.getInstance().mappingResolver
-
+class DevMappingRenamer(private val resolver: MappingResolver) : IRenamer {
     override fun rename(value: IMappingFile.IField): String {
         return resolver.mapFieldName("intermediary", value.parent.mapped.replace("/", "."), value.mapped, value.mappedDescriptor)
     }

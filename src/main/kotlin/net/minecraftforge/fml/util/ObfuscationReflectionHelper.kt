@@ -2,6 +2,7 @@ package net.minecraftforge.fml.util
 
 import cpw.mods.modlauncher.api.INameMappingService
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.Type
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.lang.reflect.Constructor
@@ -22,7 +23,7 @@ object ObfuscationReflectionHelper {
     fun remapName(domain: INameMappingService.Domain, name: String): String {
         return when (domain) {
             INameMappingService.Domain.CLASS -> {
-                fabricRemapper.mapClassName("intermediary", srgIntermediaryTree.remapClass(name))
+                fabricRemapper.mapClassName("intermediary", KiltRemapper.enhancedRemapper.map(name))
             }
 
             INameMappingService.Domain.FIELD -> {
@@ -64,11 +65,17 @@ object ObfuscationReflectionHelper {
     @JvmStatic
     fun findMethod(clazz: Class<*>, methodName: String, vararg parameterTypes: Class<*>): Method {
         return try {
-            val remappedName = if (KiltRemapper.srgMappedMethods.contains(methodName))
-                KiltRemapper.enhancedRemapper.tryFindMethodName(clazz.typeName.replace(".", "/"), KiltRemapper.srgMappedMethods[methodName]!!) ?: methodName
-            else methodName
+            val methodName = if (KiltRemapper.srgMappedMethods.containsKey(methodName)) {
+                val descriptor = Type.getMethodDescriptor(Type.VOID_TYPE, *parameterTypes.map { Type.getType(it) }.toTypedArray()).removeSuffix("V")
 
-            val m = clazz.getDeclaredMethod(remappedName, *parameterTypes)
+                val mapped = KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
+
+                if (mapped == methodName || mapped == null)
+                    KiltRemapper.srgMappedMethods[methodName]!!.values.first()
+                else mapped
+            } else methodName
+
+            val m = clazz.getDeclaredMethod(methodName, *parameterTypes)
             m.isAccessible = true
             m
         } catch (e: Exception) {

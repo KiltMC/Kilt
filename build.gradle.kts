@@ -219,7 +219,8 @@ dependencies {
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
     // Remapping SRG to Intermediary
-    implementation(include("net.minecraftforge:srgutils:0.4.13")!!)
+    implementation(include("xyz.bluspring:srgutils:${property("srgutils_version")}")!!)
+    implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
     modImplementation(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 
@@ -229,6 +230,7 @@ dependencies {
 
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}")!!)
+    implementation(include("net.fabricmc:tiny-remapper:${property("tiny_remapper_version")}")!!)
 
     // Runtime mods for testing
     modRuntimeOnly ("com.terraformersmc:modmenu:4.1.0") {

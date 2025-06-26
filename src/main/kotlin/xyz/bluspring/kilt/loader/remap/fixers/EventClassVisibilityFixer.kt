@@ -5,8 +5,10 @@ import org.objectweb.asm.tree.ClassNode
 
 object EventClassVisibilityFixer {
     fun fixClass(classNode: ClassNode) {
-        if (classNode.methods.none { m -> m.visibleAnnotations != null && m.visibleAnnotations.any { it.desc.contains("SubscribeEvent") } })
-            return
+        for (method in classNode.methods) {
+            if (method.visibleAnnotations != null && method.visibleAnnotations.any { it.desc.contains("SubscribeEvent") })
+                method.access = (method.access and Opcodes.ACC_PRIVATE.inv() and Opcodes.ACC_PROTECTED.inv()) or Opcodes.ACC_PUBLIC
+        }
 
         // Mark class as public
         classNode.access = (classNode.access and Opcodes.ACC_PRIVATE.inv() and Opcodes.ACC_PROTECTED.inv()) or Opcodes.ACC_PUBLIC
