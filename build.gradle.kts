@@ -11,7 +11,7 @@ plugins {
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
 
-version = "${property("mod_version")}+mc${property("minecraft_version")}${getVersionMetadata()}"
+version = "${createVersion()}${getVersionMetadata()}"
 group = property("maven_group")!!
 
 base {
@@ -534,12 +534,32 @@ tasks {
     }
 }
 
+fun isRelease(): Boolean {
+    return System.getenv("GITHUB_WORKFLOW") == "Kilt Release"
+}
+
+// Versioning format:
+// X.Y.Z
+// X - Minecraft minor version increment
+// Y - Minecraft patch version increment
+// Z - Kilt version increment
+fun createVersion(): String {
+    val mcVersionComps = (rootProject.property("minecraft_version") as String).split(".")
+    val mcVersion = "${mcVersionComps[1]}.${mcVersionComps[2]}"
+    val increment = rootProject.property("version_increment") as String
+
+    return "$mcVersion.$increment"
+}
+
 fun getVersionMetadata(): String {
+    if (isRelease())
+        return ""
+
     val grgit = Grgit.open(mutableMapOf<String, Any?>(
         "dir" to File("$projectDir")
     ))
     val commitHash =
         System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "-build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
+    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else if (!isRelease()) "-nightly" else ""}"
 }
