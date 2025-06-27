@@ -1,5 +1,6 @@
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 import java.security.MessageDigest
 
@@ -293,6 +294,10 @@ configurations.all {
 
 val targetJavaVersion = "17"
 
+kotlin {
+    jvmToolchain(targetJavaVersion.toInt())
+}
+
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {
@@ -455,7 +460,11 @@ tasks {
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = targetJavaVersion
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
+    }
+
+    compileTestKotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
     }
 
     jar {
