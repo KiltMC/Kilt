@@ -571,7 +571,8 @@ object KiltRemapper {
 
     private fun getMCGameFile(): Path? {
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val commonJar = GameProviderHelper.getCommonGameJar()
+            // broken on servers.
+            /*val commonJar = GameProviderHelper.getCommonGameJar()
 
             if (commonJar != null)
                 return commonJar
@@ -579,7 +580,7 @@ object KiltRemapper {
             val sidedJar = GameProviderHelper.getEnvGameJar(FabricLoader.getInstance().environmentType)
 
             if (sidedJar != null)
-                return sidedJar
+                return sidedJar*/
 
             // this gives the obfuscated JAR, we don't want that
             //val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")
