@@ -54,7 +54,7 @@ public class ClientPacketListenerInject {
 
     @Inject(method = "handleLogin", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetPos()V", shift = At.Shift.AFTER))
     public void kilt$fireForgeLoginEvent(ClientboundLoginPacket clientboundLoginPacket, CallbackInfo ci) {
-        MinecraftForge.EVENT_BUS.post(new ClientPlayerNetworkEvent.LoggingIn(this.minecraft.gameMode, this.minecraft.player, this.minecraft.getConnection().getConnection()));
+        ForgeHooksClient.firePlayerLogin(this.minecraft.gameMode, this.minecraft.player, this.minecraft.getConnection().getConnection());
     }
 
     @Inject(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetPos()V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)
@@ -64,7 +64,7 @@ public class ClientPacketListenerInject {
 
     @Inject(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
     public void kilt$fireForgeRespawnEvent(ClientboundRespawnPacket clientboundRespawnPacket, CallbackInfo ci, ResourceKey resourceKey, Holder holder, LocalPlayer localPlayer, int i, String string, LocalPlayer localPlayer2) {
-        MinecraftForge.EVENT_BUS.post(new ClientPlayerNetworkEvent.Clone(this.minecraft.gameMode, localPlayer, localPlayer2, localPlayer2.connection.getConnection()));
+        ForgeHooksClient.firePlayerRespawn(this.minecraft.gameMode, localPlayer, localPlayer2, localPlayer2.connection.getConnection());
     }
 
     @WrapOperation(method = "method_38542", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;getTag()Lnet/minecraft/nbt/CompoundTag;"))

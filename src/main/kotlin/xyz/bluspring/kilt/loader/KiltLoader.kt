@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.stream.consumeAsFlow
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
@@ -54,6 +55,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -459,19 +461,18 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
 
                         // basically emulate how Forge loads stuff
-                        mod.jar.entries().asIterator().asFlow().concurrent()
+                        mod.jar.stream().consumeAsFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
-                            .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
-                            .collect {
+                            .collect { entry ->
                                 val visitor = ModClassVisitor()
-                                val classReader = ClassReader(it)
+                                val classReader = withContext(Dispatchers.IO) { mod.jar.getInputStream(entry) }.use { ClassReader(it) }
 
                                 classReader.accept(visitor, 0)
                                 visitor.buildData(classes, annotations)
                             }
 
-                        scanData.classes.addAll(classes)
-                        scanData.annotations.addAll(annotations)
+                        scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
+                        scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
 
                         mod
                     }
