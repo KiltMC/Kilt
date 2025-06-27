@@ -323,6 +323,9 @@ object KiltRemapper {
             IgnoreSignatureResourceRemapper
         )
 
+        if (FabricLoader.getInstance().isDevelopmentEnvironment)
+            enhancedRemapper.initDevRemapper()
+
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
 
