@@ -7,8 +7,8 @@ a long list of Forge mods over to Fabric. I had thought to myself,
 one else is going to use it except for us?"
 
 Then it had hit me. Forge, in Fabric, for everyone to use.
-Running Fabric in Forge would've been impossible, I believe,
-because of how early Fabric loads everything in comparison to Forge.
+~~Running Fabric in Forge would've been impossible, I believe,
+because of how early Fabric loads everything in comparison to Forge.~~ (Future update: Connector exists.)
 
 This mod would solve so many problems with people having to
 find Fabric-compatible versions of their favourite mods,
