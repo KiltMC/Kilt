@@ -532,5 +532,5 @@ fun getVersionMetadata(): String {
     val commitHash =
         System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
+    return "-build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
 }
