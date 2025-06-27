@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
@@ -35,11 +34,6 @@ import java.util.function.Consumer
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
-        // Kilt requires a hard dependency on Sodium, so let's just do this
-        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
-            throw IllegalStateException("You are missing Sodium! Please install Sodium to ensure Kilt is capable of running as intended.")
-        }
-
         registerFabricEvents()
 
         hasInitialized = true

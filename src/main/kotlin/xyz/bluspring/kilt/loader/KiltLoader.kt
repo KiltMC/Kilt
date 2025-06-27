@@ -15,7 +15,6 @@ import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
@@ -70,6 +69,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private lateinit var sortedModOrder: Collection<ForgeMod>
 
     private val environment = KiltEnvironment()
+
+    init {
+        // Kilt requires a hard dependency on Sodium, so let's just do this
+        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
+            KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium to ensure Kilt is capable of running as intended.", IllegalStateException())
+        }
+    }
 
     override fun getModDefinitions(path: Path): List<ModDefinition> {
         if (path.extension != "jar")
@@ -490,7 +496,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", exception, {}, true)
+            KnitLoader.instance.displayError("Errors occurred while loading Forge mods!", exception)
         }
     }
 
@@ -600,7 +606,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {}, true)
+            KnitLoader.instance.displayError("Errors occurred while initializing Forge mods!", exception)
         }
     }
 
