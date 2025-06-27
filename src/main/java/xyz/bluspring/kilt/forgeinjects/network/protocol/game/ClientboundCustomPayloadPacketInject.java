@@ -58,7 +58,7 @@ public abstract class ClientboundCustomPayloadPacketInject implements ICustomPac
 
     @Inject(method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V", at = @At("TAIL"))
     public void kilt$releaseData(ClientGamePacketListener handler, CallbackInfo ci) {
-        if (this.shouldRelease)
+        if (this.shouldRelease && this.data.refCnt() > 0) // Kilt: ensure ref count doesn't go less than zero by some other mod
             this.data.release();
     }
 }
