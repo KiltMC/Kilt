@@ -58,8 +58,8 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 184
-    const val MC_MAPPED_JAR_VERSION = 5
+    const val REMAPPER_VERSION = 185
+    const val MC_MAPPED_JAR_VERSION = 6
 
     // Kilt JVM flags
     private val forceRemap = KiltFlags.FORCE_REMAPPING
@@ -157,10 +157,6 @@ object KiltRemapper {
             launch(Dispatchers.IO) {
                 srgIntermediaryMapping.classes.asFlow().concurrent().collect {
                     it.methods.asFlow().concurrent().collect { f ->
-                        // otherwise FunctionalInterface methods don't get remapped properly???
-                        if (!FabricLoader.getInstance().isDevelopmentEnvironment && (!f.mapped.startsWith("method_") && !it.mapped.startsWith("com/mojang/blaze3d")))
-                            return@collect
-
                         val map = srgMappedMethods.getOrPut(f.original) {
                             Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
                         }
@@ -572,7 +568,8 @@ object KiltRemapper {
 
     private fun getMCGameFile(): Path? {
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {
-            val commonJar = GameProviderHelper.getCommonGameJar()
+            // broken on servers.
+            /*val commonJar = GameProviderHelper.getCommonGameJar()
 
             if (commonJar != null)
                 return commonJar
@@ -580,7 +577,7 @@ object KiltRemapper {
             val sidedJar = GameProviderHelper.getEnvGameJar(FabricLoader.getInstance().environmentType)
 
             if (sidedJar != null)
-                return sidedJar
+                return sidedJar*/
 
             // this gives the obfuscated JAR, we don't want that
             //val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")

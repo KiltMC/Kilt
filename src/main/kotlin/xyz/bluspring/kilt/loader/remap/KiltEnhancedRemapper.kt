@@ -122,6 +122,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 val mappedList = KiltRemapper.srgMappedMethods[name]
 
                 if (mappedList != null && mappedList.values.isNotEmpty()) {
+                    KiltRemapper.logger.warn("Using fallback method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }}, value: ${mappedList.values.first()})")
                     return mappedList.values.first()
                 }
 

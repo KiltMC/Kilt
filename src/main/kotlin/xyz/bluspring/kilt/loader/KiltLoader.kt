@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.stream.consumeAsFlow
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
@@ -459,19 +460,20 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
 
                         // basically emulate how Forge loads stuff
-                        mod.jar.entries().asIterator().asFlow().concurrent()
+                        mod.jar.stream().consumeAsFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
-                            .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
-                            .collect {
+                            .collect { entry ->
                                 val visitor = ModClassVisitor()
-                                val classReader = ClassReader(it)
+                                val classReader = withContext(Dispatchers.IO) { mod.jar.getInputStream(entry) }.use { ClassReader(it) }
 
                                 classReader.accept(visitor, 0)
                                 visitor.buildData(classes, annotations)
                             }
 
-                        scanData.classes.addAll(classes)
-                        scanData.annotations.addAll(annotations)
+                        // This needs to be sorted, otherwise there is a very high possibility of packet desync between client-server,
+                        // because for whatever reason Forge uses int packet IDs and MCreator mods don't register packets in one place.
+                        scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
+                        scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
 
                         mod
                     }
