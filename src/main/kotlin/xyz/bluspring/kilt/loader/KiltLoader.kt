@@ -72,7 +72,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
     init {
         // Kilt requires a hard dependency on Sodium, so let's just do this
-        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
+        if (!FabricLoader.getInstance().isModLoaded("sodium") && FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
             KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium to ensure Kilt is capable of running as intended.", IllegalStateException())
         }
     }
