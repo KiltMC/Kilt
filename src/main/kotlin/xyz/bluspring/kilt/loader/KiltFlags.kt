@@ -24,6 +24,11 @@ object KiltFlags {
     // By default, AT info is logged under the DEBUG level, so it may still be found there.
     @JvmField val ENABLE_ACCESS_TRANSFORMER_DEBUG = "kilt.printATDebug".checkPropertyBoolean()
 
+    // Some Forge mods call a System.exit if Kilt is present.
+    // Kilt has a fixer that wraps System.exit to ensure users know why their game crashed, and additionally so it can
+    // be tested in development. This flag allows the mod to be loaded anyway, completely overriding their code.
+    @JvmField val DISABLE_FORGE_SYSTEM_EXIT = "kilt.disableSystemExit".checkPropertyBoolean()
+
     private fun String.checkPropertyBoolean(): Boolean {
         return System.getProperty(this)?.lowercase() == "true"
     }
