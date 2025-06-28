@@ -332,7 +332,7 @@ tasks {
                 return list
             }
 
-            val forgePatches = readDir(File("$projectDir/forge/patches/minecraft"))
+            val forgePatches = readDir(File("$projectDir/forge/patches"))
             val forgePatchCount = forgePatches.size
 
             val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
