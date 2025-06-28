@@ -4,11 +4,16 @@ import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 @Mixin(value = ModConfig.class, remap = false)
-public class ModConfigMixin {
+public abstract class ModConfigMixin {
     // Kilt: ForgeConfigAPIPort is missing these constructors from newer versions of Forge.
+
+    @Shadow static String defaultConfigName(ModConfig.Type type, String modId) {
+        throw new IllegalStateException();
+    }
 
     public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, String modId, final String fileName) {}
     public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, String modId) {}
@@ -20,6 +25,6 @@ public class ModConfigMixin {
 
     @CreateInitializer
     public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, ModContainer mod) {
-        this(type, spec, mod.getModId(), mod.getModId());
+        this(type, spec, mod.getModId(), defaultConfigName(type, mod.getModId()));
     }
 }

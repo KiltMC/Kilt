@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.stream.consumeAsFlow
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.loader.impl.gui.FabricGuiEntry
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.eventbus.api.Event
@@ -57,6 +57,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
     private lateinit var sortedModOrder: Collection<NeoForgeMod>
 
     private val environment = KiltEnvironment()
+
+    init {
+        // Kilt requires a hard dependency on Sodium, so let's just do this
+        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
+            KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium to ensure Kilt is capable of running as intended.", IllegalStateException())
+        }
+    }
 
     override fun getModDefinitions(path: Path): List<ModDefinition> {
         if (path.extension != "jar")
@@ -269,7 +276,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
                 description = metadata.getConfigElement<String>("description").orElse("")
                     .replace("\r", ""), // Otherwise, the CR gets rendered weirdly into the newlines.
-                authors = metadata.getConfigElement<String>("authors").orElse("").split(","),
+                authors = try {
+                    metadata.getConfigElement<String>("authors").orElse("").split(",")
+                } catch (_: ClassCastException) {
+                    // this is apparently a possibility that I didn't know about? huh.
+                    metadata.getConfigElement<List<String>>("authors").orElse(listOf())
+                },
                 version = modVersion,
                 license = toml.get("license"),
 
@@ -441,19 +453,20 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
 
                         // basically emulate how Forge loads stuff
-                        mod.jar.entries().asIterator().asFlow().concurrent()
+                        mod.jar.stream().consumeAsFlow().concurrent()
                             .filter { it.name.endsWith(".class") }
-                            .map { withContext(Dispatchers.IO) { mod.jar.getInputStream(it) } }
-                            .collect {
+                            .collect { entry ->
                                 val visitor = ModClassVisitor()
-                                val classReader = ClassReader(it)
+                                val classReader = withContext(Dispatchers.IO) { mod.jar.getInputStream(entry) }.use { ClassReader(it) }
 
                                 classReader.accept(visitor, 0)
                                 visitor.buildData(classes, annotations)
                             }
 
-                        scanData.classes.addAll(classes)
-                        scanData.annotations.addAll(annotations)
+                        // This needs to be sorted, otherwise there is a very high possibility of packet desync between client-server,
+                        // because for whatever reason Forge uses int packet IDs and MCreator mods don't register packets in one place.
+                        scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
+                        scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
 
                         mod
                     }
@@ -470,7 +483,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while loading Forge mods!", exception, {}, true)
+            KnitLoader.instance.displayError("Errors occurred while loading Forge mods!", exception)
         }
     }
 
@@ -580,7 +593,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            FabricGuiEntry.displayError("Errors occurred while initializing Forge mods!", exception, {}, true)
+            KnitLoader.instance.displayError("Errors occurred while initializing Forge mods!", exception)
         }
     }
 
@@ -636,7 +649,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         }
 
         ModLoadingContext.kiltActiveModId = mod.modId
-        mod.eventBus.post(FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT))
+        mod.eventBus.post(FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT))
         ModLoadingContext.kiltActiveModId = null
     }
 
@@ -697,34 +710,34 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
             // COMMON_SETUP
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it, ModLoadingStage.COMMON_SETUP) }
+                .kiltPostEventWrappingModsBuildEvent { FMLCommonSetupEvent(it.container, ModLoadingStage.COMMON_SETUP) }
 
             ModLoadingStage.COMMON_SETUP.deferredWorkQueue.runTasks()
 
             // SIDED_SETUP
             ModLoader.get().kiltPostEventWrappingModsBuildEvent {
                 if (FabricLoader.getInstance().environmentType == EnvType.CLIENT)
-                    FMLClientSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLClientSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
                 else
-                    FMLDedicatedServerSetupEvent(it, ModLoadingStage.SIDED_SETUP)
+                    FMLDedicatedServerSetupEvent(it.container, ModLoadingStage.SIDED_SETUP)
             }
 
             ModLoadingStage.SIDED_SETUP.deferredWorkQueue.runTasks()
 
             // ENQUEUE_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it, ModLoadingStage.ENQUEUE_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModEnqueueEvent(it.container, ModLoadingStage.ENQUEUE_IMC) }
 
             ModLoadingStage.ENQUEUE_IMC.deferredWorkQueue.runTasks()
 
             // PROCESS_IMC
             ModLoader.get()
-                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it, ModLoadingStage.PROCESS_IMC) }
+                .kiltPostEventWrappingModsBuildEvent { InterModProcessEvent(it.container, ModLoadingStage.PROCESS_IMC) }
 
             ModLoadingStage.PROCESS_IMC.deferredWorkQueue.runTasks()
 
             // COMPLETE
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it, ModLoadingStage.COMPLETE) }
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { FMLLoadCompleteEvent(it.container, ModLoadingStage.COMPLETE) }
 
             ModLoadingStage.COMPLETE.deferredWorkQueue.runTasks()
         }

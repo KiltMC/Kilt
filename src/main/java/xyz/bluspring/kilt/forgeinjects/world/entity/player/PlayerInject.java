@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.world.entity.player;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -96,6 +97,11 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
 
         if (blockPos != null)
             cir.setReturnValue(ForgeEventFactory.getBreakSpeed((Player) (Object) this, state, cir.getReturnValue(), blockPos));
+    }
+
+    @ModifyReturnValue(method = "hasCorrectToolForDrops", at = @At("RETURN"))
+    private boolean kilt$checkHarvest(boolean original, BlockState state) {
+        return ForgeEventFactory.doPlayerHarvestCheck((Player) (Object) this, state, original);
     }
 
     @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
@@ -204,6 +210,11 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         if (respawnPos.isEmpty())
             return original.call();
         return (Optional<T>) respawnPos;
+    }
+
+    @Inject(method = "causeFallDamage", at = @At(value = "RETURN", ordinal = 0))
+    private void kilt$onPlayerFallEvent(float fallDistance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        ForgeEventFactory.onPlayerFall((Player) (Object) this, fallDistance, fallDistance);
     }
 
     /*@ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))

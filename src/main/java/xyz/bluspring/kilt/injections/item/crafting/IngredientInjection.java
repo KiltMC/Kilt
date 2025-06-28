@@ -31,10 +31,7 @@ public interface IngredientInjection {
     }
 
     default IIngredientSerializer<? extends Ingredient> getSerializer() {
-        if (!isVanilla())
-            throw new IllegalStateException();
-
-        return VanillaIngredientSerializer.INSTANCE;
+        throw new IllegalStateException();
     }
 
     default boolean isSimple() {

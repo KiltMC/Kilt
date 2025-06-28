@@ -97,7 +97,7 @@ class CoreMod(val mod: NeoForgeMod, val id: String, val file: String) {
                     val methodName = targetData["methodName"] as String
                     val descName = targetData["methodDesc"] as String
 
-                    val mappedMethodName = KiltRemapper.srgMappedMethods[methodName]?.get(className) ?: KiltRemapper.srgMappedMethods[methodName]?.values?.firstOrNull() ?: methodName
+                    val mappedMethodName = KiltRemapper.enhancedRemapper.mapMethodName(className, methodName, descName)
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
                     logger.debug("Binding $name: Added method $methodName$mappedDescName / $mappedMethodName$mappedDescName from class $className as target")

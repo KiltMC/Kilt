@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
@@ -177,6 +178,14 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         }
 
         return null;
+    }
+
+    @Inject(method = "isCorrectToolForDrops", at = @At("HEAD"), cancellable = true)
+    private void kilt$isCorrectToolForDrops(BlockState state, CallbackInfoReturnable<Boolean> cir) {
+        Item item = getItem();
+        if (KiltHelper.INSTANCE.hasMethodOverride(item.getClass(), Item.class, "isCorrectToolForDrops", ItemStack.class, BlockState.class)) {
+            cir.setReturnValue(item.isCorrectToolForDrops((ItemStack) (Object) this, state));
+        }
     }
 
     @WrapOperation(method = "getAttributeModifiers", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getDefaultAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))

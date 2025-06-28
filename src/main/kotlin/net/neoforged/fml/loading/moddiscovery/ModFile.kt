@@ -57,9 +57,7 @@ class ModFile(private val kiltMod: NeoForgeMod) : IModFile {
     }
 
     override fun getScanResult(): ModFileScanData {
-        return ModFileScanData().apply {
-            this.addModFileInfo(modFileInfo)
-        }
+        return kiltMod.scanData
     }
 
     override fun getFileName(): String {

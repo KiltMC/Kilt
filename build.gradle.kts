@@ -1,5 +1,6 @@
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 import java.security.MessageDigest
 
@@ -10,7 +11,7 @@ plugins {
     id ("org.ajoberstar.grgit") version "5.0.0" apply false
 }
 
-version = "${property("mod_version")}+mc${property("minecraft_version")}${getVersionMetadata()}"
+version = "${createVersion()}${getVersionMetadata()}"
 group = property("maven_group")!!
 
 base {
@@ -217,7 +218,8 @@ dependencies {
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
-    // Remapping MojMap to Intermediary
+    // Remapping SRG to Intermediary
+    implementation(include("xyz.bluspring:srgutils:${property("srgutils_version")}")!!)
     implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
 
     modApi(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
@@ -226,6 +228,7 @@ dependencies {
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}") {
         exclude("org.ow2.asm")
     })
+    implementation(include("net.fabricmc:tiny-remapper:${property("tiny_remapper_version")}")!!)
 
     fun modOptional(dependencyNotation: String, shouldRunInRuntime: Boolean, configuration: Action<ExternalModuleDependency> = Action {}) {
         if (shouldRunInRuntime) {
@@ -291,6 +294,10 @@ configurations.all {
 }
 
 val targetJavaVersion = "21"
+
+kotlin {
+    jvmToolchain(targetJavaVersion.toInt())
+}
 
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -454,7 +461,11 @@ tasks {
     }
 
     compileKotlin {
-        kotlinOptions.jvmTarget = targetJavaVersion
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
+    }
+
+    compileTestKotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
     }
 
     jar {
@@ -524,12 +535,32 @@ tasks {
     }
 }
 
+fun isRelease(): Boolean {
+    return System.getenv("GITHUB_WORKFLOW") == "Kilt Release"
+}
+
+// Versioning format:
+// X.Y.Z
+// X - Minecraft minor version increment
+// Y - Minecraft patch version increment
+// Z - Kilt version increment
+fun createVersion(): String {
+    val mcVersionComps = (rootProject.property("minecraft_version") as String).split(".")
+    val mcVersion = "${mcVersionComps[1]}.${mcVersionComps[2]}"
+    val increment = rootProject.property("version_increment") as String
+
+    return "$mcVersion.$increment"
+}
+
 fun getVersionMetadata(): String {
+    if (isRelease())
+        return ""
+
     val grgit = Grgit.open(mutableMapOf<String, Any?>(
         "dir" to File("$projectDir")
     ))
     val commitHash =
         System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "-build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else ""}"
+    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else if (!isRelease()) "-nightly" else ""}"
 }

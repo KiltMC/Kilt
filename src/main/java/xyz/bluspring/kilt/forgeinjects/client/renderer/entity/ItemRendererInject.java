@@ -4,13 +4,17 @@ package xyz.bluspring.kilt.forgeinjects.client.renderer.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.MatrixUtil;
+import net.fabricmc.fabric.api.renderer.v1.model.WrapperBakedModel;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -23,6 +27,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(ItemRenderer.class)
 public abstract class ItemRendererInject {
@@ -34,9 +39,37 @@ public abstract class ItemRendererInject {
     @Shadow public static VertexConsumer getFoilBufferDirect(MultiBufferSource buffer, RenderType renderType, boolean noEntity, boolean withGlint) { throw new IllegalStateException(); };
     @Shadow private static boolean hasAnimatedTexture(ItemStack stack) { throw new IllegalStateException(); };
 
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack;)V"))
+    private void kilt$dontApplyTransformTwice(ItemTransform instance, boolean leftHand, PoseStack poseStack, Operation<Void> original, @Local(argsOnly = true) BakedModel model, @Share("transform") LocalBooleanRef shouldTransform) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
+            shouldTransform.set(true);
+            return;
+        } else {
+            // Incase the model is wrapper we also want to check if it supports transforms (modified version of WrapperBakedModel#unwrap)
+            while (model instanceof WrapperBakedModel wrapper) {
+                BakedModel wrapped = wrapper.getWrappedModel();
+
+                if (wrapped == null) {
+                    break;
+                } else if (wrapped == model) {
+                    throw new IllegalArgumentException("Model " + model + " is wrapping itself!");
+                } else {
+                    if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
+                        shouldTransform.set(true);
+                        return;
+                    }
+                    model = wrapped;
+                }
+            }
+        }
+
+        original.call(instance, leftHand, poseStack);
+    }
+
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack;)V", shift = At.Shift.AFTER))
-    private void kilt$applyCustomCameraTransforms(ItemStack itemStack, ItemDisplayContext displayContext, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model, CallbackInfo ci, @Local(argsOnly = true) LocalRef<BakedModel> modelRef) {
-        modelRef.set(ForgeHooksClient.handleCameraTransforms(poseStack, modelRef.get(), displayContext, leftHand));
+    private void kilt$applyCustomCameraTransforms(ItemStack itemStack, ItemDisplayContext displayContext, boolean leftHand, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, BakedModel model, CallbackInfo ci, @Local(argsOnly = true) LocalRef<BakedModel> modelRef, @Share("transform") LocalBooleanRef shouldTransform) {
+        if (shouldTransform.get())
+            modelRef.set(ForgeHooksClient.handleCameraTransforms(poseStack, modelRef.get(), displayContext, leftHand));
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderModelLists(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/item/ItemStack;IILcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V"))
