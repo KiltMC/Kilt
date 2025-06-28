@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
 import net.minecraft.client.Minecraft
 import net.minecraft.core.Holder
+import net.minecraft.core.MappedRegistry
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.RegistryDataLoader
@@ -28,7 +29,7 @@ class VanillaForgeRegistry<V> : ForgeRegistry<V> {
         // Kilt: Try to get/create the Vanilla registry
         val vanillaRegistry: Optional<out Registry<*>?> = BuiltInRegistries.REGISTRY.getOptional(name)
 
-        if (vanillaRegistry.isPresent()) {
+        if (vanillaRegistry.isPresent) {
             this.vanillaRegistry = vanillaRegistry.orElseThrow() as Registry<V?>
         } else if ( // Kilt: Make sure we're not loading datapack registries, we have to add these directly via external means
             !DataPackRegistriesHooks.getSyncedCustomRegistries().contains(this.key) &&
@@ -43,9 +44,9 @@ class VanillaForgeRegistry<V> : ForgeRegistry<V> {
 
             registryBuilder.attribute(RegistryAttribute.SYNCED)
 
-            if (builder.getSaveToDisc()) registryBuilder.attribute(RegistryAttribute.PERSISTED)
+            if (builder.saveToDisc) registryBuilder.attribute(RegistryAttribute.PERSISTED)
 
-            if (builder.getAllowModifications() || builder.getAllowOverrides()) registryBuilder.attribute(
+            if (builder.allowModifications || builder.allowOverrides) registryBuilder.attribute(
                 RegistryAttribute.MODDED
             )
 
@@ -170,13 +171,21 @@ class VanillaForgeRegistry<V> : ForgeRegistry<V> {
         return vanillaRegistry()!!.getResourceKey(value).orElse(null)
     }
 
-    override fun add(id: Int, key: ResourceLocation?, value: V, owner: String?): Int {
+    override fun add(id: Int, key: ResourceLocation, value: V, owner: String?): Int {
         Preconditions.checkNotNull<ResourceLocation?>(key, "Can't use a null-name for the registry, object %s.", value)
         Preconditions.checkNotNull<V?>(value, "Can't add null-object to the registry, name %s.", key)
 
-        val currentId = vanillaRegistry()!!.getId(Registry.register(this.vanillaRegistry, key, value))
+        val registry = vanillaRegistry()!!
 
-        this.add?.onAdd(this, this.stage, currentId, vanillaRegistry()!!.getResourceKey(value).orElseThrow(), value, null)
+        val currentId = if (registry.containsKey(key) && registry is MappedRegistry) {
+            val id = registry.getId(registry.get(key))
+            registry.registerMapping(id, ResourceKey.create(registry.key(), key), value, registry.registryLifecycle())
+            id
+        } else {
+            registry.getId(Registry.register(registry, key, value))
+        }
+
+        this.add?.onAdd(this, this.stage, currentId, registry.getResourceKey(value).orElseThrow(), value, null)
 
         return currentId
     }
