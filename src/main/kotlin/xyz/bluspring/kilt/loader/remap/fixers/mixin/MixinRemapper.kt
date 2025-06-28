@@ -173,7 +173,7 @@ object MixinRemapper {
 
                             for (sliceValue in sliceValue) {
                                 if (sliceValue is AnnotationNode) {
-                                    newSliceValues.add(remapSliceValue(sliceValue))
+                                    remapSliceValue(sliceValue)
                                 } else {
                                     newSliceValues.add(sliceValue)
                                 }
