@@ -23,9 +23,11 @@ sourceSets {
         java.srcDir("src/main/java")
         java.srcDir("src/main/kotlin")
         java.srcDir("forge/src/main/java")
+        java.srcDir("fml/loader/src/main/java")
 
         resources.srcDir("forge/src/generated/resources")
         resources.srcDir("forge/src/main/resources")
+        resources.srcDir("fml/loader/src/main/resources")
     }
 
     getByName("test") {

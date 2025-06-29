@@ -2,11 +2,12 @@ package xyz.bluspring.kilt.util
 
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
-import net.minecraftforge.fml.ModLoadingContext
+import net.neoforged.fml.ModLoadingContext
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.nio.file.Path
@@ -174,8 +175,8 @@ object KiltHelper {
     fun handleSystemExit(code: Int) {
         Kilt.logger.error("Kilt: A Forge mod has called System.exit() directly from its code! Exit code: $code")
 
-        if (ModLoadingContext.get().kiltActiveContainer != null) {
-            val container = ModLoadingContext.get().getActiveContainer()
+        if (ModLoadingContext.get().activeContainer != null) {
+            val container = ModLoadingContext.get().activeContainer
             Kilt.logger.error("Kilt: Active mod container: ${container.modInfo.displayName} (${container.modId})")
         }
 
@@ -184,6 +185,11 @@ object KiltHelper {
         if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             exception.printStackTrace()
             Kilt.logger.error("Kilt: Because we're in the development environment, we will not exit the game!")
+
+            return
+        } else if (KiltFlags.DISABLE_FORGE_SYSTEM_EXIT) {
+            exception.printStackTrace()
+            Kilt.logger.error("Kilt: Because the user has the disable flag enabled, we will not exit the game!")
 
             return
         }

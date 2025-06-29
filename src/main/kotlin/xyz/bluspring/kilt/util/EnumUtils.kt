@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.util
 import com.chocohead.mm.CasualStreamHandler
 import com.chocohead.mm.api.ClassTinkerers
 import net.minecraftforge.common.IExtensibleEnum
-import net.minecraftforge.fml.unsafe.UnsafeHacks
+import net.neoforged.fml.unsafe.UnsafeHacks
 import xyz.bluspring.kilt.Kilt
 import java.util.function.Consumer
 

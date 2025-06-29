@@ -1,31 +1,37 @@
 package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
+import com.mojang.datafixers.util.Either
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.EventResult
-import dev.architectury.event.events.common.EntityEvent
-import dev.architectury.event.events.common.InteractionEvent
-import dev.architectury.event.events.common.TickEvent.ServerLevelTick
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.core.BlockPos
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.util.Unit
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.BlockHitResult
-import net.minecraftforge.common.ForgeHooks
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.level.LevelEvent
-import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.server.ServerLifecycleHooks
+import net.neoforged.bus.api.Event
+import net.neoforged.neoforge.common.CommonHooks
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.EventHooks
+import net.neoforged.neoforge.event.entity.living.LivingEvent
+import net.neoforged.neoforge.event.level.LevelEvent
+import net.neoforged.neoforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
@@ -40,92 +46,69 @@ class Kilt : ModInitializer {
 
     @Suppress("removal")
     private fun registerFabricEvents() {
-        InteractionEvent.RIGHT_CLICK_BLOCK.register { player, hand, pos, direction ->
-            val hitResult = BlockHitResult(pos.center, direction, pos, false)
-            val event = ForgeHooks.onRightClickBlock(player, hand, pos, hitResult)
-            val stack = player.getItemInHand(hand)
+        PlayerInteractEvent.RightClickBlock.EVENT.register { event ->
+            val forgeEvent = CommonHooks.onRightClickBlock(event.entity, event.hand, event.pos, event.hitVec)
 
-            val canUseItem = (player.isSecondaryUseActive && (!player.mainHandItem.isEmpty || !player.offhandItem.isEmpty)) && !(player.mainHandItem.doesSneakBypassUse(player.level(), pos, player) && player.offhandItem.doesSneakBypassUse(player.level(), pos, player))
+            event.cancellationResult = forgeEvent.cancellationResult
 
-            if (event.useBlock == Event.Result.ALLOW || (event.useBlock != Event.Result.DENY && !canUseItem))
-                return@register eventBusToArchitectury(event.useBlock)
+            if (!forgeEvent.useBlock.isDefault)
+                event.useBlock = TriState.of(forgeEvent.useBlock.isTrue)
 
-            if (event.useItem == Event.Result.ALLOW || (!stack.isEmpty && !player.cooldowns.isOnCooldown(stack.item))) {
-                if (event.useItem == Event.Result.DENY)
-                    return@register EventResult.pass()
-
-                val result = stack.onItemUseFirst(UseOnContext(player, hand, hitResult))
-
-                if (result != InteractionResult.PASS && result != InteractionResult.FAIL) {
-                    return@register vanillaToArchitectury(result)
-                }
-            }
-
-            EventResult.pass()
+            if (!forgeEvent.useItem.isDefault)
+                event.useItem = TriState.of(forgeEvent.useItem.isTrue)
         }
 
-        InteractionEvent.RIGHT_CLICK_ITEM.register { player, hand ->
-            val result = ForgeHooks.onItemRightClick(player, hand) ?: return@register CompoundEventResult.pass()
-
-            when (result) {
-                InteractionResult.PASS -> CompoundEventResult.pass()
-                InteractionResult.FAIL -> CompoundEventResult.interruptFalse(player.getItemInHand(hand))
-                InteractionResult.SUCCESS -> CompoundEventResult.interruptTrue(player.getItemInHand(hand))
-                else -> CompoundEventResult.interruptDefault(player.getItemInHand(hand))
-            }
+        PlayerInteractEvent.RightClickItem.EVENT.register { event ->
+            event.cancellationResult = CommonHooks.onItemRightClick(event.entity, event.hand)
         }
 
-        InteractionEvent.INTERACT_ENTITY.register { player, entity, hand ->
-            val result = ForgeHooks.onInteractEntity(player, entity, hand) ?: return@register EventResult.pass()
-            vanillaToArchitectury(result)
+        PlayerInteractEvent.EntityInteract.EVENT.register { event ->
+            event.cancellationResult = CommonHooks.onInteractEntity(event.entity, event.target, event.hand)
         }
 
-        InteractionEvent.LEFT_CLICK_BLOCK.register { player, hand, pos, direction ->
-            val event = ForgeHooks.onLeftClickBlock(player, pos, direction)
-            eventBusToArchitectury(event.result)
+        PlayerInteractEvent.EntityInteractSpecific.EVENT.register { event ->
+            event.cancellationResult = CommonHooks.onInteractEntityAt(event.entity, event.target, event.localPos, event.hand)
         }
 
-        PlayerInteractionEvents.LEFT_CLICK_EMPTY.register { event ->
-            ForgeHooks.onEmptyLeftClick(event.player)
-        }
+        PlayerInteractEvent.LeftClickBlock.EVENT.register { event ->
+            val forgeEvent = CommonHooks.onLeftClickBlock(event.entity, event.pos, event.face, when (event.action) {
+                PlayerInteractEvent.LeftClickBlock.Action.START -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
+                PlayerInteractEvent.LeftClickBlock.Action.STOP -> ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK
+                PlayerInteractEvent.LeftClickBlock.Action.ABORT -> ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK
+                else -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
+            })
 
-        CriticalHitEvent.CRITICAL_HIT.register { event ->
-            val forgeEvent = ForgeHooks.getCriticalHit(event.player, event.entity, event.isVanillaCritical, event.oldDamageModifier)
-
-            if (forgeEvent == null) {
-                event.result = BaseEvent.Result.DENY
-            } else {
-                event.result = BaseEvent.Result.valueOf(forgeEvent.result.name)
-
-                if (forgeEvent.damageModifier != forgeEvent.oldDamageModifier)
-                    event.damageModifier = forgeEvent.damageModifier
-            }
-        }
-
-        InteractionEvent.CLIENT_RIGHT_CLICK_AIR.register { player, hand ->
-            ForgeHooks.onEmptyClick(player, hand)
-        }
-
-        LivingEntityEvents.LivingTickEvent.TICK.register { event ->
-            if (ForgeHooks.onLivingTick(event.entity))
+            if (forgeEvent.isCanceled)
                 event.isCanceled = true
         }
 
+        PlayerInteractEvent.LeftClickEmpty.EVENT.register { event ->
+            CommonHooks.onEmptyLeftClick(event.entity)
+        }
+
+        CriticalHitEvent.EVENT.register { event ->
+            val forgeEvent = CommonHooks.fireCriticalHit(event.entity, event.entity, event.isVanillaCritical, event.vanillaMultiplier)
+
+            if (forgeEvent.isCriticalHit != event.isCriticalHit)
+                event.isCriticalHit = forgeEvent.isCriticalHit
+
+            if (forgeEvent.damageMultiplier != event.damageMultiplier)
+                event.damageMultiplier = forgeEvent.damageMultiplier
+        }
+
+        PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
+            CommonHooks.onEmptyClick(event.entity, event.hand)
+        }
+
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
-            ForgeEventFactory.onPlayerSleepInBed(player, Optional.of(pos))
+            if (player !is ServerPlayer) // istg
+                return@register null
+
+            EventHooks.canPlayerStartSleeping(player, pos, Either.right(Unit.INSTANCE)).left().orElse(null)
         }
 
         EntitySleepEvents.ALLOW_SETTING_SPAWN.register { player, pos ->
-            !ForgeEventFactory.onPlayerSpawnSet(player, player.level().dimension(), pos, false)
-        }
-
-        EntitySleepEvents.ALLOW_SLEEP_TIME.register { player, pos, _ ->
-            val ret = ForgeEventFactory.fireSleepingTimeCheck(player, Optional.of(pos))
-
-            if (ret)
-                InteractionResult.SUCCESS
-            else
-                InteractionResult.FAIL
+            !EventHooks.onPlayerSpawnSet(player, player.level().dimension(), pos, false)
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register {
@@ -142,64 +125,59 @@ class Kilt : ModInitializer {
         }
 
         ExplosionEvents.START.register { level, explosion ->
-            ForgeEventFactory.onExplosionStart(level, explosion)
+            EventHooks.onExplosionStart(level, explosion)
         }
 
         ExplosionEvents.DETONATE.register { level, explosion, entities, diameter ->
-            ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter)
+            EventHooks.onExplosionDetonate(level, explosion, entities, diameter)
         }
 
-        EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->
-            ForgeHooks.onEntityEnterSection(entity, ChunkPos.asLong(BlockPos(sectionX, sectionY, sectionZ)), ChunkPos.asLong(
-                BlockPos(prevX, prevY, prevZ)
-            ))
+        EntityEvent.EnteringSection.EVENT.register { event ->
+            CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
         }
 
-        EntityEvent.ANIMAL_TAME.register { animal, player ->
-            if (ForgeEventFactory.onAnimalTame(animal, player))
+        dev.architectury.event.events.common.EntityEvent.ANIMAL_TAME.register { animal, player ->
+            if (EventHooks.onAnimalTame(animal, player))
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
         }
 
-        ServerLevelTick.SERVER_PRE.register {
-            ForgeEventFactory.onPreServerTick((it as MinecraftServerAccessor)::callHaveTime, it)
+        ServerTickEvents.START_SERVER_TICK.register { server ->
+            EventHooks.fireServerTickPre((server as MinecraftServerAccessor)::callHaveTime, server)
         }
 
-        ServerLevelTick.SERVER_POST.register {
-            ForgeEventFactory.onPostServerTick((it as MinecraftServerAccessor)::callHaveTime, it)
+        ServerTickEvents.END_SERVER_TICK.register { server ->
+            EventHooks.fireServerTickPost((server as MinecraftServerAccessor)::callHaveTime, server)
         }
 
-        ServerLevelTick.SERVER_LEVEL_PRE.register {
-            ForgeEventFactory.onPreLevelTick(it, (it.server as MinecraftServerAccessor)::callHaveTime)
+        ServerTickEvents.START_WORLD_TICK.register { level ->
+            EventHooks.fireLevelTickPre(level, (level.server as MinecraftServerAccessor)::callHaveTime)
         }
 
-        ServerLevelTick.SERVER_LEVEL_POST.register {
-            ForgeEventFactory.onPostLevelTick(it, (it.server as MinecraftServerAccessor)::callHaveTime)
+        ServerTickEvents.END_WORLD_TICK.register { level ->
+            EventHooks.fireLevelTickPost(level, (level.server as MinecraftServerAccessor)::callHaveTime)
         }
 
-        ServerLevelTick.PLAYER_PRE.register {
-            ForgeEventFactory.onPlayerPreTick(it)
+        PlayerTickEvent.Pre.EVENT.register { event ->
+            EventHooks.firePlayerTickPre(event.entity)
         }
 
-        ServerLevelTick.PLAYER_POST.register {
-            ForgeEventFactory.onPlayerPostTick(it)
+        PlayerTickEvent.Post.EVENT.register { event ->
+            EventHooks.firePlayerTickPost(event.entity)
         }
 
         ServerWorldEvents.LOAD.register { server, level ->
-            MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
+            NeoForge.EVENT_BUS.post(LevelEvent.Load(level))
         }
 
         ServerWorldEvents.UNLOAD.register { server, level ->
-            MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))
+            NeoForge.EVENT_BUS.post(LevelEvent.Unload(level))
         }
 
-        LivingEntityEvents.LOOTING_LEVEL.register { source, target, level, _ ->
-            ForgeHooks.getLootingLevel(target, source, level)
-        }
-
-        LivingEntityEvents.DROPS.register { target, source, drops, level, recentlyHit ->
-            ForgeHooks.onLivingDrops(target, source, drops, level, recentlyHit)
+        LivingDropsEvent.EVENT.register { event ->
+            if (CommonHooks.onLivingDrops(event.entity, event.source, event.drops, event.isRecentlyHit))
+                event.isCanceled = true
         }
     }
 
@@ -220,24 +198,6 @@ class Kilt : ModInitializer {
 
             if (!onServer) {
                 KiltClient.lateRegisterEvents()
-            }
-        }
-
-        fun eventBusToArchitectury(result: Event.Result): EventResult {
-            return when (result) {
-                Event.Result.ALLOW -> EventResult.interruptTrue()
-                Event.Result.DEFAULT -> EventResult.pass()
-                Event.Result.DENY -> EventResult.interruptFalse()
-                else -> EventResult.pass()
-            }
-        }
-
-        fun vanillaToArchitectury(result: InteractionResult): EventResult {
-            return when (result) {
-                InteractionResult.PASS -> EventResult.pass()
-                InteractionResult.FAIL -> EventResult.interruptFalse()
-                InteractionResult.SUCCESS -> EventResult.interruptTrue()
-                else -> EventResult.interruptDefault()
             }
         }
     }

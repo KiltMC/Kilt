@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client.multiplayer;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.mojang.authlib.minecraft.UserApiService;
 import net.minecraft.client.multiplayer.AccountProfileKeyPairManager;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

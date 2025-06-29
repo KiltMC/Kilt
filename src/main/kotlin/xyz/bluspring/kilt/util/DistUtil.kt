@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.util
 
 import net.fabricmc.api.EnvType
-import net.minecraftforge.api.distmarker.Dist
+import net.neoforged.api.distmarker.Dist
 
 object DistUtil {
     fun distToEnvType(dist: Dist): EnvType {

@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.compat.curios_trinkets
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraftforge.fml.config.ModConfig
+import net.neoforged.fml.config.ModConfig
 import xyz.bluspring.kilt.loader.KiltLoader
 
 class KiltCuriosTrinketsCompat : ModInitializer {

@@ -1,18 +1,19 @@
 package xyz.bluspring.kilt.loader.mod
 
 import cpw.mods.jarhandling.SecureJar
-import net.minecraftforge.eventbus.EventBusErrorMessage
-import net.minecraftforge.eventbus.api.BusBuilder
-import net.minecraftforge.eventbus.api.Event
-import net.minecraftforge.eventbus.api.IEventBus
-import net.minecraftforge.eventbus.api.IEventListener
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
-import net.minecraftforge.forgespi.language.IConfigurable
-import net.minecraftforge.forgespi.language.IModFileInfo
-import net.minecraftforge.forgespi.language.IModInfo
-import net.minecraftforge.forgespi.language.ModFileScanData
-import net.minecraftforge.forgespi.locating.ForgeFeature
+import net.neoforged.bus.EventBusErrorMessage
+import net.neoforged.bus.api.BusBuilder
+import net.neoforged.bus.api.Event
+import net.neoforged.bus.api.EventListener
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo
+import net.neoforged.neoforgespi.language.IConfigurable
+import net.neoforged.neoforgespi.language.IModFileInfo
+import net.neoforged.neoforgespi.language.IModInfo
+import net.neoforged.neoforgespi.language.ModFileScanData
+import net.neoforged.neoforgespi.locating.ForgeFeature
 import net.neoforged.fml.event.IModBusEvent
+import net.neoforged.neoforgespi.language.IModLanguageLoader
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
@@ -103,6 +104,10 @@ class NeoForgeMod(
         return ModFileInfo(this)
     }
 
+    override fun getLoader(): IModLanguageLoader? {
+        return null
+    }
+
     override fun getModId(): String {
         return this.definition.id
     }
@@ -163,7 +168,6 @@ class NeoForgeMod(
             if (!::lateEventBus.isInitialized) {
                 lateEventBus = BusBuilder.builder().apply {
                     setExceptionHandler(::onEventFailed)
-                    setTrackPhases(false)
                     markerType(IModBusEvent::class.java)
                 }.build()
             }
@@ -174,7 +178,7 @@ class NeoForgeMod(
     private fun onEventFailed(
         iEventBus: IEventBus,
         event: Event,
-        iEventListeners: Array<IEventListener>,
+        iEventListeners: Array<EventListener>,
         i: Int,
         throwable: Throwable
     ) {
@@ -197,8 +201,17 @@ class NeoForgeMod(
             return versionRange
         }
 
-        override fun isMandatory(): Boolean {
-            return dependency.type == ModDependency.Type.REQUIRED
+        override fun getType(): IModInfo.DependencyType {
+            return when (dependency.type) {
+                ModDependency.Type.REQUIRED -> IModInfo.DependencyType.REQUIRED
+                ModDependency.Type.OPTIONAL -> IModInfo.DependencyType.OPTIONAL
+                ModDependency.Type.DISCOURAGED -> IModInfo.DependencyType.DISCOURAGED
+                ModDependency.Type.INCOMPATIBLE -> IModInfo.DependencyType.INCOMPATIBLE
+            }
+        }
+
+        override fun getReason(): Optional<String> {
+            return Optional.empty()
         }
 
         override fun getOrdering(): IModInfo.Ordering {

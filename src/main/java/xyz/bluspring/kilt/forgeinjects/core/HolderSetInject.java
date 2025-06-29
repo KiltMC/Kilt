@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.core;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraftforge.common.extensions.IForgeHolderSet;
+import net.neoforged.neoforge.common.extensions.IHolderSetExtension;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(HolderSet.class)
-public interface HolderSetInject<T> extends IForgeHolderSet<T> {
+public interface HolderSetInject<T> extends IHolderSetExtension<T> {
     @Mixin(HolderSet.Named.class)
-    class NamedInject<T> implements IForgeHolderSet<T> {
+    class NamedInject<T> implements IHolderSetExtension<T> {
         private final List<Runnable> invalidationCallbacks = new ArrayList<>();
 
         @Override

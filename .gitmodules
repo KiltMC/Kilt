@@ -4,3 +4,7 @@
 [submodule "loader"]
 	path = loader
 	url = https://github.com/KiltMC/KnitLoader.git
+[submodule "fml"]
+	path = fml
+	url = https://github.com/KiltMC/FancyModLoader.git
+	branch = 1.21.1

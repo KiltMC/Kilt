@@ -8,8 +8,9 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.Item;
@@ -19,14 +20,15 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.common.extensions.IDispensibleContainerItemExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(DispenseItemBehavior.class)
 public interface DispenseItemBehaviorInject {
-    @Mixin(targets = "net/minecraft/core/dispenser/DispenseItemBehavior$16")
-    public abstract static class DispenseItemBehavior16Inject {
+    @Mixin(targets = "net/minecraft/core/dispenser/DispenseItemBehavior$6")
+    public abstract static class BucketDispenseItemBehaviorInject {
         @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/DispensibleContainerItem;emptyContents(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/BlockHitResult;)Z"))
         private boolean kilt$tryForgeEmptyContents(DispensibleContainerItem instance, Player player, Level level, BlockPos blockPos, BlockHitResult hitResult, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack) {
             if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "emptyContents", Player.class, Level.class, BlockPos.class, BlockHitResult.class, ItemStack.class)) {
@@ -37,16 +39,16 @@ public interface DispenseItemBehaviorInject {
         }
     }
 
-    @Mixin(targets = "net/minecraft/core/dispenser/DispenseItemBehavior$18")
-    public abstract static class DispenseItemBehavior18Inject {
+    @Mixin(targets = "net/minecraft/core/dispenser/DispenseItemBehavior$8")
+    public abstract static class FlintAndSteelDispenseItemBehaviorInject {
         @Definition(id = "blockState", local = @Local(type = BlockState.class))
         @Definition(id = "getBlock", method = "Lnet/minecraft/world/level/block/state/BlockState;getBlock()Lnet/minecraft/world/level/block/Block;")
         @Definition(id = "TntBlock", type = TntBlock.class)
         @Expression("blockState.getBlock() instanceof TntBlock")
         @ModifyExpressionValue(method = "execute", at = @At("MIXINEXTRAS:EXPRESSION"))
-        private boolean kilt$checkIsFlammable(boolean original, @Local BlockState state, @Local Level level, @Local BlockPos pos, @Local(argsOnly = true) BlockSource source) {
+        private boolean kilt$checkIsFlammable(boolean original, @Local BlockState state, @Local ServerLevel level, @Local BlockPos pos, @Local(argsOnly = true) BlockSource source) {
             if (!original) {
-                if (state.isFlammable(level, pos, source.getBlockState().getValue(DispenserBlock.FACING).getOpposite())) {
+                if (state.isFlammable(level, pos, source.state().getValue(DispenserBlock.FACING).getOpposite())) {
                     return true;
                 }
             }
@@ -59,11 +61,11 @@ public interface DispenseItemBehaviorInject {
             if (state.getBlock() instanceof TntBlock)
                 original.call(level, pos);
             else
-                state.onCaughtFire(level, pos, source.getBlockState().getValue(DispenserBlock.FACING).getOpposite(), null);
+                state.onCaughtFire(level, pos, source.state().getValue(DispenserBlock.FACING).getOpposite(), null);
         }
 
-        @WrapWithCondition(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
-        private boolean kilt$checkIsTNTBlock(Level instance, BlockPos pos, boolean isMoving, @Local BlockState state) {
+        @WrapWithCondition(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
+        private boolean kilt$checkIsTNTBlock(ServerLevel instance, BlockPos pos, boolean isMoving, @Local BlockState state) {
             return state.getBlock() instanceof TntBlock;
         }
     }

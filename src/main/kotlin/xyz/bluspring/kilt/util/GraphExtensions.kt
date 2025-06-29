@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.util
 
 import com.google.common.graph.GraphBuilder
 import com.google.common.graph.MutableGraph
-import net.minecraftforge.forgespi.language.IModInfo
+import net.neoforged.neoforgespi.language.IModInfo
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 
 @Suppress("UnstableApiUsage")

@@ -11,7 +11,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.ForgeCapabilities
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.event.AttachCapabilitiesEvent
-import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.neoforged.bus.api.SubscribeEvent
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyItemStorageCapabilityProvider

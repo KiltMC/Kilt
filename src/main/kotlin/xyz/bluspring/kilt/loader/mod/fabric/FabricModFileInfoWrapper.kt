@@ -1,10 +1,10 @@
 package xyz.bluspring.kilt.loader.mod.fabric
 
 import net.fabricmc.loader.api.ModContainer
-import net.minecraftforge.forgespi.language.IConfigurable
-import net.minecraftforge.forgespi.language.IModFileInfo
-import net.minecraftforge.forgespi.language.IModInfo
-import net.minecraftforge.forgespi.locating.IModFile
+import net.neoforged.neoforgespi.language.IConfigurable
+import net.neoforged.neoforgespi.language.IModFileInfo
+import net.neoforged.neoforgespi.language.IModInfo
+import net.neoforged.neoforgespi.locating.IModFile
 
 class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
     override fun getMods(): MutableList<IModInfo> {

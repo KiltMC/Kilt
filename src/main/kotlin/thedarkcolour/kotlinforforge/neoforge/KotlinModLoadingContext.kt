@@ -1,7 +1,7 @@
 package thedarkcolour.kotlinforforge.neoforge
 
-import net.minecraftforge.eventbus.api.IEventBus
-import net.minecraftforge.fml.ModLoadingContext
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.ModLoadingContext
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import java.util.concurrent.ConcurrentHashMap
 
@@ -15,12 +15,12 @@ class KotlinModLoadingContext(private val mod: NeoForgeMod) : ModLoadingContext(
 
         fun kiltGetContext(mod: NeoForgeMod): KotlinModLoadingContext {
             val ctx = cachedContexts.computeIfAbsent(mod.modId) { KotlinModLoadingContext(mod) }
-            ctx.setActiveContainer(mod.container)
+            ctx.activeContainer = mod.container
             return ctx
         }
 
-        fun get(): KotlinModLoadingContext {
+        /*fun get(): KotlinModLoadingContext {
             return ModLoadingContext.get().extension()
-        }
+        }*/
     }
 }

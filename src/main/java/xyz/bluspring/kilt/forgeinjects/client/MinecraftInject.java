@@ -39,7 +39,7 @@ import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.ModLoader;
+import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;

@@ -8,7 +8,7 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.ModLoader
+import net.neoforged.fml.ModLoader
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.knit.loader.KnitLoader
 

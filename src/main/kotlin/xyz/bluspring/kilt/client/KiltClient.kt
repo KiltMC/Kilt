@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableMap
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
-import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -19,13 +17,8 @@ import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.screens.Screen
-import net.minecraftforge.client.ForgeHooksClient
-import net.minecraftforge.client.event.*
-import net.minecraftforge.client.gui.overlay.ForgeGui
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.event.level.LevelEvent
-import net.minecraftforge.fml.ModLoader
+import net.neoforged.fml.ModLoader
+import net.neoforged.neoforge.event.EventHooks
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
@@ -46,7 +39,7 @@ class KiltClient : ClientModInitializer {
             Kilt.loader.postEvent(RegisterParticleProvidersEvent(Minecraft.getInstance().particleEngine))
         }*/
 
-        ItemTooltipCallback.EVENT.register { stack, flag, components ->
+        ItemTooltipCallback.EVENT.register { stack, context, type, components ->
             ForgeEventFactory.onItemTooltip(stack, null, components, flag)
         }
 

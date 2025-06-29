@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.create.extensions
 
 import com.tterrag.registrate.AbstractRegistrate
-import net.minecraftforge.eventbus.api.IEventBus
+import net.neoforged.bus.api.IEventBus
 
 interface AbstractRegistrateForgeExtension<S : AbstractRegistrate<S>> {
     fun getModEventBus(): IEventBus

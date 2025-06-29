@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.loader
 
-import net.minecraftforge.forgespi.locating.IModFile
-import net.minecraftforge.forgespi.locating.IModProvider
+import net.neoforged.neoforgespi.locating.IModFile
+import net.neoforged.neoforgespi.locating.IModProvider
 import java.nio.file.Path
 import java.util.function.Consumer
 

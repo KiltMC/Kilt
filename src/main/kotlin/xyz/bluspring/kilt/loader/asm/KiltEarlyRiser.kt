@@ -422,7 +422,7 @@ class KiltEarlyRiser : Runnable {
         // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
         // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
         run {
-            val eventBusPackage = "net.minecraftforge.eventbus"
+            val eventBusPackage = "net.neoforged.bus"
             val eventBusSlashed = eventBusPackage.replace(".", "/")
             val modifiedEventBusClasses = listOf(
                 "IEventListenerFactory",

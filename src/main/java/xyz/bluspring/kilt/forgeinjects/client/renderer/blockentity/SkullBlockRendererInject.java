@@ -7,7 +7,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.fml.ModLoader;
+import net.neoforged.fml.ModLoader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

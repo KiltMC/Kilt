@@ -15,7 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
