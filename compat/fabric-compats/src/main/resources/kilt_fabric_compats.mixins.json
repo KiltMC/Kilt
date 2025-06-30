@@ -8,6 +8,10 @@
         "mkb.IKeyBindingMixin",
         "mkb.IKeyConflictContextMixin",
         "mkb.KeyConflictContextMixin",
+        "sophisticatedcore.IForgeBlockMixin",
+        "sophisticatedcore.IForgeBlockStateMixin",
+        "sophisticatedcore.IForgeItemMixin",
+        "sophisticatedcore.IForgeItemStackMixin",
         "wthit.WailaMixin"
     ],
     "client": [
