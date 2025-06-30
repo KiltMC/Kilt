@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.world.level.block.entity;
 
+import com.moulberry.mixinconstraints.annotations.IfModAbsent;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.ChestBlock;
@@ -14,11 +16,15 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ChestBlockEntity.class)
+@Mixin(value = ChestBlockEntity.class, priority = 1150)
 public abstract class ChestBlockEntityInject extends RandomizableContainerBlockEntity {
     protected ChestBlockEntityInject(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
@@ -26,10 +32,21 @@ public abstract class ChestBlockEntityInject extends RandomizableContainerBlockE
 
     @Unique private LazyOptional<IItemHandlerModifiable> chestHandler;
 
-    @Intrinsic
+    @IfModAbsent("lithium")
     @Override
     public void setBlockState(BlockState blockState) {
         super.setBlockState(blockState);
+        if (this.chestHandler != null) {
+            LazyOptional<?> oldHandler = this.chestHandler;
+            this.chestHandler = null;
+            oldHandler.invalidate();
+        }
+    }
+
+    @IfModLoaded("lithium")
+    @Dynamic
+    @Inject(method = {"setBlockState", "method_31664"}, at = @At("TAIL"))
+    private void kilt$invalidateChestHandler(BlockState state, CallbackInfo ci) {
         if (this.chestHandler != null) {
             LazyOptional<?> oldHandler = this.chestHandler;
             this.chestHandler = null;
