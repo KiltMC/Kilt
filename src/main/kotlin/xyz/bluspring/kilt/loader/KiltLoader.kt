@@ -549,7 +549,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.kiltActiveModId = null
 
                     Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
                     exception.addSuppressed(e)
@@ -599,7 +599,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         try {
             ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e.printStackTrace()
             exception.addSuppressed(e)
         }
@@ -646,7 +646,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     hasInitialized = true
 
                     ModLoadingContext.kiltActiveModId = null
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     e.printStackTrace()
                     exception.addSuppressed(e)
                     hasErrored = true
