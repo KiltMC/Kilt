@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer.entity.layers;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -80,8 +83,11 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
         modelLocalRef.set(getArmorModelHook(livingEntity, itemStack, equipmentSlot, humanoidModel));
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;ZLnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
-    private void kilt$useForgeRenderModel(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, ArmorItem armorItem, boolean withGlint, A humanoidModel, boolean bl2, float r, float g, float b, String type, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local(argsOnly = true) EquipmentSlot slot, @Local(argsOnly = true) T livingEntity) {
-        this.renderModel(poseStack, multiBufferSource, light, withGlint, modelLocalRef.get(), r, g, b, this.getArmorResource(livingEntity, itemStack, slot, type));
+    @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;ZLnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
+    private void kilt$useForgeRenderModel(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, ArmorItem armorItem, boolean withGlint, A humanoidModel, boolean bl2, float r, float g, float b, String type, Operation<Void> original, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local(argsOnly = true) EquipmentSlot slot, @Local(argsOnly = true) T livingEntity) {
+        if (IClientItemExtensions.of(itemStack) != IClientItemExtensions.DEFAULT)
+            this.renderModel(poseStack, multiBufferSource, light, withGlint, modelLocalRef.get(), r, g, b, this.getArmorResource(livingEntity, itemStack, slot, type));
+        else
+            original.call(instance, poseStack, multiBufferSource, light, armorItem, withGlint, humanoidModel, bl2, r, g, b, type);
     }
 }
