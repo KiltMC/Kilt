@@ -462,6 +462,7 @@ object KiltRemapper {
                     WorkaroundFixer.fixClass(remappedNode)
                     ConflictingStaticMethodFixer.fixClass(remappedNode)
                     EnvironmentRemapper.remapClass(remappedNode)
+                    EnvironmentLambdaFixer.fixClass(remappedNode)
 
                     val writer = ClassWriter(Opcodes.ASM9)
                     remappedNode.accept(writer)
