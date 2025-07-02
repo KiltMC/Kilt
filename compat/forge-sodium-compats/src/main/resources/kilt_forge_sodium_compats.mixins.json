@@ -1,24 +1,25 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "xyz.bluspring.kilt.compat.sodium.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "cyclopscore.MinecraftHelpersMixin",
-    "cyclopscore.ModBaseMixin",
-    "quark.ConcretePowderBlockMixin",
-    "structure_gel.StructureTemplateMixin"
-  ],
-  "client": [
-    "immersiveengineering.ChunkBuilderMeshingTaskMixin",
-    "immersiveengineering.SodiumWorldRendererAccessor",
-    "quark.LevelRendererMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "plugin": "xyz.bluspring.kilt.compat.sodium.KiltForgeSodiumCompatMixinPlugin",
-  "mixinextras": {
-    "minVersion": "0.5.0-beta.5"
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.kilt.compat.sodium.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "cyclopscore.MinecraftHelpersMixin",
+        "cyclopscore.ModBaseMixin",
+        "quark.ConcretePowderBlockMixin",
+        "structure_gel.StructureTemplateMixin",
+        "thirst.PotionItemMixin"
+    ],
+    "client": [
+        "immersiveengineering.ChunkBuilderMeshingTaskMixin",
+        "immersiveengineering.SodiumWorldRendererAccessor",
+        "quark.LevelRendererMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "plugin": "xyz.bluspring.kilt.compat.sodium.KiltForgeSodiumCompatMixinPlugin",
+    "mixinextras": {
+        "minVersion": "0.5.0-beta.5"
   }
 }

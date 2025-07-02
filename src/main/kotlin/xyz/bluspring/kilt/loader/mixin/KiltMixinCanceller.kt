@@ -8,7 +8,8 @@ class KiltMixinCanceller : MixinCanceller {
         "committee.nova.mkb.mixin.MixinStickyKeyBinding",
         "org.violetmoon.quark.mixin.mixins.client.accessor.AccessorCustomCreativeSlot",
         "org.violetmoon.quark.mixin.mixins.ConcretePowderBlockMixin",
-        "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin"
+        "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin",
+        "dev.ghen.thirst.foundation.mixin.MixinPotionItem"
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {
