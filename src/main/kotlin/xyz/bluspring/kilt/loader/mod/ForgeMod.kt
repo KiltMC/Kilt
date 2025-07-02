@@ -59,6 +59,8 @@ class ForgeMod(
     var parent: ForgeMod? = null
     var manifest: Manifest? = null
 
+    val loader = definition.additionalData["loader"] as? String? ?: "javafml"
+
     private lateinit var secureJar: SecureJar
 
     val jar: JarFile
