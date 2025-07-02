@@ -40,4 +40,13 @@ class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>, U : FabricUnbakedGeometry<
     override fun resolveParents(modelGetter: Function<ResourceLocation, UnbakedModel>?, context: BlockModel?) {
         deferred.resolveParents(modelGetter, context)
     }
+
+    override fun resolveParents(
+        modelGetter: Function<ResourceLocation, UnbakedModel>,
+        context: IGeometryBakingContext
+    ) {
+        if (context is BlockGeometryBakingContext) {
+            deferred.resolveParents(modelGetter, context.owner)
+        }
+    }
 }
