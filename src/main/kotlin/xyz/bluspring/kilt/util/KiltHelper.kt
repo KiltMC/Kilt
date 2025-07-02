@@ -32,24 +32,25 @@ object KiltHelper {
         return true
     }
 
-    private fun checkCache(cache: MutableCollection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
+    private fun checkCache(cache: MutableCollection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, methodArgs: List<Class<*>>): Boolean {
         synchronized(cache) {
-            val existing = cache.firstOrNull { it.topClass == topClass && it.superClass == superClass && it.methodName == methodName && checkAllElementsMatch(it.methodArgs, methodArgs) } ?: return false
+            // Don't use any or first, this will result in *heavy* performance loss.
+            val overrideData = OverrideData(topClass, superClass, methodName, methodArgs)
 
             // Force the cache to mark this as accessed
-            return !cache.add(existing)
+            return !cache.add(overrideData)
         }
     }
 
     // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
     fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
-        if (checkCache(cachedHasMethodOverride, topClass, superClass, methodName, *methodArgs))
+        if (checkCache(cachedHasMethodOverride, topClass, superClass, methodName, methodArgs.toList()))
             return true
 
-        if (checkCache(cachedHasNoMethodOverride, topClass, superClass, methodName, *methodArgs))
+        if (checkCache(cachedHasNoMethodOverride, topClass, superClass, methodName, methodArgs.toList()))
             return false
 
-        val overrideData = OverrideData(topClass, superClass, methodName, *methodArgs)
+        val overrideData = OverrideData(topClass, superClass, methodName, methodArgs.toList())
 
         var currentClass: Class<*>? = topClass
         while (currentClass != null && currentClass != superClass && currentClass != Object::class.java && superClass.isAssignableFrom(topClass)) {
@@ -158,11 +159,11 @@ object KiltHelper {
         return list
     }
 
-    private class OverrideData(
+    private data class OverrideData(
         val topClass: Class<*>,
         val superClass: Class<*>,
         val methodName: String,
-        vararg val methodArgs: Class<*>
+        val methodArgs: List<Class<*>>
     )
 
     // Turns out, there are Forge mods that forcibly exit the game if Kilt or Porting Lib are detected, with zero information provided whatsoever.
