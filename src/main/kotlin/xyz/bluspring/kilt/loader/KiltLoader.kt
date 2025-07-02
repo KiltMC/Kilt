@@ -553,7 +553,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.get().activeContainer = null
 
                     Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
                     e.printStackTrace()
                     exception.addSuppressed(e)

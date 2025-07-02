@@ -1,6 +1,8 @@
 // TRACKED HASH: 5f2ec6b8441921405716aa0127851635b5b54f11
 package xyz.bluspring.kilt.forgeinjects.client.renderer.entity.layers;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -76,23 +79,16 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
         model.renderToBuffer(poseStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY, r, g, b, 1F);
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;setPartVisibility(Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/EquipmentSlot;)V"), method = "renderArmorPiece", locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;setPartVisibility(Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/EquipmentSlot;)V", shift = At.Shift.AFTER), method = "renderArmorPiece", locals = LocalCapture.CAPTURE_FAILHARD)
     private void kilt$getModelHook(PoseStack poseStack, MultiBufferSource multiBufferSource, T livingEntity, EquipmentSlot equipmentSlot, int i, A humanoidModel, CallbackInfo ci, ItemStack itemStack, ArmorItem armorItem, @Share("kilt$model") LocalRef<Model> modelLocalRef) {
         modelLocalRef.set(getArmorModelHook(livingEntity, itemStack, equipmentSlot, humanoidModel));
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V", ordinal = 0), method = "renderArmorPiece")
-    private void kilt$useForgeRenderModel(HumanoidArmorLayer instance, PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorItem armorItem, A model, boolean withGlint, float red, float green, float blue, String armorSuffix, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local EquipmentSlot equipmentSlot, @Local T livingEntity) {
-        this.renderModel(poseStack, buffer, packedLight, withGlint, modelLocalRef.get(), red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, null));
-    }
-
-    @Redirect(at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
-    private void kilt$useForgeRenderModelWithOverlay(HumanoidArmorLayer instance, PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorItem armorItem, A model, boolean withGlint, float red, float green, float blue, String armorSuffix, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local EquipmentSlot equipmentSlot, @Local T livingEntity) {
-        this.renderModel(poseStack, buffer, packedLight, withGlint, modelLocalRef.get(), red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, "overlay"));
-    }
-
-    @Redirect(at = @At(value = "INVOKE", ordinal = 2, target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
-    private void kilt$useForgeRenderModel2(HumanoidArmorLayer instance, PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorItem armorItem, A model, boolean withGlint, float red, float green, float blue, String armorSuffix, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local EquipmentSlot equipmentSlot, @Local T livingEntity) {
-        this.renderModel(poseStack, buffer, packedLight, withGlint, modelLocalRef.get(), red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, null));
+    @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
+    private void kilt$useForgeRenderModel(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorItem armorItem, A model, boolean withGlint, float red, float green, float blue, String armorSuffix, Operation<Void> original, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local EquipmentSlot equipmentSlot, @Local T livingEntity) {
+        if (IClientItemExtensions.of(itemStack) != IClientItemExtensions.DEFAULT)
+            this.renderModel(poseStack, buffer, packedLight, withGlint, modelLocalRef.get(), red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, armorSuffix));
+        else
+            original.call(instance, poseStack, buffer, packedLight, armorItem, model, withGlint, red, green, blue, armorSuffix);
     }
 }

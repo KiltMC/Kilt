@@ -8,6 +8,10 @@
         "mkb.IKeyBindingMixin",
         "mkb.IKeyConflictContextMixin",
         "mkb.KeyConflictContextMixin",
+        "sophisticatedcore.IForgeBlockMixin",
+        "sophisticatedcore.IForgeBlockStateMixin",
+        "sophisticatedcore.IForgeItemMixin",
+        "sophisticatedcore.IForgeItemStackMixin",
         "wthit.WailaMixin"
     ],
     "client": [
@@ -16,5 +20,5 @@
     "injectors": {
         "defaultRequire": 1
     },
-    "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
+    "plugin": "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinPlugin"
 }
