@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.KiltHelper
@@ -23,6 +23,7 @@ object MixinStaticMethodFixer {
             return
 
         val staticMethods = STATIC_METHODS.filter { targetClassNames.contains(it.key) || targetClassNames.contains(KiltRemapper.remapClass(it.key)) }.values.first()
+        val markedAsStatic = mutableListOf<MethodNode>()
 
         for (methodNode in classNode.methods) {
             if (Modifier.isStatic(methodNode.access))
@@ -41,6 +42,8 @@ object MixinStaticMethodFixer {
                     if (methodValue is String) {
                         if (staticMethods.contains(methodValue)) {
                             methodNode.access = methodNode.access or Opcodes.ACC_STATIC
+                            markedAsStatic.add(methodNode)
+                            break
                         }
                     } else if (methodValue is List<*>) {
                         for (value in methodValue) {
@@ -49,10 +52,41 @@ object MixinStaticMethodFixer {
 
                             if (staticMethods.contains(value)) {
                                 methodNode.access = methodNode.access or Opcodes.ACC_STATIC
+                                markedAsStatic.add(methodNode)
+                                break
                             }
                         }
                     }
                 }
+            }
+        }
+
+        for (methodNode in markedAsStatic) {
+            val newInstructions = InsnList()
+            for (node in methodNode.instructions) {
+                if (node is VarInsnNode) {
+                    node.`var` = node.`var` - 1
+                    newInstructions.add(node)
+                } else {
+                    newInstructions.add(node)
+                }
+            }
+
+            methodNode.instructions = newInstructions
+
+            if (methodNode.localVariables != null) {
+                val newLocals = mutableListOf<LocalVariableNode>()
+
+                for (local in methodNode.localVariables) {
+                    if (local.name == "this")
+                        continue
+
+                    local.index = local.index - 1
+                    newLocals.add(local)
+                }
+
+                methodNode.localVariables = newLocals
+                methodNode.maxLocals = methodNode.maxLocals - 1
             }
         }
     }
