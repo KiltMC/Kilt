@@ -262,6 +262,7 @@ public abstract class GuiInject implements GuiInjection {
             return constant;
 
         var delta = this.minecraft.getPartialTick();
+        this.kilt$getGui().rightHeight += 10;
         if (kilt$renderOverlayCheckPost(guiGraphics, delta, VanillaGuiOverlay.FOOD_LEVEL, args -> null, false)) {
             result.set(true);
             hasRun.set(true);
@@ -277,6 +278,7 @@ public abstract class GuiInject implements GuiInjection {
         var delta = this.minecraft.getPartialTick();
         if (result.get())
             post(guiGraphics, this.minecraft.getPartialTick(), VanillaGuiOverlay.FOOD_LEVEL);
+        this.kilt$getGui().rightHeight = 39;
         // End of the method so we can just cancel
         if (!kilt$renderOverlayCheckPost(guiGraphics, delta, VanillaGuiOverlay.AIR_LEVEL, args -> null, false))
             ci.cancel();
