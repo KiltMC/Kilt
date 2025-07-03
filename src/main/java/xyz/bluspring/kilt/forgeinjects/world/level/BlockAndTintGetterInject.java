@@ -2,9 +2,9 @@
 package xyz.bluspring.kilt.forgeinjects.world.level;
 
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraftforge.client.extensions.IForgeBlockAndTintGetter;
+import net.neoforged.neoforge.common.extensions.IBlockAndTintGetterExtension;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BlockAndTintGetter.class)
-public interface BlockAndTintGetterInject extends IForgeBlockAndTintGetter {
+public interface BlockAndTintGetterInject extends IBlockAndTintGetterExtension {
 }

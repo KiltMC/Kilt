@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.forgeinjects;
 
 import net.minecraft.CrashReport;
 import net.minecraft.SystemReport;
-import net.minecraftforge.logging.CrashReportExtender;
+import net.neoforged.neoforge.logging.CrashReportExtender;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

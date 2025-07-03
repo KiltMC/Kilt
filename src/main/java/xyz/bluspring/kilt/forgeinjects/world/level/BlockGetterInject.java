@@ -8,13 +8,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.extensions.IForgeBlockGetter;
+import net.neoforged.neoforge.common.extensions.IBlockGetterExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(BlockGetter.class)
-public interface BlockGetterInject extends IForgeBlockGetter {
+public interface BlockGetterInject extends IBlockGetterExtension {
     @WrapOperation(method = "getLightEmission", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
     private int kilt$tryUseForgeEmission(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockPos pos) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getLightEmission", BlockState.class, BlockGetter.class, BlockPos.class)) {

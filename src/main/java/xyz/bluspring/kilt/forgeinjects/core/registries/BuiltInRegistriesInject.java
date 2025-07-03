@@ -3,35 +3,26 @@ package xyz.bluspring.kilt.forgeinjects.core.registries;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraftforge.registries.GameData;
+import net.minecraft.resources.ResourceLocation;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 @Mixin(BuiltInRegistries.class)
-public class BuiltInRegistriesInject {
-    /*@ModifyVariable(method = "internalRegister", at = @At("HEAD"), argsOnly = true)
-    private static <T, R extends WritableRegistry<T>> R kilt$wrapWithGameDataWrapper(R registry, @Local(argsOnly = true) ResourceKey<? extends Registry<T>> key, @Local(argsOnly = true) BuiltInRegistries.RegistryBootstrap<T> bootstrap, @Local(argsOnly = true) Lifecycle lifecycle) {
-        R wrapper;
-        if (registry instanceof DefaultedRegistry<?> defaulted)
-            wrapper = (R) GameData.getWrapper(key, lifecycle, defaulted.getDefaultKey().toString());
-        else
-            wrapper = (R) GameData.getWrapper(key, lifecycle);
+public abstract class BuiltInRegistriesInject {
+    @Shadow @Final private static Map<ResourceLocation, Supplier<?>> LOADERS;
 
-        if (wrapper == null)
-            return registry;
-        else
-            return wrapper;
-    }*/
-
-    @Inject(method = "<clinit>", at = @At("TAIL"))
-    private static void kilt$initGameDataRegistries(CallbackInfo ci) {
-        GameData.init();
-    }
-
-    @WrapWithCondition(method = "bootStrap", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/registries/BuiltInRegistries;freeze()V"))
-    private static boolean kilt$avoidEarlyFreezingRegistry() {
-        return false;
+    @CreateStatic
+    private static Set<ResourceLocation> getVanillaRegistrationOrder() {
+        return Collections.unmodifiableSet(LOADERS.keySet());
     }
 }

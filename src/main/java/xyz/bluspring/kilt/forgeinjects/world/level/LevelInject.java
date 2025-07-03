@@ -15,13 +15,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
-import net.minecraftforge.common.extensions.IForgeBlockState;
-import net.minecraftforge.common.extensions.IForgeLevel;
-import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.common.extensions.IBlockStateExtension;
+import net.neoforged.neoforge.common.extensions.ILevelExtension;
+import net.neoforged.neoforge.common.util.BlockSnapshot;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,8 +41,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @Mixin(value = Level.class, priority = 1111) // higher priority to mixin to Porting Lib
-@Extends(CapabilityProvider.class)
-public abstract class LevelInject implements CapabilityProviderInjection, ICapabilityProviderImpl<Level>, IForgeLevel, LevelInjection {
+@Extends(AttachmentHolder.class)
+public abstract class LevelInject implements CapabilityProviderInjection, ILevelExtension, LevelInjection {
     public boolean restoringBlockSnapshots = false;
     public boolean captureBlockSnapshots = false;
 
@@ -75,7 +74,7 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
     public ArrayList<BlockSnapshot> capturedBlockSnapshots = new ArrayList<>();
 
     @Override
-    public ArrayList<BlockSnapshot> getCapturedBlockSnapshots() {
+    public ArrayList<BlockSnapshot> kilt$getCapturedBlockSnapshots() {
         return capturedBlockSnapshots;
     }
 
@@ -130,14 +129,14 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
 
     @Redirect(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
     public boolean kilt$checkForNeighbourChange(BlockState instance, Block unused, BlockPos blockPos, @Local(index = 1) BlockPos directionPos) {
-        ((IForgeBlockState) instance).onNeighborChange((Level) (Object) this, directionPos, blockPos);
+        ((IBlockStateExtension) instance).onNeighborChange((Level) (Object) this, directionPos, blockPos);
         // Don't trigger the Vanilla neighbour change.
         return false;
     }
 
     @Redirect(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 1))
     public boolean kilt$getWeakChange(BlockState instance, Block unused, BlockPos blockPos, Block block, @Local(index = 1) BlockPos directionPos) {
-        return ((IForgeBlockState) instance).getWeakChanges((Level) (Object) this, directionPos);
+        return ((IBlockStateExtension) instance).getWeakChanges((Level) (Object) this, directionPos);
     }
 
     @Inject(method = "blockEntityChanged", at = @At("TAIL"))
@@ -153,10 +152,9 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
     @Inject(method = "updateNeighborsAt", at = @At("TAIL"))
     public void kilt$notifyNeighbours(BlockPos pos, Block block, CallbackInfo ci) {
         // why is "isCanceled()" added at the end?
-        ForgeEventFactory.onNeighborNotify((Level) (Object) this, pos, this.getBlockState(pos), EnumSet.allOf(Direction.class), false).isCanceled();
+        EventHooks.onNeighborNotify((Level) (Object) this, pos, this.getBlockState(pos), EnumSet.allOf(Direction.class), false).isCanceled();
     }
 
-    @SuppressWarnings("UnresolvedMixinReference")
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.mixin.common.LevelMixin", name = "port_lib$onBlockEntitiesLoad")
     @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/ArrayList;forEach(Ljava/util/function/Consumer;)V", remap = false))
     private void kilt$loadBlockEntitiesForge(ArrayList<BlockEntity> instance, Consumer<BlockEntity> consumer) {

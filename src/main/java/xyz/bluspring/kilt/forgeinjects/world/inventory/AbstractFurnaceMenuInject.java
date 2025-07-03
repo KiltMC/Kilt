@@ -6,7 +6,6 @@ import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.common.ForgeHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,6 +17,6 @@ public abstract class AbstractFurnaceMenuInject {
 
     @ModifyReturnValue(method = "isFuel", at = @At("RETURN"))
     private boolean kilt$checkIfIsFuel(boolean original, @Local(argsOnly = true) ItemStack stack) {
-        return original || ForgeHooks.getBurnTime(stack, this.recipeType) > 0;
+        return original || stack.getBurnTime(this.recipeType) > 0;
     }
 }

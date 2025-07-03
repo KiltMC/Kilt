@@ -6,11 +6,12 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.CommonHooks;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +34,7 @@ public abstract class AnvilMenuInject extends ItemCombinerMenu implements AnvilM
 
     @Inject(method = "onTake", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/Container;setItem(ILnet/minecraft/world/item/ItemStack;)V", ordinal = 0))
     private void kilt$getForgeBreakChance(Player player, ItemStack stack, CallbackInfo ci) {
-        kilt$storedBreakChance.set(ForgeHooks.onAnvilRepair(player, stack, this.inputSlots.getItem(0), this.inputSlots.getItem(1)));
+        kilt$storedBreakChance.set(CommonHooks.onAnvilRepair(player, stack, this.inputSlots.getItem(0), this.inputSlots.getItem(1)));
     }
 
     @ModifyExpressionValue(method = "method_24922", at = @At(value = "CONSTANT", args = "floatValue=0.12"))
@@ -50,7 +51,7 @@ public abstract class AnvilMenuInject extends ItemCombinerMenu implements AnvilM
 
     @Inject(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 1), cancellable = true)
     private void kilt$checkForgeAnvilChange(CallbackInfo ci, @Local(ordinal = 0) ItemStack stack, @Local(ordinal = 1) ItemStack stack2, @Local(ordinal = 1) int j) {
-        if (!ForgeHooks.onAnvilChange((AnvilMenu) (Object) this, stack, stack2, this.resultSlots, this.itemName, j, this.player))
+        if (!CommonHooks.onAnvilChange((AnvilMenu) (Object) this, stack, stack2, this.resultSlots, this.itemName, j, this.player))
             ci.cancel();
     }
 
@@ -66,7 +67,7 @@ public abstract class AnvilMenuInject extends ItemCombinerMenu implements AnvilM
     }
 
     @Override
-    public void setMaximumCost(int value) {
-        this.cost.set(value);
+    public void setMaximumCost(long value) {
+        this.cost.set((int) Mth.clamp(value, 0L, Integer.MAX_VALUE));
     }
 }

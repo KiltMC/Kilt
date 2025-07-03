@@ -5,12 +5,11 @@ import net.minecraft.world.entity.vehicle.MinecartSpawner;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.bluspring.kilt.injections.world.level.BaseSpawnerInjection;
 
 @Mixin(MinecartSpawner.class)
 public abstract class MinecartSpawnerInject {
     @Mixin(targets = "net.minecraft.world.entity.vehicle.MinecartSpawner$0")
-    public static abstract class BaseSpawnerInject implements BaseSpawnerInjection {
+    public static abstract class BaseSpawnerInject {
         @Shadow @Final private MinecartSpawner field_7747;
 
         @Override

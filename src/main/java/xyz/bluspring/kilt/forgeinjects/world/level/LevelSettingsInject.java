@@ -10,7 +10,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraftforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,7 +39,7 @@ public abstract class LevelSettingsInject implements LevelSettingsInjection {
 
     @ModifyReturnValue(method = "parse", at = @At("RETURN"))
     private static LevelSettings kilt$parseLifecycleData(LevelSettings original, @Local(argsOnly = true) Dynamic<?> dynamic) {
-        ((LevelSettingsInjection) (Object) original).kilt$setLifecycle(ForgeHooks.parseLifecycle(dynamic.get("forgeLifecycle").asString("stable")));
+        ((LevelSettingsInjection) (Object) original).kilt$setLifecycle(CommonHooks.parseLifecycle(dynamic.get("forgeLifecycle").asString("stable")));
         return original;
     }
 

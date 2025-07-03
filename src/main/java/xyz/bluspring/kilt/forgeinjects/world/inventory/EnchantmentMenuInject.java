@@ -14,8 +14,7 @@ import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,15 +25,15 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class EnchantmentMenuInject {
     @Shadow @Final public int[] costs;
 
-    @Mixin(targets = "net.minecraft.world.inventory.EnchantmentMenu$2")
+    /*@Mixin(targets = "net.minecraft.world.inventory.EnchantmentMenu$2")
     public abstract static class AnonymousEnchantFuelSlotInject {
         @ModifyReturnValue(method = "mayPlace", at = @At("RETURN"))
         private boolean kilt$checkIsValidEnchantingFuel(boolean original, @Local(argsOnly = true) ItemStack stack) {
             return original || stack.is(Tags.Items.ENCHANTING_FUELS);
         }
-    }
+    }*/
 
-    @ModifyExpressionValue(method = "method_17411", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/EnchantmentTableBlock;isValidBookShelf(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z"))
+    @ModifyExpressionValue(method = "method_17411", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/EnchantingTableBlock;isValidBookShelf(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z"))
     private boolean kilt$addEnchantPowerBonus(boolean original, ItemStack itemStack, Level level, BlockPos blockPos, @Share("enchantPowerBonus") LocalFloatRef enchantPowerBonusRef, @Local(ordinal = 1) BlockPos pos2) {
         if (original) {
             enchantPowerBonusRef.set(enchantPowerBonusRef.get() + level.getBlockState(blockPos.offset(pos2)).getEnchantPowerBonus(level, blockPos.offset(pos2)));
@@ -53,17 +52,19 @@ public abstract class EnchantmentMenuInject {
     @ModifyExpressionValue(method = "method_17411", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$callForgeSetEnchantmentLevelEvent(boolean original, @Local(ordinal = 1) int k, @Local(argsOnly = true) Level level, @Local(argsOnly = true) BlockPos pos, @Share("enchantPowerBonus") LocalFloatRef enchantPowerBonusRef, @Local(ordinal = 0) ItemStack stack) {
         if (original) {
-            this.costs[k] = ForgeEventFactory.onEnchantmentLevelSet(level, pos, k, (int) enchantPowerBonusRef.get(), stack, 0);
+            this.costs[k] = EventHooks.onEnchantmentLevelSet(level, pos, k, (int) enchantPowerBonusRef.get(), stack, 0);
             return false;
         } else {
-            this.costs[k] = ForgeEventFactory.onEnchantmentLevelSet(level, pos, k, (int) enchantPowerBonusRef.get(), stack, this.costs[k]);
+            this.costs[k] = EventHooks.onEnchantmentLevelSet(level, pos, k, (int) enchantPowerBonusRef.get(), stack, this.costs[k]);
         }
 
         return original;
     }
 
-    @WrapOperation(method = "quickMoveStack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 0))
+    // TODO: onPlayerEnchantItem
+
+    /*@WrapOperation(method = "quickMoveStack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 0))
     private boolean kilt$checkIsEnchantingFuel(ItemStack instance, Item item, Operation<Boolean> original) {
         return original.call(instance, item) || instance.is(Tags.Items.ENCHANTING_FUELS);
-    }
+    }*/
 }

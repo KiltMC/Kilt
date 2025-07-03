@@ -13,7 +13,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -39,16 +38,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
-import net.minecraftforge.common.extensions.IForgeEntity;
-import net.minecraftforge.common.util.ITeleporter;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.common.extensions.IEntityExtension;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -73,13 +64,12 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
 @Mixin(Entity.class)
-@Extends(CapabilityProvider.class)
-public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, ICapabilityProviderImpl<Entity>, EntityExtensions, EntityInjection {
+@Extends(AttachmentHolder.class)
+public abstract class EntityInject implements IEntityExtension, EntityInjection {
     @Shadow public Level level;
     @Shadow public abstract float getBbWidth();
     @Shadow public abstract float getBbHeight();
     @Shadow protected abstract void unsetRemoved();
-    @Shadow protected abstract float getEyeHeight(Pose pose, EntityDimensions dimensions);
     @Shadow private EntityDimensions dimensions;
     @Shadow public abstract Level level();
     @Shadow protected abstract void playCombinationStepSounds(BlockState primaryState, BlockState secondaryState);

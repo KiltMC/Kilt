@@ -7,12 +7,11 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.bluspring.kilt.injections.world.level.BaseSpawnerInjection;
 
 @Mixin(SpawnerBlockEntity.class)
 public abstract class SpawnerBlockEntityInject {
     @Mixin(targets = "net.minecraft.world.level.block.entity.SpawnerBlockEntity$1")
-    public static abstract class BaseSpawnerInject implements BaseSpawnerInjection {
+    public static abstract class BaseSpawnerInject {
         @Shadow @Final SpawnerBlockEntity field_27219;
 
         @Nullable

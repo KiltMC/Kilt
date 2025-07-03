@@ -1,102 +1,133 @@
 // TRACKED HASH: c90ad9c5c8bd04fe0240bdfe4249e3f318e2cd46
 package xyz.bluspring.kilt.forgeinjects.world.effect;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.google.common.collect.Sets;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import com.mojang.datafixers.kinds.App;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.Holder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.extensions.IForgeMobEffectInstance;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.effect.MobEffectInstanceInjection;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 @Mixin(value = MobEffectInstance.class, priority = 1010)
-public abstract class MobEffectInstanceInject implements IForgeMobEffectInstance, MobEffectInstanceInjection {
-    @SuppressWarnings("MixinAnnotationTarget") @Shadow List<ItemStack> curativeItems;
+public abstract class MobEffectInstanceInject implements MobEffectInstanceInjection {
+    @Shadow @Final private Holder<MobEffect> effect;
 
-    @Shadow public abstract MobEffect getEffect();
-
-    @Inject(method = "<init>(Lnet/minecraft/world/effect/MobEffectInstance;)V", at = @At("TAIL"))
-    private void kilt$initCurativeItems(MobEffectInstance other, CallbackInfo ci) {
-        this.curativeItems = ((MobEffectInstanceInjection) other).kilt$getDirectCurativeItems() == null ? null : new ArrayList<>(((MobEffectInstanceInjection) other).kilt$getDirectCurativeItems());
+    @Inject(method = "<init>(Lnet/minecraft/core/Holder;IIZZZLnet/minecraft/world/effect/MobEffectInstance;)V", at = @At("TAIL"))
+    private void kilt$storeEffectCures(Holder effect, int duration, int amplifier, boolean ambient, boolean visible, boolean showIcon, MobEffectInstance hiddenEffect, CallbackInfo ci) {
+        this.effect.value().fillEffectCures(this.cures, (MobEffectInstance) (Object) this);
     }
 
-    @Override
-    public List<ItemStack> kilt$getDirectCurativeItems() {
-        return this.curativeItems;
+    @Inject(method = "<init>(Lnet/minecraft/core/Holder;Lnet/minecraft/world/effect/MobEffectInstance$Details;)V", at = @At("TAIL"))
+    private void kilt$copyAllCuresFromDetails(Holder<MobEffect> effect, MobEffectInstance.Details details, CallbackInfo ci) {
+        this.cures.clear();
+        ((MobEffectInstanceInjection.DetailsInjection) (Object) details).cures().ifPresent(this.cures::addAll);
     }
 
-    @ModifyReturnValue(method = "getEffect", at = @At("RETURN"))
-    private MobEffect kilt$getForgeDelegateEffect(MobEffect original) {
-        var delegate = ForgeRegistries.MOB_EFFECTS.getDelegate(original);
-        if (delegate.isPresent()) {
-            return delegate.orElseThrow().value();
-        }
-
+    @ModifyReturnValue(method = "asDetails", at = @At("RETURN"))
+    private MobEffectInstance.Details kilt$attachCuresToDetails(MobEffectInstance.Details original) {
+        ((MobEffectInstanceInjection.DetailsInjection) (Object) original).kilt$setCures(Optional.of(this.getCures()).filter(cures -> !cures.isEmpty()));
         return original;
     }
 
-    @Inject(method = "save", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;putInt(Ljava/lang/String;I)V", shift = At.Shift.AFTER))
-    private void kilt$saveForgeMobEffect(CompoundTag nbt, CallbackInfoReturnable<CompoundTag> cir) {
-        ForgeHooks.saveMobEffect(nbt, "forge:id", this.getEffect());
+    @Inject(method = "setDetailsFrom", at = @At("TAIL"))
+    private void kilt$copyCuresFromOther(MobEffectInstance effectInstance, CallbackInfo ci) {
+        this.cures.clear();
+        this.cures.addAll(((MobEffectInstanceInjection) effectInstance).getCures());
     }
 
-    @Inject(method = "writeDetailsTo", at = @At(value = "INVOKE", target = "Ljava/util/Optional;ifPresent(Ljava/util/function/Consumer;)V"))
-    private void kilt$writeCurativeItems(CompoundTag nbt, CallbackInfo ci) {
-        this.writeCurativeItems(nbt);
-    }
+    // TODO: impl sort order
 
-    @ModifyExpressionValue(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;byId(I)Lnet/minecraft/world/effect/MobEffect;"))
-    private static MobEffect kilt$loadForgeMobEffect(MobEffect original, @Local(argsOnly = true) CompoundTag nbt) {
-        return ForgeHooks.loadMobEffect(nbt, "forge:id", original);
-    }
-
-    @ModifyReturnValue(method = "loadSpecifiedEffect", at = @At("RETURN"))
-    private static MobEffectInstance kilt$readCurativeItemsForEffect(MobEffectInstance original, @Local(argsOnly = true) CompoundTag nbt) {
-        return readCurativeItems(original, nbt);
-    }
-
-    // Kilt: implemented by Porting Lib
-    /*@Shadow public abstract MobEffect getEffect();
-    @Unique private List<ItemStack> curativeItems;
+    @Unique private final Set<EffectCure> cures = Sets.newIdentityHashSet();
 
     @Override
-    public List<ItemStack> getCurativeItems() {
-        if (this.curativeItems == null)
-            this.curativeItems = this.getEffect().getCurativeItems();
-
-        return curativeItems;
+    public Set<EffectCure> getCures() {
+        return cures;
     }
 
-    @Override
-    public void setCurativeItems(List<ItemStack> curativeItems) {
-        this.curativeItems = curativeItems;
-    }*/
+    @Mixin(MobEffectInstance.Details.class)
+    public abstract static class DetailsInject implements MobEffectInstanceInjection.DetailsInjection {
+        @Unique private Optional<Set<EffectCure>> cures = Optional.empty();
 
-    private static MobEffectInstance readCurativeItems(MobEffectInstance effect, CompoundTag nbt) {
-        if (nbt.contains("CurativeItems", Tag.TAG_LIST)) {
-            var items = new ArrayList<ItemStack>();
-            var list = nbt.getList("CurativeItems", Tag.TAG_COMPOUND);
-            for (int i = 0; i < list.size(); i++) {
-                items.add(ItemStack.of(list.getCompound(i)));
-            }
-
-            effect.setCurativeItems(items);
+        @Override
+        public Optional<Set<EffectCure>> cures() {
+            return this.cures;
         }
 
-        return effect;
+        @Override
+        public void kilt$setCures(Optional<Set<EffectCure>> cures) {
+            this.cures = cures;
+        }
+
+        public DetailsInject(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<MobEffectInstance.Details> hiddenEffect) {}
+
+        @CreateInitializer
+        public DetailsInject(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<MobEffectInstance.Details> hiddenEffect, Optional<Set<EffectCure>> cures) {
+            this(amplifier, duration, ambient, showParticles, showIcon, hiddenEffect);
+            this.cures = cures;
+        }
+
+        @ModifyReturnValue(method = "method_56672", at = @At("RETURN"))
+        private static App<RecordCodecBuilder.Mu<MobEffectInstance.Details>, MobEffectInstance.Details> kilt$appendNeoCuresCodec(App<RecordCodecBuilder.Mu<MobEffectInstance.Details>, MobEffectInstance.Details> original, @Local(argsOnly = true) RecordCodecBuilder.Instance<MobEffectInstance.Details> instance) {
+            return instance.group(
+                original,
+                NeoForgeExtraCodecs.setOf(EffectCure.CODEC)
+                    .optionalFieldOf("neoforge:cures")
+                    .forGetter(details -> ((MobEffectInstanceInjection.DetailsInjection) (Object) details).cures())
+            )
+                .apply(instance, (details, cures) -> {
+                    ((MobEffectInstanceInjection.DetailsInjection) (Object) details).kilt$setCures(cures);
+                    return details;
+                });
+        }
+
+        @ModifyReturnValue(method = "method_57279", at = @At("RETURN"))
+        private static StreamCodec<RegistryFriendlyByteBuf, MobEffectInstance.Details> kilt$appendNeoCuresStreamCodec(StreamCodec<ByteBuf, MobEffectInstance.Details> original) {
+            return StreamCodec.composite(
+                // I feel like i should be concerned that this just works.
+                original, Function.identity(),
+
+                NeoForgeStreamCodecs.connectionAware(
+                    ByteBufCodecs.optional(EffectCure.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new))),
+                    NeoForgeStreamCodecs.uncheckedUnit(Optional.empty())
+                ), details -> ((MobEffectInstanceInjection.DetailsInjection) (Object) details).cures(),
+
+                (details, cures) -> {
+                    ((MobEffectInstanceInjection.DetailsInjection) (Object) details).kilt$setCures(cures);
+                    return details;
+                }
+            );
+        }
+
+        // but why though?
+        @CreateStatic
+        private static MobEffectInstance.Details create(int amplifier, int duration, boolean ambient, boolean showParticles, Optional<Boolean> showIcon, Optional<MobEffectInstance.Details> hiddenEffect, Optional<Set<EffectCure>> cures) {
+            var value = new MobEffectInstance.Details(amplifier, duration, ambient, showParticles, showIcon.orElse(showParticles), hiddenEffect);
+            ((MobEffectInstanceInjection.DetailsInjection) (Object) value).kilt$setCures(cures);
+            return value;
+        }
     }
 }
