@@ -22,6 +22,8 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -38,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
+import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerInject {
@@ -103,6 +106,8 @@ public abstract class ClientPacketListenerInject {
 
     @Inject(method = "handleUpdateTags", at = @At("TAIL"))
     private void kilt$updateTags(ClientboundUpdateTagsPacket packet, CallbackInfo ci) {
+        CreativeModeTabs.allTabs().stream().filter(CreativeModeTabInjection::hasSearchBar)
+            .forEach(CreativeModeTab::rebuildSearchTree);
         MinecraftForge.EVENT_BUS.post(new TagsUpdatedEvent(this.registryAccess.compositeAccess(), true, this.connection.isMemoryConnection()));
     }
 
