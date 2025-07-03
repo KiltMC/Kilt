@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.compat.create.mixin;
+package xyz.bluspring.kilt.compat.create.mixin.create_fabric;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import xyz.bluspring.kilt.compat.create.mixin.registrate_fabric.AbstractRegistrateMixin;
 
 @IfModLoaded("create")
 @Mixin(CreateRegistrate.class)

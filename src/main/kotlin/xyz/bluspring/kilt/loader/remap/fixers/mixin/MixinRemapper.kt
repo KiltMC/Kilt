@@ -314,6 +314,12 @@ object MixinRemapper {
 
         val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
+        // Some special overrides
+        if ((className == "net/minecraft/client/particle/ParticleEngine" || classTargets.contains("net/minecraft/client/particle/ParticleEngine")) && member == "f_107293_") {
+            // what the fuck is an interpolation string
+            return $$"$${mappedClassDescriptor}kilt$providers:$$mappedDescriptor"
+        }
+
         if (isField) {
             // We can safely use both member + descriptor here, because we know each and every component.
             if (!className.isBlank()) {

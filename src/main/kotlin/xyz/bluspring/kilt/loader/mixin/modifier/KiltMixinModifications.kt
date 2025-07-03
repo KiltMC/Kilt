@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifier
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -244,6 +245,30 @@ object KiltMixinModifications {
                 visitEnd()
             }
         }
+    )
+
+    val WRAP_OPERATION = register(
+        WrapOperation::class.java,
+
+        // Fixes Create's ProjectileUtilMixin
+        MixinModifier(
+            owner = "net/minecraft/world/entity/projectile/ProjectileUtil",
+            methods = listOf("getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRiderInteract()Z"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.forgeinjects.world.entity.projectile.ProjectileUtilInject",
+                    "name" to $$"kilt$checkCanRiderInteract",
+                    "prefix" to "modifyExpressionValue"
+                )),
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRiderInteract()Z"))
+                ))
+            )
+        )
     )
 
     fun findMatchingModifier(classInfo: ClassInfo, annotation: AnnotationNode): MixinModifier? {

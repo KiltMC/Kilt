@@ -4,21 +4,24 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.TerrainParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -31,22 +34,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineInject implements ParticleEngineInjection {
     @Shadow public abstract void render(PoseStack poseStack, MultiBufferSource.BufferSource buffer, LightTexture lightTexture, Camera activeRenderInfo, float partialTicks);
     @Shadow @Final @Mutable private Map<ParticleRenderType, Queue<Particle>> particles;
     @Shadow @Final private static List<ParticleRenderType> RENDER_ORDER;
-
     @Shadow protected ClientLevel level;
-
     @Shadow public abstract void crack(BlockPos pos, Direction side);
 
     @Unique private @Nullable Frustum kilt$clippingHelper;
+    // Used by some Forge mods, so we need to patch it, but unfortunately also means we're storing this data twice.
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Unique private final Map<ResourceLocation, ParticleProvider<?>> kilt$providers = new HashMap<>();
+
+    @WrapOperation(method = {"register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V", "register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration;)V"}, at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;put(ILjava/lang/Object;)Ljava/lang/Object;"))
+    private <T extends ParticleOptions> Object kilt$registerToForgeProviders(Int2ObjectMap<?> instance, int i, Object o, Operation<Object> original, @Local(argsOnly = true) ParticleType<T> particleType) {
+        this.kilt$providers.put(BuiltInRegistries.PARTICLE_TYPE.getKey(particleType), (ParticleProvider<?>) o);
+        return original.call(instance, i, o);
+    }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$handleParticleTypeComparator(ClientLevel level, TextureManager textureManager, CallbackInfo ci) {
