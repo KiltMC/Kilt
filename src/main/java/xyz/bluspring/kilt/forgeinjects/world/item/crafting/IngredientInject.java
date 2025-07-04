@@ -84,6 +84,7 @@ public class IngredientInject implements IngredientInjection {
     @Inject(at = @At("HEAD"), method = "fromNetwork", cancellable = true)
     private static void kilt$checkForgeRecipeFromNetwork(FriendlyByteBuf friendlyByteBuf, CallbackInfoReturnable<Ingredient> cir) {
         try {
+            friendlyByteBuf.markReaderIndex();
             var size = friendlyByteBuf.readVarInt();
             if (size == -1) {
                 cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
@@ -93,6 +94,7 @@ public class IngredientInject implements IngredientInjection {
             cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
         } catch (Throwable ignored) {
             // This will defer over to any mixins that may occur after this.
+            friendlyByteBuf.resetReaderIndex();
         }
     }
 
