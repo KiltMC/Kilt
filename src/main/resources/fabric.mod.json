@@ -123,6 +123,9 @@
       "net/minecraft/class_1761": ["xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection"],
       "net/minecraft/class_1761$class_7913": ["xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection"],
       "net/minecraft/class_702": ["xyz/bluspring/kilt/injections/client/particle/ParticleEngineInjection"]
+    },
+    "lithium:options": {
+      "mixin.entity.collisions.fluid": false
     }
   },
   "breaks": {
