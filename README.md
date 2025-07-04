@@ -1,5 +1,5 @@
 <h1 align="left">
-<img align="center" width="48" alt="Kilt Logo" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true"> Kilt
+<img align="center" width="56" alt="Kilt Logo" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true"> Kilt
 </h1>
 
 [![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
