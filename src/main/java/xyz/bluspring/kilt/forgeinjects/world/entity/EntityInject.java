@@ -14,6 +14,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
+import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -440,6 +441,26 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         var calc = original.call(a, (double) interim.get().getLeft());
         interim.get().setLeft(calc);
         return calc;
+    }
+
+    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
+    private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
+        if (fluidTypeRef.get() == null && interimCalcs.get() == null)
+            return true;
+
+        if (fluidTag == FluidTags.WATER) {
+            if (fluidTypeRef.get() != null)
+                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+        } else if (fluidTag == FluidTags.LAVA) {
+            if (fluidTypeRef.get() != null)
+                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
+        }
+
+        return true;
     }
 
     // TODO: there is definitely a better way to do this.
