@@ -94,9 +94,13 @@ public class IngredientInject implements IngredientInjection {
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/google/gson/JsonElement;isJsonObject()Z", shift = At.Shift.BEFORE, remap = false), method = "fromJson(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;", cancellable = true)
     private static void kilt$checkForgeRecipeFromJson(JsonElement json, boolean canBeEmpty, CallbackInfoReturnable<Ingredient> cir) {
-        var ret = CraftingHelper.getIngredient(json, canBeEmpty);
-        if (ret != null)
-            cir.setReturnValue(ret);
+        try {
+            var ret = CraftingHelper.getIngredient(json, canBeEmpty);
+            if (ret != null)
+                cir.setReturnValue(ret);
+        } catch (Throwable ignored) {
+            // This will defer over to any mixins that may occur after this.
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "toNetwork", cancellable = true)
