@@ -4,7 +4,7 @@
 
 [![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
 A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.<br><br>
-[![Discord invite](https://github.com/KiltMC/Kilt/.github/assets/discord-plural_vector%201.svg?raw=true)](https://discord.gg/enGK2TymYJ) 
+[![Discord invite](https://github.com/KiltMC/Kilt/blob/version/1.20.1/.github/assets/discord-plural_vector%201.svg?raw=true)](https://discord.gg/enGK2TymYJ) 
 [![Buy Me A Coffee](https://raw.githubusercontent.com/intergrav/devins-badges/c7fd18efdadd1c3f12ae56b49afd834640d2d797/assets/cozy/donate/kofi-plural-alt_vector.svg?raw=true)](https://ko-fi.com/bluspring)<br>
 
 ## FAQ
