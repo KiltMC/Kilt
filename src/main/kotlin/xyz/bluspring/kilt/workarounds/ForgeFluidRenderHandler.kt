@@ -18,6 +18,10 @@ class ForgeFluidRenderHandler : FluidRenderHandler {
     }
 
     override fun getFluidColor(view: BlockAndTintGetter?, pos: BlockPos?, state: FluidState?): Int {
-        return IClientFluidTypeExtensions.of(state).getTintColor(state, view, pos)
+        val extensions = IClientFluidTypeExtensions.of(state)
+        if (view == null || pos == null) // Some mods rely on this info really early, but we can't reasonably get the state at that point of time.
+            return extensions.tintColor
+
+        return extensions.getTintColor(state, view, pos)
     }
 }
