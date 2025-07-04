@@ -256,6 +256,46 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         instance.kilt$addBlockHitEffects(blockPos, blockHitResult, direction, original);
     }
 
+    @Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getType()Lnet/minecraft/world/phys/HitResult$Type;"), cancellable = true)
+    private void kilt$onAttackClickInputEvent(CallbackInfoReturnable<Boolean> cir, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local boolean flag) {
+        inputEvent.set(ForgeHooksClient.onClickInput(0, this.options.keyAttack, InteractionHand.MAIN_HAND));
+
+        if (inputEvent.get().isCanceled()) {
+            if (inputEvent.get().shouldSwingHand())
+                this.player.swing(InteractionHand.MAIN_HAND);
+
+            cir.setReturnValue(flag);
+        }
+    }
+
+    @WrapWithCondition(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;swing(Lnet/minecraft/world/InteractionHand;)V"))
+    private boolean kilt$swingHandIfEventPermits(LocalPlayer instance, InteractionHand interactionHand, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent) {
+        return inputEvent.get() == null || inputEvent.get().shouldSwingHand();
+    }
+
+    @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0), cancellable = true)
+    private void kilt$callForgeUseInputEvent(CallbackInfo ci, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local InteractionHand hand) {
+        inputEvent.set(ForgeHooksClient.onClickInput(1, this.options.keyUse, hand));
+
+        if (inputEvent.get().isCanceled()) {
+            if (inputEvent.get().shouldSwingHand())
+                this.player.swing(hand);
+
+            ci.cancel();
+        }
+    }
+
+    @ModifyExpressionValue(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/InteractionResult;shouldSwing()Z"))
+    private boolean kilt$onlySwingHandIfNeeded(boolean original, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent) {
+        return original && (inputEvent.get() == null || inputEvent.get().shouldSwingHand());
+    }
+
+    @Inject(method = "pickBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z", ordinal = 0), cancellable = true)
+    private void kilt$callForgePickInputEvent(CallbackInfo ci) {
+        if (ForgeHooksClient.onClickInput(2, this.options.keyPickItem, InteractionHand.MAIN_HAND).isCanceled())
+            ci.cancel();
+    }
+
     @Override
     public ForgeGui kilt$getForgeGui() {
         return (ForgeGui) this.kilt$forgeGui;
