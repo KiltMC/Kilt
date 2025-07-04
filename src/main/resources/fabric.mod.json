@@ -5,7 +5,8 @@
   "name": "Kilt",
   "description": "Allows the loading of Forge mods in the Fabric ecosystem. Very experimental.",
   "authors": [
-    "BluSpring"
+    "BluSpring",
+    "AlphaMode"
   ],
   "provides": [
     "forge"
