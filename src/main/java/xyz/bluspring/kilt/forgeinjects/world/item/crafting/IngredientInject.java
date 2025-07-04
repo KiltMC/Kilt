@@ -83,13 +83,17 @@ public class IngredientInject implements IngredientInjection {
 
     @Inject(at = @At("HEAD"), method = "fromNetwork", cancellable = true)
     private static void kilt$checkForgeRecipeFromNetwork(FriendlyByteBuf friendlyByteBuf, CallbackInfoReturnable<Ingredient> cir) {
-        var size = friendlyByteBuf.readVarInt();
-        if (size == -1) {
-            cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
-            return;
-        }
+        try {
+            var size = friendlyByteBuf.readVarInt();
+            if (size == -1) {
+                cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
+                return;
+            }
 
-        cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
+            cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
+        } catch (Throwable ignored) {
+            // This will defer over to any mixins that may occur after this.
+        }
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/google/gson/JsonElement;isJsonObject()Z", shift = At.Shift.BEFORE, remap = false), method = "fromJson(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;", cancellable = true)
