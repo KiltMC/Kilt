@@ -70,7 +70,7 @@ object ObfuscationReflectionHelper {
 
                 val mapped = KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
 
-                if (mapped == methodName || mapped == null)
+                if ((mapped == methodName || mapped == null) && (methodName.startsWith("m_") || methodName.startsWith("f_")) && methodName.endsWith("_"))
                     KiltRemapper.srgMappedMethods[methodName]!!.values.first()
                 else mapped
             } else methodName
