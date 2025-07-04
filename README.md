@@ -2,10 +2,11 @@
 <img align="center" width="56" alt="Kilt Logo" src="https://github.com/KiltMC/Kilt/blob/version/1.20.1/src/main/resources/assets/kilt/icon.png?raw=true"> Kilt
 </h1>
 
-[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)<br>
-A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.<br><br>
-[![Discord invite](https://github.com/KiltMC/Kilt/blob/version/1.20.1/.github/assets/discord-plural_vector%201.svg?raw=true)](https://discord.gg/enGK2TymYJ) 
+A Fabric mod that brings (Neo)Forge mods into the Fabric ecosystem. Very experimental.
+
+[![Discord invite](https://github.com/KiltMC/Kilt/blob/version/1.20.1/.github/assets/discord-plural_vector%201.svg?raw=true)](https://discord.gg/enGK2TymYJ)
 [![Buy Me A Coffee](https://raw.githubusercontent.com/intergrav/devins-badges/c7fd18efdadd1c3f12ae56b49afd834640d2d797/assets/cozy/donate/kofi-plural-alt_vector.svg?raw=true)](https://ko-fi.com/bluspring)<br>
+[![Wakatime](https://wakatime.com/badge/github/KiltMC/Kilt.svg)](https://wakatime.com/badge/github/KiltMC/Kilt)
 
 ## FAQ
 ### Why?
@@ -22,10 +23,9 @@ Now that that's out of the way, the download link may be accessed from the GitHu
 download link may be found in the Discord (#rules-and-info), which also always downloads the latest build.
 
 ### What about updating/backporting to other versions of Minecraft?
-While updates to newer versions are planned, Kilt is an incredibly large undertaking for only one person to work on.
-I am only going to focus on 1.20.1 until all patches have been ported to mixins, and then I'm going to work on making a 1.21.1 NeoForge build,
-which is also going to take some time. Afterwards, we are able to move forward onto the latest version of Minecraft. Anything
-in-between is going to be unsupported, however someone else may take on that role instead.
+While updates to newer versions are planned, Kilt is an incredibly large undertaking for only two people to work on.
+A NeoForge 1.21.1 build is currently in progress, however that is going to take some time. Afterwards, we are able to move forward onto the latest version of Minecraft. 
+Anything in-between and earlier is going to be unsupported, however someone else may take on that role instead.
 
 ### What about Patchwork?
 Patchwork completely halted development recently, which means they will no longer be worked on
