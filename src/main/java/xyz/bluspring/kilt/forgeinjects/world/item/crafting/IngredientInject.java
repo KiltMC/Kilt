@@ -111,10 +111,16 @@ public class IngredientInject implements IngredientInjection {
 
     @Inject(at = @At("HEAD"), method = "toNetwork", cancellable = true)
     public void kilt$writeNonVanillaIds(FriendlyByteBuf friendlyByteBuf, CallbackInfo ci) {
-        if (!this.isVanilla()) {
-            CraftingHelper.write(friendlyByteBuf, (Ingredient) (Object) this);
-            ci.cancel();
-        }
+        try {
+            if (!this.isVanilla()) {
+                if (this.getSerializer() == VanillaIngredientSerializer.INSTANCE || CraftingHelper.getID(this.getSerializer()) == null) {
+                    return;
+                }
+
+                CraftingHelper.write(friendlyByteBuf, (Ingredient) (Object) this);
+                ci.cancel();
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Mixin(Ingredient.TagValue.class)
