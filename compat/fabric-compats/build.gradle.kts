@@ -13,6 +13,7 @@ dependencies {
         isTransitive = false
     }
     modCompileOnly("maven.modrinth:sophisticated-core-(unofficial-fabric-port):${property("sophisticatedcore_version")}")
+    modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
 }
 
 tasks {
