@@ -539,7 +539,7 @@ tasks {
 
     project.extensions.configure<ModPublishExtension>("publishMods") {
         file = project.tasks.named<RemapJarTask>("remapJar").get().archiveFile
-        displayName = "Kilt v${project.version} for Minecraft ${project.property("minecraft_version")}"
+        displayName = "Kilt v${project.version} (MC ${project.property("minecraft_version")})"
         version = project.version as String
         changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
         type = ReleaseType.ALPHA
@@ -553,37 +553,9 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires {
-                slug = "fabric-api"
-            }
-
-            requires {
-                slug = "fabric-language-kotlin"
-            }
-
-            requires {
-                slug = "architectury-api"
-            }
-
-            requires {
-                slug = "forge-config-api-port"
-            }
-
-            requires {
-                slug = "sodium"
-            }
-
-            requires {
-                slug = "indium"
-            }
-
-            optional {
-                slug = "modmenu"
-            }
-
-            embeds {
-                slug = "porting_lib"
-            }
+            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
+            optional("modmenu")
+            embeds("porting_lib")
         }
 
         curseforge {
@@ -591,33 +563,8 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires {
-                slug = "fabric-api"
-            }
-
-            requires {
-                slug = "fabric-language-kotlin"
-            }
-
-            requires {
-                slug = "architectury-api"
-            }
-
-            requires {
-                slug = "forge-config-api-port-fabric"
-            }
-
-            requires {
-                slug = "sodium"
-            }
-
-            requires {
-                slug = "indium"
-            }
-
-            optional {
-                slug = "modmenu"
-            }
+            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
+            optional("modmenu")
         }
     }
 }

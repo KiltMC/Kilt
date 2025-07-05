@@ -30,6 +30,8 @@ jobs:
         env:
           GITHUB_TAG: ${{ github.ref_name }}
           RELEASE_DESCRIPTION: ${{ github.event.release.body }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
         run: ./gradlew publishMods -Pbuild.release=true
       - name: Upload assets to GitHub
         uses: AButler/upload-release-assets@v2.0
