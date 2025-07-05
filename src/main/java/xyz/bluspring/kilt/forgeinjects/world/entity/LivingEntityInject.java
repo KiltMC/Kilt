@@ -335,6 +335,12 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return ret;
     }
 
+    // Kilt: this isn't in the patch, but we're doing this to workaround a stack overflow
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
+        return this.kilt$getCapabilityWorkaround().getCapability(cap);
+    }
+
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER && this.isAlive()) {
@@ -346,7 +352,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
                 return handlers[1].cast();
         }
 
-        return super.getCapability(cap, side);
+        return this.kilt$getCapabilityWorkaround().getCapability(cap, side);
     }
 
     @Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;JLjava/util/function/Consumer;)V"))
