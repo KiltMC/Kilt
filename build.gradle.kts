@@ -600,17 +600,15 @@ fun createVersion(): String {
         }
     }
 
-    // If this isn't a release version, we should increment the version.
-    if (!isRelease()) {
-        increment += 1
-    }
+    // Bump the version accordingly
+    increment += 1
 
     val version = "$mcVersion.$increment"
 
     if (isRelease() && System.getenv("GITHUB_TAG") != null) {
         val tag = System.getenv("GITHUB_TAG")
         if (tag.lowercase().removePrefix("v") != version)
-            throw IllegalStateException("The tag created doesn't match the increment version! Did you remember to bump the increment?")
+            throw IllegalStateException("The tag created doesn't match the increment version! Are you incrementing it correctly? ($version != ${tag.lowercase().removePrefix("v")})")
     }
 
     return version
