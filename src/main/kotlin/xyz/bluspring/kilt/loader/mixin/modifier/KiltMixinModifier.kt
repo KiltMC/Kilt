@@ -26,7 +26,7 @@ class KiltMixinModifier : IExtension {
         if (!KiltMixinModifications.MIXIN_CLASSES.contains(context.classInfo.name))
             return
 
-        TargetClassContextExtension.tryAs(context).ifPresent { ext ->
+        TargetClassContextExtension.tryAs(context) { ext ->
             for (mixinInfo in ext.mixins) {
                 val modId = mixinInfo.config.getDecoration<String>(FabricUtil.KEY_MOD_ID)
 
@@ -106,9 +106,11 @@ class KiltMixinModifier : IExtension {
                 }
 
                 if (wasModified) {
-                    MixinInfoExtension.tryAs(mixinInfo)
-                        .flatMap { StateExtension.tryAs(it.state) }
-                        .ifPresent { it.setClassNode(mixinClassNode) }
+                    MixinInfoExtension.tryAs(mixinInfo) {
+                        StateExtension.tryAs(it.state) { state ->
+                            state.setClassNode(mixinClassNode)
+                        }
+                    }
                 }
             }
         }
