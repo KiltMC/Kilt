@@ -1,3 +1,6 @@
+import me.modmuss50.mpp.ModPublishExtension
+import me.modmuss50.mpp.ReleaseType
+import net.fabricmc.loom.task.RemapJarTask
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -6,9 +9,10 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id ("fabric-loom") version "1.10-SNAPSHOT"
-    id ("maven-publish")
-    id ("org.ajoberstar.grgit") version "5.0.0" apply false
+    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("maven-publish")
+    id("org.ajoberstar.grgit") version "5.0.0" apply false
+    id("me.modmuss50.mod-publish-plugin") version "0.7.+"
 }
 
 version = "${createVersion()}${getVersionMetadata()}"
@@ -243,7 +247,7 @@ dependencies {
     val runSodium = true
 
     // Runtime mods for testing
-    modRuntimeOnly ("com.terraformersmc:modmenu:11.0.3") {
+    modImplementation ("com.terraformersmc:modmenu:11.0.3") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modRuntimeOnly ("maven.modrinth:ferrite-core:7.0.2-hotfix-fabric") {
@@ -535,23 +539,86 @@ tasks {
             )
         }
     }
+
+    project.extensions.configure<ModPublishExtension>("publishMods") {
+        file = project.tasks.named<RemapJarTask>("remapJar").get().archiveFile
+        displayName = "Kilt v${project.version} (MC ${project.property("minecraft_version")})"
+        version = project.version as String
+        changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
+        type = ReleaseType.ALPHA
+        modLoaders.add("fabric")
+
+        dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
+                || providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
+
+        modrinth {
+            projectId = project.property("publishing.modrinth").toString()
+            accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+            minecraftVersions.add(project.property("minecraft_version") as String)
+
+            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
+            optional("modmenu")
+            embeds("porting_lib")
+        }
+
+        curseforge {
+            projectId = project.property("publishing.curseforge").toString()
+            accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+            minecraftVersions.add(project.property("minecraft_version") as String)
+
+            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
+            optional("modmenu")
+        }
+    }
 }
 
 fun isRelease(): Boolean {
-    return System.getenv("GITHUB_WORKFLOW") == "Kilt Release"
+    return rootProject.hasProperty("build.release")
 }
 
 // Versioning format:
 // X.Y.Z
 // X - Minecraft minor version increment
 // Y - Minecraft patch version increment
-// Z - Kilt version increment
+// Z - Kilt version increment, based on the last tag
 fun createVersion(): String {
     val mcVersionComps = (rootProject.property("minecraft_version") as String).split(".")
     val mcVersion = "${mcVersionComps[1]}.${mcVersionComps[2]}"
-    val increment = rootProject.property("version_increment") as String
 
-    return "$mcVersion.$increment"
+    val grgit = Grgit.open(mutableMapOf<String, Any?>(
+        "dir" to File("$projectDir")
+    ))
+
+    var increment = 0
+    var shouldBump = false
+    for (tag in grgit.tag.list()) {
+        val components = tag.name.removePrefix("v").split(".").map { it.toInt() }
+
+        // Check if the tag is actually for this MC version
+        if (components.getOrNull(0) != mcVersionComps.getOrNull(0)?.toIntOrNull() || components.getOrNull(1) != mcVersionComps.getOrNull(1)?.toIntOrNull())
+            continue
+
+        shouldBump = true
+
+        // Select the highest increment available.
+        if (components.getOrElse(2) { 0 } > increment) {
+            increment = components[2]
+        }
+    }
+
+    // Bump the version accordingly
+    if (shouldBump)
+        increment += 1
+
+    val version = "$mcVersion.$increment"
+
+    if (isRelease() && System.getenv("GITHUB_TAG") != null) {
+        val tag = System.getenv("GITHUB_TAG")
+        if (tag.lowercase().removePrefix("v") != version)
+            throw IllegalStateException("The tag created doesn't match the increment version! Are you incrementing it correctly? ($version != ${tag.lowercase().removePrefix("v")})")
+    }
+
+    return version
 }
 
 fun getVersionMetadata(): String {

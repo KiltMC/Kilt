@@ -24,6 +24,7 @@ dependencies {
     compileOnly("org.violetmoon.zeta:Zeta:${property("zeta_version")}")
     modImplementation("maven.modrinth:sodium:${property("sodium_version")}")
     modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
+    compileOnly("maven.modrinth:thirst-was-taken:${property("thirst_version")}")
 }
 
 tasks {

@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.SoundConsumerStorage;
 import xyz.bluspring.kilt.injections.client.sounds.ChannelAccessHandleInjection;
 
 import java.util.function.Consumer;
@@ -43,14 +44,12 @@ public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInj
 
     @Inject(method = "method_19737", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", shift = At.Shift.AFTER))
     private void kilt$callPlaySoundEvents(Consumer<Channel> consumer, CallbackInfo ci) {
-        if (this.channel != null && kilt$soundInstance != null) {
+        if (this.channel != null && kilt$soundEngine != null && kilt$soundInstance != null && SoundConsumerStorage.soundConsumerChannels.remove(consumer)) {
             if (kilt$pool == Library.Pool.STATIC) {
                 MinecraftForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             } else if (kilt$pool == Library.Pool.STREAMING) {
                 MinecraftForge.EVENT_BUS.post(new PlayStreamingSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             }
-
-            this.kilt$soundInstance = null;
         }
     }
 }

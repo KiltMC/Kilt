@@ -39,7 +39,7 @@ import xyz.bluspring.kilt.util.KiltHelper;
 import java.util.Objects;
 import java.util.function.Function;
 
-@Mixin(ItemStack.class)
+@Mixin(value = ItemStack.class, priority = 1050)
 @Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStack>, ItemStackInjection {
     private CompoundTag capNBT;
@@ -124,14 +124,17 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void kilt$tryPlaceItemInWorld(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
-        if (!context.getLevel().isClientSide()) {
+        if (!context.getLevel().isClientSide() && this.kilt$callback == null) {
             cir.setReturnValue(ForgeHooks.onPlaceItemIntoWorld(context));
         }
     }
 
+    @Override
     public InteractionResult onItemUseFirst(UseOnContext context) {
         this.kilt$callback = c -> this.getItem().onItemUseFirst((ItemStack) (Object) this, c);
-        return this.useOn(context);
+        var result = this.useOn(context);
+        this.kilt$callback = null;
+        return result;
     }
 
     @WrapOperation(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;"))

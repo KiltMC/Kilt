@@ -605,6 +605,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
     suspend fun initMod(mod: NeoForgeMod, scanData: ModFileScanData) {
         val exception = RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})!")
 
+        // Datapack mod, don't try to init
+        if (mod.loader == "lowcodefml")
+            return
+
         // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
         // I hope.
         var hasInitialized = false

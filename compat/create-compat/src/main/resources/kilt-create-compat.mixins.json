@@ -4,11 +4,11 @@
     "package": "xyz.bluspring.kilt.compat.create.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
-        "AbstractRegistrateMixin",
-        "AbstractRegistrateMixin$RegistrationMixin",
-        "CreateRegistrateMixin",
-        "RegistryEntryMixin",
-        "RegistryObjectMixin"
+        "create_fabric.CreateRegistrateMixin",
+        "registrate_fabric.AbstractRegistrateMixin",
+        "registrate_fabric.AbstractRegistrateMixin$RegistrationMixin",
+        "registrate_fabric.RegistryEntryMixin",
+        "registrate_fabric.RegistryObjectMixin"
     ],
     "client": [
     ],

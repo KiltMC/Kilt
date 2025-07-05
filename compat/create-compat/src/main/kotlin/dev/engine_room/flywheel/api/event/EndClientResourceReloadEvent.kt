@@ -6,13 +6,13 @@ import net.neoforged.bus.api.Event
 import net.neoforged.fml.event.IModBusEvent
 import java.util.*
 
-class EndClientResourceReloadEvent(private val minecraft: Minecraft, private val resourceManager: ResourceManager, private val initialReload: Boolean, private val error: Optional<Throwable>) : Event(), IModBusEvent {
+class EndClientResourceReloadEvent(private val minecraft: Minecraft?, private val resourceManager: ResourceManager?, private val initialReload: Boolean, private val error: Optional<Throwable>) : Event(), IModBusEvent {
     fun minecraft(): Minecraft {
-        return this.minecraft
+        return this.minecraft!!
     }
 
     fun resourceManager(): ResourceManager {
-        return this.resourceManager
+        return this.resourceManager!!
     }
 
     fun isInitialReload(): Boolean {
@@ -22,4 +22,6 @@ class EndClientResourceReloadEvent(private val minecraft: Minecraft, private val
     fun error(): Optional<Throwable> {
         return this.error
     }
+
+    constructor() : this(null, null, false, Optional.empty())
 }

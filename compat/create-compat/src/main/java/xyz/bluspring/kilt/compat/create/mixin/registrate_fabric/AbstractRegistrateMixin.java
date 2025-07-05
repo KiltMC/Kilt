@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.compat.create.mixin;
+package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
@@ -134,6 +134,7 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
         return (S) (Object) this;
     }
 
+    @IfModLoaded("registrate-fabric")
     @Mixin(targets = "com.tterrag.registrate.AbstractRegistrate$Registration")
     public abstract static class RegistrationMixin<R, T extends R> implements AbstractRegistrateRegistrationForgeExtension<R, T> {
         @Final @Shadow private NonNullSupplier<? extends T> creator;

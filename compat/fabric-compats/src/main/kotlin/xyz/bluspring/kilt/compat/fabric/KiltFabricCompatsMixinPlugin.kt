@@ -21,8 +21,8 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
     override fun shouldApplyMixin(targetClassName: String, mixinClassName: String): Boolean {
         val modId = mixinClassName.removePrefix("$mixinPackage.").replaceAfter(".", "").removeSuffix(".")
 
-        if (modId == "sophisticatedcore") {
-            return FabricLoader.getInstance().isModLoaded("sophisticatedcore") && !KiltLoader.instance.hasMod("sophisticatedcore")
+        if (modId == "sophisticatedcore" || modId == "creativecore") {
+            return FabricLoader.getInstance().isModLoaded(modId) && !KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
         }
 
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)

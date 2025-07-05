@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.forgeinjects.world.item.crafting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -36,20 +38,28 @@ public class RecipeManagerInject implements RecipeManagerInjection {
         this.context = context;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/RecipeManager;fromJson(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;"), method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V")
-    public Recipe<?> kilt$useForgeFromJson(ResourceLocation resourceLocation, JsonObject jsonObject, @Local Map.Entry<ResourceLocation, JsonElement> entry) {
-        if (entry.getValue().isJsonObject() && !CraftingHelper.processConditions(entry.getValue().getAsJsonObject(), "conditions", this.context)) {
-            LOGGER.debug("Skipping loading recipe {} as its conditions were not met", resourceLocation);
-            return null;
+    @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/RecipeManager;fromJson(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;"), method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V")
+    public Recipe<?> kilt$useForgeFromJson(ResourceLocation resourceLocation, JsonObject jsonObject, Operation<Recipe<?>> original, @Local Map.Entry<ResourceLocation, JsonElement> entry) {
+        try {
+            if (entry.getValue().isJsonObject() && !CraftingHelper.processConditions(entry.getValue().getAsJsonObject(), "conditions", this.context)) {
+                LOGGER.debug("Skipping loading recipe {} as its conditions were not met", resourceLocation);
+                return null;
+            }
+
+            var recipe = RecipeManagerInjection.fromJson(resourceLocation, GsonHelper.convertToJsonObject(entry.getValue(), "top element"), this.context);
+
+            if (recipe == null) {
+                recipe = original.call(resourceLocation, jsonObject);
+
+                if (recipe == null) {
+                    LOGGER.info("Skipping loading recipe {} as its serializer returned null", resourceLocation);
+                    return null;
+                }
+            }
+
+            return recipe;
+        } catch (Throwable e) {
+            return original.call(resourceLocation, jsonObject);
         }
-
-        var recipe = RecipeManagerInjection.fromJson(resourceLocation, GsonHelper.convertToJsonObject(entry.getValue(), "top element"), this.context);
-
-        if (recipe == null) {
-            LOGGER.info("Skipping loading recipe {} as its serializer returned null", resourceLocation);
-            return null;
-        }
-
-        return recipe;
     }
 }

@@ -1,5 +1,6 @@
-package xyz.bluspring.kilt.compat.create.mixin;
+package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraftforge.registries.RegisterEvent;
@@ -13,6 +14,7 @@ import xyz.bluspring.kilt.compat.create.extensions.RegistryObjectForgeExtension;
 
 import java.util.Objects;
 
+@IfModLoaded("registrate-fabric")
 @Mixin(RegistryEntry.class)
 public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtension {
     @Shadow @Final private @Nullable RegistryObject<T> delegate;

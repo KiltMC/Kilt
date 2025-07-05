@@ -100,6 +100,11 @@ public abstract class LevelInject implements CapabilityProviderInjection, ILevel
         }
     }
 
+    @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;onBlockStateChange(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V", shift = At.Shift.AFTER))
+    private void kilt$callOtherBlockStateChange(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 1) BlockState newState) {
+        state.onBlockStateChange((Level) (Object) this, pos, newState);
+    }
+
     @Override
     public void kilt$setCapturingBlockSnapshots(boolean value) {
         this.captureBlockSnapshots = value;

@@ -211,7 +211,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;updateInWaterStateAndDoWaterCurrentPushing()V", shift = At.Shift.AFTER), cancellable = true)
     private void kilt$tryHandleForgeFluids(CallbackInfoReturnable<Boolean> cir) {
-        if (!(this.getVehicle() instanceof Boat) && this.isInFluidType()) {
+        if (!(this.getVehicle() instanceof Boat)) {
             var fluidDistanceModifier = this.forgeFluidTypeHeight.object2DoubleEntrySet().stream().filter(e -> !e.getKey().isAir() && !e.getKey().isVanilla())
                 .map(e -> this.getFluidFallDistanceModifier(e.getKey()))
                 .min(Float::compare);
@@ -409,8 +409,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/BlockPos$MutableBlockPos;<init>()V", shift = At.Shift.AFTER))
     private void kilt$initInterimCalcs(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
-        if (this.kilt$shouldUpdateFluid != null) // Kilt: micro-optimization - only init this when it's needed
-            interimCalcs.set(new Object2ObjectArrayMap<>(FluidType.SIZE.get() - 1));
+        interimCalcs.set(new Object2ObjectArrayMap<>(FluidType.SIZE.get() - 1));
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0))
@@ -421,20 +420,36 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
             return !fluidTypeRef.get().isAir() && this.kilt$shouldUpdateFluid.test(instance);
         }
 
-        return original.call(instance, tag);
+        return original.call(instance, tag) || !fluidTypeRef.get().isAir();
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(DD)D"))
     private double kilt$useInterimCalc(double a, double b, Operation<Double> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
-        if (this.kilt$shouldUpdateFluid != null) {
-            interim.set(interimCalcs.get().computeIfAbsent(fluidTypeRef.get(), t -> MutableTriple.of(0.0, Vec3.ZERO, 0)));
+        interim.set(interimCalcs.get().computeIfAbsent(fluidTypeRef.get(), t -> MutableTriple.of(0.0, Vec3.ZERO, 0)));
 
-            var calc = original.call(a, (double) interim.get().getLeft());
-            interim.get().setLeft(calc);
-            return calc;
+        var calc = original.call(a, (double) interim.get().getLeft());
+        interim.get().setLeft(calc);
+        return calc;
+    }
+
+    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
+    private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
+        if (fluidTypeRef.get() == null && interimCalcs.get() == null)
+            return true;
+
+        if (fluidTag == FluidTags.WATER) {
+            if (fluidTypeRef.get() != null)
+                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+        } else if (fluidTag == FluidTags.LAVA) {
+            if (fluidTypeRef.get() != null)
+                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
         }
 
-        return original.call(a, b);
+        return true;
     }
 
     // TODO: there is definitely a better way to do this.
@@ -442,55 +457,51 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     @Expression("bl")
     @ModifyExpressionValue(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkIsPushedByFluid(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
-        if (this.kilt$shouldUpdateFluid != null) {
-            return this.isPushedByFluid(fluidTypeRef.get());
-        }
-
-        return original;
+        return this.isPushedByFluid(fluidTypeRef.get()) || original;
     }
 
     // Kilt: we don't need to handle d0 < 0.4D, that's already updated
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", ordinal = 0))
     private Vec3 kilt$updateInterimValues(Vec3 instance, Vec3 vec, Operation<Vec3> original, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
-        if (this.kilt$shouldUpdateFluid != null) {
-            interim.get().setMiddle(interim.get().getMiddle().add(vec));
-            interim.get().setRight(interim.get().getRight() + 1);
-        }
+        interim.get().setMiddle(interim.get().getMiddle().add(vec));
+        interim.get().setRight(interim.get().getRight() + 1);
 
         return original.call(instance, vec);
     }
 
     @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;length()D", ordinal = 0), cancellable = true)
     private void kilt$useInterimValuesForCalc(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
-        if (this.kilt$shouldUpdateFluid != null) {
-            cir.setReturnValue(false);
+        if (interimCalcs.get().isEmpty() || (interimCalcs.get().size() == 1 && (interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get()) || interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get())))) {
+            return;
+        }
 
-            // Kilt: we have to reimplement everything, cuz we can't wrap blocks of code into a loop.
-            interimCalcs.get().forEach((fluidType, interim) -> {
-                if (interim.getMiddle().length() > 0) {
-                    if (interim.getRight() > 0) {
-                        interim.setMiddle(interim.getMiddle().scale(1.0 / (double) interim.getRight()));
-                    }
-
-                    if (!((Object) this instanceof Player)) {
-                        interim.setMiddle(interim.getMiddle().normalize());
-                    }
-
-                    Vec3 velocity = this.getDeltaMovement();
-                    interim.setMiddle(interim.getMiddle().scale(this.getFluidMotionScale(fluidType)));
-
-                    double tolerance = 0.003;
-                    if (Math.abs(velocity.x) < tolerance && Math.abs(velocity.z) < tolerance && interim.getMiddle().length() < 0.0045000000000000005) {
-                        interim.setMiddle(interim.getMiddle().normalize().scale(0.0045000000000000005));
-                    }
-
-                    this.setDeltaMovement(this.getDeltaMovement().add(interim.getMiddle()));
+        // Kilt: we have to reimplement everything, cuz we can't wrap blocks of code into a loop.
+        interimCalcs.get().forEach((fluidType, interim) -> {
+            if (interim.getMiddle().length() > 0) {
+                if (interim.getRight() > 0) {
+                    interim.setMiddle(interim.getMiddle().scale(1.0 / (double) interim.getRight()));
                 }
 
-                this.setFluidTypeHeight(fluidType, interim.getLeft());
-            });
-        }
+                if (!((Object) this instanceof Player)) {
+                    interim.setMiddle(interim.getMiddle().normalize());
+                }
+
+                Vec3 velocity = this.getDeltaMovement();
+                interim.setMiddle(interim.getMiddle().scale(this.getFluidMotionScale(fluidType)));
+
+                double tolerance = 0.003;
+                if (Math.abs(velocity.x) < tolerance && Math.abs(velocity.z) < tolerance && interim.getMiddle().length() < 0.0045000000000000005) {
+                    interim.setMiddle(interim.getMiddle().normalize().scale(0.0045000000000000005));
+                }
+
+                this.setDeltaMovement(this.getDeltaMovement().add(interim.getMiddle()));
+            }
+
+            this.setFluidTypeHeight(fluidType, interim.getLeft());
+        });
+
+        cir.setReturnValue(false);
     }
 
     @Inject(method = "setPosRaw", at = @At("TAIL"))

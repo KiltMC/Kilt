@@ -17,11 +17,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -38,6 +39,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
+import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerInject {
@@ -80,15 +83,12 @@ public abstract class ClientPacketListenerInject {
         return ctx;
     }
 
-    @WrapOperation(method = "method_38542", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;getTag()Lnet/minecraft/nbt/CompoundTag;"))
-    public CompoundTag kilt$replaceWithDataPacketLoad(ClientboundBlockEntityDataPacket instance, Operation<CompoundTag> original, @Local(argsOnly = true) BlockEntity blockEntity) {
-        var result = original.call(instance);
-
-        if (result == null) {
-            blockEntity.onDataPacket(this.connection, instance);
+    @Inject(method = "method_38542", at = @At("HEAD"), cancellable = true)
+    public void kilt$onDataPacket(ClientboundBlockEntityDataPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class)) {
+            blockEntity.onDataPacket(this.connection, packet);
+            ci.cancel();
         }
-
-        return result;
     }
 
     @Inject(method = "handleCommands", at = @At("TAIL"))
@@ -103,6 +103,8 @@ public abstract class ClientPacketListenerInject {
 
     @Inject(method = "handleUpdateTags", at = @At("TAIL"))
     private void kilt$updateTags(ClientboundUpdateTagsPacket packet, CallbackInfo ci) {
+        CreativeModeTabs.allTabs().stream().filter(CreativeModeTabInjection::hasSearchBar)
+            .forEach(CreativeModeTab::rebuildSearchTree);
         MinecraftForge.EVENT_BUS.post(new TagsUpdatedEvent(this.registryAccess.compositeAccess(), true, this.connection.isMemoryConnection()));
     }
 

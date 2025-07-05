@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @IfModLoaded("owo")
-@Mixin(value = ShaderInstance.class, priority = 1001)
+@Mixin(value = ShaderInstance.class, priority = 1550)
 public class ShaderInstanceMixin {
     @TargetHandler(
             mixin = "xyz.bluspring.kilt.forgeinjects.client.renderer.ShaderInstanceInject",

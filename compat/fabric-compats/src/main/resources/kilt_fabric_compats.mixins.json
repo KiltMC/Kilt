@@ -4,6 +4,7 @@
     "package": "xyz.bluspring.kilt.compat.fabric.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "creativecore.CreativeNetworkMixin",
         "geckolib.RenderProviderMixin",
         "mkb.IKeyBindingMixin",
         "mkb.IKeyConflictContextMixin",

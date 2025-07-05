@@ -5,7 +5,8 @@
   "name": "Kilt",
   "description": "Allows the loading of NeoForge mods in the Fabric ecosystem. Very experimental.",
   "authors": [
-    "BluSpring"
+    "BluSpring",
+    "AlphaMode"
   ],
   "provides": [
     "neoforge"
@@ -114,6 +115,9 @@
       "net/minecraft/class_2474$class_5124": ["net/neoforged/neoforge/common/extensions/ITagAppenderExtension"],
       "net/minecraft/class_3495": ["net/neoforged/neoforge/common/extensions/ITagBuilderExtension"],
       "net/minecraft/class_4590": ["net/neoforged/neoforge/common/extensions/ITransformationExtension"]
+    },
+    "lithium:options": {
+      "mixin.entity.collisions.fluid": false
     }
   },
   "breaks": {

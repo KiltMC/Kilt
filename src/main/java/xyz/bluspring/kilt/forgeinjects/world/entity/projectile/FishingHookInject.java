@@ -1,6 +1,7 @@
 // TRACKED HASH: c113d4a78bfff9b69b2cf30b24c0ec29f4fafe4f
 package xyz.bluspring.kilt.forgeinjects.world.entity.projectile;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -38,9 +39,9 @@ public abstract class FishingHookInject extends Projectile {
         super(entityType, level);
     }
 
-    @Redirect(method = "shouldStopFishing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
-    public boolean kilt$checkForgeActions(ItemStack instance, Item item) {
-        return instance.canPerformAction(ToolActions.FISHING_ROD_CAST);
+    @WrapOperation(method = "shouldStopFishing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+    public boolean kilt$checkForgeActions(ItemStack instance, Item item, Operation<Boolean> original) {
+        return original.call(instance, item) || instance.canPerformAction(ToolActions.FISHING_ROD_CAST);
     }
 
     @WrapWithCondition(method = "checkCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/FishingHook;onHit(Lnet/minecraft/world/phys/HitResult;)V"))

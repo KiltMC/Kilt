@@ -1,6 +1,7 @@
 // TRACKED HASH: fd1859323d2b7b647915a5c458b0159a1f4e13b1
 package xyz.bluspring.kilt.forgeinjects.client.gui;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -32,10 +33,7 @@ import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.client.KiltClient;
@@ -143,13 +141,13 @@ public abstract class GuiInject implements GuiInjection {
 
     // Vignette
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderVignette(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/Entity;)V"))
-    public void kilt$renderVignette(Gui instance, GuiGraphics guiGraphics, Entity entity, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderVignette(Gui instance, GuiGraphics guiGraphics, Entity entity, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.VIGNETTE, original, instance, guiGraphics, entity);
     }
 
     // Spyglass
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderSpyglassOverlay(Lnet/minecraft/client/gui/GuiGraphics;F)V"))
-    public void kilt$renderSpyglass(Gui instance, GuiGraphics guiGraphics, float scopeScale, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderSpyglass(Gui instance, GuiGraphics guiGraphics, float scopeScale, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.SPYGLASS, original, instance, guiGraphics, scopeScale);
     }
 
@@ -174,7 +172,7 @@ public abstract class GuiInject implements GuiInjection {
 
     // Frostbite
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderTextureOverlay(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/resources/ResourceLocation;F)V"))
-    public void kilt$renderFrostbite(Gui instance, GuiGraphics guiGraphics, ResourceLocation shaderLocation, float alpha, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderFrostbite(Gui instance, GuiGraphics guiGraphics, ResourceLocation shaderLocation, float alpha, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.FROSTBITE, original, instance, guiGraphics, shaderLocation, alpha);
     }
 
@@ -201,7 +199,7 @@ public abstract class GuiInject implements GuiInjection {
 
     // Hotbar
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderHotbar(FLnet/minecraft/client/gui/GuiGraphics;)V"))
-    public void kilt$renderSpectatorHotbar(Gui instance, float partialTick, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderSpectatorHotbar(Gui instance, float partialTick, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.HOTBAR, original, instance, partialTick, guiGraphics);
     }
 
@@ -217,13 +215,13 @@ public abstract class GuiInject implements GuiInjection {
 
     // Crosshair
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderCrosshair(Lnet/minecraft/client/gui/GuiGraphics;)V"))
-    public void kilt$renderCrosshair(Gui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderCrosshair(Gui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.CROSSHAIR, original, instance, guiGraphics);
     }
 
     // Boss Event Progress
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;render(Lnet/minecraft/client/gui/GuiGraphics;)V"))
-    public void kilt$renderBossEventProgress(BossHealthOverlay instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderBossEventProgress(BossHealthOverlay instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.BOSS_EVENT_PROGRESS, original, instance, guiGraphics);
     }
 
@@ -234,70 +232,86 @@ public abstract class GuiInject implements GuiInjection {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.PLAYER_HEALTH, original, instance, guiGraphics, player, x, y, height, offsetHeartIndex, maxHealth, currentHealth, displayHealth, absorptionAmount, renderHighlight);
     }
 
-    @ModifyConstant(method = "renderPlayerHealth", constant =  @Constant(intValue = 10, ordinal = 3))
-    private int kilt$renderPlayerArmor(int constant, GuiGraphics guiGraphics, @Share("armor") LocalBooleanRef result) {
+    @ModifyExpressionValue(method = "renderPlayerHealth", at =  @At(value = "CONSTANT", args = "intValue=10"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;hasEffect(Lnet/minecraft/world/effect/MobEffect;)Z", ordinal = 0), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderHearts(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/player/Player;IIIIFIIIZ)V")))
+    private int kilt$renderPlayerArmor(int constant, GuiGraphics guiGraphics, @Share("armor") LocalBooleanRef result, @Share("hasRun") LocalBooleanRef hasRun) {
+        if (hasRun.get())
+            return constant;
+
         var delta = this.minecraft.getPartialTick();
         if (kilt$renderOverlayCheckPost(guiGraphics, delta, VanillaGuiOverlay.ARMOR_LEVEL, args -> null, false)) {
             result.set(true);
+            hasRun.set(true);
             return constant;
         }
         result.set(false);
+        hasRun.set(true);
         return 0;
     }
 
     @Inject(method = "renderPlayerHealth", at = @At(value = "CONSTANT", args = "stringValue=health"))
-    private void kilt$postRenderPlayerArmor(GuiGraphics guiGraphics, CallbackInfo ci, @Share("armor") LocalBooleanRef result) {
+    private void kilt$postRenderPlayerArmor(GuiGraphics guiGraphics, CallbackInfo ci, @Share("armor") LocalBooleanRef result, @Share("hasRun") LocalBooleanRef hasRun) {
         if (result.get())
             post(guiGraphics, this.minecraft.getPartialTick(), VanillaGuiOverlay.ARMOR_LEVEL);
+
+        hasRun.set(false);
     }
 
-    @ModifyConstant(method = "renderPlayerHealth", constant =  @Constant(intValue = 10, ordinal = 4))
-    private int kilt$renderPlayerFood(int constant, GuiGraphics guiGraphics, @Share("food") LocalBooleanRef result) {
+    @ModifyExpressionValue(method = "renderPlayerHealth", at =  @At(value = "CONSTANT", args = "intValue=10"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;getVehicleMaxHearts(Lnet/minecraft/world/entity/LivingEntity;)I"), to = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getMaxAirSupply()I")))
+    private int kilt$renderPlayerFood(int constant, GuiGraphics guiGraphics, @Share("food") LocalBooleanRef result, @Share("hasRun") LocalBooleanRef hasRun) {
+        if (hasRun.get())
+            return constant;
+
         var delta = this.minecraft.getPartialTick();
+        this.kilt$getGui().rightHeight += 10;
         if (kilt$renderOverlayCheckPost(guiGraphics, delta, VanillaGuiOverlay.FOOD_LEVEL, args -> null, false)) {
             result.set(true);
+            hasRun.set(true);
             return constant;
         }
         result.set(false);
+        hasRun.set(true);
         return 0;
     }
 
     @Inject(method = "renderPlayerHealth", at = @At(value = "CONSTANT", args = "stringValue=air"), cancellable = true)
-    private void kilt$postRenderPlayerFoodAndRenderAir(GuiGraphics guiGraphics, CallbackInfo ci, @Share("food") LocalBooleanRef result) {
+    private void kilt$postRenderPlayerFoodAndRenderAir(GuiGraphics guiGraphics, CallbackInfo ci, @Share("food") LocalBooleanRef result, @Share("hasRun") LocalBooleanRef hasRun) {
         var delta = this.minecraft.getPartialTick();
         if (result.get())
             post(guiGraphics, this.minecraft.getPartialTick(), VanillaGuiOverlay.FOOD_LEVEL);
+        this.kilt$getGui().rightHeight = 39;
         // End of the method so we can just cancel
         if (!kilt$renderOverlayCheckPost(guiGraphics, delta, VanillaGuiOverlay.AIR_LEVEL, args -> null, false))
             ci.cancel();
+
+        hasRun.set(false);
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderVehicleHealth(Lnet/minecraft/client/gui/GuiGraphics;)V"))
-    private void kilt$renderMountHealth(Gui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    private void kilt$renderMountHealth(Gui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.MOUNT_HEALTH, original, instance, guiGraphics);
     }
 
     // Jump Bar
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderJumpMeter(Lnet/minecraft/world/entity/PlayerRideableJumping;Lnet/minecraft/client/gui/GuiGraphics;I)V"))
-    public void kilt$renderJumpBar(Gui instance, PlayerRideableJumping rideable, GuiGraphics guiGraphics, int x, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderJumpBar(Gui instance, PlayerRideableJumping rideable, GuiGraphics guiGraphics, int x, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.JUMP_BAR, original, instance, rideable, guiGraphics, x);
     }
 
     // Experience Bar
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderExperienceBar(Lnet/minecraft/client/gui/GuiGraphics;I)V"))
-    public void kilt$renderExperienceBar(Gui instance, GuiGraphics guiGraphics, int x, Operation<Void> original, @Local(ordinal = 0, index = 0) float delta) {
+    public void kilt$renderExperienceBar(Gui instance, GuiGraphics guiGraphics, int x, Operation<Void> original, @Local(ordinal = 0) float delta) {
         kilt$renderOverlay(guiGraphics, delta, VanillaGuiOverlay.EXPERIENCE_BAR, original, instance, guiGraphics, x);
     }
 
     // Item Name
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/spectator/SpectatorGui;renderTooltip(Lnet/minecraft/client/gui/GuiGraphics;)V"))
-    public void kilt$renderItemName(SpectatorGui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0, index = 0) float partialTick) {
+    public void kilt$renderItemName(SpectatorGui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float partialTick) {
         kilt$renderOverlay(guiGraphics, partialTick, VanillaGuiOverlay.ITEM_NAME, original, instance, guiGraphics);
     }
 
     // Sleep Fade
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getSleepTimer()I", ordinal = 0))
-    public int kilt$renderSleepFade(LocalPlayer instance, Operation<Integer> original, @Local GuiGraphics guiGraphics, @Local(ordinal = 0, index = 0) float partialTick, @Share("sleep_fade") LocalBooleanRef result) {
+    public int kilt$renderSleepFade(LocalPlayer instance, Operation<Integer> original, @Local GuiGraphics guiGraphics, @Local(ordinal = 0) float partialTick, @Share("sleep_fade") LocalBooleanRef result) {
         if (kilt$renderOverlay(guiGraphics, partialTick, VanillaGuiOverlay.SLEEP_FADE, args -> null)) {
             result.set(false);
             return -1;

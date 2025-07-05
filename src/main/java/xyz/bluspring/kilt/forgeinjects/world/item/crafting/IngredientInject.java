@@ -83,28 +83,44 @@ public class IngredientInject implements IngredientInjection {
 
     @Inject(at = @At("HEAD"), method = "fromNetwork", cancellable = true)
     private static void kilt$checkForgeRecipeFromNetwork(FriendlyByteBuf friendlyByteBuf, CallbackInfoReturnable<Ingredient> cir) {
-        var size = friendlyByteBuf.readVarInt();
-        if (size == -1) {
-            cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
-            return;
-        }
+        try {
+            friendlyByteBuf.markReaderIndex();
+            var size = friendlyByteBuf.readVarInt();
+            if (size == -1) {
+                cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
+                return;
+            }
 
-        cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
+            cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
+        } catch (Throwable ignored) {
+            // This will defer over to any mixins that may occur after this.
+            friendlyByteBuf.resetReaderIndex();
+        }
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/google/gson/JsonElement;isJsonObject()Z", shift = At.Shift.BEFORE, remap = false), method = "fromJson(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;", cancellable = true)
     private static void kilt$checkForgeRecipeFromJson(JsonElement json, boolean canBeEmpty, CallbackInfoReturnable<Ingredient> cir) {
-        var ret = CraftingHelper.getIngredient(json, canBeEmpty);
-        if (ret != null)
-            cir.setReturnValue(ret);
+        try {
+            var ret = CraftingHelper.getIngredient(json, canBeEmpty);
+            if (ret != null)
+                cir.setReturnValue(ret);
+        } catch (Throwable ignored) {
+            // This will defer over to any mixins that may occur after this.
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "toNetwork", cancellable = true)
     public void kilt$writeNonVanillaIds(FriendlyByteBuf friendlyByteBuf, CallbackInfo ci) {
-        if (!this.isVanilla()) {
-            CraftingHelper.write(friendlyByteBuf, (Ingredient) (Object) this);
-            ci.cancel();
-        }
+        try {
+            if (!this.isVanilla()) {
+                if (this.getSerializer() == VanillaIngredientSerializer.INSTANCE || CraftingHelper.getID(this.getSerializer()) == null) {
+                    return;
+                }
+
+                CraftingHelper.write(friendlyByteBuf, (Ingredient) (Object) this);
+                ci.cancel();
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Mixin(Ingredient.TagValue.class)

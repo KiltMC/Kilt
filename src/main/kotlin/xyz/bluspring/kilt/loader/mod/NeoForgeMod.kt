@@ -60,6 +60,8 @@ class NeoForgeMod(
     var parent: NeoForgeMod? = null
     var manifest: Manifest? = null
 
+    val loader = definition.additionalData["loader"] as? String? ?: "javafml"
+
     private lateinit var secureJar: SecureJar
 
     val jar: JarFile

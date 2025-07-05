@@ -452,7 +452,7 @@ class KiltEarlyRiser : Runnable {
         }
     }
 
-    private val ignoredKeywords = listOf("kilt", "fml", "mixin", "modlauncher")
+    private val ignoredKeywords = listOf("kilt", "fml", "mixin", "modlauncher", "kotlinforforge", "architectury")
 
     // Required as Forge runs itself through ASM to fix events and ObjectHolders and such using ModLauncher.
     // So annoying.

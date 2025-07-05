@@ -4,8 +4,10 @@ import net.minecraft.client.multiplayer.ClientLevel
 import net.neoforged.bus.api.Event
 import net.neoforged.fml.event.IModBusEvent
 
-class ReloadLevelRendererEvent(private val level: ClientLevel) : Event(), IModBusEvent {
+class ReloadLevelRendererEvent(private val level: ClientLevel?) : Event(), IModBusEvent {
     fun level(): ClientLevel {
-        return this.level
+        return this.level!!
     }
+
+    constructor() : this(null) {}
 }
