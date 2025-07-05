@@ -568,6 +568,22 @@ tasks {
             requires {
                 slug = "forge-config-api-port"
             }
+
+            requires {
+                slug = "sodium"
+            }
+
+            requires {
+                slug = "indium"
+            }
+
+            optional {
+                slug = "modmenu"
+            }
+
+            embeds {
+                slug = "porting_lib"
+            }
         }
 
         curseforge {
@@ -589,6 +605,18 @@ tasks {
 
             requires {
                 slug = "forge-config-api-port-fabric"
+            }
+
+            requires {
+                slug = "sodium"
+            }
+
+            requires {
+                slug = "indium"
+            }
+
+            optional {
+                slug = "modmenu"
             }
         }
     }
