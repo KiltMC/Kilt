@@ -243,7 +243,7 @@ dependencies {
     val runSodium = true
 
     // Runtime mods for testing
-    modRuntimeOnly ("com.terraformersmc:modmenu:7.1.0") {
+    modImplementation ("com.terraformersmc:modmenu:7.1.0") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modRuntimeOnly ("maven.modrinth:ferrite-core:6.0.1-fabric") {

@@ -81,6 +81,7 @@
         "compat.forgeconfigapiport.ForgeConfigSpecMixin",
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
+        "compat.modmenu.FabricIconHandlerMixin",
         "compat.modmenu.ModMenuMixin",
         "compat.porting_lib.ConditionalRecipeSerializerMixin",
         "compat.porting_lib.FluidTypeMixin",
@@ -113,6 +114,7 @@
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
         "compat.indium.BakedModelMixin",
+        "compat.modmenu.ModListEntryMixin",
         "compat.owo.ShaderInstanceMixin",
         "compat.sodium.LevelRendererMixin",
         "debug.PoseStackMixin"
