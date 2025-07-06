@@ -2,8 +2,8 @@ package xyz.bluspring.kilt.util
 
 import com.chocohead.mm.CasualStreamHandler
 import com.chocohead.mm.api.ClassTinkerers
-import net.minecraftforge.common.IExtensibleEnum
-import net.neoforged.fml.unsafe.UnsafeHacks
+import net.minecraftforge.fml.unsafe.UnsafeHacks
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum
 import xyz.bluspring.kilt.Kilt
 import java.util.function.Consumer
 
@@ -19,8 +19,8 @@ object EnumUtils {
 
         val value = createValue.apply(values.size)
 
-        if (value is IExtensibleEnum)
-            value.init()
+        //if (value is IExtensibleEnum)
+            //value.init()
 
         list.add(value)
         setValues.accept(list)

@@ -14,12 +14,12 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraftforge.client.RenderTypeGroup
-import net.minecraftforge.client.extensions.IForgeBakedModel
-import net.minecraftforge.client.model.data.ModelData
+import net.neoforged.neoforge.client.RenderTypeGroup
+import net.neoforged.neoforge.client.extensions.IBakedModelExtension
+import net.neoforged.neoforge.client.model.data.ModelData
 import java.util.function.Supplier
 
-class MeshBakedModel(private val mesh: Mesh, private val hasAmbientOcclusion: Boolean, private val usesBlockLight: Boolean, private val isGui3d: Boolean, private val particleIcon: TextureAtlasSprite, private val transforms: ItemTransforms, private val overrides: ItemOverrides, private val renderTypes: RenderTypeGroup, private val renderTypesFast: RenderTypeGroup) : BakedModel, IForgeBakedModel {
+class MeshBakedModel(private val mesh: Mesh, private val hasAmbientOcclusion: Boolean, private val usesBlockLight: Boolean, private val isGui3d: Boolean, private val particleIcon: TextureAtlasSprite, private val transforms: ItemTransforms, private val overrides: ItemOverrides, private val renderTypes: RenderTypeGroup, private val renderTypesFast: RenderTypeGroup) : BakedModel, IBakedModelExtension {
     override fun getQuads(
         state: BlockState?,
         direction: Direction?,

@@ -19,6 +19,10 @@ class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
         return false
     }
 
+    override fun showAsDataPack(): Boolean {
+        return false
+    }
+
     override fun getFileProperties(): MutableMap<String, Any> {
         return mutableMapOf()
     }

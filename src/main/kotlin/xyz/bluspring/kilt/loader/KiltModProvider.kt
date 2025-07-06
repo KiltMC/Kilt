@@ -1,11 +1,10 @@
 package xyz.bluspring.kilt.loader
 
 import net.neoforged.neoforgespi.locating.IModFile
-import net.neoforged.neoforgespi.locating.IModProvider
 import java.nio.file.Path
 import java.util.function.Consumer
 
-class KiltModProvider : IModProvider {
+/*class KiltModProvider : IModProvider {
     override fun name(): String {
         return "Kilt Mod Provider"
     }
@@ -21,4 +20,4 @@ class KiltModProvider : IModProvider {
     override fun isValid(modFile: IModFile?): Boolean {
         return true
     }
-}
+}*/

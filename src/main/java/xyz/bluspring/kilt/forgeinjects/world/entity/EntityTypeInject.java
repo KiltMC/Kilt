@@ -6,17 +6,16 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.PlayMessages;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.entity.EntityTypeInjection;
 
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
@@ -25,39 +24,25 @@ import java.util.stream.Stream;
 public abstract class EntityTypeInject<T extends Entity> implements EntityTypeInjection<T> {
     @SuppressWarnings("MixinAnnotationTarget") // this is supposed to exist, but I guess mixin doesn't think so?
     @Shadow @Nullable public abstract T create(Level level);
-
     @Shadow @Final private Holder.Reference<EntityType<?>> builtInRegistryHolder;
-    private BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
-    private Predicate<EntityType<?>> velocityUpdateSupplier;
-    private ToIntFunction<EntityType<?>> trackingRangeSupplier;
-    private ToIntFunction<EntityType<?>> updateIntervalSupplier;
+
+    @Unique private Predicate<EntityType<?>> trackDeltasSupplier;
+    @Unique private ToIntFunction<EntityType<?>> trackingRangeSupplier;
+    @Unique private ToIntFunction<EntityType<?>> updateIntervalSupplier;
 
     @Override
-    public T customClientSpawn(PlayMessages.SpawnEntity packet, Level world) {
-        if (customClientFactory == null)
-            return this.create(world);
-
-        return customClientFactory.apply(packet, world);
+    public void kilt$setVelocityUpdateSupplier(Predicate<EntityType<?>> supplier) {
+        trackDeltasSupplier = supplier;
     }
 
     @Override
-    public void setVelocityUpdateSupplier(Predicate<EntityType<?>> supplier) {
-        velocityUpdateSupplier = supplier;
-    }
-
-    @Override
-    public void setTrackingRangeSupplier(ToIntFunction<EntityType<?>> supplier) {
+    public void kilt$setTrackingRangeSupplier(ToIntFunction<EntityType<?>> supplier) {
         trackingRangeSupplier = supplier;
     }
 
     @Override
-    public void setUpdateIntervalSupplier(ToIntFunction<EntityType<?>> supplier) {
+    public void kilt$setUpdateIntervalSupplier(ToIntFunction<EntityType<?>> supplier) {
         updateIntervalSupplier = supplier;
-    }
-
-    @Override
-    public void setCustomClientFactory(BiFunction<PlayMessages.SpawnEntity, Level, T> factory) {
-        this.customClientFactory = factory;
     }
 
     @Override
@@ -79,45 +64,41 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
 
     @Inject(at = @At("HEAD"), method = "trackDeltas", cancellable = true)
     public void kilt$useForgeVelocityUpdate(CallbackInfoReturnable<Boolean> cir) {
-        if (velocityUpdateSupplier != null)
-            cir.setReturnValue(velocityUpdateSupplier.test((EntityType<?>) (Object) this));
+        if (trackDeltasSupplier != null)
+            cir.setReturnValue(trackDeltasSupplier.test((EntityType<?>) (Object) this));
     }
 
     @Mixin(EntityType.Builder.class)
     public static class BuilderInject<T extends Entity> {
-        private BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
         private Predicate<EntityType<?>> velocityUpdateSupplier;
         private ToIntFunction<EntityType<?>> trackingRangeSupplier;
         private ToIntFunction<EntityType<?>> updateIntervalSupplier;
 
         // for all intents and purposes, mixin should add these methods in
+        @Unique
         public EntityType.Builder<T> setUpdateInterval(int interval) {
             updateIntervalSupplier = t -> interval;
             return (EntityType.Builder<T>) (Object) this;
         }
 
+        @Unique
         public EntityType.Builder<T> setTrackingRange(int range) {
             trackingRangeSupplier = t -> range;
             return (EntityType.Builder<T>) (Object) this;
         }
 
+        @Unique
         public EntityType.Builder<T> setShouldReceiveVelocityUpdates(boolean value) {
             velocityUpdateSupplier = t -> value;
-            return (EntityType.Builder<T>) (Object) this;
-        }
-
-        public EntityType.Builder<T> setCustomClientFactory(BiFunction<PlayMessages.SpawnEntity, Level, T> factory) {
-            customClientFactory = factory;
             return (EntityType.Builder<T>) (Object) this;
         }
 
         @Inject(at = @At("RETURN"), method = "build")
         public void kilt$addForgeBuilderItems(String string, CallbackInfoReturnable<EntityType<T>> cir) {
             var entityType = (EntityTypeInjection<T>) cir.getReturnValue();
-            entityType.setCustomClientFactory(customClientFactory);
-            entityType.setTrackingRangeSupplier(trackingRangeSupplier);
-            entityType.setUpdateIntervalSupplier(updateIntervalSupplier);
-            entityType.setVelocityUpdateSupplier(velocityUpdateSupplier);
+            entityType.kilt$setTrackingRangeSupplier(trackingRangeSupplier);
+            entityType.kilt$setUpdateIntervalSupplier(updateIntervalSupplier);
+            entityType.kilt$setVelocityUpdateSupplier(velocityUpdateSupplier);
         }
     }
 

@@ -14,15 +14,24 @@ import io.github.fabricators_of_create.porting_lib.models.geometry.IUnbakedGeome
 class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>, U : FabricUnbakedGeometry<U>>(private val deferred: FabricUnbakedGeometry<U>) : IUnbakedGeometry<T> {
     override fun bake(
         context: IGeometryBakingContext,
+        baker: ModelBaker,
+        spriteGetter: Function<Material?, TextureAtlasSprite?>,
+        modelState: ModelState,
+        overrides: ItemOverrides
+    ): BakedModel? {
+        return if (context is BlockGeometryBakingContext) {
+            deferred.bake(context.owner, baker, spriteGetter, modelState, overrides, modelLocation, context.isGui3d)
+        } else null
+    }
+    override fun bake(
+        context: IGeometryBakingContext,
         baker: ModelBaker?,
         spriteGetter: Function<Material, TextureAtlasSprite>?,
         modelState: ModelState?,
         overrides: ItemOverrides?,
         modelLocation: ResourceLocation
     ): BakedModel? {
-        return if (context is BlockGeometryBakingContext) {
-            deferred.bake(context.owner, baker, spriteGetter, modelState, overrides, modelLocation, context.isGui3d)
-        } else null
+
     }
 
     override fun bake(

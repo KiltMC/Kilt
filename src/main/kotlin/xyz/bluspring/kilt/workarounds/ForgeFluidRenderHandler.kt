@@ -14,7 +14,8 @@ class ForgeFluidRenderHandler : FluidRenderHandler {
         pos: BlockPos?,
         state: FluidState?
     ): Array<TextureAtlasSprite?> {
-        return ClientHooks.getFluidSprites(view, pos, state).filterNotNull().toTypedArray()
+        //return ClientHooks.getFluidSprites(view, pos, state).filterNotNull().toTypedArray()
+        return emptyArray()
     }
 
     override fun getFluidColor(view: BlockAndTintGetter?, pos: BlockPos?, state: FluidState?): Int {

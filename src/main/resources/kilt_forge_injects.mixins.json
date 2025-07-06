@@ -753,6 +753,7 @@
         "client.resources.model.ModelBakeryInject",
         "client.resources.model.ModelBakeryInject$ModelBakerImplInject",
         "client.resources.model.ModelManagerInject",
+        "client.resources.model.ModelResourceLocationInject",
         "client.resources.model.MultiPartBakedModelInject",
         "client.resources.model.SimpleBakedModelInject",
         "client.resources.model.SimpleBakedModelInject$BuilderInject",

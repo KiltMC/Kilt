@@ -7,9 +7,8 @@ import net.minecraft.world.entity.SpawnPlacements
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.NaturalSpawner
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraftforge.common.extensions.IForgeBlockState
 
-interface NaturalSpawnerRemap {
+/*interface NaturalSpawnerRemap {
     companion object {
         @JvmStatic
         fun canSpawnAtBody(
@@ -52,4 +51,4 @@ interface NaturalSpawnerRemap {
             }
         }
     }
-}
+}*/
