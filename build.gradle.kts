@@ -604,7 +604,7 @@ fun createVersion(): String {
     }
 
     // Bump the version accordingly
-    if (shouldBump)
+    if (shouldBump && !isRelease())
         increment += 1
 
     val version = "$mcVersion.$increment"
