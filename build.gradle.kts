@@ -592,7 +592,7 @@ fun createVersion(): String {
         val components = tag.name.removePrefix("v").split(".").map { it.toInt() }
 
         // Check if the tag is actually for this MC version
-        if (components.getOrNull(0) != mcVersionComps.getOrNull(0)?.toIntOrNull() || components.getOrNull(1) != mcVersionComps.getOrNull(1)?.toIntOrNull())
+        if (components.getOrNull(0) != mcVersionComps.getOrNull(1)?.toIntOrNull() || components.getOrNull(1) != mcVersionComps.getOrNull(2)?.toIntOrNull())
             continue
 
         shouldBump = true
@@ -604,7 +604,7 @@ fun createVersion(): String {
     }
 
     // Bump the version accordingly
-    if (shouldBump)
+    if (shouldBump && !isRelease())
         increment += 1
 
     val version = "$mcVersion.$increment"
