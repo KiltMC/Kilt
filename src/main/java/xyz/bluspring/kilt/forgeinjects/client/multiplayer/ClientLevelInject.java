@@ -171,4 +171,9 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
 
         return QuadLighter.calculateShade(normalX, normalY, normalZ, constantAmbientLight);
     }
+
+    @Override
+    public Int2ObjectMap<PartEntity<?>> kilt$getPartEntitiesMap() {
+        return this.kilt$partEntities;
+    }
 }
