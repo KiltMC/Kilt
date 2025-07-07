@@ -24,7 +24,7 @@ object MixinRemapper {
         val classTargets = getMixinClassTargets(classNode)
 
         // Find the refmap associated with this mixin class.
-        val refmapJson = refmapJsons.firstOrNull { json -> json.getAsJsonObject("mappings").has(classNode.name) }
+        val refmapJson = refmapJsons.firstOrNull { json -> json.has("mappings") && json.getAsJsonObject("mappings").has(classNode.name) }
 
         // Then, get the mappings that exist with this mixin class.
         val mixinMappingJson = refmapJson?.getAsJsonObject("mappings")?.getAsJsonObject(classNode.name)
