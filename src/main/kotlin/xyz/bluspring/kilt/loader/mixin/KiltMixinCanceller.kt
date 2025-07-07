@@ -9,7 +9,8 @@ class KiltMixinCanceller : MixinCanceller {
         "org.violetmoon.quark.mixin.mixins.client.accessor.AccessorCustomCreativeSlot",
         "org.violetmoon.quark.mixin.mixins.ConcretePowderBlockMixin",
         "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin",
-        "dev.ghen.thirst.foundation.mixin.MixinPotionItem"
+        "dev.ghen.thirst.foundation.mixin.MixinPotionItem",
+        "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin"
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {

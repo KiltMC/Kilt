@@ -85,7 +85,32 @@ class KiltMixinModifier : IExtension {
                                     this["method"] = listOf(modifier.remapMethodsTo)
                                 })
                             )
-                        } else newAnnotations.addAll(modifier.replaceWith)
+                        } else {
+                            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
+                                val list = modifier.replaceWith
+
+                                if (list.size == 1) {
+                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+                                    map["original"] = list[0]
+                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                                    newAnnotations.add(annotation)
+                                } else {
+                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+
+                                    for (node in list) {
+                                        if (node.desc.contains("mixinsquared"))
+                                            newAnnotations.add(node)
+                                        else
+                                            map["original"] = node
+                                    }
+
+                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                                    newAnnotations.add(annotation)
+                                }
+                            } else {
+                                newAnnotations.addAll(modifier.replaceWith)
+                            }
+                        }
                         wasModified = true
                     }
 

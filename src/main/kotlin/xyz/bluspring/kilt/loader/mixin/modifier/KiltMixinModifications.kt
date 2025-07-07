@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
+import org.spongepowered.asm.mixin.injection.Redirect
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
@@ -19,6 +20,8 @@ object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
     private val MODIFIERS = mutableMapOf<String, List<MixinModifier>>()
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
+
+    val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
 
     val INJECT = register(
         Inject::class.java,
@@ -93,6 +96,58 @@ object KiltMixinModifications {
                 "locals" to arrayOf("Lorg/spongepowered/asm/mixin/injection/callback/LocalCapture;", "CAPTURE_FAILEXCEPTION")
             ),
             replaceWith = emptyList()
+        ),
+
+        // Fixes GTCEu's LevelChunkMixin inject
+        MixinModifier(
+            owner = "net/minecraft/world/level/chunk/LevelChunk",
+            methods = listOf("setBlockState"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/block/state/BlockState;hasBlockEntity()Z",
+                    ordinal = 2
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("setBlockState"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/level/block/state/BlockState;hasBlockEntity()Z",
+                            ordinal = 1
+                        ))
+                    )
+                )
+            )
+        ),
+
+        // Fixes GTCEu's RepairItemRecipeMixin inject
+        MixinModifier(
+            owner = "net/minecraft/world/item/crafting/RepairItemRecipe",
+            methods = listOf("assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "RETURN",
+                    ordinal = 1
+                )),
+                "cancellable" to true
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = "Ljava/util/Map;isEmpty()Z",
+                            remap = false
+                        )),
+                        "cancellable" to true
+                    )
+                )
+            ),
+            isSugar = true
         )
     )
 
@@ -271,7 +326,20 @@ object KiltMixinModifications {
         )
     )
 
+    val REDIRECT = register(
+        Redirect::class.java
+    )
+
     fun findMatchingModifier(classInfo: ClassInfo, annotation: AnnotationNode): MixinModifier? {
+        var annotation = annotation
+        if (annotation.desc == SUGAR_WRAPPER.descriptor) {
+            val map = annotationValuesToMap(annotation.values)
+
+            if (map.containsKey("original")) {
+                annotation = map["original"] as AnnotationNode
+            }
+        }
+
         val modifiers = MODIFIERS[annotation.desc] ?: return null
 
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {

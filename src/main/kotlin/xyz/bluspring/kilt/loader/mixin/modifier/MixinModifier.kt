@@ -9,7 +9,9 @@ data class MixinModifier(
     val variables: Map<String, Any> = mapOf(),
 
     val replaceWith: List<AnnotationNode> = listOf(),
-    val remapMethodsTo: String? = null
+    val remapMethodsTo: String? = null,
+
+    val isSugar: Boolean = false
 ) {
     lateinit var mappedOwner: String
 }
