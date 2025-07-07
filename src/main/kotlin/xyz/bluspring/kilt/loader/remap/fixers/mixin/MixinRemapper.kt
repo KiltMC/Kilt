@@ -262,7 +262,7 @@ object MixinRemapper {
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
-    private fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
+    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()

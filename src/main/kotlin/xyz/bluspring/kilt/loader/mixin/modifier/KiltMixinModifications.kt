@@ -148,6 +148,13 @@ object KiltMixinModifications {
                 )
             ),
             isSugar = true
+        ),
+
+        // Fixes Bedrock Particles mod, but.. because it's an inject, it has an extra param....
+        MixinModifier(
+            owner = "net/minecraft/client/particle/ParticleEngine",
+            methods = listOf($$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"),
+            remapMethodsTo = $$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V"
         )
     )
 

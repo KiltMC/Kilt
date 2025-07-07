@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 class KiltMixinModifier : IExtension {
     override fun checkActive(environment: MixinEnvironment): Boolean {
@@ -82,7 +84,9 @@ class KiltMixinModifier : IExtension {
                             newAnnotations.add(
                                 KiltMixinModifications.createAnnotation(annotation.desc,
                                 KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
-                                    this["method"] = listOf(modifier.remapMethodsTo)
+                                    this["method"] = listOf(
+                                        MixinRemapper.remapTargetString(modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(context.classInfo.name)), KiltRemapper.enhancedRemapper)
+                                    )
                                 })
                             )
                         } else {
