@@ -8,6 +8,7 @@ import kotlin.time.toJavaDuration
 class CacheSet<E> : MutableSet<E> {
     private val deferred = Collections.newSetFromMap(CacheBuilder.newBuilder()
         .expireAfterAccess(5.minutes.toJavaDuration())
+        .maximumSize(15000L)
         .build<E, Boolean>()
         .asMap())
 
