@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -28,7 +30,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.renderer.LevelRendererInjection;
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
@@ -49,12 +50,16 @@ public abstract class GameRendererInject {
         }
     }
 
+    @Definition(id = "list2", local = @Local(type = List.class, ordinal = 1))
+    @Definition(id = "add", method = "Ljava/util/List;add(Ljava/lang/Object;)Z")
+    @Definition(id = "ShaderInstance", type = ShaderInstance.class)
+    @Definition(id = "of", method = "Lcom/mojang/datafixers/util/Pair;of(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;")
+    @Expression("list2.add(of(new ShaderInstance(?, 'rendertype_gui_ghost_recipe_overlay', ?), ?))")
     @Inject(
         method = "reloadShaders",
-        at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", remap = false, shift = At.Shift.AFTER),
-        slice = @Slice(from = @At(value = "NEW", target = "(Lnet/minecraft/server/packs/resources/ResourceProvider;Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;)Lnet/minecraft/client/renderer/ShaderInstance;", ordinal = 0))
+        at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER)
     )
-    private void registerShaders(ResourceProvider resourceProvider, CallbackInfo ci, @Local(ordinal = 1) List<Pair<ShaderInstance, Consumer<ShaderInstance>>> list) {
+    private void kilt$registerShaders(ResourceProvider resourceProvider, CallbackInfo ci, @Local(ordinal = 1) List<Pair<ShaderInstance, Consumer<ShaderInstance>>> list) {
         ModLoader.get().postEvent(new RegisterShadersEvent(resourceProvider, list));
     }
 
