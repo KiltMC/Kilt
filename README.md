@@ -14,7 +14,7 @@ I like Fabric. And I hate Forge. More reasons [here](WHY.md).
 
 ### Download?
 First, you must understand that Kilt is currently highly unstable, may break worlds, may cause crashes,
-and may not even be in a playable state, hence why it is currently published as **Alpha** to [Modrinth](https://modrinth.com/mod/kilt).
+hence why it is currently published as **Alpha** to [Modrinth](https://modrinth.com/mod/kilt).
 
 If you encounter any bugs or crashes, **do not report them to the mod developers unless they also occur on Forge**.
 Instead, report them onto the [Kilt issue tracker](https://github.com/KiltMC/Kilt/issues), if a similar issue does not exist.
