@@ -337,7 +337,6 @@ transitive-mutable field net/minecraft/core/IdMapper idToT Ljava/util/List;
 transitive-accessible field net/minecraft/core/MappedRegistry unregisteredIntrusiveHolders Ljava/util/Map;
 transitive-mutable field net/minecraft/core/MappedRegistry unregisteredIntrusiveHolders Ljava/util/Map;
 transitive-accessible class net/minecraft/core/RegistrySynchronization$NetworkedRegistryData
-transitive-extendable class net/minecraft/core/RegistrySynchronization$NetworkedRegistryData
 transitive-accessible method net/minecraft/core/particles/ParticleType <init> (ZLnet/minecraft/core/particles/ParticleOptions$Deserializer;)V
 transitive-extendable method net/minecraft/core/particles/ParticleType <init> (ZLnet/minecraft/core/particles/ParticleOptions$Deserializer;)V
 transitive-accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
