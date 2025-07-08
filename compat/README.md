@@ -6,10 +6,10 @@ They will likely be their own mods, to not bloat the base Kilt module more than 
 the user's instance.**
 
 ## Supported Bridges
-| Mods                                                                                                                  | Bridge                           |
-|-----------------------------------------------------------------------------------------------------------------------|----------------------------------|
-| Forge Energy, Reborn Energy                                                                                           | Kilt: Transfer API Compat        |
-| [Trinkets](https://modrinth.com/mod/trinkets), [Curios](https://modrinth.com/mod/curios)                              | Kilt: Curios & Trinkets Compat   |
-| [Sodium](https://modrinth.com/mod/sodium), [Immersive Engineering](https://modrinth.com/mod/immersiveengineering)     | Kilt: Sodium & Forge Mods Compat |
-| [Create Fabric](https://modrinth.com/mod/create-fabric), any Create Forge addons                                      | Kilt: Create Compat              |
-| [ModernFix](https://modrinth.com/mod/modernfix), [GeckoLib](https://modrinth.com/mod/geckolib), any other Fabric mods | Kilt: Fabric Mod Compat          |
+| Mods                                                                                                                                | Bridge                         |
+|-------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| Forge Energy, Reborn Energy                                                                                                         | Kilt: Transfer API Compat      |
+| [Trinkets](https://modrinth.com/mod/trinkets), [Curios](https://modrinth.com/mod/curios)                                            | Kilt: Curios & Trinkets Compat |
+| [Sodium](https://modrinth.com/mod/sodium), [Immersive Engineering](https://modrinth.com/mod/immersiveengineering), other Forge mods | Kilt: Forge Mods Compat        |
+| [Create Fabric](https://modrinth.com/mod/create-fabric), any Create Forge addons                                                    | Kilt: Create Compat            |
+| [ModernFix](https://modrinth.com/mod/modernfix), [GeckoLib](https://modrinth.com/mod/geckolib), any other Fabric mods               | Kilt: Fabric Mod Compat        |
