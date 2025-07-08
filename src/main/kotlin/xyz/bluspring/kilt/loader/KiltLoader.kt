@@ -369,6 +369,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         // See comment at the lateinit
         sortedModOrder = sorted
 
+        // Scan all mod classes. This needs to be run early, because some Forge mods rely on scan data as early as mixin containers.
+        scanModClasses()
+
         // Load mod access transformers and coremods
         for (mod in mods) {
             loadTransformers(mod)
@@ -430,10 +433,10 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         AccessTransformerLoader.runTransformers()
     }
 
-    fun loadMods() {
-        Kilt.logger.info("Starting initialization of Forge mods...")
+    fun scanModClasses() {
+        Kilt.logger.info("Scanning all Forge mod classes...")
 
-        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+        val exception = RuntimeException("Failed to scan Forge mod classes in Kilt!")
 
         runBlocking {
             launch(Dispatchers.Default) {
@@ -449,10 +452,10 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
                 sortedModOrder.asFlow().concurrent()
-                    .map { mod ->
+                    .collect { mod ->
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            return@map mod
+                            return@collect
                         }
 
                         if (mod.modFile == null) { // This is usually a Forge built-in, we don't have to worry about scanning this.
@@ -462,7 +465,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                                 mod.scanData = forgeScanData
                             }
 
-                            return@map mod
+                            return@collect
                         }
 
                         val scanData = ModFileScanData()
@@ -488,9 +491,25 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         // because for whatever reason Forge uses int packet IDs and MCreator mods don't register packets in one place.
                         scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
                         scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
-
-                        mod
                     }
+            }.join()
+        }
+
+        if (exception.suppressed.isNotEmpty()) {
+            exception.printStackTrace()
+            KnitLoader.instance.displayError("Errors occurred while scanning Forge mod classes!", exception)
+        }
+    }
+
+    fun loadMods() {
+        Kilt.logger.info("Starting initialization of Forge mods...")
+
+        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+
+        runBlocking {
+            launch(Dispatchers.Default) {
+                // TODO: Need to make sure to group mods together so they load in the correct order from each other
+                sortedModOrder.asFlow().concurrent()
                     .collect { mod ->
                         try {
                             registerAnnotations(mod, mod.scanData)
