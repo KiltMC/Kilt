@@ -60,7 +60,7 @@ object WorkaroundFixer {
                         newNodeMap[insnNode] = node
                     }
                 } else if (insnNode is FieldInsnNode && insnNode.owner == minecraftMapped) {
-                    if (insnNode.name == mcGuiMapped || insnNode.name == "gui") {
+                    if (insnNode.name == "f_91065_" || insnNode.name == mcGuiMapped || insnNode.name == "gui") {
                         val followingInsn = method.instructions.get(method.instructions.indexOf(insnNode) + 1)
 
                         if (followingInsn.opcode == Opcodes.CHECKCAST && followingInsn is TypeInsnNode && followingInsn.desc == "net/minecraftforge/client/gui/overlay/ForgeGui") {
