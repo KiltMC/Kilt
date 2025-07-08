@@ -185,12 +185,6 @@ allprojects {
 }
 
 dependencies {
-    // we require Indium due to us using Fabric Rendering API stuff.
-    // let's tell the users that too.
-    modImplementation(include("me.luligabi:NoIndium:${property("no_indium_version")}") {
-        exclude("net.fabricmc", "fabric-loader")
-    })
-
     // Forge Reimplementations
     val portingLibs = listOf("accessors", "asm", "attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "common", "core", "data", "entity", "extensions", "fluids", "gametest", "gui_utils", "items", "lazy_registration", "level_events", "loot", "mixin_extensions", "model_builders", "model_generators", "model_loader", "model_materials", "models", "networking", "obj_loader", "recipe_book_categories", "registries", "tags", "tool_actions", "transfer", "utility")
     portingLibs.forEach { lib ->
