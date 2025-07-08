@@ -52,10 +52,10 @@ object WorkaroundFixer {
                     }
                     insnNode.bsmArgs = newArgs;
                 } else if (insnNode is FieldInsnNode && insnNode.owner == potionBrewingMapped) {
-                    if (insnNode.name == pbFromMapped || insnNode.name == "from") {
+                    if (insnNode.name == "f_43532_" || insnNode.name == pbFromMapped || insnNode.name == "from") {
                         val node = FieldInsnNode(insnNode.opcode, insnNode.owner, "kilt\$from", insnNode.desc)
                         newNodeMap[insnNode] = node
-                    } else if (insnNode.name == pbToMapped || insnNode.name == "to") {
+                    } else if (insnNode.name == "f_43534_" || insnNode.name == pbToMapped || insnNode.name == "to") {
                         val node = FieldInsnNode(insnNode.opcode, insnNode.owner, "kilt\$to", insnNode.desc)
                         newNodeMap[insnNode] = node
                     }
