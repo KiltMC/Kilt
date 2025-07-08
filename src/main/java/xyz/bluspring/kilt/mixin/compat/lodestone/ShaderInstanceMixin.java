@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.compat.owo;
+package xyz.bluspring.kilt.mixin.compat.lodestone;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
@@ -10,27 +10,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@IfModLoaded("owo")
+@IfModLoaded("lodestone")
 @Mixin(value = ShaderInstance.class, priority = 1550)
 public class ShaderInstanceMixin {
-    @Unique
-    private static final Class<?> kilt$owoShaderClass;
+    @Unique private static final Class<?> kilt$lodestoneShaderClass;
 
     static {
         try {
-            kilt$owoShaderClass = Class.forName("io.wispforest.owo.shader.GlProgram$OwoShaderProgram");
+            kilt$lodestoneShaderClass = Class.forName("team.lodestar.lodestone.systems.rendering.shader.ExtendedShaderInstance");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
     @TargetHandler(
-            mixin = "xyz.bluspring.kilt.forgeinjects.client.renderer.ShaderInstanceInject",
-            name = "kilt$addForgeSupportToFabricAPI"
+        mixin = "xyz.bluspring.kilt.forgeinjects.client.renderer.ShaderInstanceInject",
+        name = "kilt$addForgeSupportToFabricAPI"
     )
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkOwoProgram(String id, CallbackInfoReturnable<String> cir, CallbackInfo ci) {
-        if (kilt$owoShaderClass.isInstance(this))
+    private void kilt$checkLodestoneProgram(String id, CallbackInfoReturnable<String> cir, CallbackInfo ci) {
+        if (kilt$lodestoneShaderClass.isInstance(this))
             ci.cancel();
     }
 }
