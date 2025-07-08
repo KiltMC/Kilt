@@ -27,6 +27,10 @@ public abstract class BlockRenderContextMixin implements BlockRenderContextInjec
         if (modelDataManager == null)
             return ModelData.EMPTY;
 
-        return modelDataManager.getAt(pos);
+        var modelData = modelDataManager.getAt(pos);
+        if (modelData == null)
+            return ModelData.EMPTY;
+
+        return modelData;
     }
 }
