@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.stream.Stream;
 
+@IfModLoaded("amecsapi")
 @Mixin(KeyBindingManager.class)
 public abstract class KeyBindingManagerMixin {
     @IfModLoaded(value = "amecsapi", minVersion = "1.5.3")

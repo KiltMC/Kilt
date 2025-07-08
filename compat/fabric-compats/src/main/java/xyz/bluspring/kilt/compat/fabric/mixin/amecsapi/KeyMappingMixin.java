@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.compat.fabric.mixin.amecsapi;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import de.siphalor.amecs.api.KeyModifiers;
 import de.siphalor.amecs.impl.duck.IKeyBinding;
 import net.minecraft.client.KeyMapping;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@IfModLoaded("amecsapi")
 @Mixin(value = KeyMapping.class, priority = 1010)
 public abstract class KeyMappingMixin implements IKeyBinding {
     @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "amecs$getKeyModifiers")
