@@ -21,7 +21,7 @@ import xyz.bluspring.kilt.mixin.LevelRendererAccessor;
 @IfModLoaded("sodium")
 @Mixin(SodiumWorldRenderer.class)
 @Pseudo
-public class SodiumWorldRendererMixin {
+public abstract class SodiumWorldRendererMixin {
     @IfModLoaded(value = "sodium", maxVersion = "0.5.8")
     @Dynamic
     @Inject(method = "drawChunkLayer", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/RenderSectionManager;renderLayer(Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderMatrices;Lme/jellysquid/mods/sodium/client/render/chunk/terrain/TerrainRenderPass;DDD)V", shift = At.Shift.BEFORE, remap = false), remap = false)

@@ -90,7 +90,6 @@
         "compat.porting_lib.TicketTrackerAccessor",
         "compat.sodium.BlockRenderContextMixin",
         "compat.sodium.BlockRendererMixin",
-        "compat.sodium.ChunkBuilderMeshingTaskMixin",
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
         "data.registries.VanillaRegistriesAccessor",

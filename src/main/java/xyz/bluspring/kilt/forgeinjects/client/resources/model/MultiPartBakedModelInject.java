@@ -82,6 +82,9 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
         if (state == null)
             return Collections.emptyList();
 
+        if (modelData == null)
+            modelData = ModelData.EMPTY;
+
         kilt$renderType.set(renderType);
         kilt$modelData.set(modelData);
 

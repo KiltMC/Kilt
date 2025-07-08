@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @IfModLoaded("sodium")
 @Mixin(WorldSlice.class)
-public class WorldSliceMixin implements IForgeBlockGetter {
+public abstract class WorldSliceMixin implements IForgeBlockGetter {
     @Shadow @Final private ClientLevel world;
 
     @Override
