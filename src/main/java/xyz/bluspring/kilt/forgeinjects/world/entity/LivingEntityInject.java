@@ -338,7 +338,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
     // Kilt: this isn't in the patch, but we're doing this to workaround a stack overflow
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
-        return this.kilt$getCapabilityWorkaround().getCapability(cap);
+        return this.getCapability(cap, null);
     }
 
     @Override
