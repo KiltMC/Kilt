@@ -30,6 +30,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -43,6 +44,7 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.loading.ClientModLoader;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -319,7 +321,17 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
             return instance.getPickedResult(this.hitResult);
         }
 
-        return original.call(instance);
+        var result = original.call(instance);
+
+        if (result == null) {
+            SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(instance.getType());
+            if (egg != null)
+                result = new ItemStack(egg);
+            else
+                result = ItemStack.EMPTY;
+        }
+
+        return result;
     }
 
     @Override
