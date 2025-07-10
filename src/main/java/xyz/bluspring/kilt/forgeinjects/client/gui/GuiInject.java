@@ -39,6 +39,7 @@ import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.gui.GuiInjection;
 
+import java.util.EnumSet;
 import java.util.List;
 
 @Mixin(Gui.class)
@@ -48,12 +49,23 @@ public abstract class GuiInject implements GuiInjection {
         return KiltClient.forgeGui;
     }
 
+    // The list of all vanilla GUI overlays that require setupOverlayRenderState
+    @Unique private static final EnumSet<VanillaGuiOverlay> kilt$overlayRenderStates = EnumSet.complementOf(EnumSet.of(
+        VanillaGuiOverlay.PLAYER_LIST,
+        VanillaGuiOverlay.CHAT_PANEL,
+        VanillaGuiOverlay.SCOREBOARD,
+        VanillaGuiOverlay.SUBTITLES,
+        VanillaGuiOverlay.TITLE_TEXT,
+        VanillaGuiOverlay.RECORD_OVERLAY,
+        VanillaGuiOverlay.FPS_GRAPH,
+        VanillaGuiOverlay.DEBUG_TEXT,
+        VanillaGuiOverlay.POTION_ICONS,
+        VanillaGuiOverlay.SLEEP_FADE
+    ));
+
     @Shadow public Minecraft minecraft;
-
     @Shadow public int screenWidth;
-
     @Shadow public int screenHeight;
-
     @Shadow public abstract void renderSelectedItemName(GuiGraphics guiGraphics);
 
     @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;showIcon()Z"))
@@ -71,6 +83,7 @@ public abstract class GuiInject implements GuiInjection {
 
     // This doesn't match what Forge is doing, but I'm rewriting it in mixins
     // for better Fabric mod support.
+    @Unique
     private void renderAllOverlaysBetween(GuiGraphics guiGraphics, float delta, VanillaGuiOverlay start, VanillaGuiOverlay end) {
         var overlays = GuiOverlayManager.getOverlays();
         var window = this.minecraft.getWindow();
@@ -116,15 +129,23 @@ public abstract class GuiInject implements GuiInjection {
         MinecraftForge.EVENT_BUS.post(new RenderGuiOverlayEvent.Post(this.minecraft.getWindow(), guiGraphics, delta, entry));
     }
 
+    @Unique
     private boolean kilt$renderOverlay(GuiGraphics guiGraphics, float delta, VanillaGuiOverlay overlay, Operation<?> operation, Object... args) {
         return kilt$renderOverlayCheckPost(guiGraphics, delta, overlay, operation, true, args);
     }
 
+    @Unique
     private boolean kilt$renderOverlayCheckPost(GuiGraphics guiGraphics, float delta, VanillaGuiOverlay overlay, Operation<?> operation, boolean shouldPost, Object... args) {
         var next = overlay.ordinal() == VanillaGuiOverlay.values().length - 1 ? null : VanillaGuiOverlay.values()[overlay.ordinal() + 1];
         renderAllOverlaysBetween(guiGraphics, delta, overlay, next);
 
         if (!pre(this.minecraft.getWindow(), guiGraphics, delta, overlay.type())) {
+            if (kilt$overlayRenderStates.contains(overlay) && overlay.kilt$shouldSetupOverlayRenderState(this.kilt$getGui())) {
+                // All of them seem to call this with blend and no depth testing, so we can
+                // safely do this.
+                this.kilt$getGui().setupOverlayRenderState(true, false);
+            }
+
             operation.call(args);
             if (shouldPost)
                 post(guiGraphics, delta, overlay);
@@ -184,6 +205,12 @@ public abstract class GuiInject implements GuiInjection {
         renderAllOverlaysBetween(guiGraphics, delta, overlay, next);
 
         if (!pre(this.minecraft.getWindow(), guiGraphics, delta, overlay.type())) {
+            if (kilt$overlayRenderStates.contains(overlay) && overlay.kilt$shouldSetupOverlayRenderState(this.kilt$getGui())) {
+                // All of them seem to call this with blend and no depth testing, so we can
+                // safely do this.
+                this.kilt$getGui().setupOverlayRenderState(true, false);
+            }
+
             boolean result = original.call(instance, mobEffect);
             post(guiGraphics, delta, overlay);
             return result;
