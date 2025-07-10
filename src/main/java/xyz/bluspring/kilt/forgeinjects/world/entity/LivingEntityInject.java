@@ -20,6 +20,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -219,6 +220,8 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
             ci.cancel();
     }
 
+    // I know it may say it's erroring, but ordinal = 1 is correct.
+    // Why? I don't know. It makes no sense to me either.
     @WrapOperation(method = "createWitherRose", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkCanMobGrief(GameRules instance, GameRules.Key<GameRules.BooleanValue> key, Operation<Boolean> original, @Local(argsOnly = true, ordinal = 1) LivingEntity entity) {
         return original.call(instance, key) || ForgeEventFactory.getMobGriefingEvent(this.level(), entity);
@@ -312,6 +315,18 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     // TODO: implement more patches starting from L404
 
+    @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidHeight(Lnet/minecraft/tags/TagKey;)D", ordinal = 1))
+    private double kilt$tryUseFluidTypeHeight(LivingEntity instance, TagKey tagKey, Operation<Double> original) {
+        var fluidType = instance.getMaxHeightFluidType();
+
+        if (!fluidType.isAir()) {
+            return instance.getFluidTypeHeight(fluidType);
+        }
+
+        return original.call(instance, tagKey);
+    }
+
+    // TODO: how do we handle jumpInFluid???
 
     @Override
     public boolean curePotionEffects(ItemStack curativeStack) {
