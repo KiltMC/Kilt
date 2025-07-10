@@ -37,8 +37,11 @@ object KiltHelper {
             // Don't use any or first, this will result in *heavy* performance loss.
             val overrideData = OverrideData(topClass, superClass, methodName, methodArgs)
 
-            // Force the cache to mark this as accessed
-            return !cache.add(overrideData)
+            return cache.contains(overrideData).apply {
+                if (this)
+                    // Force the cache to mark this as accessed
+                    cache.add(overrideData)
+            }
         }
     }
 
