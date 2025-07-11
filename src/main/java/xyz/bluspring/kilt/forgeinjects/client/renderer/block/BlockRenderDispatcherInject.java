@@ -20,7 +20,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
@@ -41,6 +40,8 @@ public abstract class BlockRenderDispatcherInject implements BlockRenderDispatch
 
     @Shadow public abstract void renderBreakingTexture(BlockState blockState, BlockPos blockPos, BlockAndTintGetter blockAndTintGetter, PoseStack poseStack, VertexConsumer vertexConsumer);
     @Shadow public abstract void renderSingleBlock(BlockState blockState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, int j);
+
+    @Shadow public abstract void renderBatched(BlockState blockState, BlockPos blockPos, BlockAndTintGetter blockAndTintGetter, PoseStack poseStack, VertexConsumer vertexConsumer, boolean bl, RandomSource randomSource);
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void kilt$useForgeModelRenderer(BlockModelShaper blockModelShaper, BlockEntityWithoutLevelRenderer blockEntityWithoutLevelRenderer, BlockColors blockColors, CallbackInfo ci) {
@@ -77,7 +78,7 @@ public abstract class BlockRenderDispatcherInject implements BlockRenderDispatch
         kilt$modelData.set(modelData);
         kilt$renderType.set(renderType);
         kilt$queryModelSpecificData.set(queryModelSpecificData);
-        this.renderBatched(state, pos, level, poseStack, consumer, checkSides, random, modelData, renderType);
+        this.renderBatched(state, pos, level, poseStack, consumer, checkSides, random);
         kilt$modelData.remove();
         kilt$renderType.remove();
         kilt$queryModelSpecificData.remove();

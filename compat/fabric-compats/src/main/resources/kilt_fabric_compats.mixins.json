@@ -16,6 +16,8 @@
         "wthit.WailaMixin"
     ],
     "client": [
+        "amecsapi.KeyBindingManagerMixin",
+        "amecsapi.KeyMappingMixin",
         "mkb.KeyMappingMixin"
     ],
     "injectors": {

@@ -271,7 +271,7 @@ dependencies {
 
     // Compatibility layers
     listOf(
-        "transfer-api-compat", "forge-sodium-compats", "create-compat",
+        "transfer-api-compat", "forge-compats", "create-compat",
         "curios-trinkets-compat", "fabric-compats"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))

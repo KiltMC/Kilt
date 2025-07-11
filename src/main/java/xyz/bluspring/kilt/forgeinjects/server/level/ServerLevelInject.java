@@ -58,6 +58,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.server.level.ServerLevelInjection;
+import xyz.bluspring.kilt.injections.world.level.entity.PersistentEntitySectionManagerInjection;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -106,6 +107,17 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     @WrapWithCondition(method = "tickPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;rideTick()V"))
     private boolean kilt$checkIfEntityCanUpdate(Entity instance) {
         return instance.canUpdate();
+    }
+
+    @WrapOperation(method = "addPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;addNewEntity(Lnet/minecraft/world/level/entity/EntityAccess;)Z"))
+    private <T extends EntityAccess> boolean kilt$markAddWithoutEvent(PersistentEntitySectionManager<T> instance, T entityAccess, Operation<Boolean> original) {
+        ((PersistentEntitySectionManagerInjection<T>) instance).kilt$markWithoutEvent();
+        return original.call(instance, entityAccess);
+    }
+
+    @Inject(method = "addPlayer", at = @At("TAIL"))
+    private void kilt$addEntityToWorld(ServerPlayer player, CallbackInfo ci) {
+        player.onAddedToWorld();
     }
 
     @WrapOperation(method = "addEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;addNewEntity(Lnet/minecraft/world/level/entity/EntityAccess;)Z"))

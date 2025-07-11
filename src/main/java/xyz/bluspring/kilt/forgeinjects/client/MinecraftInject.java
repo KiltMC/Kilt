@@ -26,18 +26,27 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.CreativeModeTabSearchRegistry;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.loading.ClientModLoader;
+import net.minecraftforge.common.ForgeSpawnEggItem;
+import net.minecraftforge.common.extensions.IForgeBlock;
+import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
@@ -74,6 +83,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Mutable
     @Shadow @Final private BlockColors blockColors;
     @Shadow @Nullable public LocalPlayer player;
+    @Shadow @Nullable public HitResult hitResult;
     @Unique
     private float realPartialTick;
 
@@ -294,6 +304,34 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     private void kilt$callForgePickInputEvent(CallbackInfo ci) {
         if (ForgeHooksClient.onClickInput(2, this.options.keyPickItem, InteractionHand.MAIN_HAND).isCanceled())
             ci.cancel();
+    }
+
+    @WrapOperation(method = "pickBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getCloneItemStack(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack kilt$tryUseForgeCloneItemStack(Block instance, BlockGetter blockGetter, BlockPos blockPos, BlockState blockState, Operation<ItemStack> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlock.class, "getCloneItemStack", BlockState.class, HitResult.class, BlockGetter.class, BlockPos.class, Player.class)) {
+            return instance.getCloneItemStack(blockState, this.hitResult, blockGetter, blockPos, this.player);
+        }
+
+        return original.call(instance, blockGetter, blockPos, blockState);
+    }
+
+    @WrapOperation(method = "pickBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getPickResult()Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack kilt$tryUseForgePickedResult(Entity instance, Operation<ItemStack> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "getPickedResult", HitResult.class)) {
+            return instance.getPickedResult(this.hitResult);
+        }
+
+        var result = original.call(instance);
+
+        if (result == null) {
+            SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(instance.getType());
+            if (egg != null)
+                result = new ItemStack(egg);
+            else
+                result = ItemStack.EMPTY;
+        }
+
+        return result;
     }
 
     @Override

@@ -24,7 +24,7 @@ object MixinRemapper {
         val classTargets = getMixinClassTargets(classNode)
 
         // Find the refmap associated with this mixin class.
-        val refmapJson = refmapJsons.firstOrNull { json -> json.getAsJsonObject("mappings").has(classNode.name) }
+        val refmapJson = refmapJsons.firstOrNull { json -> json.has("mappings") && json.getAsJsonObject("mappings").has(classNode.name) }
 
         // Then, get the mappings that exist with this mixin class.
         val mixinMappingJson = refmapJson?.getAsJsonObject("mappings")?.getAsJsonObject(classNode.name)
@@ -210,10 +210,8 @@ object MixinRemapper {
             }
 
             // Add the already refmapped data as a list, for us to use after. We'll strip it once it's no longer needed.
-            val obj = if (refmapJson.has("kilt:alreadyRefmapped"))
-                refmapJson.getAsJsonObject("kilt:alreadyRefmapped")
-            else
-                JsonObject().apply {
+            val obj = refmapJson.getAsJsonObject("kilt:alreadyRefmapped")
+                ?: JsonObject().apply {
                     refmapJson.add("kilt:alreadyRefmapped", this)
                 }
 
@@ -245,9 +243,6 @@ object MixinRemapper {
                     mapping.addProperty(key, remapTargetString(mapping.get(key).asString, emptyList(), remapper))
                 }
             }
-
-            // Remove these, as they're no longer needed.
-            refmap.remove("kilt:alreadyRefmapped")
         }
     }
 
@@ -262,7 +257,7 @@ object MixinRemapper {
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
-    private fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
+    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()

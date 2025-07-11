@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 class KiltMixinModifier : IExtension {
     override fun checkActive(environment: MixinEnvironment): Boolean {
@@ -82,10 +84,37 @@ class KiltMixinModifier : IExtension {
                             newAnnotations.add(
                                 KiltMixinModifications.createAnnotation(annotation.desc,
                                 KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
-                                    this["method"] = listOf(modifier.remapMethodsTo)
+                                    this["method"] = listOf(
+                                        MixinRemapper.remapTargetString(modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(context.classInfo.name)), KiltRemapper.enhancedRemapper)
+                                    )
                                 })
                             )
-                        } else newAnnotations.addAll(modifier.replaceWith)
+                        } else {
+                            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
+                                val list = modifier.replaceWith
+
+                                if (list.size == 1) {
+                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+                                    map["original"] = list[0]
+                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                                    newAnnotations.add(annotation)
+                                } else {
+                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+
+                                    for (node in list) {
+                                        if (node.desc.contains("mixinsquared"))
+                                            newAnnotations.add(node)
+                                        else
+                                            map["original"] = node
+                                    }
+
+                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                                    newAnnotations.add(annotation)
+                                }
+                            } else {
+                                newAnnotations.addAll(modifier.replaceWith)
+                            }
+                        }
                         wasModified = true
                     }
 

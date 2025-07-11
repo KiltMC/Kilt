@@ -111,6 +111,10 @@
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
         "compat.indium.BakedModelMixin",
+        "compat.lodestone.ShaderInstanceMixin",
+        "compat.modmenu.ModListEntryMixin",
+        "compat.owo.ShaderInstanceMixin",
+        "compat.ratatouille.ShaderInstanceMixin",
         "compat.sodium.LevelRendererMixin",
         "debug.PoseStackMixin"
     ],
