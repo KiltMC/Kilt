@@ -21,6 +21,7 @@ dependencies {
     modCompileOnly("de.siphalor:amecsapi-1.20:${property("amecsapi_version")}") {
         isTransitive = false
     }
+    modCompileOnly("dev.emi:emi-fabric:${property("emi_version")}")
 }
 
 tasks {
