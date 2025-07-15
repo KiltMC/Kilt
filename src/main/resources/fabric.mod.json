@@ -131,7 +131,8 @@
   "breaks": {
     "quilt_loader": "*",
     "async": "*",
-    "creativecore": "<2.12.33"
+    "creativecore": "<2.12.33",
+    "embeddium": "*"
   },
   "accessWidener": "kilt.accesswidener"
 }

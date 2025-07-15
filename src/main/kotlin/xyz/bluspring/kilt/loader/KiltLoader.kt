@@ -369,6 +369,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         // See comment at the lateinit
         sortedModOrder = sorted
 
+        if (this.hasMod("embeddium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
+        } else if (this.hasMod("rubidium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Rubidium, which is not supported under Kilt!", IllegalStateException())
+        }
+
         // Scan all mod classes. This needs to be run early, because some Forge mods rely on scan data as early as mixin containers.
         scanModClasses()
 
