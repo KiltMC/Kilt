@@ -169,21 +169,21 @@ allprojects {
         modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
         // TODO: remove this when 0.5 is mainlined into Fabric
-        include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
+        implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)
 
-        include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
+        implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
-        })
+        }
 
         if (project.parent?.name != "loader") {
             // Fabric API. This is technically optional, but you probably want it anyway.
             modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
 
             // Cursed Fabric/Mixin stuff
-            implementation(include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")!!)
-            modImplementation(include("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")!!)
-            include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
-            include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
+            implementation("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")
+            modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")
+            implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)
+            modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")
         }
     }
 }
@@ -195,6 +195,16 @@ dependencies {
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
+
+    // JiJ'd into main JAR alone
+    include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
+    include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
+    include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
+    include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
+    include("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")
+    include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
+        exclude("org.spongepowered", "mixin")
+    }
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
