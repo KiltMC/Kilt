@@ -22,6 +22,9 @@ dependencies {
         isTransitive = false
     }
     modCompileOnly("dev.emi:emi-fabric:${property("emi_version")}")
+    modCompileOnly("mezz.jei:jei-${property("minecraft_version")}-fabric:${property("jei_version")}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${property("rei_version")}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${property("rei_version")}")
 }
 
 tasks {

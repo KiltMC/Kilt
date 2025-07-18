@@ -140,6 +140,10 @@ allprojects {
         maven("https://thedarkcolour.github.io/KotlinForForge/") {
             name = "Kotlin for Forge"
         }
+
+        maven("https://maven.blamejared.com") {
+            name = "BlameJared"
+        }
     }
 
     // Avoid making the compats submodule use Loom, otherwise we break stuff

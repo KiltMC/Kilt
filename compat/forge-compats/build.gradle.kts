@@ -10,14 +10,6 @@ loom {
 
 version = property("mod_version") as String
 
-repositories {
-    maven("https://maven.blamejared.com") {
-        content {
-            includeGroup("org.violetmoon.zeta")
-        }
-    }
-}
-
 dependencies {
     modCompileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
     compileOnly("maven.modrinth:quark:${property("quark_version")}")
