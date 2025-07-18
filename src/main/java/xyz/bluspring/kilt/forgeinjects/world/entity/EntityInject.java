@@ -442,26 +442,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return original.call(a, b);
     }
 
-    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
-    private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
-        if (fluidTypeRef.get() == null && interimCalcs.get() == null)
-            return true;
-
-        if (fluidTag == FluidTags.WATER) {
-            if (fluidTypeRef.get() != null)
-                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
-            else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
-        } else if (fluidTag == FluidTags.LAVA) {
-            if (fluidTypeRef.get() != null)
-                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
-            else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
-        }
-
-        return true;
-    }
-
     // TODO: there is definitely a better way to do this.
     @Definition(id = "bl", local = @Local(type = boolean.class, ordinal = 0))
     @Expression("bl")
@@ -521,6 +501,43 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             cir.setReturnValue(this.isInFluidType(ForgeMod.LAVA_TYPE.get()));
         else
             cir.setReturnValue(false);
+    }
+
+    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
+    private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
+        if (fluidTypeRef.get() == null && interimCalcs.get() == null)
+            return true;
+
+        if (fluidTag == FluidTags.WATER) {
+            if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
+                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+        } else if (fluidTag == FluidTags.LAVA) {
+            if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
+                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
+        }
+
+        return true;
+    }
+
+    @ModifyReturnValue(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "RETURN", ordinal = 1))
+    private boolean kilt$ensureIsActuallyInFluidType(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
+        if (fluidTag == FluidTags.WATER) {
+            if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
+                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+        } else if (fluidTag == FluidTags.LAVA) {
+            if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
+                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+            else if (interimCalcs.get() != null)
+                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
+        }
+
+        return original;
     }
 
     @Inject(method = "setPosRaw", at = @At("TAIL"))
