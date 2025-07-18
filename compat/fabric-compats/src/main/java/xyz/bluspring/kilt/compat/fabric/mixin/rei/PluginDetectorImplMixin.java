@@ -41,7 +41,7 @@ public abstract class PluginDetectorImplMixin {
 
         if (pluginClass == REIServerPlugin.class)
             entrypointType = kilt$serverEntrypointType;
-        else if (pluginClass == REIPlugin.class)
+        else if (pluginClass == (Class<? extends REIPlugin<?>>) (Class) REIPlugin.class)
             entrypointType = kilt$commonEntrypointType;
         else if (pluginClass.getSimpleName().equals("REIClientPlugin")) // If we try to load this, it'll cause a crash on servers.
             entrypointType = kilt$clientEntrypointType;
