@@ -4,9 +4,6 @@ import me.shedaniel.rei.api.common.plugins.REIPlugin;
 import me.shedaniel.rei.api.common.plugins.REIPluginProvider;
 import me.shedaniel.rei.api.common.plugins.REIServerPlugin;
 import me.shedaniel.rei.fabric.PluginDetectorImpl;
-import me.shedaniel.rei.forge.REIPluginClient;
-import me.shedaniel.rei.forge.REIPluginCommon;
-import me.shedaniel.rei.forge.REIPluginDedicatedServer;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import net.minecraftforge.forgespi.language.ModFileScanData;
 import org.objectweb.asm.Type;
@@ -23,16 +20,15 @@ import xyz.bluspring.kilt.loader.mod.ForgeMod;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 @Pseudo
 @Mixin(value = PluginDetectorImpl.class, remap = false)
 public abstract class PluginDetectorImplMixin {
-    @Unique private static final Type kilt$clientEntrypointType = Type.getType(REIPluginClient.class);
-    @Unique private static final Type kilt$serverEntrypointType = Type.getType(REIPluginDedicatedServer.class);
-    @Unique private static final Type kilt$commonEntrypointType = Type.getType(REIPluginCommon.class);
+    @Unique private static final Type kilt$clientEntrypointType = Type.getType("Lme/shedaniel/rei/forge/REIPluginClient;");
+    @Unique private static final Type kilt$serverEntrypointType = Type.getType("Lme/shedaniel/rei/forge/REIPluginDedicatedServer;");
+    @Unique private static final Type kilt$commonEntrypointType = Type.getType("Lme/shedaniel/rei/forge/REIPluginCommon;");
     @Unique private static final Map<String, REIPluginProvider<?>> kilt$loadedPluginInstances = Collections.synchronizedMap(new HashMap<>());
 
     @Inject(method = "loadPlugin", at = @At("TAIL"))
