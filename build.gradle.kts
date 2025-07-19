@@ -564,6 +564,7 @@ tasks {
             requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
             embeds("porting_lib")
+            incompatible("async", "embeddium")
         }
 
         curseforge {
@@ -573,6 +574,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
+            incompatible("embeddium")
         }
     }
 }
