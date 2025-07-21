@@ -368,6 +368,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         // See comment at the lateinit
         sortedModOrder = sorted
 
+        if (this.hasMod("embeddium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
+        } else if (this.hasMod("rubidium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Rubidium, which is not supported under Kilt!", IllegalStateException())
+        }
+
         // Scan all mod classes. This needs to be run early, because some Forge mods rely on scan data as early as mixin containers.
         scanModClasses()
 
@@ -534,14 +540,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         // Automatically subscribe events
         scanData.annotations.asFlow()
             .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
-            .collect {
+            .collect { annotation ->
                 // it.annotationData["modid"] as String
                 // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                 try {
-                    val modId = it.annotationData["modid"] as String?
+                    val modId = annotation.annotationData["modid"] as String?
                         // Use the mod ID of the mod in the class instead
-                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, it.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
+                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, annotation.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
                         ?: mod.modId
 
                     if (modId != mod.modId)
@@ -553,8 +559,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         else "GAME"
                     )
 
-                    val dists = if (it.annotationData.contains("value"))
-                        (it.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
+                    val dists = if (annotation.annotationData.contains("value"))
+                        (annotation.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
                     else
                         listOf()
 
@@ -569,7 +575,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     else
                         this.getMod(modId)?.eventBus
 
-                    val clazz = Class.forName(it.clazz.className, true, this::class.java.classLoader)
+                    val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
                     val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
 
                     if (obj != null)
@@ -579,11 +585,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
                     ModLoadingContext.get().activeContainer = null
 
-                    Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
+                    Kilt.logger.debug("Automatically registered event ${annotation.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Throwable) {
-                    Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
-                    e.printStackTrace()
-                    exception.addSuppressed(e)
+                    Kilt.logger.error("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!")
+                    val ex = RuntimeException("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!", e)
+                    ex.printStackTrace()
+                    exception.addSuppressed(ex)
                 }
             }
 

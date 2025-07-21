@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.common.ForgeHooks;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -77,7 +78,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
 
     @Redirect(method = "buildContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;accept(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V"))
     private void kilt$buildContentsWithForge(CreativeModeTab.DisplayItemsGenerator instance, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output itemDisplayBuilder, @Local ResourceKey<CreativeModeTab> resourceKey) {
-        ForgeHooksClient.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, resourceKey, instance, parameters, itemDisplayBuilder);
+        ForgeHooks.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, resourceKey, instance, parameters, itemDisplayBuilder);
     }
 
     @Override

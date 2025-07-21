@@ -59,7 +59,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 195
+    const val REMAPPER_VERSION = 196
     const val MC_MAPPED_JAR_VERSION = 8
 
     // Kilt JVM flags
@@ -450,21 +450,26 @@ object KiltRemapper {
                     ) {
                         MixinRemapper.remapClass(originalNode, enhancedRemapper, refmapJsons.values)
                         MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
-                        MixinAdditionalRemapper.remapClass(originalNode)
-                        MixinStaticMethodFixer.fixClass(originalNode)
+
+                        if (!KiltFlags.DISABLE_FIXERS) {
+                            MixinAdditionalRemapper.remapClass(originalNode)
+                            MixinStaticMethodFixer.fixClass(originalNode)
+                        }
                     }
 
                     originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
-                    ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
-                    EventClassVisibilityFixer.fixClass(remappedNode)
-                    EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
-                    InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
-                    ObjectHolderDefinalizer.processClass(remappedNode)
-                    WorkaroundFixer.fixClass(remappedNode)
-                    ConflictingStaticMethodFixer.fixClass(remappedNode)
-                    EnvironmentRemapper.remapClass(remappedNode)
-                    EnvironmentLambdaFixer.fixClass(remappedNode)
+                    if (!KiltFlags.DISABLE_FIXERS) {
+                        ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
+                        EventClassVisibilityFixer.fixClass(remappedNode)
+                        EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
+                        InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
+                        ObjectHolderDefinalizer.processClass(remappedNode)
+                        WorkaroundFixer.fixClass(remappedNode)
+                        ConflictingStaticMethodFixer.fixClass(remappedNode)
+                        EnvironmentRemapper.remapClass(remappedNode)
+                        EnvironmentLambdaFixer.fixClass(remappedNode)
+                    }
 
                     val writer = ClassWriter(Opcodes.ASM9)
                     remappedNode.accept(writer)
