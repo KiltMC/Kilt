@@ -22,7 +22,7 @@ Instead, report them onto the [Kilt issue tracker](https://github.com/KiltMC/Kil
 Now that that's out of the way, the download link may be accessed from the GitHub Actions page for nightly builds, and a quick access
 download link may be found in the Discord (#rules-and-info), which also always downloads the latest build.
 
-You may also download it from [Modrinth](https://modrinth.com/mod/kilt) for more "stable" release builds.
+You may also download it from [Modrinth](https://modrinth.com/mod/kilt) or [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kilt) for more "stable" release builds.
 
 ### What about updating/backporting to other versions of Minecraft?
 While updates to newer versions are planned, Kilt is an incredibly large undertaking for only two people to work on.
@@ -31,7 +31,7 @@ Anything in-between and earlier is going to be unsupported, however someone else
 
 ### What about Patchwork?
 Patchwork completely halted development. 
-It will most likely never be revived, so its staying on 1.16.5.
+Even then, Kilt has far surpassed patchwork in most ways.
 
 ### What about Connector?
 Connector's aim is to have Fabric mods on Forge, while Kilt aims to have Forge mods on Fabric.
