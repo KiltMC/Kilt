@@ -568,6 +568,7 @@ tasks {
         }
 
         curseforge {
+            type = ReleaseType.BETA // Because apparently CurseForge hides alpha builds.
             projectId = project.property("publishing.curseforge").toString()
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
