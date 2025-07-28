@@ -14,7 +14,7 @@ I like Fabric. And I hate Forge. More reasons [here](WHY.md).
 
 ### Download?
 First, you must understand that Kilt is currently highly unstable, may break worlds, may cause crashes,
-hence why it is currently published as **Alpha** to [Modrinth](https://modrinth.com/mod/kilt).
+hence why it is currently published as **Alpha** to [Modrinth](https://modrinth.com/mod/kilt) and **Beta** to [CurseForge](https://www.curseforge.com/minecraft/mc-mods/kilt).
 
 If you encounter any bugs or crashes, **do not report them to the mod developers unless they also occur on Forge**.
 Instead, report them onto the [Kilt issue tracker](https://github.com/KiltMC/Kilt/issues), if a similar issue does not exist.
@@ -30,8 +30,8 @@ A NeoForge 1.21.1 build is currently in progress, however that is going to take 
 Anything in-between and earlier is going to be unsupported, however someone else may take on that role instead.
 
 ### What about Patchwork?
-Patchwork completely halted development. 
-Even then, Kilt has far surpassed patchwork in most ways.
+Patchwork has completely halted development, which means it will not be updated to modern versions of Minecraft past 1.16.
+Kilt has also far surpassed Patchwork in its development, and both Patchwork and Kilt had shared different goals despite being for accomplishing the same thing.
 
 ### What about Connector?
 Connector's aim is to have Fabric mods on Forge, while Kilt aims to have Forge mods on Fabric.
