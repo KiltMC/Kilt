@@ -78,13 +78,12 @@ body:
       placeholder: 'Example: Eclipse Termurin 17.0.6'
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: report
     attributes:
       label: Log file
       description: >-
-        Upload your log file as an attachment to this issue (drag-and-drop) or to a service such as GitHub
-        Gist or https://mclo.gs (paste a link) and replace this section. This information may be critical in resolving your issue!
+        Upload your log file to a service such as GitHub Gist or https://mclo.gs and paste it here. This information may be critical in resolving your issue!
         
         You may find your log file as the `latest.log` file in your game's `logs` folder.
     validations:
