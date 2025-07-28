@@ -1,0 +1,60 @@
+name: Feature Request
+description: "Would you like to request a feature that is not currently in Kilt?"
+labels:
+  - T-bug
+  - T-enhancement
+# This has been modified from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/ISSUE_TEMPLATE/bug_report.yml?plain=1
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        ## Instructions
+
+
+        This is a template for the issue you are about to open! This will help you
+        provide the information necessary to complete your **feature request**.
+        Before you open an issue, make sure that you've completed every step on the
+        checklist below.
+
+
+        - [Have you searched around](https://github.com/KiltMC/Kilt/issues) to find any
+        similar feature requests? If you find one that looks like what you are getting,
+        consider contributing additional information to it instead. Make sure
+        you are not opening a duplicate request.
+
+        - Are you using the latest version of Kilt? If not, try updating to
+        see if it already has the feature.
+
+
+        All good? Then continue to fill the request by providing the following
+        information about it:
+  - type: input
+    id: version
+    attributes:
+      label: Version information
+      description: >-
+        Please provide which version of Kilt you would want the feature added to
+      placeholder: 'Example: 1.20.1'
+    validations:
+      required: true
+  - type: input
+    id: mod
+    attributes:
+      label: Which mod would you like implemented
+      description: >-
+        Please provide (If it is a mod) you would like implemented, this **is not** an bug report
+      placeholder: 'Example: ForgeEnergyFabric 1.1.1-1.21.1'
+  - type: textarea
+    id: feature
+    attributes:
+      label: What you would like added
+      description: The feature that you would like implemented
+      placeholder: 'Example: Kilt needs to add support for energy transfer between Forge & Fabric'
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information
+      description: >-
+        Provide any additional information that may help us understand what you would like implemented.
