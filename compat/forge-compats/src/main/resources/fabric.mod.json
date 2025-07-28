@@ -1,0 +1,34 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_forge_compat",
+    "version": "${version}",
+    "name": "Kilt: Forge Mods Compat",
+    "description": "A compatibility layer to add support between Forge mods and Kilt/Fabric.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+    },
+    "mixins": [
+        "kilt_forge_compats.mixins.json"
+    ],
+    "accessWidener": "kilt-forge-compat.accesswidener",
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "kilt": "*"
+    },
+    "custom": {
+        "modmenu": {
+            "parent": "kilt"
+        }
+    }
+}

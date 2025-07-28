@@ -5,10 +5,13 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "creativecore.CreativeNetworkMixin",
+        "emi.EmiAgnosFabricMixin",
         "geckolib.RenderProviderMixin",
+        "jei.FabricPluginFinderMixin",
         "mkb.IKeyBindingMixin",
         "mkb.IKeyConflictContextMixin",
         "mkb.KeyConflictContextMixin",
+        "rei.PluginDetectorImplMixin",
         "sophisticatedcore.IForgeBlockMixin",
         "sophisticatedcore.IForgeBlockStateMixin",
         "sophisticatedcore.IForgeItemMixin",
@@ -16,6 +19,8 @@
         "wthit.WailaMixin"
     ],
     "client": [
+        "amecsapi.KeyBindingManagerMixin",
+        "amecsapi.KeyMappingMixin",
         "mkb.KeyMappingMixin"
     ],
     "injectors": {

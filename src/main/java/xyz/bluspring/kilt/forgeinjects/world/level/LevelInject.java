@@ -2,6 +2,9 @@
 package xyz.bluspring.kilt.forgeinjects.world.level;
 
 import com.bawnorton.mixinsquared.TargetHandler;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -10,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +21,6 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
-import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.common.extensions.IForgeLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.entity.PartEntity;
@@ -34,10 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.world.level.LevelInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -133,16 +135,29 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
         }
     }
 
-    @Redirect(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
-    public boolean kilt$checkForNeighbourChange(BlockState instance, Block unused, BlockPos blockPos, @Local(index = 1) BlockPos directionPos) {
-        ((IForgeBlockState) instance).onNeighborChange((Level) (Object) this, directionPos, blockPos);
-        // Don't trigger the Vanilla neighbour change.
-        return false;
+    @ModifyExpressionValue(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/Direction$Plane;iterator()Ljava/util/Iterator;"))
+    private Iterator<Direction> kilt$addMoreNeighbourDirections(Iterator<Direction> original) {
+        return Arrays.stream(Direction.values()).iterator();
     }
 
-    @Redirect(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 1))
-    public boolean kilt$getWeakChange(BlockState instance, Block unused, BlockPos blockPos, Block block, @Local(index = 1) BlockPos directionPos) {
-        return ((IForgeBlockState) instance).getWeakChanges((Level) (Object) this, directionPos);
+    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
+    public boolean kilt$checkForNeighbourChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) BlockPos blockPos, @Local(ordinal = 1) BlockPos directionPos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "onNeighborChange", BlockState.class, LevelReader.class, BlockPos.class, BlockPos.class)) {
+            instance.onNeighborChange((Level) (Object) this, directionPos, blockPos);
+            // Don't trigger the Vanilla neighbour change.
+            return false;
+        }
+
+        return original.call(instance, block);
+    }
+
+    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 1))
+    public boolean kilt$getWeakChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 1) BlockPos directionPos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getWeakChanges", BlockState.class, LevelReader.class, BlockPos.class)) {
+            return instance.getWeakChanges((Level) (Object) this, directionPos);
+        }
+
+        return original.call(instance, block);
     }
 
     @Inject(method = "blockEntityChanged", at = @At("TAIL"))

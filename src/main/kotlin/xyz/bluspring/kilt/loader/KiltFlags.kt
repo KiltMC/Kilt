@@ -9,7 +9,7 @@ object KiltFlags {
 
     // Mainly for debugging, to make sure all Forge mods remap correctly in production environments
     // without needing to actually launch a production environment.
-    @JvmField val FORCE_PRODUCTION_REMAPPING = "kilt.forceProductionRemap".checkPropertyBoolean()
+    @JvmField val FORCE_PRODUCTION_REMAPPING = FORCE_REMAPPING && "kilt.forceProductionRemap".checkPropertyBoolean()
 
     // Disables coremods in all loaded Forge mods.
     @JvmField val DISABLE_COREMODS = !"kilt.disableCoreMods".checkPropertyBoolean()
@@ -18,7 +18,8 @@ object KiltFlags {
     @JvmField val STORE_MODIFIED_COREMODS = "kilt.storeModifiedCoreMods".checkPropertyBoolean()
 
     // Mainly for debugging, enables profiling if the DeltaTimeProfiler#dumpTree method is called.
-    @JvmField val ENABLE_PROFILING = "kilt.enableProfiling".checkPropertyBoolean()
+    // No longer does anything.
+    //@JvmField val ENABLE_PROFILING = "kilt.enableProfiling".checkPropertyBoolean()
 
     // Mainly for debugging, enables logging access transformer info under the INFO level.
     // By default, AT info is logged under the DEBUG level, so it may still be found there.
@@ -28,6 +29,10 @@ object KiltFlags {
     // Kilt has a fixer that wraps System.exit to ensure users know why their game crashed, and additionally so it can
     // be tested in development. This flag allows the mod to be loaded anyway, completely overriding their code.
     @JvmField val DISABLE_FORGE_SYSTEM_EXIT = "kilt.disableSystemExit".checkPropertyBoolean()
+
+    // Mainly for people who want to decompile Forge mods for themselves, and don't want to manually remap all SRG names.
+    // This essentially disables most of Kilt's fixers that modify the mod's bytecode to make the mod work in Fabric.
+    @JvmField val DISABLE_FIXERS = FORCE_REMAPPING && "kilt.disableFixers".checkPropertyBoolean()
 
     private fun String.checkPropertyBoolean(): Boolean {
         return System.getProperty(this)?.lowercase() == "true"

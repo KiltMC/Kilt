@@ -6,6 +6,10 @@ base {
 
 version = property("mod_version") as String
 
+repositories {
+    maven("https://maven.siphalor.de/")
+}
+
 dependencies {
     modImplementation("maven.modrinth:modernfix:${property("modernfix_version")}")
     modImplementation("software.bernie.geckolib:geckolib-fabric-${property("minecraft_version")}:${property("geckolib_version")}")
@@ -14,6 +18,13 @@ dependencies {
     }
     modCompileOnly("maven.modrinth:sophisticated-core-(unofficial-fabric-port):${property("sophisticatedcore_version")}")
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
+    modCompileOnly("de.siphalor:amecsapi-1.20:${property("amecsapi_version")}") {
+        isTransitive = false
+    }
+    modCompileOnly("dev.emi:emi-fabric:${property("emi_version")}")
+    modCompileOnly("mezz.jei:jei-${property("minecraft_version")}-fabric:${property("jei_version")}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${property("rei_version")}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${property("rei_version")}")
 }
 
 tasks {

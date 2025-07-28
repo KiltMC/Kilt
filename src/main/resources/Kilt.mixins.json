@@ -90,7 +90,6 @@
         "compat.porting_lib.TicketTrackerAccessor",
         "compat.sodium.BlockRenderContextMixin",
         "compat.sodium.BlockRendererMixin",
-        "compat.sodium.ChunkBuilderMeshingTaskMixin",
         "compat.sodium.SodiumWorldRendererMixin",
         "compat.sodium.WorldSliceMixin",
         "data.registries.VanillaRegistriesAccessor",
@@ -115,8 +114,10 @@
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
         "compat.indium.BakedModelMixin",
+        "compat.lodestone.ShaderInstanceMixin",
         "compat.modmenu.ModListEntryMixin",
         "compat.owo.ShaderInstanceMixin",
+        "compat.ratatouille.ShaderInstanceMixin",
         "compat.sodium.LevelRendererMixin",
         "debug.PoseStackMixin"
     ],

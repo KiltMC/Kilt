@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -52,20 +53,20 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     }
 
     @Shadow public abstract void setTag(@Nullable CompoundTag compoundTag);
-
-    @Shadow @Final @Deprecated @Mutable
-    private Item item;
+    @Shadow @Final @Deprecated @Mutable private Item item;
     @Shadow private int count;
-
     @Shadow public abstract Item getItem();
-
     @Shadow public abstract InteractionResult useOn(UseOnContext context);
+
+    @Unique private boolean kilt$hasRunForgeInit = false;
 
     public ItemStackInject(ItemLike item, int count) {}
 
     @CreateInitializer
     public ItemStackInject(ItemLike item, int count, CompoundTag tag) {
         this(item, count);
+        this.kilt$setLazy(true);
+        this.kilt$getCapabilityWorkaround().kilt$setLazy(true);
         this.delegate = getDelegate(item.asItem());
         this.capNBT = tag;
         this.forgeInit();
@@ -75,15 +76,18 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     public void kilt$registerCapabilities(CompoundTag compoundTag, CallbackInfo ci) {
         this.capNBT = compoundTag.contains("ForgeCaps") ? compoundTag.getCompound("ForgeCaps") : null;
         this.delegate = getDelegate(this.item.asItem());
+        this.kilt$setLazy(true);
+        this.kilt$getCapabilityWorkaround().kilt$setLazy(true);
+
         this.forgeInit();
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/ItemLike;I)V")
     public void kilt$initForgeItemStack(ItemLike itemLike, int i, CallbackInfo ci) {
         this.delegate = getDelegate(itemLike.asItem());
+        this.kilt$setLazy(true);
+        this.kilt$getCapabilityWorkaround().kilt$setLazy(true);
 
-        // this might run twice.
-        // TODO: figure out how to avoid double-running
         this.forgeInit();
     }
 
@@ -102,6 +106,15 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
         if (itemStack.getCapNBT() != null)
             deserializeCaps(itemStack.getCapNBT());
+    }
+
+    @WrapOperation(method = "getMaxStackSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getMaxStackSize()I"))
+    private int kilt$tryUseForgeMaxStackSize(Item instance, Operation<Integer> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getMaxStackSize", ItemStack.class)) {
+            return instance.getMaxStackSize((ItemStack) (Object) this);
+        }
+
+        return original.call(instance);
     }
 
     /*@WrapOperation(method = "isEmpty", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack;item:Lnet/minecraft/world/item/Item;"))
@@ -158,11 +171,18 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         }
     }
 
+    @Unique
     private void forgeInit() {
-        if (this.delegate != null || this.item != null) {
+        // Avoid double running
+        if (this.kilt$hasRunForgeInit)
+            return;
+
+        if (this.delegate != null) {
             this.gatherCapabilities(() -> Objects.requireNonNullElseGet(this.item, () -> this.delegate.value()).initCapabilities((ItemStack) (Object) this, this.capNBT));
             if (this.capNBT != null)
                 this.deserializeCaps(this.capNBT);
+
+            this.kilt$hasRunForgeInit = true;
         }
     }
 

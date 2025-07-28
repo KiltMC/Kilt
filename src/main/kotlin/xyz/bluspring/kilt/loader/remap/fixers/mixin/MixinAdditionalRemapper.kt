@@ -77,7 +77,11 @@ object MixinAdditionalRemapper {
         // Increase priority if LevelRenderer
         run {
             val levelRenderer = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_761")
-            if (!values.contains("priority") && (targetClassNames.contains(levelRenderer.replace(".", "/")) || targetClassNames.contains(levelRenderer))) {
+            val levelRendererMoj = "net.minecraft.client.renderer.LevelRenderer"
+            if (!values.contains("priority") && (
+                 targetClassNames.contains(levelRenderer.replace(".", "/")) || targetClassNames.contains(levelRenderer) ||
+                 targetClassNames.contains(levelRendererMoj.replace(".", "/")) || targetClassNames.contains(levelRendererMoj)
+            )) {
                 val modifiedValues = values.toMutableMap()
                 modifiedValues["priority"] = 1050
 

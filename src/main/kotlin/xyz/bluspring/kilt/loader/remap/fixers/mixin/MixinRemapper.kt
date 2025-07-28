@@ -210,10 +210,8 @@ object MixinRemapper {
             }
 
             // Add the already refmapped data as a list, for us to use after. We'll strip it once it's no longer needed.
-            val obj = if (refmapJson.has("kilt:alreadyRefmapped"))
-                refmapJson.getAsJsonObject("kilt:alreadyRefmapped")
-            else
-                JsonObject().apply {
+            val obj = refmapJson.getAsJsonObject("kilt:alreadyRefmapped")
+                ?: JsonObject().apply {
                     refmapJson.add("kilt:alreadyRefmapped", this)
                 }
 
@@ -245,9 +243,6 @@ object MixinRemapper {
                     mapping.addProperty(key, remapTargetString(mapping.get(key).asString, emptyList(), remapper))
                 }
             }
-
-            // Remove these, as they're no longer needed.
-            refmap.remove("kilt:alreadyRefmapped")
         }
     }
 

@@ -71,9 +71,17 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private val environment = KiltEnvironment()
 
     init {
-        // Kilt requires a hard dependency on Sodium, so let's just do this
-        if (!FabricLoader.getInstance().isModLoaded("sodium") && FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
-            KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium to ensure Kilt is capable of running as intended.", IllegalStateException())
+        val loader = FabricLoader.getInstance()
+
+        if (loader.environmentType == EnvType.CLIENT) {
+            // Kilt requires a hard dependency on Sodium, so let's just do this
+            if (!loader.isModLoaded("sodium")) {
+                KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended.", IllegalStateException())
+            } else if (!loader.isModLoaded("indium")) {
+                KnitLoader.instance.displayError("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended.", IllegalStateException())
+            } else if (loader.isModLoaded("embeddium")) {
+                KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
+            }
         }
     }
 
@@ -361,6 +369,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         // See comment at the lateinit
         sortedModOrder = sorted
 
+        if (this.hasMod("embeddium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
+        } else if (this.hasMod("rubidium")) {
+            KnitLoader.instance.displayError("Kilt: You are using Rubidium, which is not supported under Kilt!", IllegalStateException())
+        }
+
+        // Scan all mod classes. This needs to be run early, because some Forge mods rely on scan data as early as mixin containers.
+        scanModClasses()
+
         // Load mod access transformers and coremods
         for (mod in mods) {
             loadTransformers(mod)
@@ -422,10 +439,10 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         AccessTransformerLoader.runTransformers()
     }
 
-    fun loadMods() {
-        Kilt.logger.info("Starting initialization of Forge mods...")
+    fun scanModClasses() {
+        Kilt.logger.info("Scanning all Forge mod classes...")
 
-        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+        val exception = RuntimeException("Failed to scan Forge mod classes in Kilt!")
 
         runBlocking {
             launch(Dispatchers.Default) {
@@ -441,10 +458,10 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
                 sortedModOrder.asFlow().concurrent()
-                    .map { mod ->
+                    .collect { mod ->
                         if (!mod.shouldScan) {
                             mod.scanData = ModFileScanData()
-                            return@map mod
+                            return@collect
                         }
 
                         if (mod.modFile == null) { // This is usually a Forge built-in, we don't have to worry about scanning this.
@@ -454,7 +471,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                                 mod.scanData = forgeScanData
                             }
 
-                            return@map mod
+                            return@collect
                         }
 
                         val scanData = ModFileScanData()
@@ -480,9 +497,25 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         // because for whatever reason Forge uses int packet IDs and MCreator mods don't register packets in one place.
                         scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
                         scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
-
-                        mod
                     }
+            }.join()
+        }
+
+        if (exception.suppressed.isNotEmpty()) {
+            exception.printStackTrace()
+            KnitLoader.instance.displayError("Errors occurred while scanning Forge mod classes!", exception)
+        }
+    }
+
+    fun loadMods() {
+        Kilt.logger.info("Starting initialization of Forge mods...")
+
+        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+
+        runBlocking {
+            launch(Dispatchers.Default) {
+                // TODO: Need to make sure to group mods together so they load in the correct order from each other
+                sortedModOrder.asFlow().concurrent()
                     .collect { mod ->
                         try {
                             registerAnnotations(mod, mod.scanData)
@@ -508,27 +541,27 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         // Automatically subscribe events
         scanData.annotations.asFlow()
             .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
-            .collect {
+            .collect { annotation ->
                 // it.annotationData["modid"] as String
                 // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
 
                 try {
-                    val modId = it.annotationData["modid"] as String?
+                    val modId = annotation.annotationData["modid"] as String?
                         // Use the mod ID of the mod in the class instead
-                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, it.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
+                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, annotation.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
                         ?: mod.modId
 
                     if (modId != mod.modId)
                         return@collect
 
                     val busType = Mod.EventBusSubscriber.Bus.valueOf(
-                        if (it.annotationData.contains("bus"))
-                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
+                        if (annotation.annotationData.contains("bus"))
+                            (annotation.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
                         else "FORGE"
                     )
 
-                    val dists = if (it.annotationData.contains("value"))
-                        (it.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
+                    val dists = if (annotation.annotationData.contains("value"))
+                        (annotation.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
                     else
                         listOf()
 
@@ -538,7 +571,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                     ModLoadingContext.kiltActiveModId = modId
 
-                    val clazz = Class.forName(it.clazz.className, true, this::class.java.classLoader)
+                    val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
                     val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
 
                     if (obj != null)
@@ -548,11 +581,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                     ModLoadingContext.kiltActiveModId = null
 
-                    Kilt.logger.debug("Automatically registered event ${it.clazz.className} from mod ID $modId under bus ${busType.name}")
+                    Kilt.logger.debug("Automatically registered event ${annotation.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Throwable) {
-                    Kilt.logger.error("Failed to register event ${it.clazz.className} from mod ${mod.modId}!")
-                    e.printStackTrace()
-                    exception.addSuppressed(e)
+                    Kilt.logger.error("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!")
+                    val ex = RuntimeException("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!", e)
+                    ex.printStackTrace()
+                    exception.addSuppressed(ex)
                 }
             }
 

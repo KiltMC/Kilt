@@ -30,6 +30,11 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
         return this.addEntityWithoutEvent(entity, false);
     }
 
+    @Override
+    public void kilt$markWithoutEvent() {
+        this.kilt$callWithoutEvent.set(true);
+    }
+
     @Inject(method = "addEntity", at = @At("HEAD"), cancellable = true)
     private void kilt$callEntityJoinLevelEvent(T entity, boolean worldGenSpawned, CallbackInfoReturnable<Boolean> cir) {
         if (!this.kilt$callWithoutEvent.getAndSet(false) && entity instanceof Entity e && MinecraftForge.EVENT_BUS.post(new EntityJoinLevelEvent(e, e.level(), worldGenSpawned)))

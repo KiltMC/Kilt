@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -15,11 +16,20 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.entity.ProjectileUtilInjection;
 
 @Mixin(RangedBowAttackGoal.class)
 public abstract class RangedBowAttackGoalInject<T extends Monster & RangedAttackMob> extends Goal {
-    // Kilt: We don't need to implement the custom constructor stuff
+    // Kilt: ----We don't need to implement the custom constructor stuff----
+    //       (he said, like a fucking liar)
+
+    @CreateInitializer
+    public <M extends Mob & RangedAttackMob> RangedBowAttackGoalInject(M mob, double speedModifier, int attackIntervalMin, float attackRadius) {
+        this((T) mob, speedModifier, attackIntervalMin, attackRadius);
+    }
+
+    public RangedBowAttackGoalInject(T mob, double speedModifier, int attackIntervalMin, float attackRadius) {}
 
     @Shadow @Final private T mob;
 

@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.RenderTypeInjection;
 
@@ -18,6 +19,7 @@ public abstract class RenderTypeInject implements RenderTypeInjection {
 
     @Override
     public int getChunkLayerId() {
+        RenderTypeInjection.kilt$initLoadedChunkLayers(); // Kilt: try to ensure chunk layers are actually all loaded.
         return chunkLayerId;
     }
 
@@ -56,9 +58,8 @@ public abstract class RenderTypeInject implements RenderTypeInjection {
         cir.setReturnValue(ForgeRenderTypes.getTextIntensitySeeThrough(resourceLocation));
     }
 
-    static {
-        var i = 0;
-        for (var layer : RenderType.chunkBufferLayers())
-            ((RenderTypeInjection) layer).setChunkLayerId(i++);
+    @Inject(method = "<clinit>", at = @At("TAIL"))
+    private static void kilt$initChunkLayerIds(CallbackInfo ci) {
+        RenderTypeInjection.kilt$initLoadedChunkLayers();
     }
 }
