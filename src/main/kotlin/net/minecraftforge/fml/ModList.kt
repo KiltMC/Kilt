@@ -1,5 +1,6 @@
 package net.minecraftforge.fml
 
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraftforge.fml.loading.moddiscovery.ModFile
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo
 import net.minecraftforge.forgespi.language.IModFileInfo
@@ -37,7 +38,8 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     }
 
     fun isLoaded(modTarget: String): Boolean {
-        return Kilt.loader.hasMod(modTarget)
+        return Kilt.loader.hasMod(modTarget) || FabricLoader.getInstance().isModLoaded(modTarget)
+                || FabricLoader.getInstance().isModLoaded(modTarget.replace("_", "-")) // Cloth Config detection. probably.
     }
 
     fun size(): Int {
