@@ -80,7 +80,7 @@ object KiltRemapper {
     internal val logger = LoggerFactory.getLogger("Kilt Remapper")
 
     private val launcher = FabricLauncherBase.getLauncher()
-    internal val useNamed = launcher.targetNamespace != "intermediary"
+    internal val useNamed = launcher.defaultRuntimeNamespace != "intermediary"
 
     // Remapper extensions
     fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
@@ -115,7 +115,7 @@ object KiltRemapper {
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
 
-    private val namespace: String = if (useNamed) launcher.targetNamespace else "intermediary"
+    private val namespace: String = if (useNamed) launcher.defaultRuntimeNamespace else "intermediary"
 
     lateinit var enhancedRemapper: KiltEnhancedRemapper
 
@@ -601,7 +601,7 @@ object KiltRemapper {
                     FabricLoader.getInstance().gameDir,
                     "minecraft",
                     KiltLoader.MC_VERSION.friendlyString
-                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.targetNamespace}.jar"
+                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.defaultRuntimeNamespace}.jar"
 
             if (deobfJar.exists())
                 return deobfJar
