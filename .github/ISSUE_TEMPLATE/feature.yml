@@ -34,16 +34,9 @@ body:
       label: Version information
       description: >-
         Please provide which version of Kilt you would want the feature added to
-      placeholder: 'Example: 1.20.1'
+      placeholder: 'Example: 20.1.4'
     validations:
       required: true
-  - type: input
-    id: mod
-    attributes:
-      label: Which mod would you like implemented
-      description: >-
-        Please provide (If it is a mod) you would like implemented, this **is not** an bug report
-      placeholder: 'Example: ForgeEnergyFabric 1.1.1-1.21.1'
   - type: textarea
     id: feature
     attributes:
