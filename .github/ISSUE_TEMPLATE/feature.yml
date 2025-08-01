@@ -33,8 +33,8 @@ body:
     attributes:
       label: Version information
       description: >-
-        Please provide which version of Kilt you would want the feature added to
-      placeholder: 'Example: 20.1.4'
+        Please provide which version of Minecraft you would want the feature added to
+      placeholder: 'Example: 1.20.1'
     validations:
       required: true
   - type: textarea
