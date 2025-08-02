@@ -351,6 +351,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
             }
 
+            // Loads gametests
+            for (url in this::class.java.classLoader.getResources("META-INF/mods.toml")) {
+                val toml = tomlParser.parse(url)
+                modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
+            }
+
             modsList
         } else {
             val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()

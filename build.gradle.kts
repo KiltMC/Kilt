@@ -22,6 +22,14 @@ base {
     archivesName.set(property("archives_base_name")!! as String)
 }
 
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId.set("kilt")
+        eula = true
+    }
+}
+
 sourceSets {
     getByName("main") {
         java.srcDir("src/main/java")
@@ -32,7 +40,7 @@ sourceSets {
         resources.srcDir("forge/src/main/resources")
     }
 
-    getByName("test") {
+    getByName("gametest") {
         java.srcDirs("forge/src/test/java")
         resources.srcDir("forge/src/generated_test/resources")
         resources.srcDir("forge/src/test/resources")
@@ -303,6 +311,10 @@ dependencies {
 configurations.all {
     exclude("cpw.mods", "modlauncher")
 }
+
+// why isn't this default?
+sourceSets.getByName("gametest").compileClasspath += sourceSets.getByName("test").compileClasspath
+sourceSets.getByName("gametest").runtimeClasspath += sourceSets.getByName("test").runtimeClasspath
 
 val targetJavaVersion = "17"
 
