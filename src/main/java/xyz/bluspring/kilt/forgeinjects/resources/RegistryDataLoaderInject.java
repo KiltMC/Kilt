@@ -2,9 +2,12 @@ package xyz.bluspring.kilt.forgeinjects.resources;
 
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Registry;
@@ -20,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Mixin(RegistryDataLoader.class)
 public abstract class RegistryDataLoaderInject {
@@ -39,6 +43,15 @@ public abstract class RegistryDataLoaderInject {
         if (!ICondition.shouldRegisterEntry(jsonElement)) {
             shouldRegisterEntry.set(false);
         }
+    }
+
+    @WrapOperation(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/DataResult;getOrThrow(ZLjava/util/function/Consumer;)Ljava/lang/Object;"))
+    private static <R> R kilt$disableGetOrThrow(DataResult instance, boolean allowPartial, Consumer<String> onError, Operation<R> original, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry) {
+        // hoping mods don't rely on this :V
+        if (!shouldRegisterEntry.get())
+            return null;
+
+        return original.call(instance, allowPartial, onError);
     }
 
     @WrapWithCondition(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/WritableRegistry;register(Lnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lcom/mojang/serialization/Lifecycle;)Lnet/minecraft/core/Holder$Reference;"))
