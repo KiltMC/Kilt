@@ -1,7 +1,7 @@
 name: Feature Request
-description: "Would you like to request a feature that is not currently in Kilt?"
+description: "Would you like to request a feature that is not currently in Kilt? (this is **NOT** for currently incompatible mods, rather for APIs, bridges and such.)"
 labels:
-  - T-bug
+  - S-needs-triage
   - T-enhancement
 # This has been modified from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/ISSUE_TEMPLATE/bug_report.yml?plain=1
 body:
