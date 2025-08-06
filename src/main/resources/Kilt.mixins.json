@@ -75,6 +75,7 @@
         "compat.forge.pixelmon.AbstractPokemonRendererMixin",
         "compat.forge.pixelmon.GenericModelHolderMixin",
         "compat.forge.tacz.GetJarResourcesMixin",
+        "compat.forge.tacz.MixinEntityKineticBullet",
         "compat.forge.zerocore.ClientProxyMixin",
         "compat.forgeconfigapiport.ConfigTrackerAccessor",
         "compat.forgeconfigapiport.ConfigTrackerMixin",
