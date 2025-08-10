@@ -70,6 +70,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
     private val environment = KiltEnvironment()
 
+    // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
+    // use the same mod ID.
+    private val SKIPPED_FABRIC_MODS = mapOf(
+        // Forge ID -> Fabric ID
+        "unloaded_activity" to "unloadedactivity"
+    )
+
     init {
         val loader = FabricLoader.getInstance()
 
@@ -245,6 +252,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 Exception("Forge mod file $fileName does not contain a mod ID!")
             }
 
+            // ffs, why do we have to do this?
+            // mods should really use the same mod ID between their mods >:(
+            if (SKIPPED_FABRIC_MODS.contains(modId)) {
+                Kilt.logger.warn("Mod ID $modId is a combined mod JAR already existing under ID ${SKIPPED_FABRIC_MODS[modId]}, skipping!")
+                continue
+            }
+
             val modVersion = ForgeModVersion(DefaultArtifactVersion(
                 // Forge custom-replaces mod versions with string templates, so we need to handle that.
                 metadata.getConfigElement<String>("version").orElse("1")
@@ -317,7 +331,6 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 // Sets the parent ID of the mod definition
                 parentId = parentId,
 
-                // TODO: make the icon square
                 icon = metadata.getConfigElement<String>("logoFile").orElse(""),
 
                 // Forge mods handle both, there's no way to define sided mods.
