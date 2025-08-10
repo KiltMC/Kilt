@@ -113,13 +113,6 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             return emptyList()
         }
 
-        val definitions = mutableListOf<ModDefinition>()
-        val modsTomlEntry = jarFile.getEntry("META-INF/mods.toml")
-
-        // If no mods.toml even exists, just skip it, unless it's JiJ'd.
-        if (modsTomlEntry == null && parents == null)
-            return emptyList()
-
         // Try to load manifest from JAR file, because it's required for some stuff in Forge mods.
         val manifest = try {
             jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")).use { Manifest(it) }
@@ -127,8 +120,17 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             null
         }
 
-        // Load all mod definitions from the TOML.
-        if (modsTomlEntry != null) {
+        val definitions = mutableListOf<ModDefinition>()
+        val modsTomlEntry = jarFile.getEntry("META-INF/mods.toml")
+
+        // News flash! Apparently, Forge supports loading mods like this. I was not aware of that fact.
+        if (manifest != null && parents == null && manifest.mainAttributes.getValue("FMLModType") != null)
+            definitions.add(createCustomMod(path, manifest))
+        else if (modsTomlEntry == null && parents == null)
+            // If no mods.toml even exists, just skip it, unless it's JiJ'd.
+            return emptyList()
+        else if (modsTomlEntry != null) {
+            // Load all mod definitions from the TOML.
             jarFile.getInputStream(modsTomlEntry)
                 .use {
                     definitions.addAll(parseModsToml(path, tomlParser.parse(it, Charsets.UTF_8), manifest))
@@ -667,6 +669,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 // it.clazz.className - Class
                 // it.annotationData["value"] as String - Mod ID
 
+                var extraThrowable: Throwable? = null
+
                 try {
                     val modId = it.annotationData["value"] as String
 
@@ -676,14 +680,24 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.kiltActiveModId = modId
 
                     val clazz = launcher.loadIntoTarget(it.clazz.className)
+                    val ktObj = try { clazz.kotlin.objectInstance } catch (e: Throwable) {
+                        extraThrowable = e
+                        null
+                    }
 
-                    try {
-                        val constructor = clazz.getDeclaredConstructor(FMLJavaModLoadingContext::class.java)
-                        val ctx = FMLJavaModLoadingContext.kiltGetContext(mod)
+                    if (ktObj != null) {
+                        // Load mods created using KFF
+                        mod.modObject = ktObj
+                    } else {
+                        // Otherwise, initialize under the regular Java process
+                        try {
+                            val constructor = clazz.getDeclaredConstructor(FMLJavaModLoadingContext::class.java)
+                            val ctx = FMLJavaModLoadingContext.kiltGetContext(mod)
 
-                        mod.modObject = constructor.newInstance(ctx)
-                    } catch (_: NoSuchMethodException) {
-                        mod.modObject = clazz.getDeclaredConstructor().newInstance()
+                            mod.modObject = constructor.newInstance(ctx)
+                        } catch (_: NoSuchMethodException) {
+                            mod.modObject = clazz.getDeclaredConstructor().newInstance()
+                        }
                     }
 
                     Kilt.logger.info("Initialized new instance of mod $modId.")
@@ -692,6 +706,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Throwable) {
                     e.printStackTrace()
+                    exception.addSuppressed(extraThrowable)
                     exception.addSuppressed(e)
                     hasErrored = true
                 }
