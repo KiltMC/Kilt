@@ -60,7 +60,7 @@ object KiltRemapper {
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
     const val REMAPPER_VERSION = 197
-    const val MC_MAPPED_JAR_VERSION = 8
+    const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
     private val forceRemap = KiltFlags.FORCE_REMAPPING
@@ -655,6 +655,12 @@ object KiltRemapper {
             throw IllegalStateException("Minecraft JAR was not found!")
         }
 
+        val tempSrgFile =
+            KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-${mappingName}_$MC_MAPPED_JAR_VERSION.jar.tmp"
+
+        if (tempSrgFile.exists())
+            tempSrgFile.deleteIfExists()
+
         logger.info("Creating ${mappingName}-mapped Minecraft JAR for remapping Forge mods...")
         val startTime = System.currentTimeMillis()
 
@@ -667,36 +673,40 @@ object KiltRemapper {
         val srgRemapper = EnhancedRemapper(classProvider, mappingFile, logConsumer)
 
         val gameJar = withContext(Dispatchers.IO) { JarFile(gameFile.toFile()) }
-        runCatching { srgFile.createFile() }
+        runCatching { tempSrgFile.createFile() }
 
-        withContext(Dispatchers.IO) { JarOutputStream(srgFile.outputStream()) }.use { outputJar ->
-            gameJar.stream().consumeAsFlow().flowOn(Dispatchers.IO)
-                .collect { entry ->
-                    if (entry.name.endsWith(".class")) {
-                        val classReader = gameJar.getInputStream(entry).use { ClassReader(it) }
+        tempSrgFile.outputStream().use { outputStream ->
+            withContext(Dispatchers.IO) { JarOutputStream(outputStream) }.use { outputJar ->
+                gameJar.stream().consumeAsFlow().flowOn(Dispatchers.IO)
+                    .collect { entry ->
+                        if (entry.name.endsWith(".class")) {
+                            val classReader = gameJar.getInputStream(entry).use { ClassReader(it) }
 
-                        val classNode = ClassNode(Opcodes.ASM9)
-                        classReader.accept(classNode, 0)
+                            val classNode = ClassNode(Opcodes.ASM9)
+                            classReader.accept(classNode, 0)
 
-                        val classWriter = ClassWriter(0)
+                            val classWriter = ClassWriter(0)
 
-                        val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
-                        classNode.accept(visitor)
-                        ConflictingStaticMethodFixer.fixClass(classNode)
+                            val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
+                            classNode.accept(visitor)
+                            ConflictingStaticMethodFixer.fixClass(classNode)
 
-                        // We need to remap to the correct name, otherwise the remapper completely fails in production environments.
-                        val srgName = mappingFile.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
+                            // We need to remap to the correct name, otherwise the remapper completely fails in production environments.
+                            val srgName = mappingFile.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
 
-                        outputJar.putNextEntry(JarEntry("$srgName.class"))
-                        outputJar.write(classWriter.toByteArray())
-                        outputJar.closeEntry()
-                    } else {
-                        outputJar.putNextEntry(entry)
-                        gameJar.getInputStream(entry).use { outputJar.write(it.readAllBytes()) }
-                        outputJar.closeEntry()
+                            outputJar.putNextEntry(JarEntry("$srgName.class"))
+                            outputJar.write(classWriter.toByteArray())
+                            outputJar.closeEntry()
+                        } else {
+                            outputJar.putNextEntry(entry)
+                            gameJar.getInputStream(entry).use { outputJar.write(it.readAllBytes()) }
+                            outputJar.closeEntry()
+                        }
                     }
-                }
+            }
         }
+
+        tempSrgFile.moveTo(srgFile, true)
 
         logger.info("Remapped Minecraft to $mappingName. (took ${System.currentTimeMillis() - startTime} ms)")
 
