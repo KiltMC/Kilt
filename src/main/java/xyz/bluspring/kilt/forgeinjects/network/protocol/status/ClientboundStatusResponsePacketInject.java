@@ -38,9 +38,9 @@ public abstract class ClientboundStatusResponsePacketInject implements Clientbou
 
     @WrapOperation(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeJsonWithCodec(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
     private <T> void kilt$writeCachedStatus(FriendlyByteBuf instance, Codec<T> codec, T value, Operation<Void> original) {
-        if (cachedStatus != null)
+        /*if (cachedStatus != null) // TODO: is this even needed?
             instance.writeUtf(cachedStatus);
-        else
+        else*/
             //noinspection MixinExtrasOperationParameters
             original.call(instance, codec, value);
     }
