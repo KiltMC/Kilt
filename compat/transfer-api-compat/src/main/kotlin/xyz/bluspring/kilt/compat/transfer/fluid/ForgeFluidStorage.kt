@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.IFluidHandler
+import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toDroplets
+import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibuckets
 
 class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     override fun iterator(): MutableIterator<StorageView<FluidVariant>> {
@@ -29,24 +31,24 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     }
 
     override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-        val fluidStack = FluidStack(resource.fluid, maxAmount.toInt(), resource.nbt)
+        val fluidStack = FluidStack(resource.fluid, maxAmount.toMillibuckets(), resource.nbt)
 
         val snapshot = ForgeFluidStackSnapshot(fluidStack, false)
         snapshot.updateSnapshots(transaction)
         val drained = handler.drain(fluidStack, IFluidHandler.FluidAction.SIMULATE)
 
-        return drained.amount
+        return drained.amount.toDroplets()
     }
 
     override fun insert(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-        val fluidStack = FluidStack(resource.fluid, maxAmount.toInt(), resource.nbt)
+        val fluidStack = FluidStack(resource.fluid, maxAmount.toMillibuckets(), resource.nbt)
 
         val snapshot = ForgeFluidStackSnapshot(fluidStack, true)
         snapshot.updateSnapshots(transaction)
 
         val filled = handler.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE)
 
-        return filled.toLong()
+        return filled.toDroplets()
     }
 
     private inner class ForgeFluidStackSnapshot(var stack: FluidStack, val insert: Boolean) : SnapshotParticipant<FluidStack>() {
@@ -69,7 +71,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
     private inner class ForgeFluidTankStorage(val tank: Int) : StorageView<FluidVariant> {
         override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-            val stack = FluidStack(resource.fluid, maxAmount.toInt().coerceAtMost(this.amount.toInt()), resource.nbt)
+            val stack = FluidStack(resource.fluid, maxAmount.toMillibuckets().coerceAtMost(this.amount.toMillibuckets()), resource.nbt)
 
             if (!handler.isFluidValid(tank, stack))
                 return 0L
@@ -79,7 +81,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
             val extracted = handler.drain(stack, IFluidHandler.FluidAction.SIMULATE)
 
-            return extracted.amount
+            return extracted.amount.toDroplets()
         }
 
         override fun isResourceBlank(): Boolean {
@@ -92,11 +94,11 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
         }
 
         override fun getAmount(): Long {
-            return handler.getFluidInTank(tank).amount
+            return handler.getFluidInTank(tank).amount.toDroplets()
         }
 
         override fun getCapacity(): Long {
-            return handler.getTankCapacity(tank).toLong()
+            return handler.getTankCapacity(tank).toDroplets()
         }
 
     }
