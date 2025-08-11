@@ -2,8 +2,7 @@ package net.minecraftforge.fml.loading.progress
 
 import com.google.common.base.Ascii
 import com.google.common.base.CharMatcher
-import java.util.EnumMap
-import java.util.Optional
+import java.util.*
 import java.util.function.Consumer
 
 object StartupMessageManager {
@@ -91,5 +90,10 @@ object StartupMessageManager {
                 addMessage(MessageType.MC, it, -1)
             }
         )
+    }
+
+    @JvmStatic
+    fun addProgressBar(barName: String, count: Int): ProgressMeter {
+        return ProgressMeter(barName, count, count, null)
     }
 }

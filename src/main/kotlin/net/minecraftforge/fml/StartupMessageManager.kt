@@ -1,6 +1,7 @@
 package net.minecraftforge.fml
 
-import java.util.Optional
+import net.minecraftforge.fml.loading.progress.ProgressMeter
+import java.util.*
 import java.util.function.Consumer
 import net.minecraftforge.fml.loading.progress.StartupMessageManager as WhyAreThereTwo
 
@@ -18,5 +19,10 @@ object StartupMessageManager {
     @JvmStatic
     fun mcLoaderConsumer(): Optional<Consumer<String>> {
         return WhyAreThereTwo.mcLoaderConsumer()
+    }
+
+    @JvmStatic
+    fun addProgressBar(barName: String, count: Int): ProgressMeter {
+        return WhyAreThereTwo.addProgressBar(barName, count)
     }
 }
