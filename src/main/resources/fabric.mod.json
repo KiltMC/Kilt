@@ -64,8 +64,7 @@
         "net/neoforged/neoforge/client/extensions/IBakedModelExtension"
       ],
       "net/minecraft/class_827": [
-        "net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension",
-        "net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension<T>"
+        "net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension<TT;>"
       ],
       "net/minecraft/class_5294": [
         "net/neoforged/neoforge/client/extensions/IDimensionSpecialEffectsExtension"
@@ -161,19 +160,16 @@
         "net/neoforged/neoforge/common/extensions/IFriendlyByteBufExtension"
       ],
       "net/minecraft/class_6880": [
-        "net/neoforged/neoforge/common/extensions/IHolderExtension",
-        "net/neoforged/neoforge/common/extensions/IHolderExtension<T>"
+        "net/neoforged/neoforge/common/extensions/IHolderExtension<TT;>"
       ],
       "net/minecraft/class_7225$class_7874": [
         "net/neoforged/neoforge/common/extensions/IHolderLookupProviderExtension"
       ],
       "net/minecraft/class_6885": [
-        "net/neoforged/neoforge/common/extensions/IHolderSetExtension",
-        "net/neoforged/neoforge/common/extensions/IHolderSetExtension<T>"
+        "net/neoforged/neoforge/common/extensions/IHolderSetExtension<TT;>"
       ],
       "net/minecraft/class_7889$class_7890": [
-        "net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension",
-        "net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension<T>"
+        "net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension<TT;>"
       ],
       "net/minecraft/class_1792": [
         "net/neoforged/neoforge/common/extensions/IItemExtension"
@@ -195,8 +191,7 @@
         "net/neoforged/neoforge/common/extensions/ILivingEntityExtension"
       ],
       "net/minecraft/class_3917": [
-        "net/neoforged/neoforge/common/extensions/IMenuTypeExtension",
-        "net/neoforged/neoforge/common/extensions/IMenuTypeExtension<T>"
+        "net/neoforged/neoforge/common/extensions/IMenuTypeExtension<TT;>"
       ],
       "net/minecraft/class_1291": [
         "net/neoforged/neoforge/common/extensions/IMobEffectExtension"
@@ -229,8 +224,7 @@
         "net/neoforged/neoforge/common/extensions/IServerGamePacketListenerExtension"
       ],
       "net/minecraft/class_2474$class_5124": [
-        "net/neoforged/neoforge/common/extensions/ITagAppenderExtension",
-        "net/neoforged/neoforge/common/extensions/ITagAppenderExtension<T>"
+        "net/neoforged/neoforge/common/extensions/ITagAppenderExtension<TT;>"
       ],
       "net/minecraft/class_3495": [
         "net/neoforged/neoforge/common/extensions/ITagBuilderExtension"
@@ -245,13 +239,13 @@
         "net/neoforged/neoforge/client/model/IDynamicBakedModel"
       ],
       "net/minecraft/class_2378": [
-        "net/neoforged/neoforge/registries/IRegistryExtension<T>"
+        "net/neoforged/neoforge/registries/IRegistryExtension<TT;>"
       ],
       "net/minecraft/class_7877$class_7885": [
-        "net/minecraft/core/HolderLookup<Object>"
+        "net/minecraft/core/HolderLookup"
       ],
       "net/minecraft/class_5321": [
-        "java/lang/Comparable<ResourceKey<?>>"
+        "java/lang/Comparable"
       ],
       "net/minecraft/class_3264": [
         "net/minecraft/util/StringRepresentable"

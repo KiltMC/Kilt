@@ -52,7 +52,13 @@ class AppendInjectedInterfaces {
                 val unique = injected.asJsonArray.filter { !existing.contains(it) }
 
                 for (element in unique) {
-                    existing.add(element)
+                    if (element.asString.contains("<"))
+                        if (element.asString.contains("<T>"))
+                            existing.add(element.asString.replace("<T>", "<TT;>"))
+                        else
+                            existing.add(element.asString.replaceAfter("<", "").removeSuffix("<"))
+                    else
+                        existing.add(element)
                 }
             }
         }
