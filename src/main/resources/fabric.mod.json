@@ -43,7 +43,8 @@
   },
   "mixins": [
     "Kilt.mixins.json",
-    "kilt_forge_injects.mixins.json"
+    "kilt_neo_injects.mixins.json",
+    "kilt_neo_modifications.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
@@ -56,65 +57,286 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_339": ["net/neoforged/neoforge/client/extensions/IAbstractWidgetExtension"],
-      "net/minecraft/class_1087": ["net/neoforged/neoforge/client/extensions/IBakedModelExtension"],
-      "net/minecraft/class_827": ["net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension"],
-      "net/minecraft/class_5294": ["net/neoforged/neoforge/client/extensions/IDimensionSpecialEffectsExtension"],
-      "net/minecraft/class_327": ["net/neoforged/neoforge/client/extensions/IFontExtension"],
-      "net/minecraft/class_332": ["net/neoforged/neoforge/client/extensions/IGuiGraphicsExtension"],
-      "net/minecraft/class_304": ["net/neoforged/neoforge/client/extensions/IKeyMappingExtension"],
-      "net/minecraft/class_3908": ["net/neoforged/neoforge/client/extensions/IMenuProviderExtension"],
-      "net/minecraft/class_310": ["net/neoforged/neoforge/client/extensions/IMinecraftExtension"],
-      "net/minecraft/class_7775": ["net/neoforged/neoforge/client/extensions/IModelBakerExtension"],
-      "net/minecraft/class_4587": ["net/neoforged/neoforge/client/extensions/IPoseStackExtension"],
-      "net/minecraft/class_4588": ["net/neoforged/neoforge/client/extensions/IVertexConsumerExtension"],
-      "net/minecraft/class_3665": ["net/neoforged/neoforge/client/extensions/ModelStateExtension"],
-
-      "net/minecraft/class_1688": ["net/neoforged/neoforge/common/extensions/IAbstractMinecartExtension"],
-      "net/minecraft/class_161$class_162": ["net/neoforged/neoforge/common/extensions/IAdvancementBuilderExtension"],
-      "net/minecraft/class_1320": ["net/neoforged/neoforge/common/extensions/IAttributeExtension"],
-      "net/minecraft/class_2241": ["net/neoforged/neoforge/common/extensions/IBaseRailBlockExtension"],
-      "net/minecraft/class_1920": ["net/neoforged/neoforge/common/extensions/IBlockAndTintGetterExtension"],
-      "net/minecraft/class_2586": ["net/neoforged/neoforge/common/extensions/IBlockEntityExtension"],
-      "net/minecraft/class_2248": ["net/neoforged/neoforge/common/extensions/IBlockExtension"],
-      "net/minecraft/class_1922": ["net/neoforged/neoforge/common/extensions/IBlockGetterExtension"],
-      "net/minecraft/class_2680": ["net/neoforged/neoforge/common/extensions/IBlockStateExtension"],
-      "net/minecraft/class_1690": ["net/neoforged/neoforge/common/extensions/IBoatExtension"],
-      "net/minecraft/class_2263": ["net/neoforged/neoforge/common/extensions/IBucketPickupExtension"],
-      "net/minecraft/class_8705": ["net/neoforged/neoforge/common/extensions/IClientCommonPacketListenerExtension"],
-      "net/minecraft/class_2168": ["net/neoforged/neoforge/common/extensions/ICommandSourceStackExtension"],
-      "net/minecraft/class_9322": ["net/neoforged/neoforge/common/extensions/IDataComponentHolderExtension"],
-      "net/minecraft/class_9323$class_9324": ["net/neoforged/neoforge/common/extensions/IDataComponentMapBuilderExtensions"],
-      "net/minecraft/class_5633": ["net/neoforged/neoforge/common/extensions/IDispensibleContainerItemExtension"],
-      "net/minecraft/class_1887": ["net/neoforged/neoforge/common/extensions/IEnchantmentExtension"],
-      "net/minecraft/class_1297": ["net/neoforged/neoforge/common/extensions/IEntityExtension"],
-      "net/minecraft/class_3611": ["net/neoforged/neoforge/common/extensions/IFluidExtension"],
-      "net/minecraft/class_3610": ["net/neoforged/neoforge/common/extensions/IFluidStateExtension"],
-      "net/minecraft/class_2540": ["net/neoforged/neoforge/common/extensions/IFriendlyByteBufExtension"],
-      "net/minecraft/class_6880": ["net/neoforged/neoforge/common/extensions/IHolderExtension"],
-      "net/minecraft/class_7225$class_7874": ["net/neoforged/neoforge/common/extensions/IHolderLookupProviderExtension"],
-      "net/minecraft/class_6885": ["net/neoforged/neoforge/common/extensions/IHolderSetExtension"],
-      "net/minecraft/class_7889$class_7890": ["net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension"],
-      "net/minecraft/class_1792": ["net/neoforged/neoforge/common/extensions/IItemExtension"],
-      "net/minecraft/class_1792$class_1793": ["net/neoforged/neoforge/common/extensions/IItemPropertiesExtensions"],
-      "net/minecraft/class_1799": ["net/neoforged/neoforge/common/extensions/IItemStackExtension"],
-      "net/minecraft/class_1937": ["net/neoforged/neoforge/common/extensions/ILevelExtension"],
-      "net/minecraft/class_4538": ["net/neoforged/neoforge/common/extensions/ILevelReaderExtension"],
-      "net/minecraft/class_1309": ["net/neoforged/neoforge/common/extensions/ILivingEntityExtension"],
-      "net/minecraft/class_3917": ["net/neoforged/neoforge/common/extensions/IMenuTypeExtension"],
-      "net/minecraft/class_1291": ["net/neoforged/neoforge/common/extensions/IMobEffectExtension"],
-      "net/minecraft/class_2598": ["net/neoforged/neoforge/common/extensions/IPacketFlowExtension"],
-      "net/minecraft/class_3262": ["net/neoforged/neoforge/common/extensions/IPackResourcesExtension"],
-      "net/minecraft/class_1657": ["net/neoforged/neoforge/common/extensions/IPlayerExtension"],
-      "net/minecraft/class_3324": ["net/neoforged/neoforge/common/extensions/IPlayerListExtension"],
-      "net/minecraft/class_8790": ["net/neoforged/neoforge/common/extensions/IRecipeOutputExtension"],
-      "net/minecraft/class_3215": ["net/neoforged/neoforge/common/extensions/IServerChunkCacheExtension"],
-      "net/minecraft/class_8706": ["net/neoforged/neoforge/common/extensions/IServerCommonPacketListenerExtension"],
-      "net/minecraft/class_8735": ["net/neoforged/neoforge/common/extensions/IServerConfigurationPacketListenerExtension"],
-      "net/minecraft/class_2792": ["net/neoforged/neoforge/common/extensions/IServerGamePacketListenerExtension"],
-      "net/minecraft/class_2474$class_5124": ["net/neoforged/neoforge/common/extensions/ITagAppenderExtension"],
-      "net/minecraft/class_3495": ["net/neoforged/neoforge/common/extensions/ITagBuilderExtension"],
-      "net/minecraft/class_4590": ["net/neoforged/neoforge/common/extensions/ITransformationExtension"]
+      "net/minecraft/class_339": [
+        "net/neoforged/neoforge/client/extensions/IAbstractWidgetExtension"
+      ],
+      "net/minecraft/class_1087": [
+        "net/neoforged/neoforge/client/extensions/IBakedModelExtension"
+      ],
+      "net/minecraft/class_827": [
+        "net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension",
+        "net/neoforged/neoforge/client/extensions/IBlockEntityRendererExtension<T>"
+      ],
+      "net/minecraft/class_5294": [
+        "net/neoforged/neoforge/client/extensions/IDimensionSpecialEffectsExtension"
+      ],
+      "net/minecraft/class_327": [
+        "net/neoforged/neoforge/client/extensions/IFontExtension"
+      ],
+      "net/minecraft/class_332": [
+        "net/neoforged/neoforge/client/extensions/IGuiGraphicsExtension"
+      ],
+      "net/minecraft/class_304": [
+        "net/neoforged/neoforge/client/extensions/IKeyMappingExtension"
+      ],
+      "net/minecraft/class_3908": [
+        "net/neoforged/neoforge/client/extensions/IMenuProviderExtension"
+      ],
+      "net/minecraft/class_310": [
+        "net/neoforged/neoforge/client/extensions/IMinecraftExtension"
+      ],
+      "net/minecraft/class_7775": [
+        "net/neoforged/neoforge/client/extensions/IModelBakerExtension"
+      ],
+      "net/minecraft/class_4587": [
+        "net/neoforged/neoforge/client/extensions/IPoseStackExtension"
+      ],
+      "net/minecraft/class_4588": [
+        "net/neoforged/neoforge/client/extensions/IVertexConsumerExtension"
+      ],
+      "net/minecraft/class_3665": [
+        "net/neoforged/neoforge/client/extensions/ModelStateExtension"
+      ],
+      "net/minecraft/class_1688": [
+        "net/neoforged/neoforge/common/extensions/IAbstractMinecartExtension"
+      ],
+      "net/minecraft/class_161$class_162": [
+        "net/neoforged/neoforge/common/extensions/IAdvancementBuilderExtension"
+      ],
+      "net/minecraft/class_1320": [
+        "net/neoforged/neoforge/common/extensions/IAttributeExtension"
+      ],
+      "net/minecraft/class_2241": [
+        "net/neoforged/neoforge/common/extensions/IBaseRailBlockExtension"
+      ],
+      "net/minecraft/class_1920": [
+        "net/neoforged/neoforge/common/extensions/IBlockAndTintGetterExtension"
+      ],
+      "net/minecraft/class_2586": [
+        "net/neoforged/neoforge/common/extensions/IBlockEntityExtension"
+      ],
+      "net/minecraft/class_2248": [
+        "net/neoforged/neoforge/common/extensions/IBlockExtension"
+      ],
+      "net/minecraft/class_1922": [
+        "net/neoforged/neoforge/common/extensions/IBlockGetterExtension"
+      ],
+      "net/minecraft/class_2680": [
+        "net/neoforged/neoforge/common/extensions/IBlockStateExtension"
+      ],
+      "net/minecraft/class_1690": [
+        "net/neoforged/neoforge/common/extensions/IBoatExtension"
+      ],
+      "net/minecraft/class_2263": [
+        "net/neoforged/neoforge/common/extensions/IBucketPickupExtension"
+      ],
+      "net/minecraft/class_8705": [
+        "net/neoforged/neoforge/common/extensions/IClientCommonPacketListenerExtension"
+      ],
+      "net/minecraft/class_2168": [
+        "net/neoforged/neoforge/common/extensions/ICommandSourceStackExtension"
+      ],
+      "net/minecraft/class_9322": [
+        "net/neoforged/neoforge/common/extensions/IDataComponentHolderExtension"
+      ],
+      "net/minecraft/class_9323$class_9324": [
+        "net/neoforged/neoforge/common/extensions/IDataComponentMapBuilderExtensions"
+      ],
+      "net/minecraft/class_5633": [
+        "net/neoforged/neoforge/common/extensions/IDispensibleContainerItemExtension"
+      ],
+      "net/minecraft/class_1887": [
+        "net/neoforged/neoforge/common/extensions/IEnchantmentExtension"
+      ],
+      "net/minecraft/class_1297": [
+        "net/neoforged/neoforge/common/extensions/IEntityExtension"
+      ],
+      "net/minecraft/class_3611": [
+        "net/neoforged/neoforge/common/extensions/IFluidExtension"
+      ],
+      "net/minecraft/class_3610": [
+        "net/neoforged/neoforge/common/extensions/IFluidStateExtension"
+      ],
+      "net/minecraft/class_2540": [
+        "net/neoforged/neoforge/common/extensions/IFriendlyByteBufExtension"
+      ],
+      "net/minecraft/class_6880": [
+        "net/neoforged/neoforge/common/extensions/IHolderExtension",
+        "net/neoforged/neoforge/common/extensions/IHolderExtension<T>"
+      ],
+      "net/minecraft/class_7225$class_7874": [
+        "net/neoforged/neoforge/common/extensions/IHolderLookupProviderExtension"
+      ],
+      "net/minecraft/class_6885": [
+        "net/neoforged/neoforge/common/extensions/IHolderSetExtension",
+        "net/neoforged/neoforge/common/extensions/IHolderSetExtension<T>"
+      ],
+      "net/minecraft/class_7889$class_7890": [
+        "net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension",
+        "net/neoforged/neoforge/common/extensions/IIntrinsicHolderTagAppenderExtension<T>"
+      ],
+      "net/minecraft/class_1792": [
+        "net/neoforged/neoforge/common/extensions/IItemExtension"
+      ],
+      "net/minecraft/class_1792$class_1793": [
+        "net/neoforged/neoforge/common/extensions/IItemPropertiesExtensions"
+      ],
+      "net/minecraft/class_1799": [
+        "net/neoforged/neoforge/common/extensions/IItemStackExtension",
+        "net/neoforged/neoforge/common/MutableDataComponentHolder"
+      ],
+      "net/minecraft/class_1937": [
+        "net/neoforged/neoforge/common/extensions/ILevelExtension"
+      ],
+      "net/minecraft/class_4538": [
+        "net/neoforged/neoforge/common/extensions/ILevelReaderExtension"
+      ],
+      "net/minecraft/class_1309": [
+        "net/neoforged/neoforge/common/extensions/ILivingEntityExtension"
+      ],
+      "net/minecraft/class_3917": [
+        "net/neoforged/neoforge/common/extensions/IMenuTypeExtension",
+        "net/neoforged/neoforge/common/extensions/IMenuTypeExtension<T>"
+      ],
+      "net/minecraft/class_1291": [
+        "net/neoforged/neoforge/common/extensions/IMobEffectExtension"
+      ],
+      "net/minecraft/class_2598": [
+        "net/neoforged/neoforge/common/extensions/IPacketFlowExtension"
+      ],
+      "net/minecraft/class_3262": [
+        "net/neoforged/neoforge/common/extensions/IPackResourcesExtension"
+      ],
+      "net/minecraft/class_1657": [
+        "net/neoforged/neoforge/common/extensions/IPlayerExtension"
+      ],
+      "net/minecraft/class_3324": [
+        "net/neoforged/neoforge/common/extensions/IPlayerListExtension"
+      ],
+      "net/minecraft/class_8790": [
+        "net/neoforged/neoforge/common/extensions/IRecipeOutputExtension"
+      ],
+      "net/minecraft/class_3215": [
+        "net/neoforged/neoforge/common/extensions/IServerChunkCacheExtension"
+      ],
+      "net/minecraft/class_8706": [
+        "net/neoforged/neoforge/common/extensions/IServerCommonPacketListenerExtension"
+      ],
+      "net/minecraft/class_8735": [
+        "net/neoforged/neoforge/common/extensions/IServerConfigurationPacketListenerExtension"
+      ],
+      "net/minecraft/class_2792": [
+        "net/neoforged/neoforge/common/extensions/IServerGamePacketListenerExtension"
+      ],
+      "net/minecraft/class_2474$class_5124": [
+        "net/neoforged/neoforge/common/extensions/ITagAppenderExtension",
+        "net/neoforged/neoforge/common/extensions/ITagAppenderExtension<T>"
+      ],
+      "net/minecraft/class_3495": [
+        "net/neoforged/neoforge/common/extensions/ITagBuilderExtension"
+      ],
+      "net/minecraft/class_4590": [
+        "net/neoforged/neoforge/common/extensions/ITransformationExtension"
+      ],
+      "net/minecraft/class_1095": [
+        "net/neoforged/neoforge/client/model/IDynamicBakedModel"
+      ],
+      "net/minecraft/class_1097": [
+        "net/neoforged/neoforge/client/model/IDynamicBakedModel"
+      ],
+      "net/minecraft/class_2378": [
+        "net/neoforged/neoforge/registries/IRegistryExtension<T>"
+      ],
+      "net/minecraft/class_7877$class_7885": [
+        "net/minecraft/core/HolderLookup<Object>"
+      ],
+      "net/minecraft/class_5321": [
+        "java/lang/Comparable<ResourceKey<?>>"
+      ],
+      "net/minecraft/class_3264": [
+        "net/minecraft/util/StringRepresentable"
+      ],
+      "net/minecraft/class_5147": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_1917": [
+        "net/neoforged/neoforge/common/extensions/IOwnedSpawner"
+      ],
+      "net/minecraft/class_2311": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_2397": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_2476": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_2526": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_2541": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_2560": [
+        "net/neoforged/neoforge/common/IShearable"
+      ],
+      "net/minecraft/class_8963": [
+        "net/neoforged/neoforge/common/extensions/IOwnedSpawner"
+      ],
+      "net/minecraft/class_2791": [
+        "net/neoforged/neoforge/attachment/IAttachmentHolder"
+      ],
+      "net/minecraft/class_2818": [
+        "net/neoforged/neoforge/attachment/IAttachmentHolder"
+      ],
+      "net/minecraft/class_296$class_298": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_314": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_329$class_6411": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_394": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_572$class_573": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_8107": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_8108": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_8112": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_1311": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_3765$class_3766": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_1690$class_1692": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_5421": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_811": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_1814": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_9283$class_1782": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ],
+      "net/minecraft/class_4763$class_5486": [
+        "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
+      ]
     },
     "lithium:options": {
       "mixin.entity.collisions.fluid": false

@@ -6,8 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.extensions.IForgeRecipeSerializer;
+import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.extensions.IForgeRecipeSerializer;
 
 public interface RecipeManagerInjection {
     static Recipe<?> fromJson(ResourceLocation location, JsonObject json, ICondition.IContext context) {

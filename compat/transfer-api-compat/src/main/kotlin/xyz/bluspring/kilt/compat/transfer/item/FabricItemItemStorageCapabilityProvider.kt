@@ -4,10 +4,10 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorage
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage
 import net.minecraft.world.item.ItemStack
-import net.minecraftforge.common.capabilities.Capability
-import net.minecraftforge.common.capabilities.ForgeCapabilities
-import net.minecraftforge.common.capabilities.ICapabilityProvider
-import net.minecraftforge.common.util.LazyOptional
+import net.neoforged.neoforge.common.capabilities.Capability
+import net.neoforged.neoforge.common.capabilities.ForgeCapabilities
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider
+import net.neoforged.neoforge.common.util.LazyOptional
 
 class FabricItemItemStorageCapabilityProvider(val stack: ItemStack) : ICapabilityProvider {
     override fun <T : Any?> getCapability(cap: Capability<T>): LazyOptional<T> {

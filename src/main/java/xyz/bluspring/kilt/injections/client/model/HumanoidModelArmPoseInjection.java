@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.injections.client.model;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.client.IArmPoseTransformer;
+import net.neoforged.neoforge.client.IArmPoseTransformer;
 import xyz.bluspring.kilt.mixin.ArmPoseAccessor;
 import xyz.bluspring.kilt.util.EnumUtils;
 

@@ -1,13 +1,13 @@
 package xyz.bluspring.kilt.injections.client.multiplayer;
 
-import net.minecraftforge.client.ExtendedServerListData;
+import net.neoforged.neoforge.client.ExtendedServerListData;
 
 public interface ServerDataInjection {
-    default ExtendedServerListData getForgeData() {
+    default ExtendedServerListData kilt$getNeoForgeData() {
         throw new IllegalStateException();
     }
 
-    default void setForgeData(ExtendedServerListData data) {
+    default void kilt$setNeoForgeData(ExtendedServerListData data) {
         throw new IllegalStateException();
     }
 }

@@ -5,9 +5,9 @@ import com.mojang.blaze3d.audio.Library;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.ChannelAccess;
 import net.minecraft.client.sounds.SoundEngine;
-import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
-import net.minecraftforge.client.event.sound.PlayStreamingSourceEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent;
+import net.neoforged.neoforge.client.event.sound.PlayStreamingSourceEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -46,9 +46,9 @@ public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInj
     private void kilt$callPlaySoundEvents(Consumer<Channel> consumer, CallbackInfo ci) {
         if (this.channel != null && kilt$soundEngine != null && kilt$soundInstance != null && SoundConsumerStorage.soundConsumerChannels.remove(consumer)) {
             if (kilt$pool == Library.Pool.STATIC) {
-                MinecraftForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
+                NeoForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             } else if (kilt$pool == Library.Pool.STREAMING) {
-                MinecraftForge.EVENT_BUS.post(new PlayStreamingSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
+                NeoForge.EVENT_BUS.post(new PlayStreamingSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             }
         }
     }

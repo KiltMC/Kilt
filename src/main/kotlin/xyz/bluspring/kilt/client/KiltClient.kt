@@ -83,7 +83,7 @@ class KiltClient : ClientModInitializer {
         }
 
         /*ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
-            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
+            if (NeoForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
                 EventResult.interruptFalse()
             else
                 EventResult.pass()
@@ -91,7 +91,7 @@ class KiltClient : ClientModInitializer {
 
         /*ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
             if (screen != null)
-                MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
+                NeoForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
         }*/
 
         TextureAtlasStitchedEvent.EVENT.register { event ->
@@ -121,14 +121,14 @@ class KiltClient : ClientModInitializer {
                     if (hitResult !is BlockHitResult)
                         return@register false
 
-                    return@register !MinecraftForge.EVENT_BUS.post(RenderHighlightEvent.Block(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
+                    return@register !NeoForge.EVENT_BUS.post(RenderHighlightEvent.Block(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
                 }
 
                 HitResult.Type.ENTITY -> {
                     if (hitResult !is EntityHitResult)
                         return@register false
 
-                    return@register !MinecraftForge.EVENT_BUS.post(RenderHighlightEvent.Entity(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
+                    return@register !NeoForge.EVENT_BUS.post(RenderHighlightEvent.Entity(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
                 }
 
                 else -> return@register false
@@ -192,7 +192,7 @@ class KiltClient : ClientModInitializer {
 
         /*RenderHandCallback.EVENT.register { event ->
             val forgeEvent = RenderHandEvent(event.hand, event.poseStack, event.multiBufferSource, event.packedLight, event.partialTicks, event.pitch, event.swingProgress, event.equipProgress, event.itemStack)
-            MinecraftForge.EVENT_BUS.post(forgeEvent)
+            NeoForge.EVENT_BUS.post(forgeEvent)
 
             if (forgeEvent.isCanceled)
                 event.isCanceled = true
@@ -215,11 +215,11 @@ class KiltClient : ClientModInitializer {
         }
 
         /*ClientWorldEvents.LOAD.register { client, level ->
-            MinecraftForge.EVENT_BUS.post(LevelEvent.Load(level))
+            NeoForge.EVENT_BUS.post(LevelEvent.Load(level))
         }*/
 
         /*ClientWorldEvents.UNLOAD.register { client, level ->
-            MinecraftForge.EVENT_BUS.post(LevelEvent.Unload(level))
+            NeoForge.EVENT_BUS.post(LevelEvent.Unload(level))
         }*/
     }
 

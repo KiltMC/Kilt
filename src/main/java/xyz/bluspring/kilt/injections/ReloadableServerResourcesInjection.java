@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.injections;
 
-import net.minecraftforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.crafting.conditions.ICondition;
 
 public interface ReloadableServerResourcesInjection {
     default ICondition.IContext getConditionContext() {

@@ -1,0 +1,18 @@
+// TRACKED HASH: 16c317d26c5aa67558a75e4c8d180770e7de06b8
+package xyz.bluspring.kilt.injects.world.item.crafting;
+
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.neoforged.neoforge.common.CommonHooks;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(Recipe.class)
+public interface RecipeInject {
+    @Inject(at = @At("HEAD"), method = "method_31583", cancellable = true)
+    private static void kilt$useForgeNoElementsCheck(Ingredient ingredient, CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(CommonHooks.hasNoElements(ingredient));
+    }
+}

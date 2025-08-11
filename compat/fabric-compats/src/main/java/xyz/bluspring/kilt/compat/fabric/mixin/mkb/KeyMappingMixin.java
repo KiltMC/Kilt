@@ -10,8 +10,8 @@ import committee.nova.mkb.api.IKeyBinding;
 import committee.nova.mkb.api.IKeyConflictContext;
 import committee.nova.mkb.keybinding.KeyBindingMap;
 import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.extensions.IForgeKeyMapping;
-import net.minecraftforge.client.settings.KeyModifier;
+import net.neoforged.neoforge.client.extensions.IForgeKeyMapping;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,7 +30,7 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     @Shadow
     private InputConstants.Key key;
     @Unique private static final KeyBindingMap kilt$keybindingMap = new KeyBindingMap();
-    @Unique private static final Map<net.minecraftforge.client.settings.IKeyConflictContext, MKBKeyConflictContextWrapper> kilt$contextWrappers = new HashMap<>();
+    @Unique private static final Map<net.neoforged.neoforge.client.settings.IKeyConflictContext, MKBKeyConflictContextWrapper> kilt$contextWrappers = new HashMap<>();
 
     // Kilt: bridge MKB and Forge contexts
     @Override
@@ -45,7 +45,7 @@ public abstract class KeyMappingMixin implements IKeyBinding {
 
     @Override
     public void setKeyConflictContext(IKeyConflictContext iKeyConflictContext) {
-        ((IForgeKeyMapping) this).setKeyConflictContext((net.minecraftforge.client.settings.IKeyConflictContext) iKeyConflictContext);
+        ((IForgeKeyMapping) this).setKeyConflictContext((net.neoforged.neoforge.client.settings.IKeyConflictContext) iKeyConflictContext);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.sophisticatedcore;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import net.minecraftforge.common.extensions.IForgeBlock;
+import net.neoforged.neoforge.common.extensions.IForgeBlock;
 import net.p3pp3rf1y.sophisticatedcore.extensions.block.SophisticatedBlock;
 import org.spongepowered.asm.mixin.Mixin;
 

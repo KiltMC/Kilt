@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public interface VertexFormatInjection {
     ImmutableMap<String, VertexFormatElement> getElementMapping();
-    int getOffset(int index);
     boolean hasPosition();
     boolean hasNormal();
     boolean hasColor();

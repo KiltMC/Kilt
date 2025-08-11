@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.injections.entity;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
+import net.neoforged.neoforge.event.entity.SpawnPlacementRegisterEvent;
 import net.neoforged.fml.ModLoader;
 import xyz.bluspring.kilt.mixin.SpawnPlacementsDataAccessor;
 
@@ -16,7 +16,7 @@ public interface SpawnPlacementsInjection {
             map.put(entityType, new SpawnPlacementRegisterEvent.MergedSpawnPredicate<>(((SpawnPlacementsDataAccessor) data).getPredicate(), ((SpawnPlacementsDataAccessor) data).getPlacement(), ((SpawnPlacementsDataAccessor) data).getHeightMap()));
         });
 
-        ModLoader.get().postEvent(new SpawnPlacementRegisterEvent(map));
+        ModLoader.postEvent(new SpawnPlacementRegisterEvent(map));
 
         map.forEach((entityType, merged) -> {
             SpawnPlacements.DATA_BY_TYPE.put(entityType, new SpawnPlacements.Data(merged.getHeightmapType(), merged.getSpawnType(), merged.build()));

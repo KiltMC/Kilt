@@ -12,7 +12,7 @@ import java.util.function.Function
 import io.github.fabricators_of_create.porting_lib.models.geometry.IUnbakedGeometry as FabricUnbakedGeometry
 
 class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>, U : FabricUnbakedGeometry<U>>(private val deferred: FabricUnbakedGeometry<U>) : IUnbakedGeometry<T> {
-    override fun bake(
+    /*override fun bake(
         context: IGeometryBakingContext,
         baker: ModelBaker,
         spriteGetter: Function<Material?, TextureAtlasSprite?>,
@@ -57,5 +57,14 @@ class UnbakedGeometryWrapper<T : IUnbakedGeometry<T>, U : FabricUnbakedGeometry<
         if (context is BlockGeometryBakingContext) {
             deferred.resolveParents(modelGetter, context.owner)
         }
+    }*/
+    override fun bake(
+        context: IGeometryBakingContext,
+        baker: ModelBaker,
+        spriteGetter: Function<Material?, TextureAtlasSprite?>,
+        modelState: ModelState,
+        overrides: ItemOverrides
+    ): BakedModel? {
+        TODO("Not yet implemented")
     }
 }

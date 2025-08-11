@@ -3,10 +3,12 @@ package xyz.bluspring.kilt.gradle
 import com.google.gson.JsonParser
 import java.io.File
 import java.net.URL
+import java.util.jar.JarFile
 
 class MappingDownloader(private val version: String, private val tempDir: File) {
     val mojangMappingsFile = File(tempDir, "mojang_$version.txt")
     val srgMappingsFile = File(tempDir, "srg_$version.tsrg")
+    val intermediaryMappingsFile = File(tempDir, "intermediary_$version.tiny")
 
     fun downloadFiles() {
         val startTime = System.currentTimeMillis()
@@ -14,6 +16,7 @@ class MappingDownloader(private val version: String, private val tempDir: File) 
 
         downloadMojangMappings()
         downloadSrgMappings()
+        downloadIntermediaryMappings()
 
         println("Downloaded mapping files! (took ${System.currentTimeMillis() - startTime}ms)")
     }
@@ -63,5 +66,30 @@ class MappingDownloader(private val version: String, private val tempDir: File) 
         srgMappingsFile.createNewFile()
         srgMappingsFile.writeText(url.readText())
         println("SRG mappings for $version has been downloaded!")
+    }
+    
+    fun downloadIntermediaryMappings() {
+        if (intermediaryMappingsFile.exists()) {
+            println("Intermediary mappings for $version already exists, skipping.")
+            return
+        }
+
+        println("Downloading Intermediary mappings for $version...")
+
+        val jar = File(tempDir, "intermediary_$version.jar")
+        if (jar.exists())
+            jar.delete()
+
+        val url = URL("https://maven.fabricmc.net/net/fabricmc/intermediary/$version/intermediary-$version-v2.jar")
+        jar.createNewFile()
+        url.openStream().use { jar.outputStream().use { out -> it.transferTo(out) } }
+
+        val jarFile = JarFile(jar)
+        val entry = jarFile.getJarEntry("mappings/mappings.tiny")
+
+        intermediaryMappingsFile.createNewFile()
+        jarFile.getInputStream(entry).use { intermediaryMappingsFile.outputStream().use { out -> it.transferTo(out) } }
+
+        println("Intermediary mappings for $version has been downloaded!")
     }
 }

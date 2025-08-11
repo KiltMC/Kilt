@@ -5,10 +5,10 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage
 import net.minecraft.core.Direction
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraftforge.common.capabilities.Capability
-import net.minecraftforge.common.capabilities.ForgeCapabilities
-import net.minecraftforge.common.capabilities.ICapabilityProvider
-import net.minecraftforge.common.util.LazyOptional
+import net.neoforged.neoforge.common.capabilities.Capability
+import net.neoforged.neoforge.common.capabilities.ForgeCapabilities
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider
+import net.neoforged.neoforge.common.util.LazyOptional
 
 class FabricItemStorageCapabilityProvider(val blockEntity: BlockEntity) : ICapabilityProvider {
     override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> {

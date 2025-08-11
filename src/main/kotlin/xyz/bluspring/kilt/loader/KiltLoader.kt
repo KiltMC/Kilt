@@ -554,8 +554,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         return@collect
 
                     val busType = EventBusSubscriber.Bus.valueOf(
-                        if (it.annotationData.contains("bus"))
-                            (it.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
+                        if (annotation.annotationData.contains("bus"))
+                            (annotation.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
                         else "GAME"
                     )
 

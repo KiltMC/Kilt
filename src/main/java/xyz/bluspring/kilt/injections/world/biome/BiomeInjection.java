@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.injections.world.biome;
 
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraftforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 
 public interface BiomeInjection {
     default ModifiableBiomeInfo modifiableBiomeInfo() {

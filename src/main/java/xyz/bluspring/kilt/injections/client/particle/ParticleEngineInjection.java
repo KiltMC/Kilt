@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface ParticleEngineInjection {
     default void kilt$setClippingHelper(Frustum frustum) {}
-    default void render(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper) {}
+    default void render(LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper) {}
     default void addBlockHitEffects(BlockPos pos, BlockHitResult target) {}
     default void kilt$addBlockHitEffects(BlockPos pos, BlockHitResult target, Direction direction, Operation<Void> original) {}
 }

@@ -5,7 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,7 +14,7 @@ public interface BoneMealItemInjection {
 
     static boolean applyBonemeal(ItemStack stack, Level level, BlockPos pos, Player player) {
         var blockState = level.getBlockState(pos);
-        var hook = ForgeEventFactory.onApplyBonemeal(player, level, pos, blockState, stack);
+        var hook = EventHooks.onApplyBonemeal(player, level, pos, blockState, stack);
 
         if (hook != 0)
             return hook > 0;

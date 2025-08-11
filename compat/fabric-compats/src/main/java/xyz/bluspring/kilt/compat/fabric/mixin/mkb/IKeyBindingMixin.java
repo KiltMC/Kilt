@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.mkb;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import net.minecraftforge.client.extensions.IForgeKeyMapping;
+import net.neoforged.neoforge.client.extensions.IForgeKeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 

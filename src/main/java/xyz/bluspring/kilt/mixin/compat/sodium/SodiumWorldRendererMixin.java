@@ -6,8 +6,8 @@ import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
 import me.jellysquid.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,7 +37,7 @@ public abstract class SodiumWorldRendererMixin {
             if (projectionMatrix == null)
                 return;
 
-            MinecraftForge.EVENT_BUS.post(new RenderLevelStageEvent(stage, mc.levelRenderer, matrixStack, projectionMatrix, levelRenderer.getTicks(), mc.getPartialTick(), mc.gameRenderer.getMainCamera(), levelRenderer.getCapturedFrustum() != null ? levelRenderer.getCapturedFrustum() : levelRenderer.getCullingFrustum()));
+            NeoForge.EVENT_BUS.post(new RenderLevelStageEvent(stage, mc.levelRenderer, matrixStack, projectionMatrix, levelRenderer.getTicks(), mc.getPartialTick(), mc.gameRenderer.getMainCamera(), levelRenderer.getCapturedFrustum() != null ? levelRenderer.getCapturedFrustum() : levelRenderer.getCullingFrustum()));
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class SodiumWorldRendererMixin {
             var poseStack = new PoseStack();
             poseStack.mulPoseMatrix(new Matrix4f(matrices.modelView()));
 
-            MinecraftForge.EVENT_BUS.post(new RenderLevelStageEvent(stage, mc.levelRenderer, poseStack, projectionMatrix, levelRenderer.getTicks(), mc.getPartialTick(), mc.gameRenderer.getMainCamera(), levelRenderer.getCapturedFrustum() != null ? levelRenderer.getCapturedFrustum() : levelRenderer.getCullingFrustum()));
+            NeoForge.EVENT_BUS.post(new RenderLevelStageEvent(stage, mc.levelRenderer, poseStack, projectionMatrix, levelRenderer.getTicks(), mc.getPartialTick(), mc.gameRenderer.getMainCamera(), levelRenderer.getCapturedFrustum() != null ? levelRenderer.getCapturedFrustum() : levelRenderer.getCullingFrustum()));
         }
     }
 }

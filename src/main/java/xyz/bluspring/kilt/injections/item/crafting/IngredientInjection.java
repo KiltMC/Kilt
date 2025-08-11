@@ -1,8 +1,8 @@
 package xyz.bluspring.kilt.injections.item.crafting;
 
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.crafting.IIngredientSerializer;
-import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
+import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
+import net.neoforged.neoforge.common.crafting.VanillaIngredientSerializer;
 
 import java.util.Arrays;
 import java.util.Collection;

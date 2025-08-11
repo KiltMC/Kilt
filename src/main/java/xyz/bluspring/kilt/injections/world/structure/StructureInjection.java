@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.injections.world.structure;
 
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraftforge.common.world.ModifiableStructureInfo;
+import net.neoforged.neoforge.common.world.ModifiableStructureInfo;
 
 public interface StructureInjection {
     default ModifiableStructureInfo modifiableStructureInfo() {

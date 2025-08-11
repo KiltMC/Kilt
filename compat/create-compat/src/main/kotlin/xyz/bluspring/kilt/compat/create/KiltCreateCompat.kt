@@ -7,7 +7,7 @@ import dev.engine_room.flywheel.api.event.ReloadLevelRendererEvent
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
-import net.minecraftforge.common.MinecraftForge
+import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.fml.ModLoader
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.knit.loader.KnitLoader
@@ -26,7 +26,7 @@ class KiltCreateCompat : ClientModInitializer {
 
     private fun initFlywheelEvents() {
         EndClientResourceReloadCallback.EVENT.register { minecraft, resourceManager, initialReload, error ->
-            MinecraftForge.EVENT_BUS.post(EndClientResourceReloadEvent(minecraft, resourceManager, initialReload, error))
+            NeoForge.EVENT_BUS.post(EndClientResourceReloadEvent(minecraft, resourceManager, initialReload, error))
         }
 
         ReloadLevelRendererCallback.EVENT.register { level ->

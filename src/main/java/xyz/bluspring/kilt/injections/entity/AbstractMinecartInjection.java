@@ -1,8 +1,7 @@
 package xyz.bluspring.kilt.injections.entity;
 
-import io.github.fabricators_of_create.porting_lib.entity.extensions.AbstractMinecartExtensions;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraftforge.common.IMinecartCollisionHandler;
+import net.neoforged.neoforge.common.IMinecartCollisionHandler;
 
 public interface AbstractMinecartInjection extends AbstractMinecartExtensions {
     // only implemented here because i have a workaround mapping sitting around, i already removed it but i'm afraid

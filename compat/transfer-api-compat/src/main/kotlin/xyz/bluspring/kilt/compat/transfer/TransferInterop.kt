@@ -7,10 +7,10 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.common.capabilities.ForgeCapabilities
-import net.minecraftforge.common.capabilities.ICapabilityProvider
-import net.minecraftforge.event.AttachCapabilitiesEvent
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.common.capabilities.ForgeCapabilities
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider
+import net.neoforged.neoforge.event.AttachCapabilitiesEvent
 import net.neoforged.bus.api.SubscribeEvent
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.Kilt
@@ -26,8 +26,8 @@ import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
 
 class TransferInterop : ModInitializer {
     override fun onInitialize() {
-        MinecraftForge.EVENT_BUS.register(::onAttachBlockEntityCapabilities)
-        MinecraftForge.EVENT_BUS.register(::onAttachItemStackCapabilities)
+        NeoForge.EVENT_BUS.register(::onAttachBlockEntityCapabilities)
+        NeoForge.EVENT_BUS.register(::onAttachItemStackCapabilities)
 
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)

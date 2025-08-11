@@ -1,3 +1,4 @@
+import com.google.gson.JsonParser
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
@@ -5,6 +6,7 @@ import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
+import xyz.bluspring.kilt.gradle.AppendInjectedInterfaces
 import java.security.MessageDigest
 
 plugins {
@@ -201,7 +203,7 @@ allprojects {
 
 dependencies {
     // Forge Reimplementations
-    val portingLibs = listOf("accessors", "asm", "attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "common", "conditions", "core", "data", "entity", "extensions", "fluids", "gametest", "gui_utils", "item_abilities", "items", "lazy_registration", "level_events", "loot", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "render_types", "tags", "transfer")
+    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
     portingLibs.forEach { lib ->
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
@@ -551,6 +553,27 @@ tasks {
                 project.property("minecraft_version") as String,
                 layout.buildDirectory.get().asFile
             )
+        }
+    }
+
+    register("createInjectedFromNeo") {
+        group = "kilt"
+
+        doLast {
+            val remapper = AppendInjectedInterfaces()
+            val neoFile = File("$projectDir/forge/src/main/resources/META-INF/injected-interfaces.json")
+            val fmjFile = File("$projectDir/src/main/resources/fabric.mod.json")
+
+            val fmj = JsonParser.parseReader(fmjFile.reader()).asJsonObject
+
+            remapper.convertNeoToFMJ(
+                JsonParser.parseReader(neoFile.reader()).asJsonObject,
+                fmj,
+                project.property("minecraft_version") as String,
+                layout.buildDirectory.get().asFile
+            )
+
+            fmjFile.writeText(remapper.gson.toJson(fmj))
         }
     }
 

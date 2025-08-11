@@ -2,7 +2,7 @@ package com.tterag.registrate.util;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.EventBus;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventListenerHelper;
@@ -44,7 +44,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
     }
 
     public static <T extends Event> void addForgeListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
-        OneTimeEventReceiver.<T>addListener(MinecraftForge.EVENT_BUS, priority, evtClass, listener);
+        OneTimeEventReceiver.<T>addListener(NeoForge.EVENT_BUS, priority, evtClass, listener);
     }
 
     @Deprecated

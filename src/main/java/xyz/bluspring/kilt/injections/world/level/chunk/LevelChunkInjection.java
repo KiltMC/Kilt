@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.injections.world.level.chunk;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
+import net.neoforged.neoforge.common.capabilities.ICapabilityProviderImpl;
 
 public interface LevelChunkInjection extends ICapabilityProviderImpl<LevelChunk> {
     CompoundTag writeCapsToNBT();

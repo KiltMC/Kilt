@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.injections.data.tags;
 
 import net.minecraft.tags.TagBuilder;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 public interface TagsProviderInjection {
     default void kilt$setModId(String modId) {

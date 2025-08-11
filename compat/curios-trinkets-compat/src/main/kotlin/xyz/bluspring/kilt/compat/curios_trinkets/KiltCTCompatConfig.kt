@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.compat.curios_trinkets
 
-import net.minecraftforge.common.ForgeConfigSpec
+import net.neoforged.neoforge.common.ForgeConfigSpec
 
 object KiltCTCompatConfig {
     val builder = ForgeConfigSpec.Builder()

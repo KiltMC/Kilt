@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.compat.fabric.mkb
 
-import net.minecraftforge.client.settings.IKeyConflictContext
+import net.neoforged.neoforge.client.settings.IKeyConflictContext
 import committee.nova.mkb.api.IKeyConflictContext as MKBKeyConflictContext
 
 class MKBKeyConflictContextWrapper(val wrapped: IKeyConflictContext) : MKBKeyConflictContext {

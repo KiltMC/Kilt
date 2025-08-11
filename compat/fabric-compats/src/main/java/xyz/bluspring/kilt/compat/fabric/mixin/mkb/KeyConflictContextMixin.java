@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.mkb;
 
 import committee.nova.mkb.keybinding.KeyConflictContext;
-import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.compat.fabric.mkb.MKBKeyConflictContextWrapper;

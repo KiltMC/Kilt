@@ -7,5 +7,5 @@ import net.minecraft.world.item.Item;
 import java.util.Map;
 
 public interface ItemColorsInjection {
-    Map<Holder.Reference<Item>, ItemColor> kilt$getItemColors();
+    Map<Item, ItemColor> kilt$getItemColors();
 }
