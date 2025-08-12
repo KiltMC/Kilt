@@ -5,6 +5,9 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.IFluidHandler
+import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toDroplets
+import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibuckets
+import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibucketsLong
 
 open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IFluidHandler {
     override fun getTanks(): Int {
@@ -13,11 +16,11 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
 
     override fun getFluidInTank(tank: Int): FluidStack {
         val view = storage.toList()[tank]
-        return FluidStack(view.resource.fluid, view.amount.toInt(), view.resource.nbt)
+        return FluidStack(view.resource.fluid, view.amount.toMillibuckets(), view.resource.nbt)
     }
 
     override fun getTankCapacity(tank: Int): Int {
-        return storage.toList()[tank].capacity.toInt()
+        return storage.toList()[tank].capacity.toMillibuckets()
     }
 
     override fun isFluidValid(tank: Int, stack: FluidStack): Boolean {
@@ -28,33 +31,33 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
 
     override fun fill(resource: FluidStack, action: IFluidHandler.FluidAction): Int {
         TransferUtil.getTransaction().use { transaction ->
-            val inserted = storage.insert(FluidVariant.of(resource.fluid, resource.tag), resource.amount, transaction)
+            val inserted = storage.insert(FluidVariant.of(resource.fluid, resource.tag), resource.amount.toDroplets(), transaction)
 
             if (action == IFluidHandler.FluidAction.EXECUTE)
                 transaction.commit()
             else
                 transaction.abort()
 
-            return inserted.toInt()
+            return inserted.toMillibuckets()
         }
     }
 
     override fun drain(resource: FluidStack, action: IFluidHandler.FluidAction): FluidStack {
         TransferUtil.getTransaction().use { transaction ->
-            val extracted = storage.extract(FluidVariant.of(resource.fluid, resource.tag), resource.amount, transaction)
+            val extracted = storage.extract(FluidVariant.of(resource.fluid, resource.tag), resource.amount.toDroplets(), transaction)
 
             if (action == IFluidHandler.FluidAction.EXECUTE)
                 transaction.commit()
             else
                 transaction.abort()
 
-            return FluidStack(resource.fluid, extracted.toInt(), resource.tag)
+            return FluidStack(resource.fluid, extracted.toMillibuckets(), resource.tag)
         }
     }
 
     override fun drain(maxDrain: Int, action: IFluidHandler.FluidAction): FluidStack {
         TransferUtil.getTransaction().use { transaction ->
-            var totalToDrain = maxDrain.toLong()
+            var totalToDrain = maxDrain.toDroplets()
             var selectedStack = FluidStack.EMPTY
             for (view in storage.toList()) {
                 if (selectedStack.isEmpty && !view.isResourceBlank) {
@@ -77,6 +80,7 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
             else
                 transaction.abort()
 
+            selectedStack.amount = selectedStack.amount.toMillibucketsLong()
             return selectedStack
         }
     }

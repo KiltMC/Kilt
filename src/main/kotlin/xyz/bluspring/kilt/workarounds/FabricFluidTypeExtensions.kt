@@ -10,36 +10,48 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 
 class FabricFluidTypeExtensions(private val fluid: Fluid) : IClientFluidTypeExtensions {
     private val renderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid)
+    private val isInvalid: Boolean
+        get() {
+            return renderHandler is ForgeFluidRenderHandler
+        }
 
     override fun getStillTexture(): ResourceLocation? {
-        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState())[0]?.contents()?.name()
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState())[0].contents().name()
     }
 
     override fun getFlowingTexture(): ResourceLocation? {
-        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState())[1]?.contents()?.name()
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState())[1].contents().name()
     }
 
     override fun getOverlayTexture(): ResourceLocation? {
-        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState())?.getOrNull(2)?.contents()?.name()
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(null, null, fluid.defaultFluidState()).getOrNull(2)?.contents()?.name()
     }
 
-    override fun getStillTexture(state: FluidState, getter: BlockAndTintGetter, pos: BlockPos): ResourceLocation? {
-        return renderHandler?.getFluidSprites(getter, pos, state)[0]?.contents()?.name()
+    override fun getStillTexture(state: FluidState, getter: BlockAndTintGetter?, pos: BlockPos?): ResourceLocation? {
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(getter, pos, state)[0].contents().name()
     }
 
-    override fun getFlowingTexture(state: FluidState, getter: BlockAndTintGetter, pos: BlockPos): ResourceLocation? {
-        return renderHandler?.getFluidSprites(getter, pos, state)[1]?.contents()?.name()
+    override fun getFlowingTexture(state: FluidState?, getter: BlockAndTintGetter?, pos: BlockPos?): ResourceLocation? {
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(getter, pos, state)[1].contents().name()
     }
 
-    override fun getOverlayTexture(state: FluidState, getter: BlockAndTintGetter, pos: BlockPos): ResourceLocation? {
-        return renderHandler?.getFluidSprites(getter, pos, state)?.getOrNull(2)?.contents()?.name()
+    override fun getOverlayTexture(state: FluidState?, getter: BlockAndTintGetter?, pos: BlockPos?): ResourceLocation? {
+        if (isInvalid) return null
+        return renderHandler?.getFluidSprites(getter, pos, state).getOrNull(2)?.contents()?.name()
     }
 
     override fun getTintColor(): Int {
-        return renderHandler?.getFluidColor(null, null, fluid.defaultFluidState()) ?: -1
+        if (isInvalid) return -1
+        return renderHandler?.getFluidColor(null, null, fluid.defaultFluidState())
     }
 
     override fun getTintColor(state: FluidState?, getter: BlockAndTintGetter?, pos: BlockPos?): Int {
-        return renderHandler?.getFluidColor(getter, pos, state) ?: -1
+        if (isInvalid) return -1
+        return renderHandler?.getFluidColor(getter, pos, state)
     }
 }

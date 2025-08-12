@@ -227,7 +227,7 @@ object MixinRemapper {
     fun remapUnmappedRefmaps(refmaps: Collection<JsonObject>, remapper: KiltEnhancedRemapper) {
         for (refmap in refmaps) {
             val alreadyRefmapped = if (refmap.has("kilt:alreadyRefmapped"))
-                refmap.getAsJsonObject("kilt:alreadyRefmapped").asMap().map { it.key to it.value.asJsonArray.map { e -> e.asString } }.associate { it.first to it.second }
+                refmap.getAsJsonObject("kilt:alreadyRefmapped").asMap().filterValues { it != null }.map { it.key to it.value.asJsonArray.map { e -> e.asString } }.associate { it.first to it.second }
             else
                 mapOf()
 

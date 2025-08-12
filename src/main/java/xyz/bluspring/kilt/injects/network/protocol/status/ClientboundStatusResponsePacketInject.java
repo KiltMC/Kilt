@@ -18,12 +18,16 @@ public abstract class ClientboundStatusResponsePacketInject implements Clientbou
     @Nullable @Unique
     private String cachedStatus;
 
+    @Unique
+    private boolean kilt$shouldWriteStatus = false;
+
     public ClientboundStatusResponsePacketInject(ServerStatus status) {}
 
     @CreateInitializer
     public ClientboundStatusResponsePacketInject(ServerStatus status, @Nullable String cachedStatus) {
         this(status);
         this.kilt$setCachedStatus(cachedStatus);
+        this.kilt$shouldWriteStatus = true;
     }
 
     @Override
@@ -38,7 +42,7 @@ public abstract class ClientboundStatusResponsePacketInject implements Clientbou
 
     @WrapOperation(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeJsonWithCodec(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
     private <T> void kilt$writeCachedStatus(FriendlyByteBuf instance, Codec<T> codec, T value, Operation<Void> original) {
-        if (cachedStatus != null)
+        if (this.cachedStatus != null && this.kilt$shouldWriteStatus)
             instance.writeUtf(cachedStatus);
         else
             //noinspection MixinExtrasOperationParameters

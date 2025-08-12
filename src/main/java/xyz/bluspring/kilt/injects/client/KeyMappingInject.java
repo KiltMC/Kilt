@@ -81,14 +81,18 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
 
     @Override
     public void setKeyModifierAndCode(KeyModifier keyModifier, InputConstants.Key keyCode) {
-        this.key = keyCode;
-        if (keyModifier.matches(keyCode))
+        MAP.remove(this.key);
+        FORGE_MAP.remove((KeyMapping) (Object) this);
+
+        if (keyModifier == null)
+            keyModifier = KeyModifier.getModifier(this.key);
+
+        if (keyModifier == null || keyCode == InputConstants.UNKNOWN || KeyModifier.isKeyCodeModifier(keyCode))
             keyModifier = KeyModifier.NONE;
 
-        FORGE_MAP.remove((KeyMapping) (Object) this);
-        MAP.remove(this.key);
-
+        this.key = keyCode;
         this.keyModifier = keyModifier;
+
         MAP.put(keyCode, (KeyMapping) (Object) this);
         FORGE_MAP.put(keyCode, (KeyMapping) (Object) this);
     }

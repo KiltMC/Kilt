@@ -47,6 +47,7 @@ import net.neoforged.neoforge.common.extensions.IForgeLevel;
 import net.neoforged.neoforge.common.util.LevelCapabilityData;
 import net.minecraftforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -107,6 +108,13 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     @WrapWithCondition(method = "tickPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;rideTick()V"))
     private boolean kilt$checkIfEntityCanUpdate(Entity instance) {
         return instance.canUpdate();
+    }
+
+    @Inject(method = "addPlayer", at = @At("HEAD"), cancellable = true)
+    private void kilt$callEntityJoinLevelEvent(ServerPlayer player, CallbackInfo ci) {
+        if (MinecraftForge.EVENT_BUS.post(new EntityJoinLevelEvent(player, this))) {
+            ci.cancel();
+        }
     }
 
     @WrapOperation(method = "addPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;addNewEntity(Lnet/minecraft/world/level/entity/EntityAccess;)Z"))

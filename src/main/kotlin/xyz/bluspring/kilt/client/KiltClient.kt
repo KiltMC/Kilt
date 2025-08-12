@@ -55,10 +55,10 @@ class KiltClient : ClientModInitializer {
         ClientGuiEvent.INIT_PRE.register { screen, access ->
             add[screen] = Consumer<GuiEventListener> {
                 if (it is Renderable)
-                    access.renderables.add(it)
+                    screen.renderables.add(it)
 
                 if (it is NarratableEntry)
-                    access.narratables.add(it)
+                    (screen as ScreenAccessor).narratables.add(it)
 
                 (screen as ScreenAccessor).children.add(it)
             }

@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "kilt-test",
+    "id": "kilt-gametest",
     "name": "Kilt (Testing)",
     "version": "1.0.0",
     "environment": "*",

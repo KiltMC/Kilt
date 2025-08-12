@@ -63,17 +63,26 @@ body:
       placeholder: 'Example: Eclipse Termurin 17.0.6'
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: report
     attributes:
       label: Crash Report file
       description: >-
-          Upload your crash report file as an attachment to this issue (drag-and-drop) or to a service such as GitHub
-          Gist or https://mclo.gs (paste a link) and replace this section. This information is critical in resolving your issue!
+          Upload your crash report file to a service such as GitHub Gist or https://mclo.gs and paste the link here. This information is critical in resolving your issue!
 
           Messages like "Exit code 0" from your launcher are not what you're looking for. If your launcher does not
           provide a button to view the most recent crash report, check your game's `crash-reports` folder for the most recent
           crash report file. If you did not manage to find any, send the `latest.log` file from your game's `logs` folder.
+    validations:
+      required: true
+  - type: input
+    id: logs
+    attributes:
+      label: Log file
+      description: >-
+          Upload your log file file to a service such as GitHub Gist or https://mclo.gs and paste the link here. This information is critical in resolving your issue!
+
+          Messages like "Exit code 0" from your launcher are not what you're looking for. Make sure to send the `latest.log` file from your game's `logs` folder.
     validations:
       required: true
   - type: textarea

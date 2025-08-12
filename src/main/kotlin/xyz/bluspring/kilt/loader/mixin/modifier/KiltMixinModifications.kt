@@ -173,7 +173,7 @@ object KiltMixinModifications {
                 createAnnotation(TargetHandler::class.java, mapOf(
                     "mixin" to "xyz.bluspring.kilt.forgeinjects.client.gui.components.BossHealthOverlayInject",
                     "name" to "kilt\$customizeBossEventProgress",
-                    "prefix" to "handler"
+                    "prefix" to "wrapWithCondition"
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),

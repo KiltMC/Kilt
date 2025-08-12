@@ -70,6 +70,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
     private val environment = KiltEnvironment()
 
+    // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
+    // use the same mod ID.
+    private val SKIPPED_FABRIC_MODS = mapOf(
+        // Forge ID -> Fabric ID
+        "unloaded_activity" to "unloadedactivity"
+    )
+
     init {
         val loader = FabricLoader.getInstance()
 
@@ -113,13 +120,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
             return emptyList()
         }
 
-        val definitions = mutableListOf<ModDefinition>()
-        val modsTomlEntry = jarFile.getEntry("META-INF/neoforge.mods.toml")
-
-        // If no mods.toml even exists, just skip it, unless it's JiJ'd.
-        if (modsTomlEntry == null && parents == null)
-            return emptyList()
-
         // Try to load manifest from JAR file, because it's required for some stuff in Forge mods.
         val manifest = try {
             jarFile.getInputStream(jarFile.getEntry("META-INF/MANIFEST.MF")).use { Manifest(it) }
@@ -127,8 +127,17 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
             null
         }
 
-        // Load all mod definitions from the TOML.
-        if (modsTomlEntry != null) {
+        val definitions = mutableListOf<ModDefinition>()
+        val modsTomlEntry = jarFile.getEntry("META-INF/neoforge.mods.toml")
+
+        // News flash! Apparently, Forge supports loading mods like this. I was not aware of that fact.
+        if (manifest != null && parents == null && manifest.mainAttributes.getValue("FMLModType") != null)
+            definitions.add(createCustomMod(path, manifest))
+        else if (modsTomlEntry == null && parents == null)
+            // If no mods.toml even exists, just skip it, unless it's JiJ'd.
+            return emptyList()
+        else if (modsTomlEntry != null) {
+            // Load all mod definitions from the TOML.
             jarFile.getInputStream(modsTomlEntry)
                 .use {
                     definitions.addAll(parseModsToml(path, tomlParser.parse(it, Charsets.UTF_8), manifest))
@@ -243,6 +252,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 Exception("Forge mod file $fileName does not contain a mod ID!")
             }
 
+            // ffs, why do we have to do this?
+            // mods should really use the same mod ID between their mods >:(
+            if (SKIPPED_FABRIC_MODS.contains(modId)) {
+                Kilt.logger.warn("Mod ID $modId is a combined mod JAR already existing under ID ${SKIPPED_FABRIC_MODS[modId]}, skipping!")
+                continue
+            }
+
             val modVersion = NeoForgeModVersion(DefaultArtifactVersion(
                 // Forge custom-replaces mod versions with string templates, so we need to handle that.
                 metadata.getConfigElement<String>("version").orElse("1")
@@ -314,7 +330,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 // Sets the parent ID of the mod definition
                 parentId = parentId,
 
-                // TODO: make the icon square
                 icon = metadata.getConfigElement<String>("logoFile").orElse(""),
 
                 // Forge mods handle both, there's no way to define sided mods.
@@ -346,6 +361,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
             val modsList = mutableListOf<ModDefinition>()
 
             for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
+                val toml = tomlParser.parse(url)
+                modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
+            }
+
+            // Loads gametests
+            for (url in this::class.java.classLoader.getResources("META-INF/mods.toml")) {
                 val toml = tomlParser.parse(url)
                 modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
             }
@@ -661,6 +682,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 // it.clazz.className - Class
                 // it.annotationData["value"] as String - Mod ID
 
+                var extraThrowable: Throwable? = null
+
                 try {
                     val modId = it.annotationData["value"] as String
 
@@ -670,27 +693,38 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.get().activeContainer = mod.container
 
                     val clazz = launcher.loadIntoTarget(it.clazz.className)
-                    val constructors = clazz.constructors
-
-                    if (constructors.size != 1)
-                        return@collect
-
-                    val constructor = constructors.first()
-                    val parameterTypes = constructor.parameterTypes
-                    val foundArgs = mutableSetOf<Class<*>>()
-                    val instanceArgs = mutableSetOf<Any>()
-
-                    for (type in parameterTypes) {
-                        val instance = constructorArgs[type] ?: throw IllegalStateException("Mod constructor has unsupported argument $type.")
-
-                        if (!foundArgs.add(type)) {
-                            throw IllegalStateException("Duplicate mod constructor argument type $type")
-                        }
-
-                        instanceArgs.add(instance)
+                    val ktObj = try { clazz.kotlin.objectInstance } catch (e: Throwable) {
+                        extraThrowable = e
+                        null
                     }
 
-                    mod.modObject = constructor.newInstance(*instanceArgs.toTypedArray())
+                    if (ktObj != null) {
+                        // Load mods created using KFF
+                        mod.modObject = ktObj
+                    } else {
+                        // Otherwise, initialize under the regular Java process
+                        val constructors = clazz.constructors
+
+                        if (constructors.size != 1)
+                            return@collect
+
+                        val constructor = constructors.first()
+                        val parameterTypes = constructor.parameterTypes
+                        val foundArgs = mutableSetOf<Class<*>>()
+                        val instanceArgs = mutableSetOf<Any>()
+
+                        for (type in parameterTypes) {
+                            val instance = constructorArgs[type] ?: throw IllegalStateException("Mod constructor has unsupported argument $type.")
+
+                            if (!foundArgs.add(type)) {
+                                throw IllegalStateException("Duplicate mod constructor argument type $type")
+                            }
+
+                            instanceArgs.add(instance)
+                        }
+
+                        mod.modObject = constructor.newInstance(*instanceArgs.toTypedArray())
+                    }
 
                     Kilt.logger.info("Initialized new instance of mod $modId.")
                     hasInitialized = true
@@ -698,6 +732,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.get().activeContainer = null
                 } catch (e: Throwable) {
                     e.printStackTrace()
+                    exception.addSuppressed(extraThrowable)
                     exception.addSuppressed(e)
                     hasErrored = true
                 }

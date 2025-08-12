@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -105,6 +106,15 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
         if (itemStack.getCapNBT() != null)
             deserializeCaps(itemStack.getCapNBT());
+    }
+
+    @WrapOperation(method = "getMaxStackSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getMaxStackSize()I"))
+    private int kilt$tryUseForgeMaxStackSize(Item instance, Operation<Integer> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getMaxStackSize", ItemStack.class)) {
+            return instance.getMaxStackSize((ItemStack) (Object) this);
+        }
+
+        return original.call(instance);
     }
 
     /*@WrapOperation(method = "isEmpty", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack;item:Lnet/minecraft/world/item/Item;"))
