@@ -80,7 +80,7 @@ public abstract class GrindstoneMenuInject extends AbstractContainerMenu impleme
     private void kilt$setGrindstoneChangeXp(CallbackInfo ci, @Local(ordinal = 0) ItemStack stack, @Local(ordinal = 1) ItemStack stack2) {
         this.xp = ForgeHooks.onGrindstoneChange(stack, stack2, this.resultSlots, -1);
 
-        if (this.xp == Integer.MIN_VALUE) {
+        if (this.xp != Integer.MIN_VALUE) {
             this.broadcastChanges();
             ci.cancel();
         }
