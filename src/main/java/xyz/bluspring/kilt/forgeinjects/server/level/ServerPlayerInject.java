@@ -1,17 +1,21 @@
 // TRACKED HASH: 8ce7cfcc1608a79d687631411c28c60d1064aad3
 package xyz.bluspring.kilt.forgeinjects.server.level;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.authlib.GameProfile;
+import io.github.fabricators_of_create.porting_lib.entity.ITeleporter;
+import io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
@@ -30,6 +34,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
@@ -44,11 +49,12 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Objects;
 import java.util.OptionalInt;
 
-@Mixin(ServerPlayer.class)
+@Mixin(value = ServerPlayer.class, priority = 1100)
 public abstract class ServerPlayerInject extends Player implements ServerPlayerInjection {
     @Shadow public ServerGamePacketListenerImpl connection;
 
@@ -242,5 +248,30 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     @WrapOperation(method = "drop(Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"))
     private ItemEntity kilt$callPlayerTossEvent(ServerPlayer instance, ItemStack droppedItem, boolean dropAround, boolean includeThrowerName, Operation<ItemEntity> original) {
         return ForgeHooks.kilt$onPlayerTossEvent(instance, droppedItem, includeThrowerName, () -> original.call(instance, droppedItem, dropAround, includeThrowerName));
+    }
+
+    // Porting Lib injects
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$onTravelToDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension(this, pDestination.dimension()))
+            cir.setReturnValue(null);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
+        }
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+        ForgeEventFactory.firePlayerChangedDimensionEvent(this, resourcekey, pDestination.dimension());
     }
 }

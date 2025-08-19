@@ -1,6 +1,7 @@
 // TRACKED HASH: 34fb617752c8022973f9dca4fb9eed32600931bf
 package xyz.bluspring.kilt.forgeinjects.world.entity;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.google.common.base.Predicates;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -23,7 +24,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -647,5 +650,13 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
 
     public EntityDimensions getDimensionsForge(Pose pose) {
         return getDimensions(pose);
+    }
+
+    // Porting Lib injects
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$onTravelToDimension(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension((Entity) (Object) this, pDestination.dimension()))
+            cir.setReturnValue(null);
     }
 }
