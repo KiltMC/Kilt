@@ -76,7 +76,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
-@Mixin(Entity.class)
+@Mixin(value = Entity.class, priority = 1100)
 @Extends(CapabilityProvider.class)
 public abstract class EntityInject implements IForgeEntity, CapabilityProviderInjection, ICapabilityProviderImpl<Entity>, EntityExtensions, EntityInjection {
     @Shadow public Level level;
