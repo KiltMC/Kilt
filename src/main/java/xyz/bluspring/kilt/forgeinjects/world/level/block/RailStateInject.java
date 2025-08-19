@@ -39,7 +39,7 @@ public abstract class RailStateInject {
             return block.getRailDirection(instance, level, pos, (AbstractMinecart) null);
         }
 
-        return null;
+        return original.call(instance, property);
     }
 
     @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/BaseRailBlock;isStraight()Z"))
