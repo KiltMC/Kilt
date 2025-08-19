@@ -25,6 +25,12 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
             return FabricLoader.getInstance().isModLoaded(modId) && !KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
         }
 
+        if (modId == "accessories") {
+            return FabricLoader.getInstance().isModLoaded("accessories")
+                    && !KiltLoader.instance.hasMod("accessories")
+                    && KiltLoader.instance.hasMod("cclayer")
+        }
+
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
     }
 
