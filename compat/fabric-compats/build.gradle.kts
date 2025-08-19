@@ -25,6 +25,9 @@ dependencies {
     modCompileOnly("mezz.jei:jei-${property("minecraft_version")}-fabric:${property("jei_version")}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${property("rei_version")}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${property("rei_version")}")
+
+    modCompileOnly("maven.modrinth:accessories:${property("accessories_version")}")
+    modCompileOnly("maven.modrinth:accessories-cc-layer:${property("accessories_cc_version")}")
 }
 
 tasks {
