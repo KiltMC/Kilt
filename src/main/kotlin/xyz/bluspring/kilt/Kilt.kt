@@ -213,8 +213,6 @@ class Kilt : ModInitializer {
         val gson = GsonBuilder().setPrettyPrinting().create()
 
         fun load(onServer: Boolean) {
-            loader.initMods()
-
             // config load should be here
             var loaded = false
 

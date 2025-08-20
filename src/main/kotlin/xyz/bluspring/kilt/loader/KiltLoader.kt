@@ -540,6 +540,10 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         val exception = RuntimeException("Failed to load Forge mods in Kilt!")
 
+        // Initialize @Mod annotated constructors
+        initMods(exception)
+
+        // Register @EventBusSubscriber annotations
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
@@ -554,6 +558,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     }
             }.join()
         }
+
+        // Then construct mods in the CONSTRUCT loading stage
+        constructMods(exception)
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
@@ -643,9 +650,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         return false
     }
 
-    fun initMods() {
-        val exception = RuntimeException("Failed to load Kilt mods!")
-
+    private fun initMods(exception: Exception) {
         runBlocking {
             sortedModOrder.asFlow()
                 .collect { mod ->
@@ -658,17 +663,14 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     }
                 }
         }
+    }
 
+    private fun constructMods(exception: Exception) {
         try {
             ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
         } catch (e: Throwable) {
             e.printStackTrace()
             exception.addSuppressed(e)
-        }
-
-        if (exception.suppressed.isNotEmpty()) {
-            exception.printStackTrace()
-            KnitLoader.instance.displayError("Errors occurred while initializing Forge mods!", exception)
         }
     }
 
