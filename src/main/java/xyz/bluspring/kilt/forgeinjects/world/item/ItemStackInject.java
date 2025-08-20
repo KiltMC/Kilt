@@ -43,6 +43,7 @@ import java.util.function.Function;
 @Mixin(value = ItemStack.class, priority = 1050)
 @Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStack>, ItemStackInjection {
+    private static final ThreadLocal<CompoundTag> kilt$CAP_NBT = new ThreadLocal<>();
     private CompoundTag capNBT;
 
     @Unique @Nullable private Holder.Reference<Item> delegate;
@@ -84,6 +85,8 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/ItemLike;I)V")
     public void kilt$initForgeItemStack(ItemLike itemLike, int i, CallbackInfo ci) {
+        this.capNBT = kilt$CAP_NBT.get();
+        kilt$CAP_NBT.remove();
         this.delegate = getDelegate(itemLike.asItem());
         this.kilt$setLazy(true);
         this.kilt$getCapabilityWorkaround().kilt$setLazy(true);
@@ -160,6 +163,11 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         }
 
         return original.call(instance, context);
+    }
+
+    @Inject(method = "copy", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;<init>(Lnet/minecraft/world/level/ItemLike;I)V"))
+    private void kilt$addForgeCapDataOnCopy(CallbackInfoReturnable<ItemStack> cir) {
+        kilt$CAP_NBT.set(serializeCaps());
     }
 
     @Inject(method = "save", at = @At("TAIL"))
