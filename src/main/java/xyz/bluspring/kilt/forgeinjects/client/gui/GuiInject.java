@@ -331,6 +331,11 @@ public abstract class GuiInject implements GuiInjection {
     }
 
     // Item Name
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;)V"))
+    public void kilt$renderItemName(Gui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float partialTick) {
+        kilt$renderOverlay(guiGraphics, partialTick, VanillaGuiOverlay.ITEM_NAME, original, instance, guiGraphics);
+    }
+
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/spectator/SpectatorGui;renderTooltip(Lnet/minecraft/client/gui/GuiGraphics;)V"))
     public void kilt$renderItemName(SpectatorGui instance, GuiGraphics guiGraphics, Operation<Void> original, @Local(ordinal = 0) float partialTick) {
         kilt$renderOverlay(guiGraphics, partialTick, VanillaGuiOverlay.ITEM_NAME, original, instance, guiGraphics);
