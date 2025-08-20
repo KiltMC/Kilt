@@ -306,6 +306,9 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
+
+    // Workarounds
+    include(modImplementation("maven.modrinth:feature-recycler:${rootProject.property("feature_recycler_version")}")!!) // Required for features - see #376, #391, #361, #352
 }
 
 configurations.all {
@@ -575,7 +578,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
-            embeds("porting_lib")
+            embeds("porting_lib", "feature-recycler")
             incompatible("async", "embeddium")
         }
 
@@ -587,6 +590,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
+            embeds("feature-recycler")
             incompatible("embeddium")
         }
     }
