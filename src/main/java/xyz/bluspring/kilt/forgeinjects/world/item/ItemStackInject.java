@@ -43,7 +43,8 @@ import java.util.function.Function;
 @Mixin(value = ItemStack.class, priority = 1050)
 @Extends(CapabilityProvider.class)
 public abstract class ItemStackInject implements IForgeItemStack, CapabilityProviderInjection, ICapabilityProviderImpl<ItemStack>, ItemStackInjection {
-    private static final ThreadLocal<CompoundTag> kilt$CAP_NBT = new ThreadLocal<>();
+    @Unique private static final ThreadLocal<CompoundTag> kilt$CAP_NBT = new ThreadLocal<>();
+
     private CompoundTag capNBT;
 
     @Unique @Nullable private Holder.Reference<Item> delegate;
@@ -71,6 +72,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         this.delegate = getDelegate(item.asItem());
         this.capNBT = tag;
         this.forgeInit();
+        this.kilt$initItemStackWithTagWorkaround(item, count, tag);
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V")
@@ -92,6 +94,12 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
         this.kilt$getCapabilityWorkaround().kilt$setLazy(true);
 
         this.forgeInit();
+        this.kilt$initItemStackWithTagWorkaround(itemLike, i, null);
+    }
+
+    // Kilt: used for mods injecting to the CompoundTag constructor to still have their code called
+    @Unique
+    private void kilt$initItemStackWithTagWorkaround(ItemLike item, int count, CompoundTag tag) {
     }
 
     @Inject(at = @At("TAIL"), method = "save")

@@ -155,6 +155,13 @@ object KiltMixinModifications {
             owner = "net/minecraft/client/particle/ParticleEngine",
             methods = listOf($$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"),
             remapMethodsTo = $$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V"
+        ),
+
+        // Fixes Iron's Spells & Spellbooks' ItemStackMixin
+        MixinModifier(
+            owner = "net/minecraft/world/item/ItemStack",
+            methods = listOf("<init>(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/nbt/CompoundTag;)V"),
+            remapMethodsTo = $$"kilt$initItemStackWithTagWorkaround"
         )
     )
 

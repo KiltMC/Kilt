@@ -77,6 +77,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         "unloaded_activity" to "unloadedactivity"
     )
 
+    // This over here is a wall of shame for mods that use different mod IDs between their Forge and Fabric variants.
+    private val FORGE_TO_FABRIC_MODS = mapOf(
+        // Forge ID -> Fabric ID
+        "cloth_config" to "cloth-config",
+        "playeranimator" to "player-animator"
+    )
+
     init {
         val loader = FabricLoader.getInstance()
 
@@ -101,8 +108,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
-        if (dependencyId == "cloth_config")
-            return "cloth-config"
+        if (FORGE_TO_FABRIC_MODS.contains(dependencyId))
+            return FORGE_TO_FABRIC_MODS[dependencyId]!!
 
         return super.getNativeModId(dependencyId, nativeLoaderName)
     }
