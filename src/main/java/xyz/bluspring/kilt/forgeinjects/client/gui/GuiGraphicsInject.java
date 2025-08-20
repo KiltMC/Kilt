@@ -119,6 +119,11 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
         return tooltipStack;
     }
 
+    @Override
+    public void kilt$setTooltipStack(ItemStack stack) {
+        this.tooltipStack = stack;
+    }
+
     @WrapOperation(method = "renderTooltip(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V"))
     private void kilt$wrapTooltipRenderWithStack(GuiGraphics instance, Font font, List<Component> tooltipLines, Optional<TooltipComponent> visualTooltipComponent, int mouseX, int mouseY, Operation<Void> original, @Local(argsOnly = true) ItemStack stack) {
         this.tooltipStack = stack;

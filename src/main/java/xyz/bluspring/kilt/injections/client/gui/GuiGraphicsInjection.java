@@ -21,4 +21,5 @@ public interface GuiGraphicsInjection {
     void renderTooltip(Font font, List<Component> textComponents, Optional<TooltipComponent> tooltipComponent, ItemStack stack, int mouseX, int mouseY);
 
     ItemStack kilt$getTooltipStack();
+    void kilt$setTooltipStack(ItemStack stack);
 }
