@@ -6,4 +6,7 @@ public interface ItemStackInjection {
     default CompoundTag getCapNBT() {
         throw new IllegalStateException();
     }
+    default void kilt$setCapNBT(CompoundTag tag) {
+        throw new IllegalStateException();
+    }
 }
