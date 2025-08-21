@@ -37,7 +37,7 @@ public abstract class ChunkBuilderMeshingTaskMixin {
         ConnectionRenderer.renderConnectionsInSection(renderType -> {
             var material = DefaultMaterials.forRenderLayer(renderType);
             var builder = buffers.get(material).getVertexBuffer(ModelQuadFacing.UNASSIGNED);
-            return new SodiumIEVertexConsumer(builder, material);
+            return SodiumIEVertexConsumer.grab(builder, material);
         }, ((SodiumWorldRendererAccessor) SodiumWorldRenderer.instance()).getWorld(), blockPos);
     }
 }
