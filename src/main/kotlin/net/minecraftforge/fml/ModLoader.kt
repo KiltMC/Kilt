@@ -68,8 +68,9 @@ class ModLoader {
 
         // TODO: test mod bounds
 
-        Kilt.loader.loadMods()
+        // Needs to follow this order specifically, otherwise mods crash.
         Kilt.load(FabricLoader.getInstance().environmentType == EnvType.SERVER)
+        Kilt.loader.loadMods()
 
         for (mod in Kilt.loader.mods) {
             ModConfigEvents.loading(mod.modId).register {
