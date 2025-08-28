@@ -58,19 +58,19 @@ class KiltClient : ClientModInitializer {
                     screen.renderables.add(it)
 
                 if (it is NarratableEntry)
-                    (screen as ScreenAccessor).narratables.add(it)
+                    (screen as ScreenAccessor).`kilt$getNarratables`().add(it)
 
-                (screen as ScreenAccessor).children.add(it)
+                (screen as ScreenAccessor).`kilt$getChildren`().add(it)
             }
 
-            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add[screen]!!, screen::callRemoveWidget))) {
+            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).`kilt$getChildren`(), add[screen]!!, screen::callRemoveWidget))) {
                 add.remove(screen)
                 EventResult.interruptFalse()
             } else EventResult.pass()
         }
 
         ClientGuiEvent.INIT_POST.register { screen, _ ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).children, add[screen]!!, screen::callRemoveWidget))
+            MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).`kilt$getChildren`(), add[screen]!!, screen::callRemoveWidget))
             add.remove(screen)
         }
 
