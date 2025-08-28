@@ -106,7 +106,7 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
     private void kilt$unloadBlockEntities(CallbackInfo ci) {
         this.blockEntities.values().forEach((blockEntity) -> {
             if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), IForgeBlockEntity.class, "onChunkUnloaded")) {
-
+                blockEntity.onChunkUnloaded();
             }
         });
     }
