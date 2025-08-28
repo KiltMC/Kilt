@@ -10,6 +10,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
+import java.lang.reflect.Modifier
 import java.nio.file.Path
 import java.util.*
 import java.util.jar.JarFile
@@ -58,7 +59,13 @@ object KiltHelper {
         var currentClass: Class<*>? = topClass
         while (currentClass != null && currentClass != superClass && currentClass != Object::class.java && superClass.isAssignableFrom(topClass)) {
             try {
-                currentClass.getDeclaredMethod(methodName, *methodArgs)
+                val method = currentClass.getDeclaredMethod(methodName, *methodArgs)
+                // If a Fabric mod has this method signature but is private, it could cause a game crash.
+                if (Modifier.isPrivate(method.modifiers)) {
+                    cachedHasNoMethodOverride.add(overrideData)
+                    return false
+                }
+
                 cachedHasMethodOverride.add(overrideData)
                 return true
             } catch (_: NoSuchMethodException) {

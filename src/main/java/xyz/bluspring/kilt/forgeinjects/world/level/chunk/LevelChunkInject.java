@@ -25,6 +25,7 @@ import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import net.minecraftforge.common.extensions.IForgeLevelChunk;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
@@ -103,7 +104,11 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
 
     @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
     private void kilt$unloadBlockEntities(CallbackInfo ci) {
-        this.blockEntities.values().forEach(BlockEntity::onChunkUnloaded);
+        this.blockEntities.values().forEach((blockEntity) -> {
+            if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), IForgeBlockEntity.class, "onChunkUnloaded")) {
+
+            }
+        });
     }
 
     @Inject(method = "registerAllBlockEntitiesAfterLevelLoad", at = @At("HEAD"))
