@@ -88,6 +88,8 @@
         "compat.porting_lib.TicketHelperAccessor",
         "compat.porting_lib.TicketOwnerAccessor",
         "compat.porting_lib.TicketTrackerAccessor",
+        "compat.porting_lib.extensions.DamageableItemMixin",
+        "compat.porting_lib.extensions.UseFirstBehaviorItemMixin",
         "compat.sodium.BlockRenderContextMixin",
         "compat.sodium.BlockRendererMixin",
         "compat.sodium.SodiumWorldRendererMixin",

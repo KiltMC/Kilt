@@ -18,8 +18,9 @@ import java.io.DataInput;
 public abstract class CompoundTagInject {
     @Inject(method = "put", at = @At("HEAD"))
     private void kilt$throwExceptionIfNullValue(String key, Tag value, CallbackInfoReturnable<Tag> cir) {
-        if (value == null)
-            throw new IllegalArgumentException("Invalid null NBT value with key " + key);
+        // Kilt: some Fabric mods seem to rely on this behaviour.
+        //if (value == null)
+            //throw new IllegalArgumentException("Invalid null NBT value with key " + key);
     }
 
     @Inject(method = "readNamedTagType", at = @At("HEAD"))
