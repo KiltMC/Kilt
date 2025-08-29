@@ -13,6 +13,7 @@
         "mkb.IKeyConflictContextMixin",
         "mkb.KeyConflictContextMixin",
         "rei.PluginDetectorImplMixin",
+        "snowrealmagic.SnowVariantMixin",
         "sophisticatedcore.IForgeBlockMixin",
         "sophisticatedcore.IForgeBlockStateMixin",
         "sophisticatedcore.IForgeItemMixin",

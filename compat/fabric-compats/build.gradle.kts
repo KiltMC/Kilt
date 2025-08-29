@@ -28,6 +28,7 @@ dependencies {
 
     modCompileOnly("maven.modrinth:accessories:${property("accessories_version")}")
     modCompileOnly("maven.modrinth:accessories-cc-layer:${property("accessories_cc_version")}")
+    modCompileOnly("maven.modrinth:snow-real-magic:${property("snowrealmagic_version")}")
 }
 
 tasks {
