@@ -8,6 +8,7 @@
         "creativecore.CreativeNetworkMixin",
         "emi.EmiAgnosFabricMixin",
         "geckolib.RenderProviderMixin",
+        "invmove.IForgeKeyMappingMixin",
         "jei.FabricPluginFinderMixin",
         "mkb.IKeyBindingMixin",
         "mkb.IKeyConflictContextMixin",
