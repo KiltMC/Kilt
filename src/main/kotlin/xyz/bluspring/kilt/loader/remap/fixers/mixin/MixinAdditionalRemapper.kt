@@ -15,7 +15,8 @@ object MixinAdditionalRemapper {
     val MIXIN_METHOD_EXPLICIT_REGEX = Regex("(L(?:\\w+(/)?)*;)\\w+(?:\\((?:Z|B|C|S|I|J|F|D|L(?:\\w+(/)?)*;)*\\)(?:Z|B|C|S|I|J|F|D|V|L(?:\\w+(/)?)*;))?")
 
     val HARDCODED_REMAPPED_MIXINS = mapOf(
-        "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/Model;Z)V" to "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/HumanoidModel;Z)V"
+        "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/Model;Z)V" to "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/HumanoidModel;Z)V",
+        "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;I)V" to "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;)V"
     )
 
     fun remapClass(classNode: ClassNode) {
