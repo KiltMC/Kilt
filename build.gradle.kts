@@ -590,7 +590,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
-            embeds("feature-recycler")
+            embeds("porting-lib", "feature-recycler")
             incompatible("embeddium")
         }
     }
