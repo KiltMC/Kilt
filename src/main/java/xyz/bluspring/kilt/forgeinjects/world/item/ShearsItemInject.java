@@ -12,6 +12,8 @@ import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.common.IForgeShearable;
+import net.minecraftforge.common.ToolAction;
+import net.minecraftforge.common.ToolActions;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ShearsItem.class)
@@ -44,5 +46,10 @@ public abstract class ShearsItemInject extends Item {
         }
 
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
+        return ToolActions.DEFAULT_SHEARS_ACTIONS.contains(toolAction);
     }
 }
