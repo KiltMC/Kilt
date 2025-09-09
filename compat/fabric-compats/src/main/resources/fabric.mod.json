@@ -15,6 +15,9 @@
     "icon": "icon.png",
     "environment": "*",
     "entrypoints": {
+        "client": [
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsClient"
+        ]
     },
     "mixins": [
         "kilt_fabric_compats.mixins.json"

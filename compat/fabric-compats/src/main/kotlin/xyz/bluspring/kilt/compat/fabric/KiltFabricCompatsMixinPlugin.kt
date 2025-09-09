@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
+import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper
 import xyz.bluspring.kilt.loader.KiltLoader
 
 class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
@@ -50,6 +51,7 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
+        MixinExtensionHelper.preApply(targetClassName, targetClass, mixinClassName, mixinInfo)
     }
 
     override fun postApply(
@@ -58,5 +60,6 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
+        MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo)
     }
 }
