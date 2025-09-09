@@ -15,6 +15,10 @@ import xyz.bluspring.kilt.util.Quadruple;
 import java.time.Duration;
 
 public class CacheOptimizationStorage {
+    public static final Cache<Quadruple<IClientItemExtensions, LivingEntity, ItemStack, EquipmentSlot>, Boolean> SHOULD_ACTUALLY_BE_CACHED = CacheBuilder.newBuilder()
+        .expireAfterAccess(Duration.ofMinutes(5L))
+        .build();
+
     public static final Cache<Quadruple<IClientItemExtensions, LivingEntity, ItemStack, EquipmentSlot>, HumanoidModel<?>> ARMOR_MODEL_CACHE = CacheBuilder.newBuilder()
         .expireAfterAccess(Duration.ofMinutes(5L))
         .build();
