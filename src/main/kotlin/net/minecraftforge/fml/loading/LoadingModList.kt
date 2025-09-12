@@ -9,7 +9,7 @@ class LoadingModList {
     // Forge agree on a place to hold mods challenge [impossible]
     val mods: List<ModInfo>
         get() {
-            return ModList.get().mods as List<ModInfo>
+            return Kilt.loader.mods.map { ModInfo(it, null) }
         }
 
     fun getModFileById(modid: String): ModFileInfo? {
