@@ -376,7 +376,7 @@ object KiltMixinModifications {
         val modifiers = ACCESSORS[annotation.desc] ?: return null
 
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
-            val map = annotationValuesToMap(annotation.values)
+            val map = annotationValuesToMap(annotation.values ?: emptyList())
 
             if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
                 continue
