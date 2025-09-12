@@ -1,9 +1,17 @@
 package net.minecraftforge.fml.loading
 
+import net.minecraftforge.fml.ModList
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo
 import xyz.bluspring.kilt.Kilt
 
 class LoadingModList {
+    // Forge agree on a place to hold mods challenge [impossible]
+    val mods: List<ModInfo>
+        get() {
+            return ModList.get().mods as List<ModInfo>
+        }
+
     fun getModFileById(modid: String): ModFileInfo? {
         val kiltMod = Kilt.loader.getMod(modid) ?: return null
 
