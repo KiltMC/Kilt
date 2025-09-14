@@ -1,7 +1,8 @@
 {
     "package": "xyz.bluspring.kilt.transform",
     "java": [
-        "nightconfig.ConfigParserTransform"
+        "nightconfig.ConfigParserTransform",
+        "mixin.MixinInfoTransform"
     ],
     "mixins": []
 }
