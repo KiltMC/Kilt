@@ -1,6 +1,7 @@
 // TRACKED HASH: 7db9f60a09f2e5b156013ce9fa93086ae63920c1
 package xyz.bluspring.kilt.forgeinjects.world.food;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodProperties;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Mixin(FoodProperties.class)
-public class FoodPropertiesInject implements FoodPropertiesInjection {
+public abstract class FoodPropertiesInject implements FoodPropertiesInjection {
     @Shadow @Final @Mutable
     private List<Pair<MobEffectInstance, Float>> effects;
     @Unique private List<Pair<Supplier<MobEffectInstance>, Float>> kilt$deferredEffects;
@@ -28,7 +29,7 @@ public class FoodPropertiesInject implements FoodPropertiesInjection {
 
     @Inject(at = @At("HEAD"), method = "getEffects")
     public void kilt$appendDeferredEffects(CallbackInfoReturnable<List<Pair<MobEffectInstance, Float>>> cir) {
-        if (!this.kilt$deferredEffects.isEmpty()) {
+        if (this.kilt$deferredEffects != null && !this.kilt$deferredEffects.isEmpty()) {
             var list = new LinkedList<>(this.effects);
 
             for (Pair<Supplier<MobEffectInstance>, Float> deferredEffect : kilt$deferredEffects) {
@@ -42,7 +43,8 @@ public class FoodPropertiesInject implements FoodPropertiesInjection {
     }
 
     @Mixin(FoodProperties.Builder.class)
-    public static class BuilderInject implements FoodPropertiesBuilderInjection {
+    public static abstract class BuilderInject implements FoodPropertiesBuilderInjection {
+        @Unique
         private final List<Pair<Supplier<MobEffectInstance>, Float>> kilt$deferredEffects = new LinkedList<>();
 
         @Override
@@ -56,9 +58,10 @@ public class FoodPropertiesInject implements FoodPropertiesInjection {
             return this.kilt$deferredEffects;
         }
 
-        @Inject(at = @At("RETURN"), method = "build")
-        public void kilt$setDeferredEffects(CallbackInfoReturnable<FoodProperties> cir) {
-            ((FoodPropertiesInjection) cir.getReturnValue()).kilt$setDeferredEffects(kilt$deferredEffects);
+        @ModifyReturnValue(method = "build", at = @At("RETURN"))
+        private FoodProperties kilt$setDeferredEffects(FoodProperties original) {
+            ((FoodPropertiesInjection) original).kilt$setDeferredEffects(kilt$deferredEffects);
+            return original;
         }
     }
 
