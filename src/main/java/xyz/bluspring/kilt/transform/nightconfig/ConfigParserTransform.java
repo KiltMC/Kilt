@@ -6,6 +6,7 @@ import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.core.io.ConfigParser;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.ParsingMode;
+import net.lenni0451.classtransform.annotations.CInline;
 import net.lenni0451.classtransform.annotations.CLocalVariable;
 import net.lenni0451.classtransform.annotations.CShadow;
 import net.lenni0451.classtransform.annotations.CTransformer;
@@ -31,6 +32,7 @@ public interface ConfigParserTransform<C extends Config> {
     @CShadow
     void parse(InputStream input, Config destination, ParsingMode parsingMode, Charset charset);
 
+    @CInline
     @CWrapCatch(value = "parse(Ljava/nio/file/Path;Lcom/electronwill/nightconfig/core/file/FileNotFoundAction;Ljava/nio/charset/Charset;)Lcom/electronwill/nightconfig/core/Config;", target = "Lcom/electronwill/nightconfig/core/io/ConfigParser;parse(Ljava/io/InputStream;Ljava/nio/charset/Charset;)Lcom/electronwill/nightconfig/core/Config;")
     private C kilt$nightconfigfixes$catchAndRecreateConfig(ParsingException exception,
                                                            @CLocalVariable(name = "file") Path file,
@@ -56,6 +58,7 @@ public interface ConfigParserTransform<C extends Config> {
         throw exception;
     }
 
+    @CInline
     @CWrapCatch(value = "parse(Ljava/nio/file/Path;Lcom/electronwill/nightconfig/core/Config;Lcom/electronwill/nightconfig/core/io/ParsingMode;Lcom/electronwill/nightconfig/core/file/FileNotFoundAction;Ljava/nio/charset/Charset;)V", target = "Lcom/electronwill/nightconfig/core/io/ConfigParser;parse(Ljava/io/InputStream;Lcom/electronwill/nightconfig/core/Config;Lcom/electronwill/nightconfig/core/io/ParsingMode;Ljava/nio/charset/Charset;)V")
     private void kilt$nightconfigfixes$catchAndRecreateConfig(ParsingException exception,
                                                            @CLocalVariable(name = "file") Path file,
