@@ -126,7 +126,8 @@
     },
     "lithium:options": {
       "mixin.entity.collisions.fluid": false
-    }
+    },
+    "afl:classtransform": "kilt.classtransform.json"
   },
   "breaks": {
     "quilt_loader": "*",
