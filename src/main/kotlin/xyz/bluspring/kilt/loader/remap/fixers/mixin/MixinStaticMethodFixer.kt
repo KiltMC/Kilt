@@ -133,7 +133,7 @@ object MixinStaticMethodFixer {
                 }
 
                 // Now add the "this" variable under a new index
-                newLocals.add(LocalVariableNode("self", "L$className;", null, firstLabel, lastLabel, newLocals.size))
+                newLocals.add(LocalVariableNode("this", "L$className;", null, firstLabel, lastLabel, newLocals.size))
 
                 methodNode.localVariables = newLocals
             }
