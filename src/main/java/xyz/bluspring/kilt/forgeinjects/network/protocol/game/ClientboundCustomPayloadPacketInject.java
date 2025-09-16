@@ -1,6 +1,7 @@
 // TRACKED HASH: 79c23e6e87623076b1f9e335cc1c1deeaa796db4
 package xyz.bluspring.kilt.forgeinjects.network.protocol.game;
 
+import com.moulberry.mixinconstraints.annotations.IfModAbsent;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -57,6 +58,7 @@ public abstract class ClientboundCustomPayloadPacketInject implements ICustomPac
         return instance.slice();
     }
 
+    @IfModAbsent("memoryleakfix") // MemoryLeakFix already deals with this
     @Inject(method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V", at = @At("TAIL"))
     public void kilt$releaseData(ClientGamePacketListener handler, CallbackInfo ci) {
         if (this.shouldRelease && this.data.refCnt() > 0) // Kilt: apparently some mods reset this, let's avoid that.
