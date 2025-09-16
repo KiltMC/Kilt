@@ -35,9 +35,9 @@ public interface ConfigParserTransform<C extends Config> {
     @CInline
     @CWrapCatch(value = "parse(Ljava/nio/file/Path;Lcom/electronwill/nightconfig/core/file/FileNotFoundAction;Ljava/nio/charset/Charset;)Lcom/electronwill/nightconfig/core/Config;", target = "Lcom/electronwill/nightconfig/core/io/ConfigParser;parse(Ljava/io/InputStream;Ljava/nio/charset/Charset;)Lcom/electronwill/nightconfig/core/Config;")
     private C kilt$nightconfigfixes$catchAndRecreateConfig(ParsingException exception,
-                                                           @CLocalVariable(name = "file") Path file,
-                                                           @CLocalVariable(name = "nefAction") FileNotFoundAction nefAction,
-                                                           @CLocalVariable(name = "charset") Charset charset
+                                                           @CLocalVariable(index = 1) Path file,
+                                                           @CLocalVariable(index = 2) FileNotFoundAction nefAction,
+                                                           @CLocalVariable(index = 3) Charset charset
     ) {
         try {
             Files.delete(file);
@@ -61,11 +61,11 @@ public interface ConfigParserTransform<C extends Config> {
     @CInline
     @CWrapCatch(value = "parse(Ljava/nio/file/Path;Lcom/electronwill/nightconfig/core/Config;Lcom/electronwill/nightconfig/core/io/ParsingMode;Lcom/electronwill/nightconfig/core/file/FileNotFoundAction;Ljava/nio/charset/Charset;)V", target = "Lcom/electronwill/nightconfig/core/io/ConfigParser;parse(Ljava/io/InputStream;Lcom/electronwill/nightconfig/core/Config;Lcom/electronwill/nightconfig/core/io/ParsingMode;Ljava/nio/charset/Charset;)V")
     private void kilt$nightconfigfixes$catchAndRecreateConfig(ParsingException exception,
-                                                           @CLocalVariable(name = "file") Path file,
-                                                           @CLocalVariable(name = "destination") Config destination,
-                                                           @CLocalVariable(name = "parsingMode") ParsingMode parsingMode,
-                                                           @CLocalVariable(name = "nefAction") FileNotFoundAction nefAction,
-                                                           @CLocalVariable(name = "charset") Charset charset
+                                                           @CLocalVariable(index = 1) Path file,
+                                                           @CLocalVariable(index = 2) Config destination,
+                                                           @CLocalVariable(index = 3) ParsingMode parsingMode,
+                                                           @CLocalVariable(index = 4) FileNotFoundAction nefAction,
+                                                           @CLocalVariable(index = 5) Charset charset
     ) {
         try {
             Files.delete(file);
