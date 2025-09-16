@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.util
 
+import cpw.mods.util.Lazy
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraftforge.fml.ModLoadingContext
@@ -17,7 +18,10 @@ import java.util.jar.JarFile
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
-    private val cachedForgeClassNodes = getForgeClassNodesInternal()
+
+    private val cachedForgeClassNodes = Lazy.of { getForgeClassNodesInternal() }
+    private var isForgeClassNodesCleared = false
+
     private val cachedHasMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
     private val cachedHasNoMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
 
@@ -81,7 +85,16 @@ object KiltHelper {
     }
 
     fun getForgeClassNodes(): List<ClassNode> {
-        return cachedForgeClassNodes
+        if (isForgeClassNodesCleared) {
+            throw IllegalStateException("Forge class nodes have already been cleared!")
+        }
+
+        return cachedForgeClassNodes.get()
+    }
+
+    fun clearForgeClassNodes() {
+        cachedForgeClassNodes.get().clear()
+        isForgeClassNodesCleared = true
     }
 
     fun joinToString(array: Array<String>, separator: String): String {
@@ -130,7 +143,7 @@ object KiltHelper {
         return File(fullPath).toPath()
     }
 
-    private fun getForgeClassNodesInternal(): List<ClassNode> {
+    private fun getForgeClassNodesInternal(): MutableList<ClassNode> {
         val list = mutableListOf<ClassNode>()
 
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {

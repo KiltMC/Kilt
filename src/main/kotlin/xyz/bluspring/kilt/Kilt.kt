@@ -31,10 +31,14 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
+import xyz.bluspring.kilt.util.KiltHelper
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        // We have no reason to retain this info.
+        KiltHelper.clearForgeClassNodes()
+
         registerFabricEvents()
     }
 
