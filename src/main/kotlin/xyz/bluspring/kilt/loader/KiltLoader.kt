@@ -350,6 +350,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 dependencies = dependencies,
                 mixinConfigs = manifest?.mainAttributes?.getValue("MixinConfigs")?.split(",")
+                    ?.filter { !it.trim().isBlank() } // why the FUCK is this a possibility.
                     ?.map { ModDefinition.MixinConfig(it) }
                     ?: emptyList(),
                 path = path,
