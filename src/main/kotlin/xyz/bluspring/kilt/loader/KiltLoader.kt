@@ -54,6 +54,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -97,6 +98,22 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
             } else if (loader.isModLoaded("embeddium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
+            }
+        }
+
+        // Sanity check for determining if Fabric mods are bundling Forge classes for whatever reason
+        for (container in loader.allMods) {
+            // Ignore ourselves and whatever we know works correctly.
+            if (container.metadata.id == "kilt" || container.metadata.id == "forgeconfigapiport" ||
+                // If the mod parent is Kilt, then it's probably safe.
+                (container.containingMod.isPresent && container.containingMod.orElseThrow().metadata.id == "kilt")
+            )
+                continue
+
+            val path = container.findPath("net/minecraftforge")
+
+            if (path.isPresent && path.orElseThrow().isDirectory()) {
+                Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging Forge classes! This may lead to a game crash!")
             }
         }
     }
