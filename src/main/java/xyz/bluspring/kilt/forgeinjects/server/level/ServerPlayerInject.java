@@ -7,6 +7,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
 import io.github.fabricators_of_create.porting_lib.entity.ITeleporter;
 import io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin;
@@ -57,10 +59,9 @@ import java.util.OptionalInt;
 @Mixin(value = ServerPlayer.class, priority = 1100)
 public abstract class ServerPlayerInject extends Player implements ServerPlayerInjection {
     @Shadow public ServerGamePacketListenerImpl connection;
-
     @Shadow @Final public ServerPlayerGameMode gameMode;
-
     @Shadow private @Nullable Entity camera;
+    @Shadow public abstract ServerLevel serverLevel();
 
     public ServerPlayerInject(Level level, BlockPos pos, float yRot, GameProfile gameProfile) {
         super(level, pos, yRot, gameProfile);
@@ -72,7 +73,29 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             ci.cancel();
     }
 
-    // TODO: Implement changeDimension logic, somehow.
+    // This lacks the ITeleporter patches, because that patch handled by Porting Lib instead.
+    @Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true)
+    private void kilt$callTravelToDimensionEventVanilla(ServerLevel destination, CallbackInfoReturnable<Entity> cir, @Share("entryLevel") LocalRef<ServerLevel> entryLevel) {
+        entryLevel.set(this.serverLevel());
+
+        if (!ForgeHooks.onTravelToDimension(this, destination.dimension()))
+            cir.setReturnValue(null);
+    }
+
+    @WrapOperation(method = "changeDimension", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$useReviveCallOnChangeDimensionVanilla(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
+        }
+    }
+
+    @Inject(method = "changeDimension", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimensionEventVanilla(ServerLevel destination, CallbackInfoReturnable<Entity> cir,  @Share("entryLevel") LocalRef<ServerLevel> entryLevel) {
+        ForgeEventFactory.firePlayerChangedDimensionEvent((ServerPlayer) (Object) this, entryLevel.get().dimension(), destination.dimension());
+    }
 
     @ModifyVariable(method = "setGameMode", at = @At("HEAD"), argsOnly = true)
     private GameType kilt$callChangeGameType(GameType value, @Cancellable CallbackInfoReturnable<Boolean> cir) {
@@ -138,9 +161,14 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             ci.cancel();
     }
 
-    @Inject(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
-    private void kilt$useReviveCall(ServerLevel newLevel, double x, double y, double z, float yaw, float pitch, CallbackInfo ci) {
-        this.revive(); // TODO: avoid double-calling maybe?
+    @WrapOperation(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$useReviveCall(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
+        }
     }
 
     @Inject(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;teleport(DDDFF)V", shift = At.Shift.AFTER))
@@ -258,6 +286,7 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             cir.setReturnValue(null);
     }
 
+    @SuppressWarnings({"InvalidInjectorMethodSignature", "MixinAnnotationTarget"}) // We cannot target the "ServerPlayerMixin", so ServerPlayer is the closest we can get.
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
     @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
     private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
@@ -269,6 +298,7 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         }
     }
 
+    @SuppressWarnings("MixinAnnotationTarget") // same for over here.
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
     @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
     private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
