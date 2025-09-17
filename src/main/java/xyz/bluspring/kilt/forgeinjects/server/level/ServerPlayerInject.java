@@ -97,28 +97,40 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         ForgeEventFactory.firePlayerChangedDimensionEvent((ServerPlayer) (Object) this, entryLevel.get().dimension(), destination.dimension());
     }
 
-    @ModifyVariable(method = "setGameMode", at = @At("HEAD"), argsOnly = true)
-    private GameType kilt$callChangeGameType(GameType value, @Cancellable CallbackInfoReturnable<Boolean> cir) {
-        value = ForgeHooks.onChangeGameType(this, this.gameMode.getGameModeForPlayer(), value);
+    // Porting Lib injects for the changeDimension patch
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$onTravelToDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension(this, pDestination.dimension()))
+            cir.setReturnValue(null);
+    }
 
-        if (value == null) {
-            cir.setReturnValue(false);
-            return null;
+    @SuppressWarnings({"InvalidInjectorMethodSignature", "MixinAnnotationTarget"}) // We cannot target the "ServerPlayerMixin", so ServerPlayer is the closest we can get.
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
         }
-
-        return value;
     }
 
-    @Inject(method = "setCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;camera:Lnet/minecraft/world/entity/Entity;", ordinal = 0))
-    private void kilt$usePartEntityParentCamera(Entity entityToSpectate, CallbackInfo ci) {
-        while (this.camera instanceof PartEntity<?> partEntity)
-            this.camera = partEntity.getParent();
+    @SuppressWarnings("MixinAnnotationTarget") // same for over here.
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
+    @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+        ForgeEventFactory.firePlayerChangedDimensionEvent(this, resourcekey, pDestination.dimension());
     }
 
-    @Inject(method = "updateOptions", at = @At("TAIL"))
-    private void kilt$addLanguageData(ServerboundClientInformationPacket packet, CallbackInfo ci) {
-        this.language = packet.language();
-    }
+    // Handled by Fabric API
+    /*@Inject(at = @At("HEAD"), method = "startSleepInBed", cancellable = true)
+    public void kilt$checkPlayerSleepEvent(BlockPos blockPos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
+        var ret = ForgeEventFactory.onPlayerSleepInBed((ServerPlayer) (Object) this, Optional.of(blockPos));
+        if (ret != null)
+            cir.setReturnValue(Either.left(ret));
+    }*/
 
     @Inject(method = "openMenu", at = @At(value = "INVOKE", target = "Ljava/util/OptionalInt;of(I)Ljava/util/OptionalInt;"))
     private void kilt$callContainerOpenEvent(MenuProvider menu, CallbackInfoReturnable<OptionalInt> cir) {
@@ -140,6 +152,29 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         ForgeEventFactory.onPlayerClone(this, that, !keepEverything);
         this.tabListHeader = ((ServerPlayerInjection) that).getTabListHeader();
         this.tabListFooter = ((ServerPlayerInjection) that).getTabListFooter();
+    }
+
+    @ModifyVariable(method = "setGameMode", at = @At("HEAD"), argsOnly = true)
+    private GameType kilt$callChangeGameType(GameType value, @Cancellable CallbackInfoReturnable<Boolean> cir) {
+        value = ForgeHooks.onChangeGameType(this, this.gameMode.getGameModeForPlayer(), value);
+
+        if (value == null) {
+            cir.setReturnValue(false);
+            return null;
+        }
+
+        return value;
+    }
+
+    @Inject(method = "updateOptions", at = @At("TAIL"))
+    private void kilt$addLanguageData(ServerboundClientInformationPacket packet, CallbackInfo ci) {
+        this.language = packet.language();
+    }
+
+    @Inject(method = "setCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;camera:Lnet/minecraft/world/entity/Entity;", ordinal = 0))
+    private void kilt$usePartEntityParentCamera(Entity entityToSpectate, CallbackInfo ci) {
+        while (this.camera instanceof PartEntity<?> partEntity)
+            this.camera = partEntity.getParent();
     }
 
     @ModifyReturnValue(method = "getTabListDisplayName", at = @At("RETURN"))
@@ -182,14 +217,7 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     }
 
     // Handled by Fabric API
-    /*@Inject(at = @At("HEAD"), method = "startSleepInBed", cancellable = true)
-    public void kilt$checkPlayerSleepEvent(BlockPos blockPos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
-        var ret = ForgeEventFactory.onPlayerSleepInBed((ServerPlayer) (Object) this, Optional.of(blockPos));
-        if (ret != null)
-            cir.setReturnValue(Either.left(ret));
-    }
-
-    @Inject(method = "setRespawnPosition", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = "setRespawnPosition", at = @At("HEAD"), cancellable = true)
     private void kilt$checkPlayerSpawnSetEvent(ResourceKey<Level> dimension, @Nullable BlockPos position, float angle, boolean forced, boolean sendMessage, CallbackInfo ci) {
         if (ForgeEventFactory.onPlayerSpawnSet(this, dimension == null ? Level.OVERWORLD : dimension, position, forced))
             ci.cancel();
@@ -276,32 +304,5 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     @WrapOperation(method = "drop(Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"))
     private ItemEntity kilt$callPlayerTossEvent(ServerPlayer instance, ItemStack droppedItem, boolean dropAround, boolean includeThrowerName, Operation<ItemEntity> original) {
         return ForgeHooks.kilt$onPlayerTossEvent(instance, droppedItem, includeThrowerName, () -> original.call(instance, droppedItem, dropAround, includeThrowerName));
-    }
-
-    // Porting Lib injects
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
-    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
-    private void kilt$onTravelToDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
-        if (!ForgeHooks.onTravelToDimension(this, pDestination.dimension()))
-            cir.setReturnValue(null);
-    }
-
-    @SuppressWarnings({"InvalidInjectorMethodSignature", "MixinAnnotationTarget"}) // We cannot target the "ServerPlayerMixin", so ServerPlayer is the closest we can get.
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
-    private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
-            this.revive();
-        } else {
-            original.call(instance);
-            this.reviveCaps();
-        }
-    }
-
-    @SuppressWarnings("MixinAnnotationTarget") // same for over here.
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension")
-    @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
-    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
-        ForgeEventFactory.firePlayerChangedDimensionEvent(this, resourcekey, pDestination.dimension());
     }
 }
