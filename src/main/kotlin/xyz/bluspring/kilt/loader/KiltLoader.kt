@@ -130,6 +130,16 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         if (FORGE_TO_FABRIC_MODS.contains(dependencyId))
             return FORGE_TO_FABRIC_MODS[dependencyId]!!
 
+        val loader = FabricLoader.getInstance()
+        if (loader.isModLoaded(dependencyId))
+            return dependencyId
+
+        // fun times.
+        if (loader.isModLoaded(dependencyId.replace("_", "-")))
+            return dependencyId.replace("_", "-")
+        else if (loader.isModLoaded(dependencyId.replace("_", "")))
+            return dependencyId.replace("_", "")
+
         return super.getNativeModId(dependencyId, nativeLoaderName)
     }
 
