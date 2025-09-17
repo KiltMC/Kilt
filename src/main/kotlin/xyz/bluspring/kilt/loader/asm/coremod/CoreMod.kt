@@ -173,6 +173,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
 
             for ((index, line) in currentScript.lines().withIndex()) {
                 val classNamesToRemap = mutableSetOf<String>()
+                val descriptorsToRemap = mutableSetOf<String>()
                 var currentParsed = ""
                 var stringChar = '\u0000'
 
@@ -184,6 +185,9 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                             val assumedClassName = currentParsed.removeSurrounding("$stringChar")
                             if (assumedClassName.startsWith("net/minecraft/") || assumedClassName.startsWith("com/mojang/")) {
                                 classNamesToRemap.add(currentParsed)
+                            } else if (assumedClassName.contains("L") && assumedClassName.contains(";") && !assumedClassName.contains(" ")
+                                && (assumedClassName.contains("net/minecraft/") || assumedClassName.contains("com/mojang/"))) {
+                                descriptorsToRemap.add(currentParsed)
                             }
 
                             currentParsed = ""
@@ -200,6 +204,10 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
 
                 for (classString in classNamesToRemap) {
                     lines[index] = lines[index].replace(classString, "KiltMC_CoreModHelper.remapClass($classString)")
+                }
+
+                for (descriptorString in descriptorsToRemap) {
+                    lines[index] = lines[index].replace(descriptorString, "KiltMC_CoreModHelper.remapDescriptor($descriptorString)")
                 }
             }
 
