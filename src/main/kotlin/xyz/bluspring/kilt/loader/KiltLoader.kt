@@ -758,7 +758,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    exception.addSuppressed(extraThrowable)
+                    if (extraThrowable != null) {
+                        exception.addSuppressed(extraThrowable)
                     exception.addSuppressed(e)
                     hasErrored = true
                 }
