@@ -59,7 +59,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 200
+    const val REMAPPER_VERSION = 203
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -365,7 +365,17 @@ object KiltRemapper {
             val manifestEntry = jar.getJarEntry("META-INF/MANIFEST.MF")
             if (manifestEntry != null) {
                 val manifest = jar.getInputStream(manifestEntry).use { Manifest(it) }
-                val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
+                val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",")?.toMutableSet() ?: mutableSetOf()
+
+                // Search for more mixin configs, because apparently it's possible to define with a fucking class.
+                for (entry in jar.stream()) {
+                    if (entry.name.endsWith(".mixin.json") || entry.name.endsWith(".mixins.json")) {
+                        mixinConfigs.add(entry.name)
+                    } else if (entry.name.endsWith(".refmap.json")) {
+                        // Search for more refmaps too, because they're probably defined in class too.
+                        refmaps.add(entry.name)
+                    }
+                }
 
                 // Read mixin configs and add them to the list of mixins to fix
                 mixinConfigs.asFlow().concurrent().collect { config ->
@@ -412,7 +422,12 @@ object KiltRemapper {
                         val json = jar.getInputStream(entry).use { it.reader(Charsets.UTF_8).use { r -> JsonParser.parseReader(r) } }
 
                         if (json.isJsonObject) {
-                            refmapJsons[entry] = json.asJsonObject
+                            val obj = json.asJsonObject
+
+                            // Be careful, because they might not even have the data in the first place.
+                            if (obj.has("data") || obj.has("mappings")) {
+                                refmapJsons[entry] = obj
+                            }
                         }
 
                         return@collect
