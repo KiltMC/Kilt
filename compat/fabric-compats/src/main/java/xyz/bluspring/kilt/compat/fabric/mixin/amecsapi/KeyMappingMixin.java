@@ -6,6 +6,7 @@ import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import de.siphalor.amecs.api.KeyModifiers;
 import de.siphalor.amecs.impl.duck.IKeyBinding;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.extensions.IForgeKeyMapping;
 import net.minecraftforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +33,12 @@ public abstract class KeyMappingMixin implements IKeyBinding {
                 case ALT -> keyModifiers.setAlt(true);
             }
         }
+    }
+
+    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "getLocalizedName", prefix = "handler")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$amecsapi$avoidHandlingLocalizedName(CallbackInfo ci) {
+        ci.cancel();
     }
 
     @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "onKeyPressed", prefix = "handler")
