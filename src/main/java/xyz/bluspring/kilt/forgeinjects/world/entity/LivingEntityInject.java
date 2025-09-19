@@ -370,7 +370,8 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return this.kilt$getCapabilityWorkaround().getCapability(cap, side);
     }
 
-    @Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;JLjava/util/function/Consumer;)V"))
+    // TODO: wait, why *does* Forge do this?
+    /*@Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;JLjava/util/function/Consumer;)V"))
     public void kilt$disableVanillaLootTable(LootTable instance, LootParams params, long seed, Consumer<ItemStack> output) {
     }
 
@@ -378,7 +379,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
     public void kilt$useForgeLootTables(DamageSource damageSource, boolean hitByPlayer, CallbackInfo ci, ResourceLocation resourceLocation, LootTable lootTable, LootParams.Builder builder, LootParams lootParams) {
         var ctx = builder.create(LootContextParamSets.ENTITY);
         lootTable.getRandomItems(ctx).forEach(((LivingEntity) (Object) this)::spawnAtLocation);
-    }
+    }*/
 
     @Inject(method = "updateUsingItem", at = @At("HEAD"))
     private void kilt$onUseTickEvent(ItemStack usingItem, CallbackInfo ci) {
