@@ -50,22 +50,18 @@ class AccessTransformerRemapper {
         val srg2mojmap = mutableMapOf<String, String>()
         val fieldDescriptors = mutableMapOf<String, String>()
 
-        for (classMapping in srg.classes) {
-            val mojClassMap = mojmap.classes.firstOrNull { it.getName(0) == classMapping.srcName } ?: continue
+        for (classMapping in mojmap.classes) {
+            //val mojClassMap = mojmap.classes.firstOrNull { it.getName(0) == classMapping.srcName } ?: continue
 
             for (field in classMapping.fields) {
-                val srgName = field.getName("srg")!!
-                if (!srgName.startsWith("f_") && !srgName.startsWith("m_")) {
-                    continue
-                }
+                val srgName = field.srcName
 
-                val mojField = mojClassMap.fields.firstOrNull { it.getName(0) == field.srcName } ?: continue
-                srg2mojmap[srgName] = mojField.srcName
-                if (mojField.srcDesc != null)
-                    fieldDescriptors[srgName] = mojField.srcDesc!!
+                srg2mojmap[srgName] = field.srcName
+                if (field.srcDesc != null)
+                    fieldDescriptors[srgName] = field.srcDesc!!
             }
 
-            for (method in classMapping.methods) {
+            /*for (method in classMapping.methods) {
                 val srgName = method.getName("srg")!!
                 if (!srgName.startsWith("f_") && !srgName.startsWith("m_"))
                     continue
@@ -73,7 +69,7 @@ class AccessTransformerRemapper {
                 val remappedDesc = remapDescriptor(method.srcDesc ?: "", mojmap)
                 val mojMethod = mojClassMap.methods.firstOrNull { it.getName(0) == method.srcName && remappedDesc == it.srcDesc } ?: continue
                 srg2mojmap[srgName] = mojMethod.srcName
-            }
+            }*/
         }
 
         println("Finished mapping SRG to MojMap!")
@@ -82,6 +78,35 @@ class AccessTransformerRemapper {
         val widener = mutableListOf<String>()
 
         widener += "accessWidener v2 named"
+
+        widener += ""
+        widener += "# Kilt's own access wideners"
+        widener += "accessible method net/minecraft/client/renderer/texture/SpriteContents\$AnimatedTexture getFrameX (I)I\n" +
+                "accessible method net/minecraft/client/renderer/texture/SpriteContents\$AnimatedTexture getFrameY (I)I\n" +
+                "transitive-accessible method net/minecraft/world/entity/Entity setRemoved (Lnet/minecraft/world/entity/Entity\$RemovalReason;)V\n" +
+                "transitive-extendable method net/minecraft/world/entity/Entity setRemoved (Lnet/minecraft/world/entity/Entity\$RemovalReason;)V\n" +
+                "transitive-accessible method net/minecraft/world/item/CreativeModeTab <init> (Lnet/minecraft/world/item/CreativeModeTab\$Row;ILnet/minecraft/world/item/CreativeModeTab\$Type;Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;Lnet/minecraft/world/item/CreativeModeTab\$DisplayItemsGenerator;)V\n" +
+                "transitive-accessible class net/minecraft/server/advancements/AdvancementVisibilityEvaluator\$VisibilityRule\n" +
+                "transitive-accessible class net/minecraft/data/HashCache\$ProviderCache\n" +
+                "transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V\n" +
+                "transitive-extendable method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V\n" +
+                "\n" +
+                "accessible class net/minecraft/world/effect/MobEffectInstance\$Details\n" +
+                "accessible method net/minecraft/world/effect/MobEffectInstance\$Details <init> (IIZZZLjava/util/Optional;)V\n" +
+                "accessible class net/minecraft/world/inventory/BrewingStandMenu\$PotionSlot\n" +
+                "\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager BLEND Lcom/mojang/blaze3d/platform/GlStateManager\$BlendState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager DEPTH Lcom/mojang/blaze3d/platform/GlStateManager\$DepthState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager CULL Lcom/mojang/blaze3d/platform/GlStateManager\$CullState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager POLY_OFFSET Lcom/mojang/blaze3d/platform/GlStateManager\$PolygonOffsetState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_LOGIC Lcom/mojang/blaze3d/platform/GlStateManager\$ColorLogicState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager STENCIL Lcom/mojang/blaze3d/platform/GlStateManager\$StencilState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager SCISSOR Lcom/mojang/blaze3d/platform/GlStateManager\$ScissorState;\n" +
+                "accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_MASK Lcom/mojang/blaze3d/platform/GlStateManager\$ColorMask;\n" +
+                "\n" +
+                "accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojang/blaze3d/vertex/VertexFormatElement;"
+
+        widener += ""
         widener += "# Auto generated access widener from NeoForge's access transformers."
 
         for (line in data.lines()) {

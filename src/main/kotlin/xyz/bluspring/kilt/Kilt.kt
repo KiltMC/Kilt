@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Either
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.EventResult
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
@@ -132,7 +132,7 @@ class Kilt : ModInitializer {
             EventHooks.onExplosionDetonate(level, explosion, entities, diameter)
         }
 
-        EntityEvent.EnteringSection.EVENT.register { event ->
+        EntityEvents.EnteringSection.EVENT.register { event ->
             CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
         }
 

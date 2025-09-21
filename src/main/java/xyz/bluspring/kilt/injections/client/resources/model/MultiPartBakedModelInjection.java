@@ -2,15 +2,18 @@ package xyz.bluspring.kilt.injections.client.resources.model;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.MultiPartBakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 
 import java.util.BitSet;
 import java.util.List;
 
+@FabricInjectedInterface(MultiPartBakedModel.class)
 public interface MultiPartBakedModelInjection {
     default BitSet getSelectors(@Nullable BlockState state) {
         throw new IllegalStateException();

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.DataPackConfigInjection;
+import xyz.bluspring.kilt.injections.world.level.DataPackConfigInjection;
 
 import java.util.List;
 

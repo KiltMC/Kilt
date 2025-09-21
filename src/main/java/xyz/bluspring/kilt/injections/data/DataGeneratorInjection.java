@@ -1,10 +1,13 @@
 package xyz.bluspring.kilt.injections.data;
 
+import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 
 import java.util.Map;
 
+@FabricInjectedInterface(DataGenerator.class)
 public interface DataGeneratorInjection {
     default Map<String, DataProvider> getProvidersView() {
         throw new IllegalStateException();

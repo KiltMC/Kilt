@@ -9,7 +9,7 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.injections.entity.ProjectileUtilInjection;
+import xyz.bluspring.kilt.injections.world.entity.ProjectileUtilInjection;
 
 @Mixin(CrossbowAttackMob.class)
 public interface CrossbowAttackMobInject {

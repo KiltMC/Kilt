@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.ChunkAccessInjection;
+import xyz.bluspring.kilt.injections.world.level.chunk.ChunkAccessInjection;
 import xyz.bluspring.kilt.injections.world.level.chunk.LevelChunkInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 

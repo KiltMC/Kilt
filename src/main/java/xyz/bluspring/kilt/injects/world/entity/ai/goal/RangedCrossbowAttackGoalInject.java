@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.injections.entity.ProjectileUtilInjection;
+import xyz.bluspring.kilt.injections.world.entity.ProjectileUtilInjection;
 
 @Mixin(RangedCrossbowAttackGoal.class)
 public abstract class RangedCrossbowAttackGoalInject<T extends Monster & RangedAttackMob & CrossbowAttackMob> extends Goal {

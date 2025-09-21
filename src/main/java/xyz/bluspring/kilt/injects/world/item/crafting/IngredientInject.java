@@ -1,139 +1,138 @@
 // TRACKED HASH: 297d980725ef2ec87d9bfaf04e6eab59c792fccd
 package xyz.bluspring.kilt.injects.world.item.crafting;
 
-import com.google.gson.JsonElement;
-import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
-import net.neoforged.neoforge.common.crafting.VanillaIngredientSerializer;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.item.crafting.IngredientInjection;
+import xyz.bluspring.kilt.injections.world.item.crafting.IngredientInjection;
 
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Mixin(Ingredient.class)
-public class IngredientInject implements IngredientInjection {
-    private static final AtomicInteger INVALIDATION_COUNTER = IngredientInjection.INVALIDATION_COUNTER;
+public abstract class IngredientInject implements IngredientInjection {
+    // Kilt: StreamCodec handling in CustomIngredientPacketCodecMixin
+
+    @Shadow public abstract ItemStack[] getItems();
+    @Shadow @Final private Ingredient.Value[] values;
 
     @CreateStatic
-    private static void invalidateAll() {
-        IngredientInjection.invalidateAll();
-    }
+    private static final MapCodec<Ingredient> MAP_CODEC_NONEMPTY = IngredientInjection.MAP_CODEC_NONEMPTY;
 
     @CreateStatic
-    private static Ingredient merge(Collection<Ingredient> parts) {
-        return IngredientInjection.merge(parts);
+    private static final Codec<List<Ingredient>> LIST_CODEC = IngredientInjection.LIST_CODEC;
+
+    @CreateStatic
+    private static final Codec<List<Ingredient>> LIST_CODEC_NONEMPTY = IngredientInjection.LIST_CODEC_NONEMPTY;
+
+    public IngredientInject(Ingredient.Value[] values) {}
+
+    @Unique @Nullable
+    private ICustomIngredient customIngredient;
+
+    @CreateInitializer
+    public IngredientInject(ICustomIngredient customIngredient) {
+        this(new Ingredient.Value[0]);
+        this.customIngredient = customIngredient;
     }
 
-    @Shadow @Nullable public ItemStack[] itemStacks;
-    @Shadow @Nullable public IntList stackingIds;
-    private int invalidationCounter;
+    @ModifyExpressionValue(method = "getItems", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;flatMap(Ljava/util/function/Function;)Ljava/util/stream/Stream;"))
+    private <R> Stream<R> kilt$useNeoCustomIngredientItems(Stream<R> original) {
+        if (this.customIngredient != null) {
+            return (Stream<R>) this.customIngredient.getItems();
+        }
+
+        return original;
+    }
+
+    @Inject(method = "test(Lnet/minecraft/world/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
+    private void kilt$testNeoCustomIngredient(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (stack != null && this.customIngredient != null)
+            cir.setReturnValue(this.customIngredient.test(stack));
+    }
+
+    @ModifyReturnValue(method = "isEmpty", at = @At("RETURN"))
+    private boolean kilt$checkIsCustom(boolean original) {
+        return original && !isCustom();
+    }
 
     @Override
-    public boolean checkInvalidation() {
-        var currentInvalidationCounter = IngredientInjection.INVALIDATION_COUNTER.get();
-        if (this.invalidationCounter != currentInvalidationCounter) {
-            invalidate();
+    public boolean hasNoItems() {
+        ItemStack[] items = this.getItems();
+        if (items.length == 0)
             return true;
+
+        if (items.length == 1) {
+            ItemStack item = items[0];
+            // Kilt: what? why is it actually a barrier in the list???
+            return item.getItem() == Items.BARRIER
+                && item.getHoverName() instanceof MutableComponent hoverName
+                && hoverName.getString().startsWith("Empty Tag: ");
         }
 
         return false;
     }
 
+    // TODO: make this more mod-compatible
     @Override
-    public void markValid() {
-        invalidationCounter = INVALIDATION_COUNTER.get();
+    public int hashCode() {
+        if (this.customIngredient != null)
+            return this.customIngredient.hashCode();
+
+        return Arrays.hashCode(this.values);
     }
 
+    // FIXME: this probably breaks with an accessor, watch over this!
     @Override
-    public void invalidate() {
-        this.itemStacks = null;
-        this.stackingIds = null;
-    }
-
-    @Override
-    public IIngredientSerializer<? extends Ingredient> getSerializer() {
-        if (!isVanilla())
-            throw new IllegalStateException();
-
-        return VanillaIngredientSerializer.INSTANCE;
-    }
-
-    @Override
-    public boolean isVanilla() {
-        return this.getClass().getPackageName().startsWith("net.minecraft");
-    }
-
-    @Inject(at = @At("HEAD"), method = "fromNetwork", cancellable = true)
-    private static void kilt$checkForgeRecipeFromNetwork(FriendlyByteBuf friendlyByteBuf, CallbackInfoReturnable<Ingredient> cir) {
-        try {
-            friendlyByteBuf.markReaderIndex();
-            var size = friendlyByteBuf.readVarInt();
-            if (size == -1) {
-                cir.setReturnValue(CraftingHelper.getIngredient(friendlyByteBuf.readResourceLocation(), friendlyByteBuf));
-                return;
-            }
-
-            cir.setReturnValue(Ingredient.fromValues(Stream.generate(() -> new Ingredient.ItemValue(friendlyByteBuf.readItem())).limit(size)));
-        } catch (Throwable ignored) {
-            // This will defer over to any mixins that may occur after this.
-            friendlyByteBuf.resetReaderIndex();
+    public Ingredient.Value[] getValues() {
+        if (this.isCustom()) {
+            throw new IllegalStateException("Cannot retrieve values from custom ingredient!");
         }
+
+        return this.values;
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/google/gson/JsonElement;isJsonObject()Z", shift = At.Shift.BEFORE, remap = false), method = "fromJson(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;", cancellable = true)
-    private static void kilt$checkForgeRecipeFromJson(JsonElement json, boolean canBeEmpty, CallbackInfoReturnable<Ingredient> cir) {
-        try {
-            var ret = CraftingHelper.getIngredient(json, canBeEmpty);
-            if (ret != null)
-                cir.setReturnValue(ret);
-        } catch (Throwable ignored) {
-            // This will defer over to any mixins that may occur after this.
-        }
+    @Override
+    public boolean isSimple() {
+        return this.customIngredient == null || this.customIngredient.isSimple();
     }
 
-    @Inject(at = @At("HEAD"), method = "toNetwork", cancellable = true)
-    public void kilt$writeNonVanillaIds(FriendlyByteBuf friendlyByteBuf, CallbackInfo ci) {
-        try {
-            if (!this.isVanilla()) {
-                if (this.getSerializer() == VanillaIngredientSerializer.INSTANCE || CraftingHelper.getID(this.getSerializer()) == null) {
-                    return;
-                }
+    @Override
+    public ICustomIngredient neoforge$getCustomIngredient() {
+        return this.customIngredient;
+    }
 
-                CraftingHelper.write(friendlyByteBuf, (Ingredient) (Object) this);
-                ci.cancel();
-            }
-        } catch (Throwable ignored) {}
+    @Override
+    public boolean isCustom() {
+        return this.customIngredient != null;
+    }
+
+    @Mixin(Ingredient.ItemValue.class)
+    public abstract static class ItemValueInject {
+
     }
 
     @Mixin(Ingredient.TagValue.class)
-    public static class TagValueInject {
-        @Shadow @Final public TagKey<Item> tag;
+    public abstract static class TagValueInject {
 
-        @Inject(at = @At("RETURN"), method = "getItems")
-        public void kilt$addEmptyTag(CallbackInfoReturnable<Collection<ItemStack>> cir) {
-            var list = cir.getReturnValue();
+    }
 
-            if (list.size() == 0) {
-                list.add(new ItemStack(Blocks.BARRIER).setHoverName(Component.literal("Empty Tag: " + this.tag.location())));
-            }
-        }
+    @Mixin(Ingredient.Value.class)
+    public abstract static class ValueInject {
+
     }
 }

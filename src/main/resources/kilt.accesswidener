@@ -1,8 +1,6 @@
 accessWidener v2 named
 
-# Kilt's own access wideners.
-accessible class net/minecraft/server/network/ServerLoginPacketListenerImpl$State
-
+# Kilt's own access wideners
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
 transitive-accessible method net/minecraft/world/entity/Entity setRemoved (Lnet/minecraft/world/entity/Entity$RemovalReason;)V
@@ -28,6 +26,9 @@ accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_MASK Lcom/moja
 
 accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojang/blaze3d/vertex/VertexFormatElement;
 
+accessible method net/minecraft/world/entity/SpawnPlacements$Data <init> (Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;)V
+accessible method net/minecraft/world/item/crafting/Ingredient <init> ([Lnet/minecraft/world/item/crafting/Ingredient$Value;)V
+
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
@@ -37,18 +38,18 @@ transitive-accessible field net/minecraft/client/Options keyMappings [Lnet/minec
 transitive-mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
 transitive-accessible class net/minecraft/client/Options$FieldAccess
 transitive-extendable class net/minecraft/client/Options$FieldAccess
-#transitive-accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
-#transitive-mutable field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
-#transitive-accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
-#transitive-mutable field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
+transitive-accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
+transitive-mutable field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
+transitive-accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
+transitive-mutable field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
 transitive-accessible class net/minecraft/client/OptionInstance$ValueSet
 transitive-extendable class net/minecraft/client/OptionInstance$ValueSet
 transitive-accessible class net/minecraft/client/gui/Gui$HeartType
 transitive-extendable class net/minecraft/client/gui/Gui$HeartType
-#transitive-accessible field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
-#transitive-mutable field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
-#transitive-accessible field net/minecraft/client/gui/components/AbstractSelectionList$Entry list Lnet/minecraft/client/gui/components/AbstractSelectionList;
-#transitive-mutable field net/minecraft/client/gui/components/AbstractSelectionList$Entry list Lnet/minecraft/client/gui/components/AbstractSelectionList;
+transitive-accessible field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
+transitive-mutable field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
+transitive-accessible field net/minecraft/client/gui/components/AbstractSelectionList$Entry list Ljava/util/List;
+transitive-mutable field net/minecraft/client/gui/components/AbstractSelectionList$Entry list Ljava/util/List;
 transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton getSprite ()Lnet/minecraft/resources/ResourceLocation;
 transitive-extendable method net/minecraft/client/gui/components/AbstractSliderButton getSprite ()Lnet/minecraft/resources/ResourceLocation;
 transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton getHandleSprite ()Lnet/minecraft/resources/ResourceLocation;
@@ -59,32 +60,32 @@ transitive-accessible method net/minecraft/client/gui/components/AbstractWidget 
 transitive-extendable method net/minecraft/client/gui/components/AbstractWidget renderScrollingString (Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIIII)V
 transitive-accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
 transitive-extendable class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
-#transitive-accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
-#transitive-mutable field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
+transitive-accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
+transitive-mutable field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
 transitive-accessible method net/minecraft/client/gui/screens/worldselection/ExperimentsScreen getHumanReadableTitle (Lnet/minecraft/server/packs/repository/Pack;)Lnet/minecraft/network/chat/Component;
 transitive-extendable method net/minecraft/client/gui/screens/worldselection/ExperimentsScreen getHumanReadableTitle (Lnet/minecraft/server/packs/repository/Pack;)Lnet/minecraft/network/chat/Component;
-#transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen INFO Lnet/minecraft/network/chat/Component;
-#transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen INFO Lnet/minecraft/network/chat/Component;
-#transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen layout Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;
-#transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen layout Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;
+transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen INFO Lnet/minecraft/network/chat/Component;
+transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen INFO Lnet/minecraft/network/chat/Component;
+transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen layout Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;
+transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen layout Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;
 transitive-accessible method net/minecraft/client/gui/screens/worldselection/ExperimentsScreen onDone ()V
 transitive-extendable method net/minecraft/client/gui/screens/worldselection/ExperimentsScreen onDone ()V
-#transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen MAIN_CONTENT_WIDTH I
-#transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen MAIN_CONTENT_WIDTH I
-#transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen packs Lit/unimi/dsi/fastutil/objects/Object2BooleanMap;
-#transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen packs Lit/unimi/dsi/fastutil/objects/Object2BooleanMap;
-#transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen TITLE Lnet/minecraft/network/chat/Component;
-#transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen TITLE Lnet/minecraft/network/chat/Component;
-#transitive-accessible field net/minecraft/client/model/geom/LayerDefinitions OUTER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
-#transitive-mutable field net/minecraft/client/model/geom/LayerDefinitions OUTER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
-#transitive-accessible field net/minecraft/client/model/geom/LayerDefinitions INNER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
-#transitive-mutable field net/minecraft/client/model/geom/LayerDefinitions INNER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
-#transitive-accessible field net/minecraft/client/multiplayer/ClientPacketListener commands Lcom/mojang/brigadier/CommandDispatcher;
-#transitive-mutable field net/minecraft/client/multiplayer/ClientPacketListener commands Lcom/mojang/brigadier/CommandDispatcher;
-#transitive-accessible field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_NAMES Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
-#transitive-mutable field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_NAMES Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
-#transitive-accessible field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_TAGS Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
-#transitive-mutable field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_TAGS Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
+transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen MAIN_CONTENT_WIDTH I
+transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen MAIN_CONTENT_WIDTH I
+transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen packs Ljava/util/List;
+transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen packs Ljava/util/List;
+transitive-accessible field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen TITLE Ljava/lang/String;
+transitive-mutable field net/minecraft/client/gui/screens/worldselection/ExperimentsScreen TITLE Ljava/lang/String;
+transitive-accessible field net/minecraft/client/model/geom/LayerDefinitions OUTER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
+transitive-mutable field net/minecraft/client/model/geom/LayerDefinitions OUTER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
+transitive-accessible field net/minecraft/client/model/geom/LayerDefinitions INNER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
+transitive-mutable field net/minecraft/client/model/geom/LayerDefinitions INNER_ARMOR_DEFORMATION Lnet/minecraft/client/model/geom/builders/CubeDeformation;
+transitive-accessible field net/minecraft/client/multiplayer/ClientPacketListener commands Lnet/minecraft/commands/Commands;
+transitive-mutable field net/minecraft/client/multiplayer/ClientPacketListener commands Lnet/minecraft/commands/Commands;
+transitive-accessible field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_NAMES Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
+transitive-mutable field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_NAMES Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
+transitive-accessible field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_TAGS Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
+transitive-mutable field net/minecraft/client/multiplayer/SessionSearchTrees CREATIVE_TAGS Lnet/minecraft/client/multiplayer/SessionSearchTrees$Key;
 transitive-accessible class net/minecraft/client/multiplayer/SessionSearchTrees$Key
 transitive-extendable class net/minecraft/client/multiplayer/SessionSearchTrees$Key
 transitive-accessible method net/minecraft/client/multiplayer/SessionSearchTrees$Key <init> ()V
@@ -111,7 +112,8 @@ transitive-accessible method net/minecraft/client/renderer/GameRenderer loadEffe
 transitive-extendable method net/minecraft/client/renderer/GameRenderer loadEffect (Lnet/minecraft/resources/ResourceLocation;)V
 transitive-accessible method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z
 transitive-extendable method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z
-##transitive-accessible field net/minecraft/client/renderer/RenderType * Lnet/minecraft/client/renderer/RenderType; # TODO: oh god
+#transitive-accessible field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
+#transitive-mutable field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
 transitive-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 transitive-extendable method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 transitive-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
@@ -120,12 +122,12 @@ transitive-accessible class net/minecraft/client/renderer/RenderType$OutlineProp
 transitive-extendable class net/minecraft/client/renderer/RenderType$OutlineProperty
 transitive-accessible class net/minecraft/client/renderer/RenderType$CompositeState
 transitive-extendable class net/minecraft/client/renderer/RenderType$CompositeState
-##transitive-accessible field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
-##transitive-mutable field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
-#transitive-mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
-#transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
-#transitive-mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
+#transitive-accessible field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
+#transitive-mutable field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
+transitive-mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
+transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
+transitive-mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
 transitive-accessible method net/minecraft/client/renderer/RenderStateShard setupGlintTexturing (F)V
 transitive-extendable method net/minecraft/client/renderer/RenderStateShard setupGlintTexturing (F)V
 transitive-accessible class net/minecraft/client/renderer/RenderStateShard$BooleanStateShard
@@ -162,8 +164,8 @@ transitive-accessible class net/minecraft/client/renderer/RenderStateShard$Trans
 transitive-extendable class net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
 transitive-accessible class net/minecraft/client/renderer/RenderStateShard$WriteMaskStateShard
 transitive-extendable class net/minecraft/client/renderer/RenderStateShard$WriteMaskStateShard
-#transitive-accessible field net/minecraft/client/renderer/chunk/RenderChunk wrapped Lnet/minecraft/world/level/chunk/LevelChunk;
-#transitive-mutable field net/minecraft/client/renderer/chunk/RenderChunk wrapped Lnet/minecraft/world/level/chunk/LevelChunk;
+transitive-accessible field net/minecraft/client/renderer/chunk/RenderChunk wrapped Lnet/minecraft/world/level/storage/ServerLevelData;
+transitive-mutable field net/minecraft/client/renderer/chunk/RenderChunk wrapped Lnet/minecraft/world/level/storage/ServerLevelData;
 transitive-accessible method net/minecraft/client/renderer/block/model/BlockElement uvsByFace (Lnet/minecraft/core/Direction;)[F
 transitive-extendable method net/minecraft/client/renderer/block/model/BlockElement uvsByFace (Lnet/minecraft/core/Direction;)[F
 transitive-accessible class net/minecraft/client/renderer/block/model/BlockElement$Deserializer
@@ -178,12 +180,12 @@ transitive-accessible class net/minecraft/client/renderer/block/model/BlockFaceU
 transitive-extendable class net/minecraft/client/renderer/block/model/BlockFaceUV$Deserializer
 transitive-accessible method net/minecraft/client/renderer/block/model/BlockFaceUV$Deserializer <init> ()V
 transitive-extendable method net/minecraft/client/renderer/block/model/BlockFaceUV$Deserializer <init> ()V
-#transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel textureMap # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel textureMap # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel parent # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel parent # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel hasAmbientOcclusion # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel hasAmbientOcclusion # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel textureMap Ljava/util/Map;
+transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel textureMap Ljava/util/Map;
+transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel parent Lnet/minecraft/world/phys/shapes/DiscreteVoxelShape;
+transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel parent Lnet/minecraft/world/phys/shapes/DiscreteVoxelShape;
+transitive-accessible field net/minecraft/client/renderer/block/model/BlockModel hasAmbientOcclusion Z
+transitive-mutable field net/minecraft/client/renderer/block/model/BlockModel hasAmbientOcclusion Z
 transitive-accessible method net/minecraft/client/renderer/block/model/BlockModel bakeFace (Lnet/minecraft/client/renderer/block/model/BlockElement;Lnet/minecraft/client/renderer/block/model/BlockElementFace;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/core/Direction;Lnet/minecraft/client/resources/model/ModelState;)Lnet/minecraft/client/renderer/block/model/BakedQuad;
 transitive-extendable method net/minecraft/client/renderer/block/model/BlockModel bakeFace (Lnet/minecraft/client/renderer/block/model/BlockElement;Lnet/minecraft/client/renderer/block/model/BlockElementFace;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/core/Direction;Lnet/minecraft/client/resources/model/ModelState;)Lnet/minecraft/client/renderer/block/model/BakedQuad;
 transitive-accessible method net/minecraft/client/renderer/block/model/ItemModelGenerator processFrames (ILjava/lang/String;Lnet/minecraft/client/renderer/texture/SpriteContents;)Ljava/util/List;
@@ -200,20 +202,20 @@ transitive-accessible class net/minecraft/client/renderer/block/model/ItemTransf
 transitive-extendable class net/minecraft/client/renderer/block/model/ItemTransform$Deserializer
 transitive-accessible method net/minecraft/client/renderer/block/model/ItemTransform$Deserializer <init> ()V
 transitive-extendable method net/minecraft/client/renderer/block/model/ItemTransform$Deserializer <init> ()V
-#transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_ROTATION # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_ROTATION # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_TRANSLATION # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_TRANSLATION # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_SCALE # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_SCALE # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_ROTATION I
+transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_ROTATION I
+transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_TRANSLATION Lorg/joml/Vector3f;
+transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_TRANSLATION Lorg/joml/Vector3f;
+transitive-accessible field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_SCALE Lorg/joml/Vector3f;
+transitive-mutable field net/minecraft/client/renderer/block/model/ItemTransform$Deserializer DEFAULT_SCALE Lorg/joml/Vector3f;
 transitive-accessible class net/minecraft/client/renderer/block/model/ItemTransforms$Deserializer
 transitive-extendable class net/minecraft/client/renderer/block/model/ItemTransforms$Deserializer
 transitive-accessible method net/minecraft/client/renderer/block/model/ItemTransforms$Deserializer <init> ()V
 transitive-extendable method net/minecraft/client/renderer/block/model/ItemTransforms$Deserializer <init> ()V
 transitive-accessible method net/minecraft/client/renderer/blockentity/BlockEntityRenderers register (Lnet/minecraft/world/level/block/entity/BlockEntityType;Lnet/minecraft/client/renderer/blockentity/BlockEntityRendererProvider;)V
 transitive-extendable method net/minecraft/client/renderer/blockentity/BlockEntityRenderers register (Lnet/minecraft/world/level/block/entity/BlockEntityType;Lnet/minecraft/client/renderer/blockentity/BlockEntityRendererProvider;)V
-#transitive-accessible field net/minecraft/client/renderer/blockentity/SkullBlockRenderer SKIN_BY_TYPE # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/blockentity/SkullBlockRenderer SKIN_BY_TYPE # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/renderer/blockentity/SkullBlockRenderer SKIN_BY_TYPE Ljava/util/Map;
+transitive-mutable field net/minecraft/client/renderer/blockentity/SkullBlockRenderer SKIN_BY_TYPE Ljava/util/Map;
 transitive-accessible method net/minecraft/client/renderer/entity/EntityRenderers register (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/client/renderer/entity/EntityRendererProvider;)V
 transitive-extendable method net/minecraft/client/renderer/entity/EntityRenderers register (Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/client/renderer/entity/EntityRendererProvider;)V
 transitive-accessible method net/minecraft/client/renderer/entity/ItemRenderer renderQuadList (Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;Ljava/util/List;Lnet/minecraft/world/item/ItemStack;II)V
@@ -222,10 +224,10 @@ transitive-accessible method net/minecraft/client/renderer/entity/ItemRenderer r
 transitive-extendable method net/minecraft/client/renderer/entity/ItemRenderer renderModelLists (Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/item/ItemStack;IILcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V
 transitive-accessible method net/minecraft/client/renderer/entity/LivingEntityRenderer addLayer (Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z
 transitive-extendable method net/minecraft/client/renderer/entity/LivingEntityRenderer addLayer (Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z
-#transitive-accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/texture/SpriteContents byMipLevel # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/renderer/texture/SpriteContents animatedTexture # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/renderer/texture/SpriteContents animatedTexture # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
+transitive-mutable field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
+transitive-accessible field net/minecraft/client/renderer/texture/SpriteContents animatedTexture Lnet/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture;
+transitive-mutable field net/minecraft/client/renderer/texture/SpriteContents animatedTexture Lnet/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture;
 transitive-accessible method net/minecraft/client/renderer/texture/atlas/sources/PalettedPermutations <init> (Ljava/util/List;Lnet/minecraft/resources/ResourceLocation;Ljava/util/Map;)V
 transitive-extendable method net/minecraft/client/renderer/texture/atlas/sources/PalettedPermutations <init> (Ljava/util/List;Lnet/minecraft/resources/ResourceLocation;Ljava/util/Map;)V
 transitive-accessible class net/minecraft/client/renderer/texture/atlas/sources/PalettedPermutations$PalettedSpriteSupplier
@@ -242,30 +244,30 @@ transitive-accessible method net/minecraft/client/renderer/texture/atlas/sources
 transitive-extendable method net/minecraft/client/renderer/texture/atlas/sources/Unstitcher$RegionInstance <init> (Lnet/minecraft/client/renderer/texture/atlas/sources/LazyLoadedImage;Lnet/minecraft/client/renderer/texture/atlas/sources/Unstitcher$Region;DD)V
 transitive-accessible method net/minecraft/client/resources/ClientPackSource createVanillaPackSource (Ljava/nio/file/Path;)Lnet/minecraft/server/packs/VanillaPackResources;
 transitive-extendable method net/minecraft/client/resources/ClientPackSource createVanillaPackSource (Ljava/nio/file/Path;)Lnet/minecraft/server/packs/VanillaPackResources;
-#transitive-accessible field net/minecraft/client/resources/TextureAtlasHolder textureAtlas # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/resources/TextureAtlasHolder textureAtlas # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/resources/TextureAtlasHolder textureAtlas Lnet/minecraft/client/renderer/texture/TextureAtlas;
+transitive-mutable field net/minecraft/client/resources/TextureAtlasHolder textureAtlas Lnet/minecraft/client/renderer/texture/TextureAtlas;
 transitive-accessible method net/minecraft/client/resources/model/SimpleBakedModel$Builder <init> (ZZZLnet/minecraft/client/renderer/block/model/ItemTransforms;Lnet/minecraft/client/renderer/block/model/ItemOverrides;)V
 transitive-extendable method net/minecraft/client/resources/model/SimpleBakedModel$Builder <init> (ZZZLnet/minecraft/client/renderer/block/model/ItemTransforms;Lnet/minecraft/client/renderer/block/model/ItemOverrides;)V
-#transitive-accessible field net/minecraft/client/sounds/SoundEngine soundManager # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/sounds/SoundEngine soundManager # TODO: ADD DESC
-#transitive-accessible field net/minecraft/commands/CommandSourceStack source # TODO: ADD DESC
-#transitive-mutable field net/minecraft/commands/CommandSourceStack source # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/sounds/SoundEngine soundManager Lnet/minecraft/client/sounds/SoundManager;
+transitive-mutable field net/minecraft/client/sounds/SoundEngine soundManager Lnet/minecraft/client/sounds/SoundManager;
+transitive-accessible field net/minecraft/commands/CommandSourceStack source Lnet/minecraft/world/level/storage/loot/functions/CopyNameFunction$NameSource;
+transitive-mutable field net/minecraft/commands/CommandSourceStack source Lnet/minecraft/world/level/storage/loot/functions/CopyNameFunction$NameSource;
 transitive-accessible method net/minecraft/commands/arguments/selector/EntitySelectorParser finalizePredicates ()V
 transitive-extendable method net/minecraft/commands/arguments/selector/EntitySelectorParser finalizePredicates ()V
 transitive-accessible method net/minecraft/commands/arguments/selector/EntitySelectorParser parseOptions ()V
 transitive-extendable method net/minecraft/commands/arguments/selector/EntitySelectorParser parseOptions ()V
 transitive-accessible method net/minecraft/commands/arguments/selector/options/EntitySelectorOptions register (Ljava/lang/String;Lnet/minecraft/commands/arguments/selector/options/EntitySelectorOptions$Modifier;Ljava/util/function/Predicate;Lnet/minecraft/network/chat/Component;)V
 transitive-extendable method net/minecraft/commands/arguments/selector/options/EntitySelectorOptions register (Ljava/lang/String;Lnet/minecraft/commands/arguments/selector/options/EntitySelectorOptions$Modifier;Ljava/util/function/Predicate;Lnet/minecraft/network/chat/Component;)V
-#transitive-accessible field net/minecraft/core/IdMapper nextId # TODO: ADD DESC
-#transitive-mutable field net/minecraft/core/IdMapper nextId # TODO: ADD DESC
-#transitive-accessible field net/minecraft/core/IdMapper tToId # TODO: ADD DESC
-#transitive-mutable field net/minecraft/core/IdMapper tToId # TODO: ADD DESC
-#transitive-accessible field net/minecraft/core/IdMapper idToT # TODO: ADD DESC
-#transitive-mutable field net/minecraft/core/IdMapper idToT # TODO: ADD DESC
+transitive-accessible field net/minecraft/core/IdMapper nextId I
+transitive-mutable field net/minecraft/core/IdMapper nextId I
+transitive-accessible field net/minecraft/core/IdMapper tToId Lit/unimi/dsi/fastutil/objects/Reference2IntMap;
+transitive-mutable field net/minecraft/core/IdMapper tToId Lit/unimi/dsi/fastutil/objects/Reference2IntMap;
+transitive-accessible field net/minecraft/core/IdMapper idToT Ljava/util/List;
+transitive-mutable field net/minecraft/core/IdMapper idToT Ljava/util/List;
 transitive-accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
 transitive-extendable method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
-#transitive-accessible field net/minecraft/data/models/ItemModelGenerators GENERATED_TRIM_MODELS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/models/ItemModelGenerators GENERATED_TRIM_MODELS # TODO: ADD DESC
+transitive-accessible field net/minecraft/data/models/ItemModelGenerators GENERATED_TRIM_MODELS Ljava/util/List;
+transitive-mutable field net/minecraft/data/models/ItemModelGenerators GENERATED_TRIM_MODELS Ljava/util/List;
 transitive-accessible class net/minecraft/data/models/ItemModelGenerators$TrimModelData
 transitive-extendable class net/minecraft/data/models/ItemModelGenerators$TrimModelData
 transitive-accessible method net/minecraft/data/models/ItemModelGenerators$TrimModelData <init> (Ljava/lang/String;FLjava/util/Map;)V
@@ -278,10 +280,10 @@ transitive-accessible method net/minecraft/data/loot/BlockLootSubProvider create
 transitive-extendable method net/minecraft/data/loot/BlockLootSubProvider createSelfDropDispatchTable (Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition$Builder;Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer$Builder;)Lnet/minecraft/world/level/storage/loot/LootTable$Builder;
 transitive-accessible method net/minecraft/data/loot/EntityLootSubProvider canHaveLootTable (Lnet/minecraft/world/entity/EntityType;)Z
 transitive-extendable method net/minecraft/data/loot/EntityLootSubProvider canHaveLootTable (Lnet/minecraft/world/entity/EntityType;)Z
-#transitive-accessible field net/minecraft/data/recipes/RecipeProvider recipePathProvider # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/RecipeProvider recipePathProvider # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/RecipeProvider advancementPathProvider # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/RecipeProvider advancementPathProvider # TODO: ADD DESC
+transitive-accessible field net/minecraft/data/recipes/RecipeProvider recipePathProvider Lnet/minecraft/data/PackOutput$PathProvider;
+transitive-mutable field net/minecraft/data/recipes/RecipeProvider recipePathProvider Lnet/minecraft/data/PackOutput$PathProvider;
+transitive-accessible field net/minecraft/data/recipes/RecipeProvider advancementPathProvider Lnet/minecraft/data/PackOutput$PathProvider;
+transitive-mutable field net/minecraft/data/recipes/RecipeProvider advancementPathProvider Lnet/minecraft/data/PackOutput$PathProvider;
 transitive-accessible method net/minecraft/data/recipes/RecipeProvider insideOf (Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/advancements/Criterion;
 transitive-extendable method net/minecraft/data/recipes/RecipeProvider insideOf (Lnet/minecraft/world/level/block/Block;)Lnet/minecraft/advancements/Criterion;
 transitive-accessible method net/minecraft/data/recipes/RecipeProvider inventoryTrigger ([Lnet/minecraft/advancements/critereon/ItemPredicate;)Lnet/minecraft/advancements/Criterion;
@@ -316,52 +318,52 @@ transitive-accessible method net/minecraft/data/recipes/RecipeProvider simpleCoo
 transitive-extendable method net/minecraft/data/recipes/RecipeProvider simpleCookingRecipe (Lnet/minecraft/data/recipes/RecipeOutput;Ljava/lang/String;Lnet/minecraft/world/item/crafting/RecipeSerializer;Lnet/minecraft/world/item/crafting/AbstractCookingRecipe$Factory;ILnet/minecraft/world/level/ItemLike;Lnet/minecraft/world/level/ItemLike;F)V
 transitive-accessible method net/minecraft/data/recipes/RecipeProvider inventoryTrigger ([Lnet/minecraft/advancements/critereon/ItemPredicate$Builder;)Lnet/minecraft/advancements/Criterion;
 transitive-extendable method net/minecraft/data/recipes/RecipeProvider inventoryTrigger ([Lnet/minecraft/advancements/critereon/ItemPredicate$Builder;)Lnet/minecraft/advancements/Criterion;
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider COAL_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider COAL_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider IRON_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider IRON_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider COPPER_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider COPPER_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider DIAMOND_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider DIAMOND_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider GOLD_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider GOLD_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider EMERALD_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider EMERALD_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider REDSTONE_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider REDSTONE_SMELTABLES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider LAPIS_SMELTABLES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider LAPIS_SMELTABLES # TODO: ADD DESC
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider COAL_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider COAL_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider IRON_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider IRON_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider COPPER_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider COPPER_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider DIAMOND_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider DIAMOND_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider GOLD_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider GOLD_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider EMERALD_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider EMERALD_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider REDSTONE_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider REDSTONE_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-accessible field net/minecraft/data/recipes/packs/VanillaRecipeProvider LAPIS_SMELTABLES Lcom/google/common/collect/ImmutableList;
+transitive-mutable field net/minecraft/data/recipes/packs/VanillaRecipeProvider LAPIS_SMELTABLES Lcom/google/common/collect/ImmutableList;
 transitive-accessible method net/minecraft/data/registries/RegistriesDatapackGenerator getName ()Ljava/lang/String;
 transitive-extendable method net/minecraft/data/registries/RegistriesDatapackGenerator getName ()Ljava/lang/String;
 transitive-accessible class net/minecraft/data/tags/IntrinsicHolderTagsProvider$IntrinsicTagAppender
 transitive-extendable class net/minecraft/data/tags/IntrinsicHolderTagsProvider$IntrinsicTagAppender
-#transitive-accessible field net/minecraft/data/tags/TagsProvider builders # TODO: ADD DESC
-#transitive-mutable field net/minecraft/data/tags/TagsProvider builders # TODO: ADD DESC
+transitive-accessible field net/minecraft/data/tags/TagsProvider builders Ljava/util/Map;
+transitive-mutable field net/minecraft/data/tags/TagsProvider builders Ljava/util/Map;
 transitive-accessible method net/minecraft/data/tags/TagsProvider getName ()Ljava/lang/String;
 transitive-extendable method net/minecraft/data/tags/TagsProvider getName ()Ljava/lang/String;
 transitive-accessible class net/minecraft/data/tags/TagsProvider$TagAppender
 transitive-extendable class net/minecraft/data/tags/TagsProvider$TagAppender
-#transitive-accessible field net/minecraft/gametest/framework/GameTestHelper testInfo # TODO: ADD DESC
-#transitive-mutable field net/minecraft/gametest/framework/GameTestHelper testInfo # TODO: ADD DESC
-#transitive-accessible field net/minecraft/gametest/framework/GameTestInfo sequences # TODO: ADD DESC
-#transitive-mutable field net/minecraft/gametest/framework/GameTestInfo sequences # TODO: ADD DESC
+transitive-accessible field net/minecraft/gametest/framework/GameTestHelper testInfo Lnet/minecraft/gametest/framework/GameTestInfo;
+transitive-mutable field net/minecraft/gametest/framework/GameTestHelper testInfo Lnet/minecraft/gametest/framework/GameTestInfo;
+transitive-accessible field net/minecraft/gametest/framework/GameTestInfo sequences Ljava/util/Map;
+transitive-mutable field net/minecraft/gametest/framework/GameTestInfo sequences Ljava/util/Map;
 transitive-accessible method net/minecraft/gametest/framework/GameTestSequence <init> (Lnet/minecraft/gametest/framework/GameTestInfo;)V
 transitive-extendable method net/minecraft/gametest/framework/GameTestSequence <init> (Lnet/minecraft/gametest/framework/GameTestInfo;)V
 transitive-accessible method net/minecraft/resources/RegistryOps <init> (Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;)V
 transitive-extendable method net/minecraft/resources/RegistryOps <init> (Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;)V
 transitive-accessible method net/minecraft/resources/ResourceLocation validNamespaceChar (C)Z
 transitive-extendable method net/minecraft/resources/ResourceLocation validNamespaceChar (C)Z
-#transitive-accessible field net/minecraft/server/MinecraftServer nextTickTimeNanos # TODO: ADD DESC
-#transitive-mutable field net/minecraft/server/MinecraftServer nextTickTimeNanos # TODO: ADD DESC
+transitive-accessible field net/minecraft/server/MinecraftServer nextTickTimeNanos J
+transitive-mutable field net/minecraft/server/MinecraftServer nextTickTimeNanos J
 transitive-accessible class net/minecraft/server/MinecraftServer$ReloadableResources
 transitive-extendable class net/minecraft/server/MinecraftServer$ReloadableResources
 transitive-accessible method net/minecraft/server/MinecraftServer$ReloadableResources <init> (Lnet/minecraft/server/packs/resources/CloseableResourceManager;Lnet/minecraft/server/ReloadableServerResources;)V
 transitive-extendable method net/minecraft/server/MinecraftServer$ReloadableResources <init> (Lnet/minecraft/server/packs/resources/CloseableResourceManager;Lnet/minecraft/server/ReloadableServerResources;)V
 transitive-accessible method net/minecraft/server/level/ChunkMap getVisibleChunkIfPresent (J)Lnet/minecraft/server/level/ChunkHolder;
 transitive-extendable method net/minecraft/server/level/ChunkMap getVisibleChunkIfPresent (J)Lnet/minecraft/server/level/ChunkHolder;
-#transitive-accessible field net/minecraft/server/level/ServerChunkCache level # TODO: ADD DESC
-#transitive-mutable field net/minecraft/server/level/ServerChunkCache level # TODO: ADD DESC
+transitive-accessible field net/minecraft/server/level/ServerChunkCache level Lnet/minecraft/server/level/ServerLevel;
+transitive-mutable field net/minecraft/server/level/ServerChunkCache level Lnet/minecraft/server/level/ServerLevel;
 transitive-accessible method net/minecraft/server/level/ServerLevel getEntities ()Lnet/minecraft/world/level/entity/LevelEntityGetter;
 transitive-extendable method net/minecraft/server/level/ServerLevel getEntities ()Lnet/minecraft/world/level/entity/LevelEntityGetter;
 transitive-accessible method net/minecraft/server/level/ServerPlayer checkRidingStatistics (DDD)V
@@ -376,24 +378,24 @@ transitive-accessible class net/minecraft/server/packs/FilePackResources$SharedZ
 transitive-extendable class net/minecraft/server/packs/FilePackResources$SharedZipFileAccess
 transitive-accessible method net/minecraft/server/packs/FilePackResources$SharedZipFileAccess <init> (Ljava/io/File;)V
 transitive-extendable method net/minecraft/server/packs/FilePackResources$SharedZipFileAccess <init> (Ljava/io/File;)V
-#transitive-accessible field net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry CODEC # TODO: ADD DESC
-#transitive-mutable field net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry CODEC # TODO: ADD DESC
+transitive-accessible field net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry CODEC Lnet/minecraft/util/StringRepresentable$EnumCodec;
+transitive-mutable field net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry CODEC Lnet/minecraft/util/StringRepresentable$EnumCodec;
 transitive-accessible method net/minecraft/server/packs/repository/BuiltInPackSource fixedResources (Lnet/minecraft/server/packs/PackResources;)Lnet/minecraft/server/packs/repository/Pack$ResourcesSupplier;
 transitive-extendable method net/minecraft/server/packs/repository/BuiltInPackSource fixedResources (Lnet/minecraft/server/packs/PackResources;)Lnet/minecraft/server/packs/repository/Pack$ResourcesSupplier;
 transitive-accessible method net/minecraft/server/packs/repository/Pack getDeclaredPackVersions (Ljava/lang/String;Lnet/minecraft/server/packs/metadata/pack/PackMetadataSection;)Lnet/minecraft/util/InclusiveRange;
 transitive-extendable method net/minecraft/server/packs/repository/Pack getDeclaredPackVersions (Ljava/lang/String;Lnet/minecraft/server/packs/metadata/pack/PackMetadataSection;)Lnet/minecraft/util/InclusiveRange;
 transitive-accessible method net/minecraft/server/packs/repository/PackRepository rebuildSelected (Ljava/util/Collection;)Ljava/util/List;
 transitive-extendable method net/minecraft/server/packs/repository/PackRepository rebuildSelected (Ljava/util/Collection;)Ljava/util/List;
-#transitive-accessible field net/minecraft/server/packs/resources/FallbackResourceManager fallbacks # TODO: ADD DESC
-#transitive-mutable field net/minecraft/server/packs/resources/FallbackResourceManager fallbacks # TODO: ADD DESC
+transitive-accessible field net/minecraft/server/packs/resources/FallbackResourceManager fallbacks Ljava/util/List;
+transitive-mutable field net/minecraft/server/packs/resources/FallbackResourceManager fallbacks Ljava/util/List;
 transitive-accessible class net/minecraft/util/datafix/fixes/StructuresBecomeConfiguredFix$Conversion
 transitive-extendable class net/minecraft/util/datafix/fixes/StructuresBecomeConfiguredFix$Conversion
 transitive-accessible method net/minecraft/util/datafix/fixes/StructuresBecomeConfiguredFix$Conversion <init> (Ljava/util/Map;Ljava/lang/String;)V
 transitive-extendable method net/minecraft/util/datafix/fixes/StructuresBecomeConfiguredFix$Conversion <init> (Ljava/util/Map;Ljava/lang/String;)V
 transitive-accessible method net/minecraft/util/thread/BlockableEventLoop submitAsync (Ljava/lang/Runnable;)Ljava/util/concurrent/CompletableFuture;
 transitive-extendable method net/minecraft/util/thread/BlockableEventLoop submitAsync (Ljava/lang/Runnable;)Ljava/util/concurrent/CompletableFuture;
-#transitive-accessible field net/minecraft/world/damagesource/CombatTracker INTENTIONAL_GAME_DESIGN_STYLE # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/damagesource/CombatTracker INTENTIONAL_GAME_DESIGN_STYLE # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/damagesource/CombatTracker INTENTIONAL_GAME_DESIGN_STYLE Lnet/minecraft/network/chat/Style;
+transitive-mutable field net/minecraft/world/damagesource/CombatTracker INTENTIONAL_GAME_DESIGN_STYLE Lnet/minecraft/network/chat/Style;
 transitive-accessible method net/minecraft/world/damagesource/CombatTracker getMostSignificantFall ()Lnet/minecraft/world/damagesource/CombatEntry;
 transitive-extendable method net/minecraft/world/damagesource/CombatTracker getMostSignificantFall ()Lnet/minecraft/world/damagesource/CombatEntry;
 transitive-accessible method net/minecraft/world/damagesource/CombatTracker getFallMessage (Lnet/minecraft/world/damagesource/CombatEntry;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/network/chat/Component;
@@ -406,26 +408,26 @@ transitive-accessible method net/minecraft/world/damagesource/DamageSources sour
 transitive-extendable method net/minecraft/world/damagesource/DamageSources source (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;
 transitive-accessible method net/minecraft/world/damagesource/DamageSources source (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;
 transitive-extendable method net/minecraft/world/damagesource/DamageSources source (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;
-#transitive-accessible field net/minecraft/world/damagesource/DamageSources damageTypes # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/damagesource/DamageSources damageTypes # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/damagesource/DamageSources damageTypes Lnet/minecraft/core/Registry;
+transitive-mutable field net/minecraft/world/damagesource/DamageSources damageTypes Lnet/minecraft/core/Registry;
 transitive-accessible method net/minecraft/world/effect/MobEffect$AttributeTemplate <init> (Lnet/minecraft/resources/ResourceLocation;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V
 transitive-extendable method net/minecraft/world/effect/MobEffect$AttributeTemplate <init> (Lnet/minecraft/resources/ResourceLocation;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V
 transitive-accessible class net/minecraft/world/effect/MobEffect$AttributeTemplate
 transitive-extendable class net/minecraft/world/effect/MobEffect$AttributeTemplate
-#transitive-accessible field net/minecraft/world/entity/Entity ENTITY_COUNTER # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/entity/Entity ENTITY_COUNTER # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
+transitive-mutable field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
 transitive-accessible method net/minecraft/world/entity/Entity getEncodeId ()Ljava/lang/String;
 transitive-extendable method net/minecraft/world/entity/Entity getEncodeId ()Ljava/lang/String;
-#transitive-accessible field net/minecraft/world/entity/ExperienceOrb value # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/entity/ExperienceOrb value # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/entity/ExperienceOrb value I
+transitive-mutable field net/minecraft/world/entity/ExperienceOrb value I
 transitive-accessible method net/minecraft/world/entity/LivingEntity getCurrentSwingDuration ()I
 transitive-extendable method net/minecraft/world/entity/LivingEntity getCurrentSwingDuration ()I
 transitive-accessible method net/minecraft/world/entity/LivingEntity getHitbox ()Lnet/minecraft/world/phys/AABB;
 transitive-extendable method net/minecraft/world/entity/LivingEntity getHitbox ()Lnet/minecraft/world/phys/AABB;
-#transitive-accessible field net/minecraft/world/entity/Mob goalSelector # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/entity/Mob goalSelector # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/entity/Mob targetSelector # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/entity/Mob targetSelector # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+transitive-mutable field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+transitive-accessible field net/minecraft/world/entity/Mob targetSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+transitive-mutable field net/minecraft/world/entity/Mob targetSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
 transitive-accessible method net/minecraft/world/entity/ai/sensing/SensorType <init> (Ljava/util/function/Supplier;)V
 transitive-extendable method net/minecraft/world/entity/ai/sensing/SensorType <init> (Ljava/util/function/Supplier;)V
 transitive-accessible method net/minecraft/world/entity/item/PrimedTnt explode ()V
@@ -476,58 +478,58 @@ transitive-accessible method net/minecraft/world/entity/schedule/Activity <init>
 transitive-extendable method net/minecraft/world/entity/schedule/Activity <init> (Ljava/lang/String;)V
 transitive-accessible method net/minecraft/world/entity/vehicle/VehicleEntity getDropItem ()Lnet/minecraft/world/item/Item;
 transitive-extendable method net/minecraft/world/entity/vehicle/VehicleEntity getDropItem ()Lnet/minecraft/world/item/Item;
-#transitive-accessible field net/minecraft/world/entity/monster/Zombie conversionTime # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/entity/monster/Zombie conversionTime # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/inventory/AnvilMenu repairItemCountCost # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/inventory/AnvilMenu repairItemCountCost # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/entity/monster/Zombie conversionTime I
+transitive-mutable field net/minecraft/world/entity/monster/Zombie conversionTime I
+transitive-accessible field net/minecraft/world/inventory/AnvilMenu repairItemCountCost I
+transitive-mutable field net/minecraft/world/inventory/AnvilMenu repairItemCountCost I
 transitive-accessible method net/minecraft/world/inventory/MenuType <init> (Lnet/minecraft/world/inventory/MenuType$MenuSupplier;Lnet/minecraft/world/flag/FeatureFlagSet;)V
 transitive-extendable method net/minecraft/world/inventory/MenuType <init> (Lnet/minecraft/world/inventory/MenuType$MenuSupplier;Lnet/minecraft/world/flag/FeatureFlagSet;)V
 transitive-accessible class net/minecraft/world/inventory/MenuType$MenuSupplier
 transitive-extendable class net/minecraft/world/inventory/MenuType$MenuSupplier
 transitive-accessible class net/minecraft/world/item/CreativeModeTab$TabVisibility
 transitive-extendable class net/minecraft/world/item/CreativeModeTab$TabVisibility
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs COLORED_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs COLORED_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs SPAWN_EGGS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs SPAWN_EGGS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs SEARCH # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs SEARCH # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs NATURAL_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs NATURAL_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs BUILDING_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs BUILDING_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs FUNCTIONAL_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs FUNCTIONAL_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs COMBAT # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs COMBAT # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs OP_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs OP_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs FOOD_AND_DRINKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs FOOD_AND_DRINKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs TOOLS_AND_UTILITIES # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs TOOLS_AND_UTILITIES # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs HOTBAR # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs HOTBAR # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs INGREDIENTS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs INGREDIENTS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs REDSTONE_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs REDSTONE_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/CreativeModeTabs INVENTORY # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/CreativeModeTabs INVENTORY # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs COLORED_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs COLORED_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs SPAWN_EGGS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs SPAWN_EGGS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs SEARCH Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs SEARCH Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs NATURAL_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs NATURAL_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs BUILDING_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs BUILDING_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs FUNCTIONAL_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs FUNCTIONAL_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs COMBAT Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs COMBAT Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs OP_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs OP_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs FOOD_AND_DRINKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs FOOD_AND_DRINKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs TOOLS_AND_UTILITIES Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs TOOLS_AND_UTILITIES Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs HOTBAR Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs HOTBAR Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs INGREDIENTS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs INGREDIENTS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs REDSTONE_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs REDSTONE_BLOCKS Lnet/minecraft/resources/ResourceKey;
+transitive-accessible field net/minecraft/world/item/CreativeModeTabs INVENTORY Lnet/minecraft/resources/ResourceKey;
+transitive-mutable field net/minecraft/world/item/CreativeModeTabs INVENTORY Lnet/minecraft/resources/ResourceKey;
 transitive-accessible method net/minecraft/world/item/DiggerItem <init> (Lnet/minecraft/world/item/Tier;Lnet/minecraft/tags/TagKey;Lnet/minecraft/world/item/Item$Properties;)V
 transitive-extendable method net/minecraft/world/item/DiggerItem <init> (Lnet/minecraft/world/item/Tier;Lnet/minecraft/tags/TagKey;Lnet/minecraft/world/item/Item$Properties;)V
-#transitive-accessible field net/minecraft/world/item/Item components # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/Item components # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/item/BucketItem content # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/BucketItem content # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentPatch;
+transitive-mutable field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentPatch;
+transitive-accessible field net/minecraft/world/item/BucketItem content Lnet/minecraft/world/level/material/Fluid;
+transitive-mutable field net/minecraft/world/item/BucketItem content Lnet/minecraft/world/level/material/Fluid;
 transitive-accessible method net/minecraft/world/item/SwordItem createToolProperties ()Lnet/minecraft/world/item/component/Tool;
 transitive-extendable method net/minecraft/world/item/SwordItem createToolProperties ()Lnet/minecraft/world/item/component/Tool;
 transitive-accessible method net/minecraft/world/item/Item getPlayerPOVHitResult (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/ClipContext$Fluid;)Lnet/minecraft/world/phys/BlockHitResult;
 transitive-extendable method net/minecraft/world/item/Item getPlayerPOVHitResult (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/ClipContext$Fluid;)Lnet/minecraft/world/phys/BlockHitResult;
 transitive-accessible method net/minecraft/world/item/ItemStack addToTooltip (Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/world/item/Item$TooltipContext;Ljava/util/function/Consumer;Lnet/minecraft/world/item/TooltipFlag;)V
 transitive-extendable method net/minecraft/world/item/ItemStack addToTooltip (Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/world/item/Item$TooltipContext;Ljava/util/function/Consumer;Lnet/minecraft/world/item/TooltipFlag;)V
-#transitive-accessible field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG Lit/unimi/dsi/fastutil/Hash$Strategy;
+transitive-mutable field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG Lit/unimi/dsi/fastutil/Hash$Strategy;
 transitive-accessible method net/minecraft/world/item/context/BlockPlaceContext <init> (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/BlockHitResult;)V
 transitive-extendable method net/minecraft/world/item/context/BlockPlaceContext <init> (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/BlockHitResult;)V
 transitive-accessible method net/minecraft/world/item/context/UseOnContext <init> (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/BlockHitResult;)V
@@ -544,8 +546,8 @@ transitive-accessible method net/minecraft/world/item/crafting/Ingredient$TagVal
 transitive-extendable method net/minecraft/world/item/crafting/Ingredient$TagValue <init> (Lnet/minecraft/tags/TagKey;)V
 transitive-accessible class net/minecraft/world/item/crafting/Ingredient$Value
 transitive-extendable class net/minecraft/world/item/crafting/Ingredient$Value
-#transitive-accessible field net/minecraft/world/item/crafting/ShapedRecipe pattern # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/item/crafting/ShapedRecipe pattern # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/item/crafting/ShapedRecipe pattern Ljava/lang/String;
+transitive-mutable field net/minecraft/world/item/crafting/ShapedRecipe pattern Ljava/lang/String;
 transitive-accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
 transitive-extendable method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
 transitive-accessible method net/minecraft/world/level/GameRules$BooleanValue create (Z)Lnet/minecraft/world/level/GameRules$Type;
@@ -556,56 +558,56 @@ transitive-accessible method net/minecraft/world/level/GameRules$IntegerValue cr
 transitive-extendable method net/minecraft/world/level/GameRules$IntegerValue create (ILjava/util/function/BiConsumer;)Lnet/minecraft/world/level/GameRules$Type;
 transitive-accessible method net/minecraft/world/level/GameRules$IntegerValue create (I)Lnet/minecraft/world/level/GameRules$Type;
 transitive-extendable method net/minecraft/world/level/GameRules$IntegerValue create (I)Lnet/minecraft/world/level/GameRules$Type;
-#transitive-accessible field net/minecraft/world/level/Level oRainLevel # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/Level oRainLevel # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/Level rainLevel # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/Level rainLevel # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/Level oThunderLevel # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/Level oThunderLevel # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/Level thunderLevel # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/Level thunderLevel # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/Level oRainLevel F
+transitive-mutable field net/minecraft/world/level/Level oRainLevel F
+transitive-accessible field net/minecraft/world/level/Level rainLevel F
+transitive-mutable field net/minecraft/world/level/Level rainLevel F
+transitive-accessible field net/minecraft/world/level/Level oThunderLevel F
+transitive-mutable field net/minecraft/world/level/Level oThunderLevel F
+transitive-accessible field net/minecraft/world/level/Level thunderLevel F
+transitive-mutable field net/minecraft/world/level/Level thunderLevel F
 transitive-accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 transitive-extendable class net/minecraft/world/level/biome/Biome$ClimateSettings
 transitive-accessible method net/minecraft/world/level/biome/Biome$ClimateSettings <init> (ZFLnet/minecraft/world/level/biome/Biome$TemperatureModifier;F)V
 transitive-extendable method net/minecraft/world/level/biome/Biome$ClimateSettings <init> (ZFLnet/minecraft/world/level/biome/Biome$TemperatureModifier;F)V
 transitive-accessible method net/minecraft/world/level/biome/BiomeGenerationSettings <init> (Ljava/util/Map;Ljava/util/List;)V
 transitive-extendable method net/minecraft/world/level/biome/BiomeGenerationSettings <init> (Ljava/util/Map;Ljava/util/List;)V
-#transitive-accessible field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder features # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder features # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder carvers # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder carvers # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder features Lnet/minecraft/core/HolderSet;
+transitive-mutable field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder features Lnet/minecraft/core/HolderSet;
+transitive-accessible field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder carvers Ljava/util/Map;
+transitive-mutable field net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder carvers Ljava/util/Map;
 transitive-accessible method net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder addFeatureStepsUpTo (I)V
 transitive-extendable method net/minecraft/world/level/biome/BiomeGenerationSettings$PlainBuilder addFeatureStepsUpTo (I)V
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder fogColor # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder fogColor # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterColor # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterColor # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterFogColor # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterFogColor # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder skyColor # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder skyColor # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder foliageColorOverride # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder foliageColorOverride # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorOverride # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorOverride # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorModifier # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorModifier # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientParticle # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientParticle # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientLoopSoundEvent # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientLoopSoundEvent # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientMoodSettings # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientMoodSettings # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientAdditionsSettings # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientAdditionsSettings # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder backgroundMusic # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder backgroundMusic # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder spawners # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder spawners # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder mobSpawnCosts # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder mobSpawnCosts # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder creatureGenerationProbability # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder creatureGenerationProbability # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder fogColor Ljava/util/OptionalInt;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder fogColor Ljava/util/OptionalInt;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterColor Ljava/util/OptionalInt;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterColor Ljava/util/OptionalInt;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterFogColor Ljava/util/OptionalInt;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder waterFogColor Ljava/util/OptionalInt;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder skyColor Ljava/util/OptionalInt;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder skyColor Ljava/util/OptionalInt;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder foliageColorOverride Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder foliageColorOverride Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorOverride Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorOverride Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientParticle Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientParticle Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientLoopSoundEvent Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientLoopSoundEvent Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientMoodSettings Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientMoodSettings Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientAdditionsSettings Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder ambientAdditionsSettings Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder backgroundMusic Ljava/util/Optional;
+transitive-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects$Builder backgroundMusic Ljava/util/Optional;
+transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder spawners Ljava/util/Map;
+transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder spawners Ljava/util/Map;
+transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder mobSpawnCosts Ljava/util/Map;
+transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder mobSpawnCosts Ljava/util/Map;
+transitive-accessible field net/minecraft/world/level/biome/MobSpawnSettings$Builder creatureGenerationProbability F
+transitive-mutable field net/minecraft/world/level/biome/MobSpawnSettings$Builder creatureGenerationProbability F
 transitive-accessible method net/minecraft/world/level/block/AttachedStemBlock <init> (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 transitive-extendable method net/minecraft/world/level/block/AttachedStemBlock <init> (Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 transitive-accessible method net/minecraft/world/level/block/AzaleaBlock <init> (Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
@@ -820,12 +822,12 @@ transitive-accessible method net/minecraft/world/level/block/FireBlock getBurnOd
 transitive-extendable method net/minecraft/world/level/block/FireBlock getBurnOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
 transitive-accessible method net/minecraft/world/level/block/FireBlock getIgniteOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
 transitive-extendable method net/minecraft/world/level/block/FireBlock getIgniteOdds (Lnet/minecraft/world/level/block/state/BlockState;)I
-#transitive-accessible field net/minecraft/world/level/block/LiquidBlock fluid # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/block/LiquidBlock fluid # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/block/PointedDripstoneBlock LAVA_TRANSFER_PROBABILITY_PER_RANDOM_TICK # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/block/PointedDripstoneBlock LAVA_TRANSFER_PROBABILITY_PER_RANDOM_TICK # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/block/PointedDripstoneBlock WATER_TRANSFER_PROBABILITY_PER_RANDOM_TICK # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/block/PointedDripstoneBlock WATER_TRANSFER_PROBABILITY_PER_RANDOM_TICK # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/block/LiquidBlock fluid Lnet/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProvider;
+transitive-mutable field net/minecraft/world/level/block/LiquidBlock fluid Lnet/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProvider;
+transitive-accessible field net/minecraft/world/level/block/PointedDripstoneBlock LAVA_TRANSFER_PROBABILITY_PER_RANDOM_TICK F
+transitive-mutable field net/minecraft/world/level/block/PointedDripstoneBlock LAVA_TRANSFER_PROBABILITY_PER_RANDOM_TICK F
+transitive-accessible field net/minecraft/world/level/block/PointedDripstoneBlock WATER_TRANSFER_PROBABILITY_PER_RANDOM_TICK F
+transitive-mutable field net/minecraft/world/level/block/PointedDripstoneBlock WATER_TRANSFER_PROBABILITY_PER_RANDOM_TICK F
 transitive-accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
 transitive-extendable class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
 transitive-accessible method net/minecraft/world/level/block/entity/HopperBlockEntity setCooldown (I)V
@@ -838,26 +840,26 @@ transitive-accessible method net/minecraft/world/level/block/state/properties/Bl
 transitive-extendable method net/minecraft/world/level/block/state/properties/BlockSetType register (Lnet/minecraft/world/level/block/state/properties/BlockSetType;)Lnet/minecraft/world/level/block/state/properties/BlockSetType;
 transitive-accessible method net/minecraft/world/level/block/state/properties/WoodType register (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/world/level/block/state/properties/WoodType;
 transitive-extendable method net/minecraft/world/level/block/state/properties/WoodType register (Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/world/level/block/state/properties/WoodType;
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer barrierNoise # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer barrierNoise # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer lavaNoise # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer lavaNoise # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferCache # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferCache # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferLocationCache # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferLocationCache # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer shouldScheduleFluidUpdate # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer shouldScheduleFluidUpdate # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridX # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridX # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridY # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridY # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridZ # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridZ # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeX # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeX # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeZ # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeZ # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer barrierNoise Lnet/minecraft/world/level/levelgen/DensityFunction;
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer barrierNoise Lnet/minecraft/world/level/levelgen/DensityFunction;
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer lavaNoise Lnet/minecraft/world/level/levelgen/DensityFunction;
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer lavaNoise Lnet/minecraft/world/level/levelgen/DensityFunction;
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferCache [Lnet/minecraft/world/level/levelgen/Aquifer$FluidStatus;
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferCache [Lnet/minecraft/world/level/levelgen/Aquifer$FluidStatus;
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferLocationCache [J
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer aquiferLocationCache [J
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer shouldScheduleFluidUpdate Z
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer shouldScheduleFluidUpdate Z
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridX I
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridX I
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridY I
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridY I
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridZ I
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer minGridZ I
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeX I
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeX I
+transitive-accessible field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeZ I
+transitive-mutable field net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridSizeZ I
 transitive-accessible method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer similarity (II)D
 transitive-extendable method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer similarity (II)D
 transitive-accessible method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer getIndex (III)I
@@ -868,20 +870,20 @@ transitive-accessible method net/minecraft/world/level/levelgen/Aquifer$NoiseBas
 transitive-extendable method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridY (I)I
 transitive-accessible method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridZ (I)I
 transitive-extendable method net/minecraft/world/level/levelgen/Aquifer$NoiseBasedAquifer gridZ (I)I
-#transitive-accessible field net/minecraft/world/level/levelgen/Beardifier pieceIterator # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Beardifier pieceIterator # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/Beardifier junctionIterator # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/Beardifier junctionIterator # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/levelgen/Beardifier pieceIterator Lit/unimi/dsi/fastutil/objects/ObjectListIterator;
+transitive-mutable field net/minecraft/world/level/levelgen/Beardifier pieceIterator Lit/unimi/dsi/fastutil/objects/ObjectListIterator;
+transitive-accessible field net/minecraft/world/level/levelgen/Beardifier junctionIterator Lit/unimi/dsi/fastutil/objects/ObjectListIterator;
+transitive-mutable field net/minecraft/world/level/levelgen/Beardifier junctionIterator Lit/unimi/dsi/fastutil/objects/ObjectListIterator;
 transitive-accessible method net/minecraft/world/level/levelgen/Beardifier getBuryContribution (DDD)D
 transitive-extendable method net/minecraft/world/level/levelgen/Beardifier getBuryContribution (DDD)D
 transitive-accessible method net/minecraft/world/level/levelgen/Beardifier getBeardContribution (IIII)D
 transitive-extendable method net/minecraft/world/level/levelgen/Beardifier getBeardContribution (IIII)D
-#transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource ALL_BLOCKS # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource ALL_BLOCKS # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource GRID_WIDTH # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource GRID_WIDTH # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource GRID_HEIGHT # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource GRID_HEIGHT # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource ALL_BLOCKS Ljava/util/List;
+transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource ALL_BLOCKS Ljava/util/List;
+transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource GRID_WIDTH I
+transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource GRID_WIDTH I
+transitive-accessible field net/minecraft/world/level/levelgen/DebugLevelSource GRID_HEIGHT I
+transitive-mutable field net/minecraft/world/level/levelgen/DebugLevelSource GRID_HEIGHT I
 transitive-accessible class net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator
 transitive-extendable class net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator
 transitive-accessible method net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator iterateNoiseColumn (Lnet/minecraft/world/level/LevelHeightAccessor;Lnet/minecraft/world/level/levelgen/RandomState;IILorg/apache/commons/lang3/mutable/MutableObject;Ljava/util/function/Predicate;)Ljava/util/OptionalInt;
@@ -908,18 +910,18 @@ transitive-accessible method net/minecraft/world/level/levelgen/feature/treedeco
 transitive-extendable method net/minecraft/world/level/levelgen/feature/treedecorators/TreeDecoratorType <init> (Lcom/mojang/serialization/MapCodec;)V
 transitive-accessible method net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType <init> (Lcom/mojang/serialization/MapCodec;)V
 transitive-extendable method net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType <init> (Lcom/mojang/serialization/MapCodec;)V
-#transitive-accessible field net/minecraft/world/level/portal/PortalForcer level # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/portal/PortalForcer level # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/portal/PortalForcer level Lnet/minecraft/server/level/ServerLevel;
+transitive-mutable field net/minecraft/world/level/portal/PortalForcer level Lnet/minecraft/server/level/ServerLevel;
 transitive-accessible method net/minecraft/world/level/saveddata/maps/MapItemSavedData addDecoration (Lnet/minecraft/core/Holder;Lnet/minecraft/world/level/LevelAccessor;Ljava/lang/String;DDDLnet/minecraft/network/chat/Component;)V
 transitive-extendable method net/minecraft/world/level/saveddata/maps/MapItemSavedData addDecoration (Lnet/minecraft/core/Holder;Lnet/minecraft/world/level/LevelAccessor;Ljava/lang/String;DDDLnet/minecraft/network/chat/Component;)V
 transitive-accessible method net/minecraft/world/level/saveddata/maps/MapItemSavedData removeDecoration (Ljava/lang/String;)V
 transitive-extendable method net/minecraft/world/level/saveddata/maps/MapItemSavedData removeDecoration (Ljava/lang/String;)V
 transitive-accessible method net/minecraft/world/level/storage/LevelResource <init> (Ljava/lang/String;)V
 transitive-extendable method net/minecraft/world/level/storage/LevelResource <init> (Ljava/lang/String;)V
-#transitive-accessible field net/minecraft/world/level/storage/loot/LootPool rolls # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/storage/loot/LootPool rolls # TODO: ADD DESC
-#transitive-accessible field net/minecraft/world/level/storage/loot/LootPool bonusRolls # TODO: ADD DESC
-#transitive-mutable field net/minecraft/world/level/storage/loot/LootPool bonusRolls # TODO: ADD DESC
+transitive-accessible field net/minecraft/world/level/storage/loot/LootPool rolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider;
+transitive-mutable field net/minecraft/world/level/storage/loot/LootPool rolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider;
+transitive-accessible field net/minecraft/world/level/storage/loot/LootPool bonusRolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider;
+transitive-mutable field net/minecraft/world/level/storage/loot/LootPool bonusRolls Lnet/minecraft/world/level/storage/loot/providers/number/NumberProvider;
 transitive-accessible method net/minecraft/server/network/ServerConfigurationPacketListenerImpl finishCurrentTask (Lnet/minecraft/server/network/ConfigurationTask$Type;)V
 transitive-extendable method net/minecraft/server/network/ServerConfigurationPacketListenerImpl finishCurrentTask (Lnet/minecraft/server/network/ConfigurationTask$Type;)V
 transitive-accessible class com/mojang/blaze3d/vertex/VertexFormatElement$Usage$SetupState
@@ -1032,10 +1034,10 @@ transitive-accessible method net/minecraft/world/item/enchantment/Enchantment bl
 transitive-extendable method net/minecraft/world/item/enchantment/Enchantment blockHitContext (Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/storage/loot/LootContext;
 transitive-accessible method net/minecraft/world/item/enchantment/Enchantment applyEffects (Ljava/util/List;Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)V
 transitive-extendable method net/minecraft/world/item/enchantment/Enchantment applyEffects (Ljava/util/List;Lnet/minecraft/world/level/storage/loot/LootContext;Ljava/util/function/Consumer;)V
-#transitive-accessible field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_WIDTH # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_WIDTH # TODO: ADD DESC
-#transitive-accessible field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_HEIGHT # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_HEIGHT # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_WIDTH I
+transitive-mutable field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_WIDTH I
+transitive-accessible field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_HEIGHT I
+transitive-mutable field net/minecraft/client/gui/components/LogoRenderer LOGO_TEXTURE_HEIGHT I
 transitive-accessible method net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction simpleBuilder (Ljava/util/function/Function;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;
 transitive-extendable method net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction simpleBuilder (Ljava/util/function/Function;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;
 transitive-accessible method net/minecraft/world/level/storage/loot/functions/FilteredFunction <init> (Ljava/util/List;Lnet/minecraft/advancements/critereon/ItemPredicate;Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V
@@ -1054,8 +1056,8 @@ transitive-accessible method net/minecraft/world/level/storage/loot/functions/Se
 transitive-extendable method net/minecraft/world/level/storage/loot/functions/SetWrittenBookPagesFunction <init> (Ljava/util/List;Ljava/util/List;Lnet/minecraft/world/level/storage/loot/functions/ListOperation;)V
 transitive-accessible method net/minecraft/world/level/storage/loot/functions/ToggleTooltips <init> (Ljava/util/List;Ljava/util/Map;)V
 transitive-extendable method net/minecraft/world/level/storage/loot/functions/ToggleTooltips <init> (Ljava/util/List;Ljava/util/Map;)V
-#transitive-accessible field net/minecraft/client/resources/SplashManager SPLASHES_LOCATION # TODO: ADD DESC
-#transitive-mutable field net/minecraft/client/resources/SplashManager SPLASHES_LOCATION # TODO: ADD DESC
+transitive-accessible field net/minecraft/client/resources/SplashManager SPLASHES_LOCATION Lnet/minecraft/resources/ResourceLocation;
+transitive-mutable field net/minecraft/client/resources/SplashManager SPLASHES_LOCATION Lnet/minecraft/resources/ResourceLocation;
 transitive-accessible class net/minecraft/world/item/CreativeModeTab$ItemDisplayBuilder
 transitive-accessible class net/minecraft/client/gui/screens/advancements/AdvancementTabType
 transitive-accessible field net/minecraft/client/renderer/ItemBlockRenderTypes TYPE_BY_BLOCK Ljava/util/Map;

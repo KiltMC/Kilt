@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.ConnectionInjection;
+import xyz.bluspring.kilt.injections.network.ConnectionInjection;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;

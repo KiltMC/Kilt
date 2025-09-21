@@ -67,6 +67,7 @@
         "compat.architectury.RegistrarManagerImplMixin",
         "compat.fabric_api.Int2ObjectMapTrackerMixin",
         "compat.fabric_api.PackRepositoryMixin",
+        "compat.fabric_api.recipe.CustomIngredientPacketCodecMixin",
         "compat.forge.alexscaves.PotionUtilsMixin",
         "compat.forge.blueprint.RemoldedResourceManagerMixin",
         "compat.forge.decocraft.JsonParserMixin",

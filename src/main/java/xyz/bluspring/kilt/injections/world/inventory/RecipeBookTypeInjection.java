@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.injections.world.inventory;
 
 import net.minecraft.world.inventory.RecipeBookType;
+import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
 import xyz.bluspring.kilt.mixin.RecipeBookTypeAccessor;
 import xyz.bluspring.kilt.util.EnumUtils;
 
@@ -11,5 +12,9 @@ public interface RecipeBookTypeInjection {
                 name, (size) -> RecipeBookTypeAccessor.createRecipeBookType(name, size),
                 (values) -> RecipeBookTypeAccessor.setValues(values.toArray(new RecipeBookType[0]))
         );
+    }
+
+    static ExtensionInfo getExtensionInfo() {
+        return ExtensionInfo.nonExtended(RecipeBookType.class);
     }
 }

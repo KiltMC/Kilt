@@ -50,7 +50,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.entity.PlayerInjection;
+import xyz.bluspring.kilt.injections.world.entity.PlayerInjection;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;

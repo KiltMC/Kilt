@@ -2,9 +2,11 @@ package xyz.bluspring.kilt.injections.tags;
 
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 
 import java.util.stream.Stream;
 
+@FabricInjectedInterface(TagBuilder.class)
 public interface TagBuilderInjection {
     default TagBuilder remove(final TagEntry entry) {
         throw new IllegalStateException();

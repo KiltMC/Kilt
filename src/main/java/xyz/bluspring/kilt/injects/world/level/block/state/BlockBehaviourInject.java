@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.world.level.block.state.BlockBehaviourPropertiesInjection;
+import xyz.bluspring.kilt.injections.world.level.block.state.BlockBehaviour$PropertiesInjection;
 import xyz.bluspring.kilt.mixin.PropertiesAccessor;
 
 import java.util.function.Supplier;
@@ -28,8 +28,8 @@ public class BlockBehaviourInject {
 
         if (lootTableCache != null) {
             lootTableSupplier = () -> lootTableCache;
-        } else if (((BlockBehaviourPropertiesInjection) properties).getLootTableSupplier() != null) {
-            lootTableSupplier = ((BlockBehaviourPropertiesInjection) properties).getLootTableSupplier();
+        } else if (((BlockBehaviour$PropertiesInjection) properties).getLootTableSupplier() != null) {
+            lootTableSupplier = ((BlockBehaviour$PropertiesInjection) properties).getLootTableSupplier();
         } else {
             lootTableSupplier = () -> {
                 var registryName = ForgeRegistries.BLOCKS.getKey((Block) (Object) this);
@@ -46,7 +46,7 @@ public class BlockBehaviourInject {
     }
 
     @Mixin(BlockBehaviour.Properties.class)
-    public static class PropertiesInject implements BlockBehaviourPropertiesInjection {
+    public static class PropertiesInject implements BlockBehaviour$PropertiesInjection {
         private Supplier<ResourceLocation> lootTableSupplier;
 
         @Override

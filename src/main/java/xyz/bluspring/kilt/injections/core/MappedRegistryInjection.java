@@ -1,14 +1,12 @@
 package xyz.bluspring.kilt.injections.core;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
+@FabricInjectedInterface(MappedRegistry.class)
 public interface MappedRegistryInjection<T> {
     default void unfreeze() {
         throw new IllegalStateException();

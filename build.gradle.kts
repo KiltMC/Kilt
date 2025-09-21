@@ -11,7 +11,7 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("fabric-loom") version "1.11-SNAPSHOT"
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
@@ -78,6 +78,10 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
+
+        maven("https://maven.fabricmc.net") {
+            name = "FabricMC"
+        }
 
         maven("https://mvn.devos.one/releases/") {
             name = "devOS Maven"
@@ -166,6 +170,10 @@ allprojects {
     if (project.name == "loader" || (project.parent?.name == "loader"))
         return@allprojects
 
+    // Prevent the annotation processor from going through it too.
+    if (project.name == "ap")
+        return@allprojects
+
     apply(plugin = "fabric-loom")
 
     dependencies {
@@ -180,10 +188,9 @@ allprojects {
         // Just because I like Kotlin more than Java
         modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
-        // TODO: remove this when 0.5 is mainlined into Fabric
-        (implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
+        /*(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
             exclude("org.ow2.asm")
-        })!!)
+        })!!)*/
 
         implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
@@ -211,14 +218,14 @@ allprojects {
 
 dependencies {
     // Forge Reimplementations
-    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
+    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "milk", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
     portingLibs.forEach { lib ->
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
     modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
 
     // JiJ'd into main JAR alone
-    include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
+    //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
     include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
@@ -376,7 +383,7 @@ tasks {
             val forgePatches = readDir(File("$projectDir/forge/patches"))
             val forgePatchCount = forgePatches.size
 
-            val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/injects"))
             val kiltInjectCount = kiltInjects.size
 
             forgePatches.filter {
@@ -482,6 +489,8 @@ tasks {
             }
         }
 
+        filesMatching("fabric.mod.json", AppendInjectedInterfaces.Applicator(project))
+
         // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
         filesMatching("META-INF/mods.toml") {
             this.name = "forge.mods.toml"
@@ -565,27 +574,6 @@ tasks {
                 project.property("minecraft_version") as String,
                 layout.buildDirectory.get().asFile
             )
-        }
-    }
-
-    register("createInjectedFromNeo") {
-        group = "kilt"
-
-        doLast {
-            val remapper = AppendInjectedInterfaces()
-            val neoFile = File("$projectDir/forge/src/main/resources/META-INF/injected-interfaces.json")
-            val fmjFile = File("$projectDir/src/main/resources/fabric.mod.json")
-
-            val fmj = JsonParser.parseReader(fmjFile.reader()).asJsonObject
-
-            remapper.convertNeoToFMJ(
-                JsonParser.parseReader(neoFile.reader()).asJsonObject,
-                fmj,
-                project.property("minecraft_version") as String,
-                layout.buildDirectory.get().asFile
-            )
-
-            fmjFile.writeText(remapper.gson.toJson(fmj))
         }
     }
 

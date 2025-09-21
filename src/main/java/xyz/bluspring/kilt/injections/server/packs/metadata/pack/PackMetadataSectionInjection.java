@@ -9,7 +9,7 @@ import java.util.Map;
 public interface PackMetadataSectionInjection {
     static PackMetadataSection create(Component description, int packFormat, Map<PackType, Integer> packTypeVersions) {
         var section = new PackMetadataSection(description, packFormat);
-        ((PackMetadataSectionInjection) section).kilt$setPackTypeVersions(packTypeVersions);
+        section.kilt$setPackTypeVersions(packTypeVersions);
         return section;
     }
 

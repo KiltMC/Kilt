@@ -18,7 +18,7 @@ import net.neoforged.neoforge.common.ToolActions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.item.AxeItemInjection;
+import xyz.bluspring.kilt.injections.world.item.AxeItemInjection;
 
 import java.util.Optional;
 import java.util.function.Function;

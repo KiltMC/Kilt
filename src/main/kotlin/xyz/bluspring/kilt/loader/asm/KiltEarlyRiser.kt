@@ -263,7 +263,7 @@ class KiltEarlyRiser : Runnable {
             val grassColorModifierMapped =
                 KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
             val biomeInjectionName =
-                "xyz/bluspring/kilt/injections/world/biome/BiomeSpecialEffectsGrassColorModifierInjection"
+                "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffectsGrassColorModifierInjection"
             val colorModifierName = "$grassColorModifierMapped\$ColorModifier"
             val modifyColor = mappingResolver.mapMethodName(
                 "intermediary",

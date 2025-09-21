@@ -12,6 +12,6 @@ import xyz.bluspring.kilt.injections.world.inventory.RecipeBookTypeInjection;
 public class RecipeBookTypeInject implements RecipeBookTypeInjection, IExtensibleEnum {
     @CreateStatic
     private static ExtensionInfo getExtensionInfo() {
-        return ExtensionInfo.nonExtended((Class) RecipeBookType.class);
+        return ExtensionInfo.nonExtended(RecipeBookType.class);
     }
 }

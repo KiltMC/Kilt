@@ -714,7 +714,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         val instanceArgs = mutableSetOf<Any>()
 
                         for (type in parameterTypes) {
-                            val instance = constructorArgs[type] ?: throw IllegalStateException("Mod constructor has unsupported argument $type.")
+                            val instance = constructorArgs[type]
+                                ?: throw IllegalStateException("Mod constructor has unsupported argument $type.")
 
                             if (!foundArgs.add(type)) {
                                 throw IllegalStateException("Duplicate mod constructor argument type $type")

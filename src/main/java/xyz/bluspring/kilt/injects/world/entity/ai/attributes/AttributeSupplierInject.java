@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.entity.AttributeSupplierBuilderInjection;
+import xyz.bluspring.kilt.injections.world.entity.AttributeSupplierBuilderInjection;
 import xyz.bluspring.kilt.mixin.AttributeSupplierAccessor;
 import xyz.bluspring.kilt.mixin.AttributeSupplierBuilderAccessor;
 

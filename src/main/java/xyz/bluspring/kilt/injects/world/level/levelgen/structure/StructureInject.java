@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.world.structure.StructureInjection;
+import xyz.bluspring.kilt.injections.world.level.levelgen.structure.StructureInjection;
 
 @Mixin(Structure.class)
 public class StructureInject implements StructureInjection {

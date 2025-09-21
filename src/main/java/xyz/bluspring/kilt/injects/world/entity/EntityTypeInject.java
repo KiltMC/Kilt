@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.entity.EntityTypeInjection;
+import xyz.bluspring.kilt.injections.world.entity.EntityTypeInjection;
 
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;

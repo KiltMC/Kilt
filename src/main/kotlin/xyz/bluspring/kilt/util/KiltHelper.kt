@@ -200,4 +200,9 @@ object KiltHelper {
 
         throw exception
     }
+
+    @JvmStatic
+    fun createMixinException(injection: Class<*>, methodName: String): RuntimeException {
+        return RuntimeException("Go yell at Naz, he forgot to implement ${injection.simpleName}#$methodName")
+    }
 }
