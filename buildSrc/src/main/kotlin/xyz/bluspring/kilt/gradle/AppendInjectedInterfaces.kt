@@ -17,6 +17,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.collections.joinToString
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.name
@@ -68,94 +69,82 @@ class AppendInjectedInterfaces(reader: Reader) : FilterReader(reader) {
                 }
             }
 
+            val injected = mutableMapOf<String, MutableList<String>>()
+
             // Convert the NeoForge injected interfaces first.
-            convertNeoInjectedInterfaces(mojToIntermediary)
+            for ((sourceClass, injections) in convertNeoInjectedInterfaces(rootProjectDirPath)) {
+                injected.computeIfAbsent(sourceClass) { mutableListOf() }.addAll(injections)
+            }
 
             // Then try to parse and add our custom injections
-            parseAndAddKiltInjections(mojToIntermediary)
+            for ((sourceClass, injectionClass) in parseAndAddKiltInjections(rootProjectDirPath)) {
+                injected.computeIfAbsent(sourceClass) { mutableListOf() }.add(injectionClass)
+            }
+
+            // Now we write it to the FMJ
+            val fmj = JsonParser.parseReader(this.`in`).asJsonObject
+            val fmjInjectedInterfaces = fmj.getAsJsonObject("custom").getAsJsonObject("loom:injected_interfaces")
+
+            for ((className, injections) in injected) {
+                fmjInjectedInterfaces.add((mojToIntermediary[className] ?: className).replace("$", "\\u0024"), JsonArray().apply {
+                    for (string in injections) {
+                        this.add(string.replace("$", "\\u0024"))
+                    }
+                })
+            }
+
+            this.`in` = StringReader(gson.toJson(fmj))
+            this.hasExpanded = true
         }
 
         return super.read(cbuf, off, len)
     }
 
-    @OptIn(ExperimentalPathApi::class)
-    private fun parseAndAddKiltInjections(mojToIntermediary: Map<String, String>) {
-        val fmj = JsonParser.parseReader(this.`in`).asJsonObject
-        val fmjInjectedInterfaces = fmj.getAsJsonObject("custom").getAsJsonObject("loom:injected_interfaces")
-        val injectionPath = rootProjectDirPath.resolve("src/main/java/xyz/bluspring/kilt/injections")
+    companion object {
+        @OptIn(ExperimentalPathApi::class)
+        fun parseAndAddKiltInjections(rootPath: Path): Map<String, String> {
+            val map = mutableMapOf<String, String>()
+            val injectionPath = rootPath.resolve("src/main/java/xyz/bluspring/kilt/injections")
 
-        for (path in injectionPath.walk()) {
-            val relativePath = path.relativeTo(injectionPath)
-            val pathName = relativePath.getName(0).name
-            var rootPath = "net/minecraft"
+            for (path in injectionPath.walk()) {
+                val relativePath = path.relativeTo(injectionPath)
+                val pathName = relativePath.getName(0).name
+                var rootPath = "net/minecraft"
 
-            if (pathName == "sodium")
-                continue
-
-            if (pathName == "blaze3d" || pathName == "math")
-                rootPath = "com/mojang"
-
-            val mcClass = "$rootPath/${relativePath.joinToString("/").replace("Injection.java", "")}"
-            val mapped = mojToIntermediary[mcClass] ?: mcClass
-            val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "")
-
-            if (mapped == mcClass) {
-                if (rootPath == "net/minecraft") {
-                    println("Failed to map injected class $mcClass! Skipping...")
-                    continue
-                }
-            }
-
-            if (!fmjInjectedInterfaces.has(mapped)) {
-                fmjInjectedInterfaces.add(mapped, JsonArray().apply {
-                    this.add(injected)
-                })
-            } else {
-                val existing = fmjInjectedInterfaces.getAsJsonArray(mapped)
-                if (existing.any { it.asString == injected })
+                if (pathName == "sodium")
                     continue
 
-                existing.add(injected)
+                if (pathName == "blaze3d" || pathName == "math")
+                    rootPath = "com/mojang"
+
+                val mcClass = "$rootPath/${relativePath.joinToString("/").replace("Injection.java", "")}"
+                val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "")
+                map[mcClass] = injected
             }
+
+            return map
         }
 
-        this.`in` = StringReader(gson.toJson(fmj))
-    }
+        fun convertNeoInjectedInterfaces(rootPath: Path): Map<String, List<String>> {
+            val map = mutableMapOf<String, List<String>>()
+            val neo = JsonParser.parseReader(rootPath.resolve("forge/src/main/resources/META-INF/injected-interfaces.json").reader()).asJsonObject
 
-    private fun convertNeoInjectedInterfaces(mojToIntermediary: Map<String, String>) {
-        val neo = JsonParser.parseReader(rootProjectDirPath.resolve("forge/src/main/resources/META-INF/injected-interfaces.json").reader()).asJsonObject
-        val fmj = JsonParser.parseReader(this.`in`).asJsonObject
-
-        val fmjInjectedInterfaces = fmj.getAsJsonObject("custom").getAsJsonObject("loom:injected_interfaces")
-
-        for ((mcClass, injected) in neo.entrySet()) {
-            val mapped = mojToIntermediary[mcClass] ?: mcClass
-
-            if (mapped == mcClass)
-                println("Failing to map injected class $mcClass (got: $mapped)")
-
-            if (!fmjInjectedInterfaces.has(mapped)) {
-                fmjInjectedInterfaces.add(mapped, injected)
-            } else {
-                val existing = fmjInjectedInterfaces.getAsJsonArray(mapped)
-                val unique = injected.asJsonArray.filter { !existing.contains(it) }
-
-                for (element in unique) {
+            for ((mcClass, injected) in neo.entrySet()) {
+                map[mcClass] = injected.asJsonArray.map { element ->
                     if (element.asString.contains("<"))
                         if (element.asString.contains("<T>"))
-                            existing.add(element.asString.replace("<T>", "<TT;>"))
+                            element.asString.replace("<T>", "<TT;>")
                         else if (element.asString.contains("<ResourceKey<?>>"))
-                            existing.add(element.asString.replace("<ResourceKey<?>>", "<Lnet/minecraft/class_5321;>"))
+                            element.asString.replace("<ResourceKey<?>>", "<Lnet/minecraft/class_5321;>")
                         else
-                            existing.add(element.asString.replaceAfter("<", "").removeSuffix("<"))
+                            element.asString.replaceAfter("<", "").removeSuffix("<")
                     else
-                        existing.add(element)
-                }
+                        element.asString
+                }.toList()
             }
-        }
 
-        this.`in` = StringReader(gson.toJson(fmj))
-        this.hasExpanded = true
+            return map
+        }
     }
 
     private fun validateParams() {
