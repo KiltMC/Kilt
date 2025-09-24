@@ -553,7 +553,7 @@ object KiltRemapper {
         logger.info("Finished remapping mods!")
 
         if (exception.suppressed.isNotEmpty()) {
-            logger.error("Ran into some errors, we're not going to continue with the repairing process.")
+            logger.error("Ran into some errors during the remapping process, cannot continue!")
             throw exception
         }
     }
