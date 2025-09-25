@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import kotlinx.atomicfu.locks.synchronized
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
@@ -10,26 +11,30 @@ import org.spongepowered.asm.mixin.gen.Invoker
 import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinRefmap
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper.MIXIN_TYPE
 import xyz.bluspring.kilt.util.KiltHelper
+import java.util.Collections
 
 // Remaps all mixins and their associated refmaps
 object MixinRemapper {
     private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
     private val INVOKER_TYPE = Type.getType(Invoker::class.java)
 
-    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmapJsons: Collection<JsonObject>) {
-        val alreadyRefmapped = mutableSetOf<String>()
+    fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmaps: Collection<MixinRefmap>) {
+        val alreadyRefmapped = Collections.synchronizedSet(mutableSetOf<String>())
 
         val classTargets = getMixinClassTargets(classNode)
 
         // Find the refmap associated with this mixin class.
-        val refmapJson = refmapJsons.firstOrNull { json -> json.has("mappings") && json.getAsJsonObject("mappings").has(classNode.name) }
+        val refmap = synchronized(refmaps) {
+            refmaps.firstOrNull { refmap -> refmap.mappings.contains(classNode.name) }
+        }
 
         // Then, get the mappings that exist with this mixin class.
-        val mixinMappingJson = refmapJson?.getAsJsonObject("mappings")?.getAsJsonObject(classNode.name)
-                // If one does not exist, just provide an empty JSON object.
-                ?: JsonObject()
+        val mixinMapping = refmap?.mappings?.get(classNode.name)
+                // If one does not exist, just provide an empty map.
+                ?: mutableMapOf()
 
         // The idea is if we don't have a matching mapping, we need to remap directly on the string instead.
 
@@ -48,12 +53,12 @@ object MixinRemapper {
 
                         val value = values["value"] as String
 
-                        if (mixinMappingJson.has(value)) {
+                        if (mixinMapping.contains(value)) {
                             if (!alreadyRefmapped.add(value))
                                 continue
 
-                            val mapped = remapTargetString(mixinMappingJson.get(value).asString, classTargets, remapper)
-                            mixinMappingJson.addProperty(value, mapped)
+                            val mapped = remapTargetString(mixinMapping[value]!!, classTargets, remapper)
+                            mixinMapping[value] = mapped
                         } else {
                             values["value"] = remapTargetString(value, classTargets, remapper)
                             annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
@@ -67,21 +72,21 @@ object MixinRemapper {
                         if (value.startsWith("@"))
                             return value
 
-                        return if (mixinMappingJson.has(value)) {
+                        return if (mixinMapping.contains(value)) {
                             if (!alreadyRefmapped.add(value))
                                 return value
 
-                            val original = mixinMappingJson.get(value).asString
+                            val original = mixinMapping[value]!!
                             val mapped = remapTargetString(original, classTargets, remapper)
 
-                            mixinMappingJson.addProperty(value, mapped)
+                            mixinMapping[value] = mapped
 
                             value
                         } else {
                             val mapped = remapTargetString(value, classTargets, remapper)
 
-                            if (refmapJson != null) {
-                                mixinMappingJson.addProperty(value, mapped)
+                            if (refmap != null) {
+                                mixinMapping[value] = mapped
                                 return value
                             }
 
@@ -198,50 +203,42 @@ object MixinRemapper {
         }
 
         // Have another pass specifically to remap things that were missed in the original remapping.
-        if (refmapJson != null) {
-            for (key in mixinMappingJson.keySet()) {
-                if (!alreadyRefmapped.add(key))
-                    continue
+        if (refmap != null) {
+            synchronized(mixinMapping) {
+                for ((key, original) in mixinMapping) {
+                    if (!alreadyRefmapped.add(key))
+                        continue
 
-                val original = mixinMappingJson.get(key).asString
-                val mapped = remapTargetString(original, classTargets, remapper)
-
-                mixinMappingJson.addProperty(key, mapped)
+                    val mapped = remapTargetString(original, classTargets, remapper)
+                    mixinMapping[key] = mapped
+                }
             }
 
-            // Add the already refmapped data as a list, for us to use after. We'll strip it once it's no longer needed.
-            val obj = refmapJson.getAsJsonObject("kilt:alreadyRefmapped")
-                ?: (JsonObject().apply {
-                    refmapJson.add("kilt:alreadyRefmapped", this)
-                })
-
-            val array = JsonArray()
-            for (string in alreadyRefmapped) {
-                array.add(string)
+            // Add the already refmapped data as a list, for us to use after.
+            if (refmap.alreadyRefmapped.contains(classNode.name)) {
+                // If there already exists one, let's try to merge them.
+                refmap.alreadyRefmapped[classNode.name]!!.addAll(alreadyRefmapped)
+            } else {
+                // If not, just assign it.
+                refmap.alreadyRefmapped[classNode.name] = alreadyRefmapped
             }
-
-            obj.add(classNode.name, array)
         }
     }
 
-    fun remapUnmappedRefmaps(refmaps: Collection<JsonObject>, remapper: KiltEnhancedRemapper) {
+    fun remapUnmappedRefmaps(refmaps: Collection<MixinRefmap>, remapper: KiltEnhancedRemapper) {
         for (refmap in refmaps) {
-            val alreadyRefmapped = if (refmap.has("kilt:alreadyRefmapped"))
-                refmap.getAsJsonObject("kilt:alreadyRefmapped")?.asMap()?.filterValues { it != null }?.map { it.key to it.value.asJsonArray.map { e -> e.asString } }?.associate { it.first to it.second }
-                    ?: mapOf() // Why and how this is even possible is completely beyond me.
-            else
-                mapOf()
+            synchronized(refmap.mappings) {
+                for ((className, mapping) in refmap.mappings) {
+                    val existing = refmap.alreadyRefmapped[className] ?: emptyList()
 
-            val mappings = refmap.getAsJsonObject("mappings")
-            for (className in mappings.keySet()) {
-                val existing = alreadyRefmapped[className] ?: emptyList()
-                val mapping = mappings.getAsJsonObject(className)
+                    synchronized(mapping) {
+                        for ((key, original) in mapping) {
+                            if (existing.contains(key))
+                                continue
 
-                for (key in mapping.keySet()) {
-                    if (existing.contains(key))
-                        continue
-
-                    mapping.addProperty(key, remapTargetString(mapping.get(key).asString, emptyList(), remapper))
+                            mapping[key] = remapTargetString(original, emptyList(), remapper)
+                        }
+                    }
                 }
             }
         }

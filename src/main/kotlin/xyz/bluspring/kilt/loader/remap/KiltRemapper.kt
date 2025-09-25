@@ -59,7 +59,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 203
+    const val REMAPPER_VERSION = 204
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -357,7 +357,7 @@ object KiltRemapper {
 
             val mixinClasses = Collections.synchronizedSet(ClassNameHashSet())
             val refmaps = Collections.synchronizedSet(CaseInsensitiveStringHashSet())
-            val refmapJsons = Collections.synchronizedMap<JarEntry, JsonObject>(mutableMapOf())
+            val mixinRefmaps = Collections.synchronizedMap<JarEntry, MixinRefmap>(mutableMapOf())
 
             // JAR validation information stripping.
             // If we can find out how to use this to our advantage prior to remapping,
@@ -425,8 +425,22 @@ object KiltRemapper {
                             val obj = json.asJsonObject
 
                             // Be careful, because they might not even have the data in the first place.
-                            if (obj.has("data") || obj.has("mappings")) {
-                                refmapJsons[entry] = obj
+                            if (obj.has("mappings")) {
+                                mixinRefmaps[entry] = MixinRefmap(
+                                    Collections.synchronizedMap(
+                                        obj.getAsJsonObject("mappings").asMap()
+                                            .map {
+                                                it.key to it.value.asJsonObject.asMap().map { b ->
+                                                    b.key to b.value.asString
+                                                }
+                                                    .associate { b -> b.first to b.second }
+                                                    .toMutableMap()
+                                            }
+                                            .associate { it.first to it.second }
+                                            .toMutableMap()
+                                    ),
+                                    Collections.synchronizedMap(mutableMapOf())
+                                )
                             }
                         }
 
@@ -463,7 +477,7 @@ object KiltRemapper {
                         KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
                             .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
                     ) {
-                        MixinRemapper.remapClass(originalNode, enhancedRemapper, refmapJsons.values)
+                        MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
                         MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
 
                         if (!KiltFlags.DISABLE_FIXERS) {
@@ -502,15 +516,29 @@ object KiltRemapper {
             }
             
             // If for whatever reason the refmap remapping missed something, we need to remap it immediately.
-            MixinRemapper.remapUnmappedRefmaps(refmapJsons.values, enhancedRemapper)
+            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedRemapper)
 
             // Now, let's write the refmap JSONs
-            for ((entry, json) in refmapJsons) {
-                // First, let's remove the "searge" data map.
-                json.getAsJsonObject("data").remove("searge")
+            for ((entry, refmap) in mixinRefmaps) {
+                val json = JsonObject()
+
+                // First, write the mappings directly.
+                val mappings = JsonObject()
+                for ((mixinClass, nameMappings) in refmap.mappings) {
+                    val classMapping = JsonObject()
+                    for ((named, obfuscated) in nameMappings) {
+                        classMapping.addProperty(named, obfuscated)
+                    }
+
+                    mappings.add(mixinClass, classMapping)
+                }
+                json.add("mappings", mappings)
 
                 // Now, let's add the mappings data map directly to "named:intermediary"
-                json.getAsJsonObject("data").add("named:intermediary", json.getAsJsonObject("mappings"))
+                val dataMap = JsonObject()
+                dataMap.add("named:intermediary", mappings)
+
+                json.add("data", dataMap)
 
                 jarOutputStream.putNextEntry(entry)
                 jarOutputStream.write(gson.toJson(json).toByteArray(Charsets.UTF_8))
