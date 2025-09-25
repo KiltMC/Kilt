@@ -1,8 +1,6 @@
 // TRACKED HASH: 6e5ff0663e40cf957dd3b217b0541c32bd378ce0
 package xyz.bluspring.kilt.forgeinjects.blaze3d.vertex;
 
-import com.llamalad7.mixinextras.expression.Definition;
-import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,7 +26,7 @@ public interface VertexConsumerInject extends VertexConsumerInjection, IForgeVer
     default void putBulkData(PoseStack.Pose pose, BakedQuad bakedQuad, float[] fs, float f, float g, float h, float alpha, int[] is, int i, boolean bl) {
         VertexConsumerInjection.alpha.set(alpha);
         putBulkData(pose, bakedQuad, fs, f, g, h, is, i, bl);
-        VertexConsumerInjection.alpha.set(1F);
+        VertexConsumerInjection.alpha.reset();
     }
 
     // Most certainly going to break in 1.21.1 so beware
@@ -37,9 +35,9 @@ public interface VertexConsumerInject extends VertexConsumerInjection, IForgeVer
         return applyBakedLighting(original, byteBuffer);
     }
 
-    @ModifyConstant(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", constant = @Constant(floatValue = 1.0F))
-    private float kilt$useVertexAlpha(float constant, PoseStack.Pose pose, BakedQuad bakedQuad, float[] fs, float f, float g, float h, int[] is, int i, boolean bl, @Local(ordinal = 0) Vector3f vector3f, @Local(ordinal = 0) ByteBuffer byteBuffer) {
+    @ModifyExpressionValue(method = "putBulkData(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;[FFFF[IIZ)V", at = @At(value = "CONSTANT", args = "floatValue=1.0"))
+    private float kilt$useVertexAlpha(float original, @Local(argsOnly = true) PoseStack.Pose pose, @Local(argsOnly = true) boolean multiColor, @Local(ordinal = 0) Vector3f vector3f, @Local(ordinal = 0) ByteBuffer byteBuffer) {
         applyBakedNormals(vector3f, byteBuffer, pose.normal());
-        return bl ? VertexConsumerInjection.alpha.get() * (float) (byteBuffer.get(15) & 255) / 255F : VertexConsumerInjection.alpha.get();
+        return multiColor ? VertexConsumerInjection.alpha.getOrElse(original) * (float) (byteBuffer.get(15) & 255) / 255F : VertexConsumerInjection.alpha.getOrElse(original);
     }
 }
