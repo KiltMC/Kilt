@@ -25,9 +25,6 @@ public interface CreativeModeTabInjection {
     default void kilt$assignValues(CreativeModeTab.Builder builder) {}
     default void kilt$setBackgroundLocation(ResourceLocation location) {}
 
-    default ResourceLocation getBackgroundLocation() {
-        throw new IllegalStateException();
-    }
     default boolean hasSearchBar() {
         throw new IllegalStateException();
     }
@@ -52,9 +49,6 @@ public interface CreativeModeTabInjection {
     }
 
     interface BuilderInjection {
-        default CreativeModeTab.Builder withBackgroundLocation(ResourceLocation background) {
-            throw new IllegalStateException();
-        }
         default CreativeModeTab.Builder withSearchBar() {
             throw new IllegalStateException();
         }
@@ -86,9 +80,6 @@ public interface CreativeModeTabInjection {
             throw new IllegalStateException();
         }
 
-        default ResourceLocation kilt$getBackgroundLocation() {
-            throw new IllegalStateException();
-        }
         default boolean kilt$hasSearchBar() {
             throw new IllegalStateException();
         }

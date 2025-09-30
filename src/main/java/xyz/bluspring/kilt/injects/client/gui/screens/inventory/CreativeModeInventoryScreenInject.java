@@ -9,6 +9,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,13 +18,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
-import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.AbstractContainerScreenInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.CreativeModeInventoryScreenInjection;
@@ -37,24 +37,8 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
         super(menu, playerInventory, title);
     }
 
-    @WrapOperation(method = "refreshCurrentTabContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;getType()Lnet/minecraft/world/item/CreativeModeTab$Type;"))
+    @WrapOperation(method = {"refreshCurrentTabContents", "charTyped", "keyPressed", }, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;getType()Lnet/minecraft/world/item/CreativeModeTab$Type;"))
     private CreativeModeTab.Type kilt$useSearchBarCheck(CreativeModeTab instance, Operation<CreativeModeTab.Type> original) {
-        if (instance.hasSearchBar())
-            return CreativeModeTab.Type.SEARCH;
-        else
-            return original.call(instance);
-    }
-
-    @WrapOperation(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;getType()Lnet/minecraft/world/item/CreativeModeTab$Type;"))
-    private CreativeModeTab.Type kilt$useSearchBarCheck2(CreativeModeTab instance, Operation<CreativeModeTab.Type> original) {
-        if (instance.hasSearchBar())
-            return CreativeModeTab.Type.SEARCH;
-        else
-            return original.call(instance);
-    }
-
-    @WrapOperation(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;getType()Lnet/minecraft/world/item/CreativeModeTab$Type;"))
-    private CreativeModeTab.Type kilt$useSearchBarCheck3(CreativeModeTab instance, Operation<CreativeModeTab.Type> original) {
         if (instance.hasSearchBar())
             return CreativeModeTab.Type.SEARCH;
         else
@@ -85,35 +69,6 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
             return original.call(instance);
     }
 
-    @WrapOperation(method = "renderBg", at = @At(value = "NEW", target = "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
-    private ResourceLocation kilt$useSelectedTabBackground(String location, Operation<ResourceLocation> original) {
-        if (selectedTab.getBackgroundLocation() == null)
-            return original.call(location);
-
-        return selectedTab.getBackgroundLocation();
-    }
-
-    @WrapOperation(method = "renderBg", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;CREATIVE_TABS_LOCATION:Lnet/minecraft/resources/ResourceLocation;"))
-    private ResourceLocation kilt$useSelectedTabImage(Operation<ResourceLocation> original) {
-        if (selectedTab.getTabsImage() == null)
-            return original.call();
-
-        return selectedTab.getTabsImage();
-    }
-
-    @Inject(method = "renderTabButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V", shift = At.Shift.BEFORE))
-    private void kilt$enableBlendOnTabButton(GuiGraphics guiGraphics, CreativeModeTab creativeModeTab, CallbackInfo ci) {
-        RenderSystem.enableBlend();
-    }
-
-    @WrapOperation(method = "renderTabButton", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;CREATIVE_TABS_LOCATION:Lnet/minecraft/resources/ResourceLocation;"))
-    private ResourceLocation kilt$useSelectedTabImageOnTabButton(Operation<ResourceLocation> original) {
-        if (selectedTab.getTabsImage() == null)
-            return original.call();
-
-        return selectedTab.getTabsImage();
-    }
-
     @Inject(method = "refreshSearchResults", at = @At("HEAD"), cancellable = true)
     private void kilt$disableSearchRefreshIfNoBar(CallbackInfo ci) {
         if (!selectedTab.hasSearchBar()) {
@@ -121,14 +76,24 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
         }
     }
 
-    @ModifyArg(method = "refreshSearchResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSearchTree(Lnet/minecraft/client/searchtree/SearchRegistry$Key;)Lnet/minecraft/client/searchtree/SearchTree;", ordinal = 0))
-    private SearchRegistry.Key<ItemStack> kilt$useForgeTagSearch(SearchRegistry.Key<ItemStack> key) {
-        return CreativeModeTabSearchRegistry.getTagSearchKey(selectedTab);
+    @WrapOperation(method = "refreshSearchResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeTagSearch()Lnet/minecraft/client/searchtree/SearchTree;"))
+    private SearchTree<ItemStack> kilt$useForgeTagSearch(SessionSearchTrees instance, Operation<SearchTree<ItemStack>> original) {
+        var key = CreativeModeTabSearchRegistry.getTagSearchKey(selectedTab);
+
+        if (key == null || key == SessionSearchTrees.CREATIVE_TAGS)
+            return original.call(instance);
+
+        return instance.creativeTagSearch(key);
     }
 
-    @ModifyArg(method = "refreshSearchResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSearchTree(Lnet/minecraft/client/searchtree/SearchRegistry$Key;)Lnet/minecraft/client/searchtree/SearchTree;", ordinal = 1))
-    private SearchRegistry.Key<ItemStack> kilt$useForgeNameSearch(SearchRegistry.Key<ItemStack> key) {
-        return CreativeModeTabSearchRegistry.getNameSearchKey(selectedTab);
+    @WrapOperation(method = "refreshSearchResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeNameSearch()Lnet/minecraft/client/searchtree/SearchTree;"))
+    private SearchTree<ItemStack> kilt$useForgeNameSearch(SessionSearchTrees instance, Operation<SearchTree<ItemStack>> original) {
+        var key = CreativeModeTabSearchRegistry.getNameSearchKey(selectedTab);
+
+        if (key == null || key == SessionSearchTrees.CREATIVE_NAMES)
+            return original.call(instance);
+
+        return instance.creativeNameSearch(key);
     }
 
     @Inject(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", shift = At.Shift.BEFORE))
@@ -147,7 +112,7 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
     @Inject(method = "selectTab", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V", ordinal = 0))
     private void kilt$selectTabSlotColor(CreativeModeTab tab, CallbackInfo ci) {
         if (tab.getSlotColor() != Integer.MIN_VALUE)
-            ((AbstractContainerScreenInjection) this).kilt$setSlotColor(tab.getSlotColor());
+            this.kilt$setSlotColor(tab.getSlotColor());
     }
 
     @Inject(method = "selectTab", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;refreshSearchResults()V", shift = At.Shift.BEFORE))
