@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.injections.world.level;
 
 import net.neoforged.neoforge.common.util.BlockSnapshot;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.ArrayList;
 
@@ -9,8 +10,47 @@ public interface LevelInjection {
         throw new IllegalStateException();
     }
 
-    boolean kilt$getRestoringBlockSnapshots();
-    boolean kilt$getCapturingBlockSnapshots();
-    void kilt$setCapturingBlockSnapshots(boolean value);
-    void kilt$setRestoringBlockSnapshots(boolean value);
+    default boolean kilt$getRestoringBlockSnapshots() {
+        throw KiltHelper.createMixinException(LevelInjection.class, "kilt$getRestoringBlockSnapshots");
+    }
+
+    default boolean kilt$getCapturingBlockSnapshots() {
+        throw KiltHelper.createMixinException(LevelInjection.class, "kilt$getCapturingBlockSnapshots");
+    }
+
+    default void kilt$setCapturingBlockSnapshots(boolean value) {
+        throw KiltHelper.createMixinException(LevelInjection.class, "kilt$setCapturingBlockSnapshots");
+    }
+
+    default void kilt$setRestoringBlockSnapshots(boolean value) {
+        throw KiltHelper.createMixinException(LevelInjection.class, "kilt$setRestoringBlockSnapshots");
+    }
+
+    default void setDayTimeFraction(float dayTimeFraction) {
+        throw KiltHelper.createMixinException(LevelInjection.class, "setDayTimeFraction");
+    }
+
+    default float getDayTimeFraction() {
+        throw KiltHelper.createMixinException(LevelInjection.class, "getDayTimeFraction");
+    }
+
+    default float getDayTimePerTick() {
+        throw KiltHelper.createMixinException(LevelInjection.class, "getDayTimePerTick");
+    }
+
+    default void setDayTimePerTick(float dayTimePerTick) {
+        throw KiltHelper.createMixinException(LevelInjection.class, "setDayTimePerTick");
+    }
+
+    default long advanceDaytime() {
+        if (this.getDayTimePerTick() < 0) {
+            return 1L;
+        }
+
+        float dayTimeStep = this.getDayTimeFraction() + this.getDayTimePerTick();
+        long result = (long) dayTimeStep;
+        this.setDayTimeFraction(dayTimeStep - result);
+
+        return result;
+    }
 }

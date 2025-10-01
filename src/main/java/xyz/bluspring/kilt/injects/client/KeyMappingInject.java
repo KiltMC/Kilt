@@ -9,11 +9,10 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.platform.InputConstants;
-import io.github.fabricators_of_create.porting_lib.mixin.accessors.client.accessor.KeyMappingAccessor;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.extensions.IForgeKeyMapping;
+import net.neoforged.neoforge.client.extensions.IKeyMappingExtension;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyMappingLookup;
@@ -30,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Mixin(KeyMapping.class)
-public abstract class KeyMappingInject implements IForgeKeyMapping {
+public abstract class KeyMappingInject implements IKeyMappingExtension {
     @Shadow private InputConstants.Key key;
     @Shadow @Final private static Map<InputConstants.Key, KeyMapping> MAP;
     @Unique private static final KeyMappingLookup FORGE_MAP = new KeyMappingLookup();
@@ -43,59 +42,6 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
     @Unique private KeyModifier keyModifierDefault = KeyModifier.NONE;
     @Unique private KeyModifier keyModifier = KeyModifier.NONE;
     @Unique private IKeyConflictContext keyConflictContext = KeyConflictContext.UNIVERSAL;
-
-    @NotNull
-    @Override
-    public InputConstants.Key getKey() {
-        return this.key;
-    }
-
-    @Override
-    public void setKeyConflictContext(IKeyConflictContext keyConflictContext) {
-        this.keyConflictContext = keyConflictContext;
-    }
-
-    @Override
-    public IKeyConflictContext getKeyConflictContext() {
-        if (keyConflictContext == null)
-            keyConflictContext = KeyConflictContext.UNIVERSAL;
-
-        return keyConflictContext;
-    }
-
-    @Override
-    public KeyModifier getDefaultKeyModifier() {
-        if (keyModifierDefault == null)
-            keyModifierDefault = KeyModifier.NONE;
-
-        return this.keyModifierDefault;
-    }
-
-    @Override
-    public KeyModifier getKeyModifier() {
-        if (keyModifier == null)
-            keyModifier = KeyModifier.NONE;
-
-        return keyModifier;
-    }
-
-    @Override
-    public void setKeyModifierAndCode(KeyModifier keyModifier, InputConstants.Key keyCode) {
-        MAP.remove(this.key);
-        FORGE_MAP.remove((KeyMapping) (Object) this);
-
-        if (keyModifier == null)
-            keyModifier = KeyModifier.getModifier(this.key);
-
-        if (keyModifier == null || keyCode == InputConstants.UNKNOWN || KeyModifier.isKeyCodeModifier(keyCode))
-            keyModifier = KeyModifier.NONE;
-
-        this.key = keyCode;
-        this.keyModifier = keyModifier;
-
-        MAP.put(keyCode, (KeyMapping) (Object) this);
-        FORGE_MAP.put(keyCode, (KeyMapping) (Object) this);
-    }
 
     @CreateInitializer
     public KeyMappingInject(String description, IKeyConflictContext keyConflictContext, final InputConstants.Type inputType, final int keyCode, String category) {
@@ -147,13 +93,12 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
 
     @Inject(method = "same", at = @At("HEAD"), cancellable = true)
     private void kilt$addKeyConflictContextToSimilarityCheck(KeyMapping binding, CallbackInfoReturnable<Boolean> cir) {
-        var forgeBinding = (IForgeKeyMapping) binding;
-        if (getKeyConflictContext().conflicts(forgeBinding.getKeyConflictContext()) || forgeBinding.getKeyConflictContext().conflicts(getKeyConflictContext())) {
+        if (getKeyConflictContext().conflicts(binding.getKeyConflictContext()) || binding.getKeyConflictContext().conflicts(getKeyConflictContext())) {
             KeyModifier keyModifier = getKeyModifier();
-            KeyModifier otherKeyModifier = forgeBinding.getKeyModifier();
-            if (keyModifier.matches(forgeBinding.getKey()) || otherKeyModifier.matches(getKey())) {
+            KeyModifier otherKeyModifier = binding.getKeyModifier();
+            if (keyModifier.matches(binding.getKey()) || otherKeyModifier.matches(getKey())) {
                 cir.setReturnValue(true);
-            } else if (getKey().equals(forgeBinding.getKey())) {
+            } else if (getKey().equals(binding.getKey())) {
                 // IN_GAME key contexts have a conflict when at least one modifier is NONE.
                 // For example: If you hold shift to crouch, you can still press E to open your inventory. This means that a Shift+E hotkey is in conflict with E.
                 // GUI and other key contexts do not have this limitation.
@@ -171,7 +116,7 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
 
     @Inject(method = "resetMapping", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
     private static void kilt$registerMappingToForgeMap(CallbackInfo ci, @Local KeyMapping mapping) {
-        FORGE_MAP.put(((KeyMappingAccessor) mapping).port_lib$getKey(), mapping);
+        FORGE_MAP.put(mapping.getKey(), mapping);
     }
 
     @WrapMethod(method = "getTranslatedKeyMessage")
@@ -229,5 +174,55 @@ public abstract class KeyMappingInject implements IForgeKeyMapping {
     @Inject(method = "<init>(Ljava/lang/String;Lcom/mojang/blaze3d/platform/InputConstants$Type;ILjava/lang/String;)V", at = @At("TAIL"))
     private void kilt$addKeyValueInForgeMap(String name, InputConstants.Type type, int keyCode, String category, CallbackInfo ci) {
         FORGE_MAP.put(this.key, (KeyMapping) (Object) this);
+    }
+
+    @NotNull
+    @Override
+    public InputConstants.Key getKey() {
+        return this.key;
+    }
+
+    @Override
+    public void setKeyConflictContext(IKeyConflictContext keyConflictContext) {
+        this.keyConflictContext = keyConflictContext;
+    }
+
+    @Override
+    public IKeyConflictContext getKeyConflictContext() {
+        if (keyConflictContext == null)
+            keyConflictContext = KeyConflictContext.UNIVERSAL;
+
+        return keyConflictContext;
+    }
+
+    @Override
+    public KeyModifier getDefaultKeyModifier() {
+        if (keyModifierDefault == null)
+            keyModifierDefault = KeyModifier.NONE;
+
+        return this.keyModifierDefault;
+    }
+
+    @Override
+    public KeyModifier getKeyModifier() {
+        if (keyModifier == null)
+            keyModifier = KeyModifier.NONE;
+
+        return keyModifier;
+    }
+
+    @Override
+    public void setKeyModifierAndCode(KeyModifier keyModifier, InputConstants.Key keyCode) {
+        MAP.remove(this.key);
+        FORGE_MAP.remove((KeyMapping) (Object) this);
+
+        if (keyModifier == null || keyModifier.matches(keyCode))
+            keyModifier = KeyModifier.NONE;
+
+        this.key = keyCode;
+        this.keyModifier = keyModifier;
+
+        MAP.put(keyCode, (KeyMapping) (Object) this);
+        FORGE_MAP.put(keyCode, (KeyMapping) (Object) this);
     }
 }

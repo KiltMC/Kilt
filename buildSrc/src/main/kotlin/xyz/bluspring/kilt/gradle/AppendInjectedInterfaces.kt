@@ -86,14 +86,17 @@ class AppendInjectedInterfaces(reader: Reader) : FilterReader(reader) {
             val fmjInjectedInterfaces = fmj.getAsJsonObject("custom").getAsJsonObject("loom:injected_interfaces")
 
             for ((className, injections) in injected) {
-                fmjInjectedInterfaces.add((mojToIntermediary[className] ?: className).replace("$", "\\u0024"), JsonArray().apply {
+                fmjInjectedInterfaces.add((mojToIntermediary[className] ?: className).replace("$", "$$$"), JsonArray().apply {
                     for (string in injections) {
-                        this.add(string.replace("$", "\\u0024"))
+                        this.add(string.replace("$", "$$$"))
                     }
                 })
             }
 
-            this.`in` = StringReader(gson.toJson(fmj))
+            this.`in` = StringReader(gson.toJson(fmj)
+                .replace("$$$", "\\u0024") // why is this a thing
+            )
+
             this.hasExpanded = true
         }
 

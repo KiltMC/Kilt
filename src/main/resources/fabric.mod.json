@@ -421,8 +421,14 @@
       "net/minecraft/class_638": [
         "xyz/bluspring/kilt/injections/client/multiplayer/ClientLevelInjection"
       ],
+      "net/minecraft/class_8675": [
+        "xyz/bluspring/kilt/injections/client/multiplayer/CommonListenerCookieInjection"
+      ],
       "net/minecraft/class_642": [
         "xyz/bluspring/kilt/injections/client/multiplayer/ServerDataInjection"
+      ],
+      "net/minecraft/class_1124": [
+        "xyz/bluspring/kilt/injections/client/multiplayer/SessionSearchTreesInjection"
       ],
       "net/minecraft/class_702": [
         "xyz/bluspring/kilt/injections/client/particle/ParticleEngineInjection"
@@ -601,6 +607,9 @@
       "net/minecraft/class_2924": [
         "xyz/bluspring/kilt/injections/network/protocol/status/ClientboundStatusResponsePacketInjection"
       ],
+      "net/minecraft/class_9129": [
+        "xyz/bluspring/kilt/injections/network/RegistryFriendlyByteBufInjection"
+      ],
       "net/minecraft/class_6903": [
         "xyz/bluspring/kilt/injections/resources/RegistryOpsInjection"
       ],
@@ -726,6 +735,12 @@
       ],
       "net/minecraft/class_1735": [
         "xyz/bluspring/kilt/injections/world/inventory/SlotInjection"
+      ],
+      "net/minecraft/class_1845\u0024class_9665": [
+        "xyz/bluspring/kilt/injections/world/item/alchemy/PotionBrewing\u0024BuilderInjection"
+      ],
+      "net/minecraft/class_1845": [
+        "xyz/bluspring/kilt/injections/world/item/alchemy/PotionBrewingInjection"
       ],
       "net/minecraft/class_1744": [
         "xyz/bluspring/kilt/injections/world/item/ArrowItemInjection"
@@ -870,6 +885,9 @@
       ],
       "net/minecraft/class_31": [
         "xyz/bluspring/kilt/injections/world/level/storage/PrimaryLevelDataInjection"
+      ],
+      "net/minecraft/class_5268": [
+        "xyz/bluspring/kilt/injections/world/level/storage/ServerLevelDataInjection"
       ],
       "net/minecraft/class_238": [
         "xyz/bluspring/kilt/injections/world/phys/AABBInjection"

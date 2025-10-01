@@ -9,6 +9,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,18 +21,25 @@ import xyz.bluspring.kilt.injections.world.level.LevelSettingsInjection;
 import xyz.bluspring.kilt.injections.world.level.storage.PrimaryLevelDataInjection;
 
 @Mixin(PrimaryLevelData.class)
-public abstract class PrimaryLevelDataInject implements PrimaryLevelDataInjection {
+public abstract class PrimaryLevelDataInject implements PrimaryLevelDataInjection, ServerLevelData {
     @Shadow private LevelSettings settings;
     @Unique private boolean confirmedExperimentalWarning = false;
 
+    @SuppressWarnings("InvalidInjectorMethodSignature") // idk what it's on
     @ModifyReturnValue(method = "parse", at = @At("RETURN"))
-    private static PrimaryLevelData kilt$loadForgeLevelData(PrimaryLevelData original, @Local(argsOnly = true) Lifecycle lifecycle, @Local(argsOnly = true) Dynamic<?> dynamic) {
-        return ((PrimaryLevelDataInjection) original).withConfirmedWarning(lifecycle != Lifecycle.stable() && dynamic.get("confirmedExperimentalSettings").asBoolean(false));
+    private static <T> PrimaryLevelData kilt$loadNeoForgeLevelData(PrimaryLevelData original, @Local(argsOnly = true) Lifecycle lifecycle, @Local(argsOnly = true) Dynamic<T> dynamic) {
+        var result = original
+                .withConfirmedWarning(lifecycle != Lifecycle.stable() && dynamic.get("confirmedExperimentalSettings").asBoolean(false));
+
+        result.setDayTimeFraction(dynamic.get("neoDayTimeFraction").asFloat(0f));
+        result.setDayTimePerTick(dynamic.get("neoDayTimePerTick").asFloat(-1f));
+
+        return result;
     }
 
     @Inject(method = "setTagData", at = @At("TAIL"))
     private void kilt$addForgeLevelData(RegistryAccess registry, CompoundTag nbt, CompoundTag playerNBT, CallbackInfo ci) {
-        nbt.putString("forgeLifecycle", CommonHooks.encodeLifecycle(((LevelSettingsInjection) (Object) this.settings).getLifecycle()));
+        nbt.putString("forgeLifecycle", CommonHooks.encodeLifecycle(this.settings.getLifecycle()));
         nbt.putBoolean("confirmedExperimentalSettings", this.confirmedExperimentalWarning);
     }
 
@@ -44,5 +52,29 @@ public abstract class PrimaryLevelDataInject implements PrimaryLevelDataInjectio
     public PrimaryLevelData withConfirmedWarning(boolean confirmedWarning) {
         this.confirmedExperimentalWarning = confirmedWarning;
         return (PrimaryLevelData) (Object) this;
+    }
+
+    // Variable day time code :,D
+    private float dayTimeFraction = 0.0f;
+    private float dayTimePerTick = -1.0f;
+
+    @Override
+    public void setDayTimeFraction(float dayTimeFraction) {
+        this.dayTimeFraction = dayTimeFraction;
+    }
+
+    @Override
+    public float getDayTimeFraction() {
+        return dayTimeFraction;
+    }
+
+    @Override
+    public float getDayTimePerTick() {
+        return dayTimePerTick;
+    }
+
+    @Override
+    public void setDayTimePerTick(float dayTimePerTick) {
+        this.dayTimePerTick = dayTimePerTick;
     }
 }

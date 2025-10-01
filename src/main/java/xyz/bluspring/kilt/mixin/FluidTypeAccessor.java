@@ -1,10 +1,14 @@
 package xyz.bluspring.kilt.mixin;
 
 import io.github.fabricators_of_create.porting_lib.fluids.FluidType;
+import io.github.fabricators_of_create.porting_lib.fluids.sound.SoundAction;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
+
+import java.util.Map;
 
 @Mixin(FluidType.class)
 public interface FluidTypeAccessor {
@@ -39,10 +43,10 @@ public interface FluidTypeAccessor {
     boolean isSupportsBoating();
 
     @Accessor
-    BlockPathTypes getPathType();
+    PathType getPathType();
 
     @Accessor
-    BlockPathTypes getAdjacentPathType();
+    PathType getAdjacentPathType();
 
     @Accessor
     boolean isCanHydrate();
@@ -61,4 +65,7 @@ public interface FluidTypeAccessor {
 
     @Accessor
     Rarity getRarity();
+
+    @Accessor
+    Map<SoundAction, SoundEvent> getSounds();
 }

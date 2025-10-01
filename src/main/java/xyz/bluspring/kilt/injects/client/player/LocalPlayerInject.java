@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -50,11 +51,6 @@ public abstract class LocalPlayerInject extends AbstractClientPlayer implements 
 
     @Shadow public Input input;
 
-    @Inject(method = "hurt", at = @At("HEAD"))
-    private void kilt$runPlayerAttackEvent(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        CommonHooks.onPlayerAttack((LocalPlayer) (Object) this, source, amount);
-    }
-
     @Inject(method = "drop", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;removeFromSelected(Z)Lnet/minecraft/world/item/ItemStack;"))
     private void kilt$fixMC231097(boolean fullStack, CallbackInfoReturnable<Boolean> cir) {
         if (this.isUsingItem() && this.getUsedItemHand() == InteractionHand.MAIN_HAND && (fullStack || this.getUseItem().getCount() == 1))
@@ -68,7 +64,7 @@ public abstract class LocalPlayerInject extends AbstractClientPlayer implements 
         if (event.isCanceled() || event.getSound() == null)
             return;
 
-        original.call(instance, x, y, z, event.getSound().get(), event.getSource(), event.getNewVolume(), event.getNewPitch(), distanceDelay);
+        original.call(instance, x, y, z, event.getSound().value(), event.getSource(), event.getNewVolume(), event.getNewPitch(), distanceDelay);
     }
 
     @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/tutorial/Tutorial;onInput(Lnet/minecraft/client/player/Input;)V"))
@@ -111,7 +107,7 @@ public abstract class LocalPlayerInject extends AbstractClientPlayer implements 
 
     @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;goDownInWater()V"))
     private void kilt$trySinkInFluid(LocalPlayer instance, Operation<Void> original, @Share("fluidType") LocalRef<FluidType> fluidType) {
-        if (fluidType.get() == null || fluidType.get().kilt$isWrapped || fluidType.get().isVanilla()) {
+        if (fluidType.get() == null /*|| fluidType.get().kilt$isWrapped*/ || fluidType.get().isVanilla()) {
             original.call(instance);
         } else {
             this.sinkInFluid(fluidType.get());

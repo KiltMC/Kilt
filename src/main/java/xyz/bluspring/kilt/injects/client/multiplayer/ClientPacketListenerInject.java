@@ -1,62 +1,85 @@
 // TRACKED HASH: 8fda2624182ac03df35817374f8cf966a4ed0fb0
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.ClientRegistryLayer;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.ClientCommandHandler;
 import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
+import net.neoforged.neoforge.client.DimensionTransitionScreenManager;
+import net.neoforged.neoforge.network.connection.ConnectionType;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
+import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
 @Mixin(ClientPacketListener.class)
-public abstract class ClientPacketListenerInject {
-    @Shadow @Final private Minecraft minecraft;
+public abstract class ClientPacketListenerInject extends ClientCommonPacketListenerImpl {
+    @Shadow
+    @Final
+    private RegistryAccess.Frozen registryAccess;
 
-    @Shadow @Final private Connection connection;
+    @Shadow
+    protected abstract void startWaitingForNewLevel(LocalPlayer player, ClientLevel level, ReceivingLevelScreen.Reason reason);
 
-    @Shadow @Final private RecipeManager recipeManager;
+    @Shadow
+    private CommandDispatcher<SharedSuggestionProvider> commands;
+    @Shadow
+    @Final
+    private RecipeManager recipeManager;
+    private ConnectionType connectionType;
 
-    @Shadow public CommandDispatcher<SharedSuggestionProvider> commands;
+    protected ClientPacketListenerInject(Minecraft minecraft, Connection connection, CommonListenerCookie commonListenerCookie) {
+        super(minecraft, connection, commonListenerCookie);
+    }
 
-    @Shadow public abstract RegistryAccess registryAccess();
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing;bootstrap(Lnet/minecraft/world/flag/FeatureFlagSet;)Lnet/minecraft/world/item/alchemy/PotionBrewing;"))
+    private void kilt$storeConnectionType(Minecraft minecraft, Connection connection, CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
+        this.connectionType = commonListenerCookie.connectionType();
+    }
 
-    @Shadow private LayeredRegistryAccess<ClientRegistryLayer> registryAccess;
-
-    @Inject(method = "handleLogin", at = @At(value= "INVOKE", target = "Lnet/minecraft/client/Options;setServerRenderDistance(I)V", shift = At.Shift.AFTER))
-    public void kilt$sendMcRegistryPackets(ClientboundLoginPacket packet, CallbackInfo ci) {
-        NetworkHooks.sendMCRegistryPackets(this.connection, "PLAY_TO_SERVER");
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing;bootstrap(Lnet/minecraft/world/flag/FeatureFlagSet;)Lnet/minecraft/world/item/alchemy/PotionBrewing;"))
+    private PotionBrewing kilt$trySetCurrentRegistryAccess(FeatureFlagSet enabledFeatures, Operation<PotionBrewing> original) {
+        PotionBrewingInjection.kilt$registryAccess.set(this.registryAccess);
+        var result = original.call(enabledFeatures);
+        PotionBrewingInjection.kilt$registryAccess.set(RegistryAccess.EMPTY); // just in case
+        return result;
     }
 
     @Inject(method = "handleLogin", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetPos()V", shift = At.Shift.AFTER))
@@ -64,29 +87,65 @@ public abstract class ClientPacketListenerInject {
         ClientHooks.firePlayerLogin(this.minecraft.gameMode, this.minecraft.player, this.minecraft.getConnection().getConnection());
     }
 
-    @Inject(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetPos()V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void kilt$updateSyncFields(ClientboundRespawnPacket clientboundRespawnPacket, CallbackInfo ci, ResourceKey resourceKey, Holder holder, LocalPlayer localPlayer, int i, String string, LocalPlayer localPlayer2) {
-        ((LocalPlayerInjection) localPlayer2).updateSyncFields(localPlayer);
+    @ModifyExpressionValue(method = "handleConfigurationStart", at = @At(value = "NEW", target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/network/Connection;Lnet/minecraft/client/multiplayer/CommonListenerCookie;)Lnet/minecraft/client/multiplayer/ClientConfigurationPacketListenerImpl;"))
+    private ClientConfigurationPacketListenerImplInject kilt$appendConnectionTypeToListener(ClientConfigurationPacketListenerImplInject original) {
+        original.kilt$setConnectionType(connectionType);
+        return original;
     }
 
-    @Inject(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void kilt$fireForgeRespawnEvent(ClientboundRespawnPacket clientboundRespawnPacket, CallbackInfo ci, ResourceKey resourceKey, Holder holder, LocalPlayer localPlayer, int i, String string, LocalPlayer localPlayer2) {
-        ClientHooks.firePlayerRespawn(this.minecraft.gameMode, localPlayer, localPlayer2, localPlayer2.connection.getConnection());
+    @Unique private ResourceKey<Level> kilt$fromDimension;
+    @Unique private ResourceKey<Level> kilt$toDimension;
+
+    @WrapOperation(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;startWaitingForNewLevel(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/gui/screens/ReceivingLevelScreen$Reason;)V"))
+    private void kilt$useNeoWaitingForLevel(ClientPacketListener instance, LocalPlayer player, ClientLevel level, ReceivingLevelScreen.Reason reason, Operation<Void> original, @Local(ordinal = 0) LocalPlayer originalPlayer, @Local(ordinal = 0) ResourceKey<Level> fromDimension, @Local(ordinal = 1) ResourceKey<Level> toDimension) {
+        if (!originalPlayer.isDeadOrDying()) {
+            this.kilt$fromDimension = fromDimension;
+            this.kilt$toDimension = toDimension;
+        }
+
+        original.call(instance, player, level, reason);
+
+        this.kilt$fromDimension = null;
+        this.kilt$toDimension = null;
     }
 
-    @WrapOperation(method = "handleCommands", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/CommandBuildContext;simple(Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/world/flag/FeatureFlagSet;)Lnet/minecraft/commands/CommandBuildContext;"))
-    private CommandBuildContext kilt$storeCommandContext(HolderLookup.Provider provider, FeatureFlagSet enabledFeatures, Operation<CommandBuildContext> original, @Share("context") LocalRef<CommandBuildContext> context) {
-        var ctx = original.call(provider, enabledFeatures);
-        context.set(ctx);
-        return ctx;
+    @Inject(method = "handleRespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetPos()V", shift = At.Shift.AFTER))
+    public void kilt$fireForgeRespawnEvent(ClientboundRespawnPacket packet, CallbackInfo ci, @Local(ordinal = 0) LocalPlayer originalPlayer, @Local(ordinal = 1) LocalPlayer player) {
+        ClientHooks.firePlayerRespawn(this.minecraft.gameMode, originalPlayer, player, player.connection.getConnection());
     }
 
     @Inject(method = "method_38542", at = @At("HEAD"), cancellable = true)
     public void kilt$onDataPacket(ClientboundBlockEntityDataPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
         if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class)) {
-            blockEntity.onDataPacket(this.connection, packet);
+            blockEntity.onDataPacket(this.connection, packet, this.registryAccess);
             ci.cancel();
         }
+    }
+
+    @Unique
+    private void startWaitingForNewLevel(LocalPlayer player, ClientLevel level, ReceivingLevelScreen.Reason reason, @Nullable ResourceKey<Level> toDimension, @Nullable ResourceKey<Level> fromDimension) {
+        this.kilt$fromDimension = fromDimension;
+        this.kilt$toDimension = toDimension;
+
+        this.startWaitingForNewLevel(player, level, reason);
+
+        this.kilt$fromDimension = null;
+        this.kilt$toDimension = null;
+    }
+
+    @WrapOperation(method = "startWaitingForNewLevel", at = @At(value = "NEW", target = "Lnet/minecraft/client/gui/screens/ReceivingLevelScreen;"))
+    private ReceivingLevelScreen kilt$tryUseNeoDimensionTransitionScreen(BooleanSupplier levelReceived, ReceivingLevelScreen.Reason reason, Operation<ReceivingLevelScreen> original) {
+        if (this.kilt$fromDimension != null && this.kilt$toDimension != null && DimensionTransitionScreenManager.kilt$hasScreen(this.kilt$toDimension, this.kilt$fromDimension)) {
+            return DimensionTransitionScreenManager.getScreen(this.kilt$toDimension, this.kilt$fromDimension).create(levelReceived, reason);
+        }
+
+        return original.call(levelReceived, reason);
+    }
+
+    @ModifyArg(method = "handleCommands", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundCommandsPacket;getRoot(Lnet/minecraft/commands/CommandBuildContext;)Lcom/mojang/brigadier/tree/RootCommandNode;"))
+    private CommandBuildContext kilt$storeCommandContext(CommandBuildContext ctx, @Share("context") LocalRef<CommandBuildContext> contextRef) {
+        contextRef.set(ctx);
+        return ctx;
     }
 
     @Inject(method = "handleCommands", at = @At("TAIL"))
@@ -100,17 +159,14 @@ public abstract class ClientPacketListenerInject {
     }
 
     @Inject(method = "handleUpdateTags", at = @At("TAIL"))
-    private void kilt$updateTags(ClientboundUpdateTagsPacket packet, CallbackInfo ci) {
-        CreativeModeTabs.allTabs().stream().filter(CreativeModeTabInjection::hasSearchBar)
-            .forEach(CreativeModeTab::rebuildSearchTree);
-        NeoForge.EVENT_BUS.post(new TagsUpdatedEvent(this.registryAccess.compositeAccess(), true, this.connection.isMemoryConnection()));
-    }
+    private void kilt$updateCreativeTags(ClientboundUpdateTagsPacket packet, CallbackInfo ci) {
+        var listener = (ClientPacketListener) (Object) this;
 
-    @Inject(method = "handleCustomPayload", at = @At("HEAD"), cancellable = true)
-    public void kilt$runCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
-        if (NetworkHooks.onCustomPayload(packet, this.connection)) {
-            ci.cancel();
-        }
+        CreativeModeTabs.allTabs().stream().filter(CreativeModeTabInjection::hasSearchBar)
+            .forEach(tab -> {
+                List<ItemStack> list = List.copyOf(tab.getDisplayItems());
+                listener.searchTrees().updateCreativeTags(list, CreativeModeTabSearchRegistry.getTagSearchKey(tab));
+            });
     }
 
     @ModifyVariable(method = "sendChat", at = @At("HEAD"), argsOnly = true)
@@ -128,5 +184,16 @@ public abstract class ClientPacketListenerInject {
     private void kilt$cancelIfCommandHandled(String command, CallbackInfo ci) {
         if (ClientCommandHandler.runCommand(command))
             ci.cancel();
+    }
+
+    @Inject(method = "sendUnsignedCommand", at = @At("HEAD"), cancellable = true)
+    private void kilt$runUnsignedCommand(String command, CallbackInfoReturnable<Boolean> cir) {
+        if (ClientCommandHandler.runCommand(command))
+            cir.setReturnValue(true);
+    }
+
+    @Override
+    public ConnectionType getConnectionType() {
+        return connectionType;
     }
 }

@@ -1,93 +1,122 @@
 // TRACKED HASH: 6c2af6a881a23ea04d8f49bf80f6e56938c38e8d
 package xyz.bluspring.kilt.injects.world.item.alchemy;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.core.Holder;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
+import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
+import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingMixInjection;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewing$BuilderInjection;
+import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingInjection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(PotionBrewing.class)
-public abstract class PotionBrewingInject {
-    @WrapOperation(method = {"isBrewablePotion", "mix"}, at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing$Mix;to:Ljava/lang/Object;"))
-    private static <T> T kilt$useForgeDelegateIfPossibleForBrewable(PotionBrewing.Mix<T> instance, Operation<T> original) {
-        var result = original.call(instance);
+public abstract class PotionBrewingInject implements PotionBrewingInjection {
+    @Shadow
+    protected abstract boolean isContainer(ItemStack stack);
 
-        if (result == null) {
-            return ((PotionBrewingMixInjection<T>) instance).kilt$getTo().value();
-        }
-
-        return result;
+    @Shadow
+    public static PotionBrewing bootstrap(FeatureFlagSet enabledFeatures) {
+        throw new IllegalStateException();
     }
 
-    @WrapOperation(method = {"hasContainerMix", "hasPotionMix", "mix"}, at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing$Mix;from:Ljava/lang/Object;"))
-    private static <T> T kilt$useForgeDelegateIfPossibleForContainerMix(PotionBrewing.Mix<T> instance, Operation<T> original) {
-        var result = original.call(instance);
+    private BrewingRecipeRegistry registry;
 
-        if (result == null) {
-            return ((PotionBrewingMixInjection<T>) instance).kilt$getFrom().value();
-        }
-
-        return result;
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$initRegistryWithEmptyRecipes(List<Ingredient> containers, List<PotionBrewing.Mix<Potion>> potionMixes, List<PotionBrewing.Mix<Item>> containerMixes, CallbackInfo ci) {
+        this.registry = new BrewingRecipeRegistry(List.of());
     }
 
-    @Mixin(PotionBrewing.Mix.class)
-    public static abstract class MixInject<T> implements PotionBrewingMixInjection<T> {
-        @Shadow @Final @Mutable T from;
-        @Shadow @Final @Mutable T to;
+    public PotionBrewingInject(List<Ingredient> containers, List<PotionBrewing.Mix<Potion>> potionMixes, List<PotionBrewing.Mix<Item>> containerMixes) {}
 
-        @Shadow @Final @Mutable public Ingredient ingredient;
-        @Unique public Holder.Reference<T> kilt$from;
-        @Unique public Holder.Reference<T> kilt$to;
+    @CreateInitializer
+    public PotionBrewingInject(List<Ingredient> containers, List<PotionBrewing.Mix<Potion>> potionMixes, List<PotionBrewing.Mix<Item>> containerMixes, List<IBrewingRecipe> recipes) {
+        this(containers, potionMixes, containerMixes);
+        this.registry = new BrewingRecipeRegistry(recipes);
+    }
+
+    @Override
+    public void kilt$setBrewingRegistry(BrewingRecipeRegistry registry) {
+        this.registry = registry;
+    }
+
+    @ModifyReturnValue(method = "isIngredient", at = @At("RETURN"))
+    private boolean kilt$checkIsValidIngredientInRegistry(boolean original, @Local(argsOnly = true) ItemStack stack) {
+        return this.registry.isValidIngredient(stack) || original;
+    }
+
+    @Override
+    public boolean isInput(ItemStack stack) {
+        return this.registry.isValidInput(stack) || this.isContainer(stack);
+    }
+
+    @Override
+    public List<IBrewingRecipe> getRecipes() {
+        return this.registry.recipes();
+    }
+
+    @Inject(method = "hasMix", at = @At("HEAD"), cancellable = true)
+    private void kilt$checkIfRegistryHasOutput(ItemStack reagent, ItemStack potionItem, CallbackInfoReturnable<Boolean> cir) {
+        if (this.registry.hasOutput(reagent, potionItem))
+            cir.setReturnValue(true);
+    }
+
+    @Inject(method = "mix", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getOrDefault(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;"), cancellable = true)
+    private void kilt$tryReturnCustomMix(ItemStack potion, ItemStack potionItem, CallbackInfoReturnable<ItemStack> cir) {
+        var customMix = this.registry.getOutput(potionItem, potion); // apparently Neo says these are flipped, so...
+        if (!customMix.isEmpty()) {
+            cir.setReturnValue(customMix);
+        }
+    }
+
+    @CreateStatic
+    private static PotionBrewing bootstrap(FeatureFlagSet enabledFeatures, RegistryAccess registryAccess) {
+        PotionBrewingInjection.kilt$registryAccess.set(registryAccess);
+        return bootstrap(enabledFeatures);
+    }
+
+    @Inject(method = "bootstrap", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing$Builder;build()Lnet/minecraft/world/item/alchemy/PotionBrewing;"))
+    private static void kilt$callRegisterBrewingRecipesEvent(FeatureFlagSet enabledFeatures, CallbackInfoReturnable<PotionBrewing> cir, @Local PotionBrewing.Builder builder) {
+        var registryAccess = PotionBrewingInjection.kilt$registryAccess.getAndSet(RegistryAccess.EMPTY);
+        NeoForge.EVENT_BUS.post(new RegisterBrewingRecipesEvent(builder, registryAccess));
+    }
+
+    @Mixin(PotionBrewing.Builder.class)
+    public static abstract class BuilderInject implements PotionBrewing$BuilderInjection {
+        private final List<IBrewingRecipe> recipes = new ArrayList<>();
+
+        // Porting Lib already does this
+        /*@Override
+        public void addRecipe(Ingredient input, Ingredient ingredient, ItemStack output) {
+            this.addRecipe(new BrewingRecipe(input, ingredient, output));
+        }*/
 
         @Override
-        public Holder.Reference<T> kilt$getFrom() {
-            return kilt$from;
+        public void addRecipe(IBrewingRecipe recipe) {
+            this.recipes.add(recipe);
         }
 
-        @Override
-        public Holder.Reference<T> kilt$getTo() {
-            return kilt$to;
-        }
-
-        @Override
-        public void kilt$setFrom(Holder.Reference<T> from) {
-            this.kilt$from = from;
-        }
-
-        @Override
-        public void kilt$setTo(Holder.Reference<T> to) {
-            this.kilt$to = to;
-        }
-
-        @Inject(method = "<init>", at = @At("TAIL"))
-        private void kilt$getHolderValuesFromRegistry(T from, Ingredient ingredient, T to, CallbackInfo ci) {
-            if (from instanceof Potion fromPotion && to instanceof Potion toPotion) {
-                ForgeRegistries.POTIONS.getDelegate(fromPotion).ifPresent(potion -> this.kilt$from = (Holder.Reference<T>) potion);
-                ForgeRegistries.POTIONS.getDelegate(toPotion).ifPresent(potion -> this.kilt$to = (Holder.Reference<T>) potion);
-            } else if (from instanceof Item fromItem && to instanceof Item toItem) {
-                ForgeRegistries.ITEMS.getDelegate(fromItem).ifPresent(item -> this.kilt$from = (Holder.Reference<T>) item);
-                ForgeRegistries.ITEMS.getDelegate(toItem).ifPresent(item -> this.kilt$to = (Holder.Reference<T>) item);
-            }
-        }
-
-        @CreateInitializer
-        public MixInject(IForgeRegistry<T> registry, T from, Ingredient ingredient, T to) {
-            this.kilt$from = registry.getDelegateOrThrow(from);
-            this.kilt$to = registry.getDelegateOrThrow(to);
-            this.from = null;
-            this.to = null;
-            this.ingredient = ingredient;
+        @ModifyReturnValue(method = "build", at = @At("RETURN"))
+        private PotionBrewing kilt$appendNeoRecipes(PotionBrewing original) {
+            original.kilt$setBrewingRegistry(new BrewingRecipeRegistry(this.recipes));
+            return original;
         }
     }
 }

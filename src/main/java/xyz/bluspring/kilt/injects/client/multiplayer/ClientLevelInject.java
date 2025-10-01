@@ -1,8 +1,10 @@
 // TRACKED HASH: 9493f81a6485a3765611155c032cf421d0ceeaf2
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -11,8 +13,10 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -23,6 +27,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.neoforged.neoforge.client.ColorResolverManager;
@@ -30,8 +35,9 @@ import net.neoforged.neoforge.client.model.data.ModelDataManager;
 import net.neoforged.neoforge.client.model.lighting.QuadLighter;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.extensions.IForgeLevel;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.common.extensions.ILevelExtension;
+import net.neoforged.neoforge.common.util.BlockSnapshot;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
@@ -43,13 +49,19 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.multiplayer.ClientLevelInjection;
 
 import java.util.Collection;
 import java.util.function.Supplier;
 
 @Mixin(ClientLevel.class)
-public abstract class ClientLevelInject extends Level implements ClientLevelInjection, IForgeLevel {
+public abstract class ClientLevelInject extends Level implements ClientLevelInjection, ILevelExtension {
+    @Inject(at = @At("TAIL"), method = "method_23778")
+    public void kilt$registerForgeBlockTintCaches(Object2ObjectArrayMap<ColorResolver, BlockTintCache> object2ObjectArrayMap, CallbackInfo ci) {
+        ColorResolverManager.registerBlockTintCaches((ClientLevel) (Object) this, object2ObjectArrayMap);
+    }
+
     @Unique private final ModelDataManager modelDataManager = new ModelDataManager((ClientLevel) (Object) this);
     @Unique private final Int2ObjectMap<PartEntity<?>> kilt$partEntities = new Int2ObjectOpenHashMap<>();
 
@@ -59,31 +71,52 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
 
     @Shadow public abstract DimensionSpecialEffects effects();
 
-    @Inject(at = @At("TAIL"), method = "method_23778")
-    public void kilt$registerForgeBlockTintCaches(Object2ObjectArrayMap<ColorResolver, BlockTintCache> object2ObjectArrayMap, CallbackInfo ci) {
-        ColorResolverManager.registerBlockTintCaches((ClientLevel) (Object) this, object2ObjectArrayMap);
+    @Shadow
+    @Final
+    private BlockStatePredictionHandler blockStatePredictionHandler;
+
+    @Inject(method = "setBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
+    private void kilt$storeCurentBlockSnapshot(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> cir, @Share("snapshot") LocalRef<BlockSnapshot> snapshotRef) {
+        snapshotRef.set(BlockSnapshot.create(this.dimension(), this, pos, flags));
+    }
+
+    @Inject(method = "setBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler;retainKnownServerState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/player/LocalPlayer;)V", shift = At.Shift.AFTER))
+    private void kilt$retainCurrentSnapshot(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> cir, @Share("snapshot") LocalRef<BlockSnapshot> snapshotRef) {
+        this.blockStatePredictionHandler.retainSnapshot(snapshotRef.get());
     }
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$initLevel(ClientPacketListener clientPacketListener, ClientLevel.ClientLevelData clientLevelData, ResourceKey resourceKey, Holder holder, int i, int j, Supplier supplier, LevelRenderer levelRenderer, boolean bl, long l, CallbackInfo ci) {
-        this.gatherCapabilities();
         NeoForge.EVENT_BUS.post(new LevelEvent.Load((ClientLevel) (Object) this));
+    }
+
+    @ModifyExpressionValue(method = "tickTime", at = @At(value = "CONSTANT", args = "longValue=1", ordinal = 1))
+    private long kilt$tryAdvanceDaytime(long original) {
+        if (original != -1) // prioritize other mixins
+            return original;
+
+        return this.advanceDaytime();
     }
 
     @WrapWithCondition(method = "tickNonPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
     public boolean kilt$onlyTickIfCanUpdate(Entity entity) {
-        return entity.canUpdate();
+        return !EventHooks.fireEntityTickPre(entity).isCanceled();
+    }
+
+    @Inject(method = "tickNonPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V", shift = At.Shift.AFTER))
+    private void kilt$postEntityTickEvent(Entity entity, CallbackInfo ci) {
+        EventHooks.fireEntityTickPost(entity);
     }
 
     @Inject(at = @At("HEAD"), method = "addEntity", cancellable = true)
-    public void kilt$runJoinLevelEvent(int i, Entity entity, CallbackInfo ci) {
-        if (NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(entity, (ClientLevel) (Object) this)))
+    public void kilt$runJoinLevelEvent(Entity entity, CallbackInfo ci) {
+        if (NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(entity, (ClientLevel) (Object) this)).isCanceled())
             ci.cancel();
     }
 
     @Inject(at = @At("TAIL"), method = "addEntity")
-    public void kilt$addEntityToWorld(int i, Entity entity, CallbackInfo ci) {
-        entity.onAddedToWorld();
+    public void kilt$addEntityToWorld(Entity entity, CallbackInfo ci) {
+        entity.onAddedToLevel();
     }
 
     @Inject(method = "playSeededSound(Lnet/minecraft/world/entity/player/Player;DDDLnet/minecraft/core/Holder;Lnet/minecraft/sounds/SoundSource;FFJ)V", at = @At("HEAD"), cancellable = true)
@@ -134,19 +167,19 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
         private void kilt$addForgeMultipartEntitiesToLevel(Entity entity, CallbackInfo ci) {
             if (entity.isMultipartEntity()) {
                 for (PartEntity<?> part : entity.getParts()) {
-                    ((ClientLevelInjection) field_27735).kilt$getPartEntitiesMap().put(part.getId(), part);
+                    field_27735.kilt$getPartEntitiesMap().put(part.getId(), part);
                 }
             }
         }
 
         @Inject(method = "onTrackingEnd(Lnet/minecraft/world/entity/Entity;)V", at = @At("TAIL"))
         private void kilt$removeForgeMultipartEntitiesFromLevel(Entity entity, CallbackInfo ci) {
-            entity.onRemovedFromWorld();
+            entity.onRemovedFromLevel();
             NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(entity, field_27735));
 
             if (entity.isMultipartEntity()) {
                 for (PartEntity<?> part : entity.getParts()) {
-                    ((ClientLevelInjection) field_27735).kilt$getPartEntitiesMap().remove(part.getId());
+                    field_27735.kilt$getPartEntitiesMap().remove(part.getId());
                 }
             }
         }
@@ -175,5 +208,29 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
     @Override
     public Int2ObjectMap<PartEntity<?>> kilt$getPartEntitiesMap() {
         return this.kilt$partEntities;
+    }
+
+    // Variable day time code :,D
+    private float dayTimeFraction = 0.0f;
+    private float dayTimePerTick = -1.0f;
+
+    @Override
+    public void setDayTimeFraction(float dayTimeFraction) {
+        this.dayTimeFraction = dayTimeFraction;
+    }
+
+    @Override
+    public float getDayTimeFraction() {
+        return dayTimeFraction;
+    }
+
+    @Override
+    public float getDayTimePerTick() {
+        return dayTimePerTick;
+    }
+
+    @Override
+    public void setDayTimePerTick(float dayTimePerTick) {
+        this.dayTimePerTick = dayTimePerTick;
     }
 }
