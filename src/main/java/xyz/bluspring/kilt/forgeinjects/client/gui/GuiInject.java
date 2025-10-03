@@ -368,9 +368,12 @@ public abstract class GuiInject implements GuiInjection {
         kilt$yShift = 59;
     }
 
-    @ModifyConstant(method = "renderSelectedItemName", constant = @Constant(intValue = 59))
+    @ModifyExpressionValue(method = "renderSelectedItemName", at = @At(value = "CONSTANT", args = "intValue=59"))
     private int kilt$shiftYOfTooltip(int constant) {
-        return kilt$yShift;
+        if (kilt$yShift != 59)
+            return kilt$yShift;
+
+        return constant;
     }
 
     // TODO: Debug text and FPS graph render, that should go into DebugScreenOverlay
