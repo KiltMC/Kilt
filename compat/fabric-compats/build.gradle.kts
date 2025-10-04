@@ -30,6 +30,8 @@ dependencies {
     modCompileOnly("maven.modrinth:accessories-cc-layer:${property("accessories_cc_version")}")
     modCompileOnly("maven.modrinth:snow-real-magic:${property("snowrealmagic_version")}")
     modCompileOnly("maven.modrinth:invmove:${property("invmove_version")}")
+
+    modCompileOnly("maven.modrinth:pehkui:${property("pehkui_version")}")
 }
 
 tasks {

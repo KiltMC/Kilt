@@ -4,17 +4,18 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
+import xyz.bluspring.kilt.api.remapping.InsnConflictRemapProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import java.util.ServiceLoader
 
 object WorkaroundFixer {
-    private val minecraftMapped = KiltRemapper.remapClass("net/minecraft/client/Minecraft")
-    private val potionBrewingMapped = KiltRemapper.remapClass("net/minecraft/world/item/alchemy/PotionBrewing\$Mix")
+    private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java)
 
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
-    private val pbFromMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8962", "Ljava/lang/Object;")
-    private val pbToMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8961", "Ljava/lang/Object;")
-    private val mcGuiMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_310", "field_1705", "Lnet/minecraft/class_329;")
+
     private val customSlotMapped = KiltRemapper.remapClass("net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen\$CustomCreativeSlot")
+    private val minecraftMapped = KiltRemapper.remapClass("net/minecraft/client/Minecraft")
+    private val mcGuiMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_310", "field_1705", "Lnet/minecraft/class_329;")
 
     fun fixClass(classNode: ClassNode) {
         val methodReplace = mutableListOf<MethodNode>()
@@ -22,44 +23,65 @@ object WorkaroundFixer {
         for (method in classNode.methods) {
             val newNodeMap = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
 
-            for (insnNode in method.instructions) {
-                if (insnNode is MethodInsnNode && insnNode.owner == "net/minecraftforge/fluids/FluidStack") {
-                    if (insnNode.name == "getAmount") {
-                        val node = MethodInsnNode(
-                            insnNode.opcode,
-                            "net/minecraftforge/fluids/FluidStack",
-                            "forge\$getAmount",
-                            insnNode.desc
-                        )
-                        newNodeMap[insnNode] = node
-                    } else if (insnNode.name == "writeToPacket") {
-                        val node = MethodInsnNode(
-                            insnNode.opcode,
-                            "net/minecraftforge/fluids/FluidStack",
-                            "forge\$writeToPacket",
-                            insnNode.desc
-                        )
-                        newNodeMap[insnNode] = node
+            insnRemap@for (insnNode in method.instructions) {
+                // Handle remaps through the additional remap providers first
+                if (insnNode is MethodInsnNode) {
+                    for (provider in insnConflictRemapProviders) {
+                        val remapped = provider.remapMethod(insnNode.owner, insnNode.name, insnNode.desc)
+
+                        if (remapped != insnNode.name) {
+                            KiltRemapper.logger.debug("Provider ${provider::class.java.name} remapped method ${insnNode.owner}#${insnNode.name}${insnNode.desc} to $remapped")
+
+                            val node = MethodInsnNode(insnNode.opcode, insnNode.owner, remapped, insnNode.desc)
+                            newNodeMap[insnNode] = node
+
+                            continue@insnRemap
+                        }
+                    }
+                } else if (insnNode is FieldInsnNode) {
+                    for (provider in insnConflictRemapProviders) {
+                        val remapped = provider.remapField(insnNode.owner, insnNode.name, insnNode.desc)
+
+                        if (remapped != insnNode.name) {
+                            KiltRemapper.logger.debug("Provider ${provider::class.java.name} remapped field ${insnNode.owner}#${insnNode.name}${insnNode.desc} to $remapped")
+
+                            val node = FieldInsnNode(insnNode.opcode, insnNode.owner, remapped, insnNode.desc)
+                            newNodeMap[insnNode] = node
+
+                            continue@insnRemap
+                        }
                     }
                 } else if (insnNode is InvokeDynamicInsnNode) {
                     val newArgs = arrayOfNulls<Any>(insnNode.bsmArgs.size)
                     for ((i, arg) in insnNode.bsmArgs.withIndex()) {
-                        if (arg is Handle && arg.owner == "net/minecraftforge/fluids/FluidStack" && arg.name == "getAmount") {
-                            newArgs[i] = Handle(arg.tag, arg.owner, "forge\$getAmount", arg.desc, arg.isInterface)
-                        } else {
-                            newArgs[i] = arg
+                        if (arg is Handle) {
+                            var newName = arg.name
+
+                            for (provider in insnConflictRemapProviders) {
+                                val remapped = provider.remapMethod(arg.owner, arg.name, arg.desc)
+
+                                if (remapped != insnNode.name) {
+                                    KiltRemapper.logger.debug("Provider ${provider::class.java.name} remapped dynamic method ${arg.owner}#${arg.name}${arg.desc} to $remapped")
+                                    newName = remapped
+
+                                    break
+                                }
+                            }
+
+                            if (newName != arg.name) {
+                                newArgs[i] = Handle(arg.tag, arg.owner, newName, arg.desc, arg.isInterface)
+                                continue
+                            }
                         }
+
+                        newArgs[i] = arg
                     }
+
                     insnNode.bsmArgs = newArgs;
-                } else if (insnNode is FieldInsnNode && insnNode.owner == potionBrewingMapped) {
-                    if (insnNode.name == "f_43532_" || insnNode.name == pbFromMapped || insnNode.name == "from") {
-                        val node = FieldInsnNode(insnNode.opcode, insnNode.owner, "kilt\$from", insnNode.desc)
-                        newNodeMap[insnNode] = node
-                    } else if (insnNode.name == "f_43534_" || insnNode.name == pbToMapped || insnNode.name == "to") {
-                        val node = FieldInsnNode(insnNode.opcode, insnNode.owner, "kilt\$to", insnNode.desc)
-                        newNodeMap[insnNode] = node
-                    }
-                } else if (insnNode is FieldInsnNode && insnNode.owner == minecraftMapped) {
+                }
+
+                if (insnNode is FieldInsnNode && insnNode.owner == minecraftMapped) {
+                    // We need to remap Forge mods to use the GUI that they're expecting
                     if (insnNode.name == "f_91065_" || insnNode.name == mcGuiMapped || insnNode.name == "gui") {
                         val followingInsn = method.instructions.get(method.instructions.indexOf(insnNode) + 1)
 
