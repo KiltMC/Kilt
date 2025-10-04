@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,17 +43,19 @@ public abstract class ServerPlayerGameModeInject {
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/world/item/Item;canAttackBlock(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z"
-			) // We want to use WrapOperation or Redirect to ensure canAttackBlock is not fired more than once (it might have side effects).
+			)
 	)
-	public boolean canMine(
+	private boolean kilt$canAttackBlock(
 			Item instance, BlockState state, Level level, BlockPos pos, Player player, Operation<Boolean> original,
 			@Cancellable CallbackInfoReturnable<Boolean> cir, @Share("exp") LocalIntRef exp
 	) {
-		int expLocal = ForgeHooks.onBlockBreakEvent(level, gameModeForPlayer, this.player, pos);
+		int expLocal = ForgeHooks.kilt$onBlockBreakEvent(
+				level, gameModeForPlayer, this.player, pos,
+				() -> original.call(instance, state, level, pos, player)
+		);
 		if (expLocal == -1) {
-			// When the player's main hand item is empty, the game seems to ignore the value returned by the mixin and breaks the block anyway.
-			// Might only affect certain hardware.
-			if (player.getMainHandItem().isEmpty()) {
+			// Patch for porting lib still breaking block when event is cancelled with an empty main hand item.
+			if (FabricLoader.getInstance().isModLoaded("porting_lib_base") && player.getMainHandItem().isEmpty()) {
 				cir.setReturnValue(false);
 			}
 			return false;
@@ -68,7 +71,7 @@ public abstract class ServerPlayerGameModeInject {
 					shift = At.Shift.BEFORE // Necessary to capture variables.
 			)
 	)
-	public void dropXP(
+	private void kilt$dropXP(
 			BlockPos pos, CallbackInfoReturnable<Boolean> cir,
 			@Local BlockState blockState,
 			@Local(ordinal = 0) boolean removed, @Share("exp") LocalIntRef exp
