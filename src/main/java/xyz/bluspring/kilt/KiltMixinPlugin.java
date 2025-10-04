@@ -1,5 +1,10 @@
 package xyz.bluspring.kilt;
 
+import com.bawnorton.mixinsquared.MixinSquaredBootstrap;
+import com.bawnorton.mixinsquared.adjuster.MixinAnnotationAdjusterRegistrar;
+import com.bawnorton.mixinsquared.api.MixinAnnotationAdjuster;
+import com.bawnorton.mixinsquared.api.MixinCanceller;
+import com.bawnorton.mixinsquared.canceller.MixinCancellerRegistrar;
 import com.bawnorton.mixinsquared.ext.ExtensionRegistrar;
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import com.moulberry.mixinconstraints.MixinConstraints;
@@ -14,6 +19,7 @@ import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
 import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifier;
 
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 public class KiltMixinPlugin implements IMixinConfigPlugin {
@@ -33,6 +39,34 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
         MixinConstraintsBootstrap.init(mixinPackage);
 
         ExtensionRegistrar.register(new KiltMixinModifier());
+
+        // Initialize MixinSquared for Forge mods
+        MixinSquaredBootstrap.init();
+
+        try {
+            // We need to ensure that we're not accidentally registering this twice (Fabric mod has MixinSquared services, for example).
+            var cancellersField = MixinCancellerRegistrar.class.getDeclaredField("cancellers");
+            cancellersField.setAccessible(true);
+            var adjustersField = MixinAnnotationAdjusterRegistrar.class.getDeclaredField("adjusters");
+            adjustersField.setAccessible(true);
+
+            var cancellers = (Set<MixinCanceller>) cancellersField.get(null);
+            var adjusters = (Set<MixinAnnotationAdjuster>) adjustersField.get(null);
+
+            ServiceLoader.load(MixinCanceller.class).forEach(mixinCanceller -> {
+                if (cancellers.stream().noneMatch(e -> e.getClass() == mixinCanceller.getClass())) {
+                    MixinCancellerRegistrar.register(mixinCanceller);
+                }
+            });
+
+            ServiceLoader.load(MixinAnnotationAdjuster.class).forEach(adjuster -> {
+                if (adjusters.stream().noneMatch(e -> e.getClass() == adjuster.getClass())) {
+                    MixinAnnotationAdjusterRegistrar.register(adjuster);
+                }
+            });
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to inject Forge MixinSquared services into MixinSquared Fabric!", e);
+        }
     }
 
     @Override
