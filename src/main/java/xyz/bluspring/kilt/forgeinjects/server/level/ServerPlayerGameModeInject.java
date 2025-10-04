@@ -38,7 +38,7 @@ public abstract class ServerPlayerGameModeInject {
 	@Shadow
 	protected ServerLevel level;
 
-	@WrapOperation(
+	/*@WrapOperation(
 			method = "destroyBlock",
 			at = @At(
 					value = "INVOKE",
@@ -79,6 +79,6 @@ public abstract class ServerPlayerGameModeInject {
 		if (removed && exp.get() > 0) {
 			blockState.getBlock().popExperience(level, pos, exp.get());
 		}
-	}
+	}*/
 
 }

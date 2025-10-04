@@ -10,6 +10,7 @@ import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
+import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
@@ -19,10 +20,12 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
+import net.minecraftforge.event.level.BlockEvent
 import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.server.ServerLifecycleHooks
@@ -153,6 +156,20 @@ class Kilt : ModInitializer {
             ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter)
         }
 
+		BlockEvents.BLOCK_BREAK.register { event ->
+			val level = event.level
+			if (level is Level) {
+				val forgeEvent = BlockEvent.BreakEvent(level, event.pos, event.state, event.player);
+				forgeEvent.expToDrop = event.expToDrop
+				forgeEvent.isCanceled = event.isCanceled
+				forgeEvent.result = portingLibToEventBus(event.result)
+				MinecraftForge.EVENT_BUS.post(forgeEvent)
+				event.isCanceled = forgeEvent.isCanceled
+				event.expToDrop = forgeEvent.expToDrop
+				event.result = eventBusToPortingLib(forgeEvent.result)
+			}
+		}
+
         EntityEvent.ENTER_SECTION.register { entity, sectionX, sectionY, sectionZ, prevX, prevY, prevZ ->
             ForgeHooks.onEntityEnterSection(entity, ChunkPos.asLong(BlockPos(sectionX, sectionY, sectionZ)), ChunkPos.asLong(
                 BlockPos(prevX, prevY, prevZ)
@@ -224,6 +241,24 @@ class Kilt : ModInitializer {
                 KiltClient.lateRegisterEvents()
             }
         }
+
+		fun portingLibToEventBus(result: BaseEvent.Result): Event.Result {
+			return when (result) {
+				BaseEvent.Result.ALLOW -> Event.Result.ALLOW
+				BaseEvent.Result.DEFAULT -> Event.Result.DEFAULT
+				BaseEvent.Result.DENY -> Event.Result.DENY
+				else -> Event.Result.DEFAULT
+			}
+		}
+
+		fun eventBusToPortingLib(result: Event.Result): BaseEvent.Result {
+			return when (result) {
+				Event.Result.ALLOW -> BaseEvent.Result.ALLOW
+				Event.Result.DEFAULT -> BaseEvent.Result.DEFAULT
+				Event.Result.DENY -> BaseEvent.Result.DENY
+				else -> BaseEvent.Result.DEFAULT
+			}
+		}
 
         fun eventBusToArchitectury(result: Event.Result): EventResult {
             return when (result) {
