@@ -9,7 +9,7 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.util.ServiceLoader
 
 object WorkaroundFixer {
-    private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java)
+    private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java).toList()
 
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
@@ -77,7 +77,7 @@ object WorkaroundFixer {
                         newArgs[i] = arg
                     }
 
-                    insnNode.bsmArgs = newArgs;
+                    insnNode.bsmArgs = newArgs
                 }
 
                 if (insnNode is FieldInsnNode && insnNode.owner == minecraftMapped) {
