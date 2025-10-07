@@ -60,7 +60,7 @@ object WorkaroundFixer {
                             for (provider in insnConflictRemapProviders) {
                                 val remapped = provider.remapMethod(arg.owner, arg.name, arg.desc)
 
-                                if (remapped != insnNode.name) {
+                                if (remapped != arg.name) {
                                     KiltRemapper.logger.debug("Provider ${provider::class.java.name} remapped dynamic method ${arg.owner}#${arg.name}${arg.desc} to $remapped")
                                     newName = remapped
 
