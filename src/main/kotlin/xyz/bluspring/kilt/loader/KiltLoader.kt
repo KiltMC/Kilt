@@ -405,8 +405,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
             // Loads gametests
             for (url in this::class.java.classLoader.getResources("META-INF/mods.toml")) {
+                if (url.file.contains(".jar") && url.file.contains("!/META-INF/mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
+                    continue
+
+                val path = Path(url.path.removePrefix("file:/"))
+
                 val toml = tomlParser.parse(url)
-                modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
+                modsList.addAll(parseModsToml(path, toml, null, isBuiltIn = true))
             }
 
             modsList
