@@ -13,11 +13,13 @@ import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteracti
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.Level
@@ -221,6 +223,11 @@ class Kilt : ModInitializer {
 
         LivingEntityEvents.DROPS.register { target, source, drops, level, recentlyHit ->
             ForgeHooks.onLivingDrops(target, source, drops, level, recentlyHit)
+        }
+
+        EntityElytraEvents.CUSTOM.register { entity, tickElytra ->
+            val chestPiece = entity.getItemBySlot(EquipmentSlot.CHEST)
+            chestPiece.canElytraFly(entity) && chestPiece.elytraFlightTick(entity, entity.fallFlyingTicks)
         }
     }
 
