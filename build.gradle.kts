@@ -54,21 +54,6 @@ loom {
 
         messages.set(mutableMapOf("ACCESSOR_TARGET_NOT_FOUND" to "disabled"))
     }
-
-    // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
-    runs {
-        afterEvaluate {
-            configureEach {
-                vmArg("-javaagent:${configurations.compileClasspath.get().find { it.name.contains("sponge-mixin") }}")
-                vmArg("-XX:+IgnoreUnrecognizedVMOptions") // in the case the below doesnt work bc that JVM doesnt have it
-                vmArg("-XX:+AllowEnhancedClassRedefinition")
-                property("mixin.hotSwap", "true")
-                property("mixin.debug.export", "true")
-                property("kilt.storeModifiedCoreMods", "true")
-                property("classtransform.dumpClasses", "true")
-            }
-        }
-    }
 }
 
 allprojects {
@@ -178,6 +163,21 @@ allprojects {
         return@allprojects
 
     apply(plugin = "fabric-loom")
+
+    // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
+    loom.runs {
+        afterEvaluate {
+            configureEach {
+                vmArg("-javaagent:${configurations.compileClasspath.get().find { it.name.contains("sponge-mixin") }}")
+                vmArg("-XX:+IgnoreUnrecognizedVMOptions") // in the case the below doesnt work bc that JVM doesnt have it
+                vmArg("-XX:+AllowEnhancedClassRedefinition")
+                property("mixin.hotSwap", "true")
+                property("mixin.debug.export", "true")
+                property("kilt.storeModifiedCoreMods", "true")
+                property("classtransform.dumpClasses", "true")
+            }
+        }
+    }
 
     dependencies {
         // To change the versions see the gradle.properties file
