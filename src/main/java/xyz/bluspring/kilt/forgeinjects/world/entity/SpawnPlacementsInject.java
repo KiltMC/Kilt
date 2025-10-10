@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraftforge.common.IExtensibleEnum;
 import net.minecraftforge.common.util.TriPredicate;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Final;
@@ -26,7 +27,7 @@ public abstract class SpawnPlacementsInject implements SpawnPlacementsInjection 
     }
 
     @Mixin(SpawnPlacements.Type.class)
-    public static class TypeInject implements SpawnPlacementsTypeInjection {
+    public static class TypeInject implements SpawnPlacementsTypeInjection, IExtensibleEnum {
         @CreateStatic
         private static SpawnPlacements.Type create(String name, TriPredicate<LevelReader, BlockPos, EntityType<? extends Mob>> predicate) {
             return SpawnPlacementsTypeInjection.create(name, predicate);
