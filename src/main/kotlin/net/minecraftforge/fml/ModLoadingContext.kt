@@ -15,6 +15,9 @@ import java.util.function.Supplier
 open class ModLoadingContext {
     internal var kiltActiveContainer: ModContainer? = null
 
+    val container: ModContainer
+        get() = this.getActiveContainer()
+
     fun getActiveContainer(): ModContainer {
         return if (kiltActiveContainer == null)
             VanillaModContainer
