@@ -164,25 +164,11 @@ allprojects {
 
     apply(plugin = "fabric-loom")
 
-    // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
-    loom.runs {
-        afterEvaluate {
-            configureEach {
-                vmArg("-javaagent:${configurations.compileClasspath.get().find { it.name.contains("sponge-mixin") }}")
-                vmArg("-XX:+IgnoreUnrecognizedVMOptions") // in the case the below doesnt work bc that JVM doesnt have it
-                vmArg("-XX:+AllowEnhancedClassRedefinition")
-                property("mixin.hotSwap", "true")
-                property("mixin.debug.export", "true")
-                property("kilt.storeModifiedCoreMods", "true")
-                property("classtransform.dumpClasses", "true")
-            }
-        }
-    }
-
     dependencies {
         // To change the versions see the gradle.properties file
         minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
         mappings (loom.layered {
+            mappings(rootProject.file("workarounds/fix_yarn_mapping.tiny")) // for the cases where other mods are making the mistake of using Yarn and having conflicting names
             officialMojangMappings()
             parchment("org.parchmentmc.data:parchment-${rootProject.property("parchment_version")}:${rootProject.property("parchment_release")}@zip")
         })
@@ -206,7 +192,7 @@ allprojects {
             implementation("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")
             modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")
             implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)
-            modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")
+            modApi("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
         }
     }
 }
@@ -224,7 +210,7 @@ dependencies {
     include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
-    include("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")
+    include("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
@@ -325,6 +311,22 @@ dependencies {
     // Workarounds
     include(modImplementation("maven.modrinth:feature-recycler:${rootProject.property("feature_recycler_version")}")!!) // Required for features - see #376, #391, #361, #352
 }
+
+// yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
+// FIXME: why does this not work.
+//loom.runs {
+//    afterEvaluate {
+//        configureEach {
+//            vmArg("-javaagent:${configurations.compileClasspath.get().find { it.name.contains("sponge-mixin") }}")
+//            vmArg("-XX:+IgnoreUnrecognizedVMOptions") // in the case the below doesnt work bc that JVM doesnt have it
+//            vmArg("-XX:+AllowEnhancedClassRedefinition")
+//            property("mixin.hotSwap", "true")
+//            property("mixin.debug.export", "true")
+//            property("kilt.storeModifiedCoreMods", "true")
+//            property("classtransform.dumpClasses", "true")
+//        }
+//    }
+//}
 
 configurations.all {
     exclude("cpw.mods", "modlauncher")
