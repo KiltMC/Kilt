@@ -43,7 +43,7 @@ public abstract class FoxInject extends Animal {
         @Inject(method = "breed", at = @At("MIXINEXTRAS:EXPRESSION"), cancellable = true)
         private void kilt$handleBabySpawnEvent(CallbackInfo ci, @Local LocalRef<Fox> child) {
             var event = new BabyEntitySpawnEvent(this.animal, this.partner, child.get());
-            var cancelled = NeoForge.EVENT_BUS.post(event);
+            var cancelled = NeoForge.EVENT_BUS.post(event).isCanceled();
             child.set((Fox) event.getChild());
 
             if (cancelled) {
@@ -67,7 +67,7 @@ public abstract class FoxInject extends Animal {
 
         @ModifyExpressionValue(method = "onReachedTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefingEvent(boolean original) {
-            return original && EventHooks.getMobGriefingEvent(field_17975.level(), field_17975);
+            return original && EventHooks.canEntityGrief(field_17975.level(), field_17975);
         }
     }
 

@@ -1,4 +1,3 @@
-import com.google.gson.JsonParser
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
@@ -7,15 +6,18 @@ import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 import xyz.bluspring.kilt.gradle.AppendInjectedInterfaces
+import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
 import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id("fabric-loom") version "1.11-SNAPSHOT"
+    id("fabric-loom")
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
 }
+
+apply<KiltLoomPlugin>()
 
 version = "${createVersion()}${getVersionMetadata()}"
 group = property("maven_group")!!

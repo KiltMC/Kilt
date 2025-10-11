@@ -13,15 +13,15 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -37,9 +37,16 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.common.extensions.IEntityExtension;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.EntityEvent;
+import net.neoforged.neoforge.fluids.FluidType;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -53,7 +60,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
-import xyz.bluspring.kilt.injections.world.entity.LightningBoltInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Comparator;
@@ -88,28 +94,25 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Shadow public abstract EntityDimensions getDimensions(Pose pose);
 
-    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
-    private float kilt$useSizesFromEvent(Entity instance, Pose pose, EntityDimensions dimensions, Operation<Float> original) {
-        var event = EventHooks.getEntitySizeForge(instance, pose, dimensions, original.call(instance, pose, dimensions));
+    @Shadow
+    public abstract RegistryAccess registryAccess();
+
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityDimensions;eyeHeight()F"))
+    private float kilt$useSizesFromEvent(EntityDimensions instance, Operation<Float> original) {
+        var event = EventHooks.getEntitySizeForge((Entity) (Object) this, Pose.STANDING, dimensions, instance);
 
         this.dimensions = event.getNewSize();
-        return event.getNewEyeHeight();
+        return original.call(this.dimensions);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$callForgeEntityInitEvents(EntityType<?> entityType, Level level, CallbackInfo ci) {
         NeoForge.EVENT_BUS.post(new EntityEvent.EntityConstructing((Entity) (Object) this));
-        this.gatherCapabilities();
-    }
-
-    @Inject(method = "remove", at = @At("TAIL"))
-    private void kilt$invalidateEntityCapabilities(Entity.RemovalReason reason, CallbackInfo ci) {
-        this.invalidateCaps();
     }
 
     @ModifyExpressionValue(method = "baseTick", at = @At(value = "CONSTANT", args = "floatValue=0.5"))
     private float kilt$useFluidFallDistanceModifier(float original) {
-        var modifier = this.getFluidFallDistanceModifier(ForgeMod.LAVA_TYPE.get());
+        var modifier = this.getFluidFallDistanceModifier(NeoForgeMod.LAVA_TYPE.value());
         if (original == 0.5)
             return modifier;
 
@@ -226,22 +229,6 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         }
     }
 
-    @WrapOperation(method = "updateInWaterStateAndDoWaterCurrentPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;isUnderWater()Z"))
-    private boolean kilt$disableBoatReturn(Boat instance, Operation<Boolean> original, @Share("updateFluidHeight") LocalRef<BooleanSupplier> updateFluidHeightRef) {
-        var isUnderwater = original.call(instance);
-
-        if (!isUnderwater) {
-            this.wasTouchingWater = false;
-
-            updateFluidHeightRef.set(() -> {
-                this.updateFluidHeightAndDoFluidPushing(state -> this.shouldUpdateFluidWhileBoating(state, instance));
-                return false;
-            });
-        }
-
-        return true;
-    }
-
     @WrapOperation(method = "updateInWaterStateAndDoWaterCurrentPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z"))
     private boolean kilt$checkForgeFluidHeight(Entity instance, TagKey<Fluid> fluidTag, double motionScale, Operation<Boolean> original, @Share("updateFluidHeight") LocalRef<BooleanSupplier> updateFluidHeightRef) {
         if (updateFluidHeightRef.get() != null) {
@@ -253,7 +240,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Inject(method = "updateFluidOnEyes", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V", ordinal = 0, shift = At.Shift.AFTER))
     private void kilt$clearForgeFluidTypeOnEyes(CallbackInfo ci) {
-        this.forgeFluidTypeOnEyes = ForgeMod.EMPTY_TYPE.get();
+        this.forgeFluidTypeOnEyes = NeoForgeMod.EMPTY_TYPE.value();
     }
 
     @Inject(method = "updateFluidOnEyes", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;forEach(Ljava/util/function/Consumer;)V", shift = At.Shift.AFTER))
@@ -282,9 +269,9 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     @Inject(method = "isEyeInFluid", at = @At("HEAD"), cancellable = true)
     private void kilt$checkEyeInFluidType(TagKey<Fluid> fluidTag, CallbackInfoReturnable<Boolean> cir) {
         if (fluidTag == FluidTags.WATER)
-            cir.setReturnValue(this.isEyeInFluidType(ForgeMod.WATER_TYPE.get()));
+            cir.setReturnValue(this.isEyeInFluidType(NeoForgeMod.WATER_TYPE.value()));
         else if (fluidTag == FluidTags.LAVA)
-            cir.setReturnValue(this.isEyeInFluidType(ForgeMod.LAVA_TYPE.get()));
+            cir.setReturnValue(this.isEyeInFluidType(NeoForgeMod.LAVA_TYPE.value()));
     }
 
     @Definition(id = "fluidHeight", field = "Lnet/minecraft/world/entity/Entity;fluidHeight:Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;")
@@ -293,19 +280,13 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     @Expression("this.fluidHeight.getDouble(LAVA) > 0.0")
     @ModifyExpressionValue(method = "isInLava", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkForgeFluidTypeHeight(boolean original) {
-        return original || this.forgeFluidTypeHeight.getDouble(ForgeMod.LAVA_TYPE.get()) > 0.0D;
-    }
-
-    @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Ljava/util/Set;isEmpty()Z"))
-    private void kilt$addCanUpdateTag(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        compound.putBoolean("CanUpdate", this.canUpdate);
+        return original || this.forgeFluidTypeHeight.getDouble(NeoForgeMod.LAVA_TYPE.value()) > 0.0D;
     }
 
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"))
     private void kilt$addSerializedCapabilityData(CompoundTag compound, CallbackInfoReturnable<CompoundTag> cir) {
-        var capabilities = this.serializeCaps();
-        if (capabilities != null)
-            compound.put("ForgeCaps", capabilities);
+        CompoundTag attachments = ((AttachmentHolder) (Object) (this)).serializeAttachments(registryAccess());
+        if (attachments != null) compound.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, attachments);
 
         // Kilt: we don't need to implement persistent data, as that is already handled by Porting Lib.
     }
@@ -314,11 +295,8 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     private void kilt$loadSerializedForgeData(CompoundTag compound, CallbackInfo ci) {
         // Kilt: we don't need to implement persistent data, as that is already handled by Porting Lib.
 
-        if (compound.contains("CanUpdate", Tag.TAG_ANY_NUMERIC))
-            this.canUpdate(compound.getBoolean("CanUpdate"));
-
-        if (compound.contains("ForgeCaps", Tag.TAG_COMPOUND))
-            this.deserializeCaps(compound.getCompound("ForgeCaps"));
+        if (compound.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, net.minecraft.nbt.Tag.TAG_COMPOUND))
+            ((AttachmentHolder) (Object) (this)).deserializeAttachments(registryAccess(), compound.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY));
     }
 
     @WrapOperation(method = "spawnAtLocation(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
@@ -331,9 +309,13 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         }
     }
 
-    @WrapWithCondition(method = "rideTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
-    private boolean kilt$checkCanUpdate(Entity instance) {
-        return instance.canUpdate();
+    @WrapOperation(method = "rideTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
+    private void fireTickEvents(Entity instance, Operation<Void> original) {
+        // Neo: Permit cancellation of Entity#tick via EntityTickEvent.Pre
+        if (!EventHooks.fireEntityTickPre(instance).isCanceled()) {
+            original.call(instance);
+            EventHooks.fireEntityTickPost(instance);
+        }
     }
 
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRide(Lnet/minecraft/world/entity/Entity;)Z"), cancellable = true)
@@ -355,11 +337,12 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @ModifyExpressionValue(method = "thunderHit", at = @At(value = "CONSTANT", args = "floatValue=5.0"))
     private float kilt$checkLightningDamage(float original, @Local(argsOnly = true) LightningBolt lightningBolt) {
-        if (original == 5.0f) { // Kilt: prioritize other mods' mixins
+        if (original != 5.0f) { // Kilt: prioritize other mods' mixins
+            lightningBolt.setDamage(original);
             return original;
         }
 
-        return ((LightningBoltInjection) lightningBolt).getDamage();
+        return lightningBolt.getDamage();
     }
 
     @ModifyReceiver(method = "getTypeName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityType;getDescription()Lnet/minecraft/network/chat/Component;"))
@@ -370,24 +353,17 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         return this.getType();
     }
 
-    @Nullable
-    public Entity changeDimension(ServerLevel level, ITeleporter teleporter) {
-        // Kilt: redirect to Porting Lib's teleporter
-        return this.changeDimension(level, (io.github.fabricators_of_create.porting_lib.entity.ITeleporter) teleporter);
-    }
-
     @Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true)
-    private void kilt$handleChangeDimensionEvent(ServerLevel destination, CallbackInfoReturnable<Entity> cir) {
-        if (!CommonHooks.onTravelToDimension((Entity) (Object) this, destination.dimension())) {
+    private void kilt$handleChangeDimensionEvent(DimensionTransition transition, CallbackInfoReturnable<Entity> cir) {
+        if (!CommonHooks.onTravelToDimension((Entity) (Object) this, transition.newLevel().dimension())) {
             cir.setReturnValue(null);
         }
     }
 
-    @ModifyExpressionValue(method = "refreshDimensions", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getEyeHeight(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"))
-    private float kilt$callForgeSizeEvent(float original, @Local(ordinal = 0) EntityDimensions dimensions, @Local(ordinal = 1) LocalRef<EntityDimensions> dimensions2, @Local Pose pose) {
-        var sizeEvent = EventHooks.getEntitySizeForge((Entity) (Object) this, pose, dimensions, this.dimensions, original);
-        dimensions2.set(this.dimensions = sizeEvent.getNewSize());
-        return sizeEvent.getNewEyeHeight();
+    @WrapOperation(method = "refreshDimensions", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDimensions(Lnet/minecraft/world/entity/Pose;)Lnet/minecraft/world/entity/EntityDimensions;"))
+    private EntityDimensions kilt$callForgeSizeEvent(Entity instance, Pose pose, Operation<EntityDimensions> original, @Local EntityDimensions entityDimensions) {
+        EntityEvent.Size sizeEvent = EventHooks.getEntitySizeForge(instance, pose, entityDimensions, original.call(instance, pose));
+        return sizeEvent.getNewSize();
     }
 
     // Kilt: Little workaround to allow mixins to still occur in updateFluidHeightAndDoFluidPushing
@@ -450,7 +426,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;length()D", ordinal = 0), cancellable = true)
     private void kilt$useInterimValuesForCalc(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
-        if (interimCalcs.get().isEmpty() || (interimCalcs.get().size() == 1 && (interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get()) || interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get())))) {
+        if (interimCalcs.get().isEmpty() || (interimCalcs.get().size() == 1 && (interimCalcs.get().containsKey(NeoForgeMod.WATER_TYPE.value()) || interimCalcs.get().containsKey(NeoForgeMod.LAVA_TYPE.value())))) {
             interimCalcs.get().forEach((fluidType, interim) -> {
                 this.setFluidTypeHeight(fluidType, interim.getLeft());
             });
@@ -484,9 +460,9 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         });
 
         if (fluidTag == FluidTags.WATER)
-            cir.setReturnValue(this.isInFluidType(ForgeMod.WATER_TYPE.get()));
+            cir.setReturnValue(this.isInFluidType(NeoForgeMod.WATER_TYPE.value()));
         else if (fluidTag == FluidTags.LAVA)
-            cir.setReturnValue(this.isInFluidType(ForgeMod.LAVA_TYPE.get()));
+            cir.setReturnValue(this.isInFluidType(NeoForgeMod.LAVA_TYPE.value()));
         else
             cir.setReturnValue(false);
     }
@@ -498,14 +474,14 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
         if (fluidTag == FluidTags.WATER) {
             if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
-                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+                return fluidTypeRef.get() == NeoForgeMod.WATER_TYPE.value() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
             else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+                return interimCalcs.get().containsKey(NeoForgeMod.WATER_TYPE.value());
         } else if (fluidTag == FluidTags.LAVA) {
             if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
-                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+                return fluidTypeRef.get() == NeoForgeMod.LAVA_TYPE.value() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
             else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
+                return interimCalcs.get().containsKey(NeoForgeMod.LAVA_TYPE.value());
         }
 
         return true;
@@ -515,14 +491,14 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     private boolean kilt$ensureIsActuallyInFluidType(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
         if (fluidTag == FluidTags.WATER) {
             if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
-                return fluidTypeRef.get() == ForgeMod.WATER_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
+                return fluidTypeRef.get() == NeoForgeMod.WATER_TYPE.value() || fluidTypeRef.get() == PortingLibFluids.WATER_TYPE;
             else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get());
+                return interimCalcs.get().containsKey(NeoForgeMod.WATER_TYPE.value());
         } else if (fluidTag == FluidTags.LAVA) {
             if (fluidTypeRef.get() != null && !fluidTypeRef.get().isAir())
-                return fluidTypeRef.get() == ForgeMod.LAVA_TYPE.get() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
+                return fluidTypeRef.get() == NeoForgeMod.LAVA_TYPE.value() || fluidTypeRef.get() == PortingLibFluids.LAVA_TYPE;
             else if (interimCalcs.get() != null)
-                return interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get());
+                return interimCalcs.get().containsKey(NeoForgeMod.LAVA_TYPE.value());
         }
 
         return original;
@@ -530,66 +506,48 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     @Inject(method = "setPosRaw", at = @At("TAIL"))
     private void kilt$ensureChunkLoaded(double x, double y, double z, CallbackInfo ci) {
-        if (this.isAddedToWorld() && !this.level().isClientSide() && !this.isRemoved()) {
+        if (this.isAddedToLevel() && !this.level().isClientSide() && !this.isRemoved()) {
             this.level().getChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);
         }
     }
 
-    @Unique
-    private boolean canUpdate = true;
-
     protected Object2DoubleMap<FluidType> forgeFluidTypeHeight = new Object2DoubleArrayMap<>(FluidType.SIZE.get());
-    private FluidType forgeFluidTypeOnEyes = ForgeMod.EMPTY_TYPE.get();
-
-    @Override
-    public boolean canUpdate() {
-        return canUpdate;
-    }
-
-    @Override
-    public void canUpdate(boolean value) {
-        canUpdate = value;
-    }
+    private FluidType forgeFluidTypeOnEyes = NeoForgeMod.EMPTY_TYPE.value();
 
     @Override
     public CompoundTag getPersistentData() {
-        return this.getCustomData();
+        return ((io.github.fabricators_of_create.porting_lib.entity.injects.EntityInjection) this).getCustomData();
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
     public boolean canTrample(BlockState state, BlockPos pos, float fallDistance) {
-        return this.level.random.nextFloat() < fallDistance - .5F
+        return this.level.random.nextFloat() < fallDistance - 0.5F
                 && ((Object) this) instanceof LivingEntity
-                && (((Object) this) instanceof Player || EventHooks.getMobGriefingEvent(this.level, ((Entity) (Object) this)))
-                && this.getBbWidth() * this.getBbWidth() * this.getBbHeight() > .512F;
+                && (((Object) this) instanceof Player || EventHooks.canEntityGrief(this.level, ((Entity) (Object) this)))
+                && this.getBbWidth() * this.getBbWidth() * this.getBbHeight() > 0.512F;
     }
 
-    private boolean isAddedToWorld;
+    private boolean isAddedToLevel;
 
     @Override
-    public boolean isAddedToWorld() {
-        return isAddedToWorld;
-    }
-
-    @Override
-    public void onAddedToWorld() {
-        isAddedToWorld = true;
+    public boolean isAddedToLevel() {
+        return isAddedToLevel;
     }
 
     @Override
-    public void onRemovedFromWorld() {
-        isAddedToWorld = false;
+    public void onAddedToLevel() {
+        isAddedToLevel = true;
+    }
+
+    @Override
+    public void onRemovedFromLevel() {
+        isAddedToLevel = false;
     }
 
     @Override
     public void revive() {
         this.unsetRemoved();
-        this.reviveCaps();
-    }
-
-    public float getEyeHeightAccess(Pose pose, EntityDimensions size) {
-        return this.getEyeHeight(pose, size);
     }
 
     protected final void setFluidTypeHeight(FluidType type, double height) {
@@ -624,13 +582,13 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     @Override
     public FluidType getMaxHeightFluidType() {
         if (this.forgeFluidTypeHeight.isEmpty())
-            return ForgeMod.EMPTY_TYPE.get();
+            return NeoForgeMod.EMPTY_TYPE.value();
 
         return this.forgeFluidTypeHeight.object2DoubleEntrySet()
             .stream()
             .max(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
             .map(Object2DoubleMap.Entry::getKey)
-            .orElseGet(ForgeMod.EMPTY_TYPE);
+            .orElseGet(NeoForgeMod.EMPTY_TYPE::value);
     }
 
     public EntityDimensions getDimensionsForge(Pose pose) {

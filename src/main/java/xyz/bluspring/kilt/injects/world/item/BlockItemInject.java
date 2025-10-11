@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.injects.world.item;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -15,7 +14,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,19 +51,6 @@ public abstract class BlockItemInject extends Item implements BlockItemInjection
     @Override
     public SoundEvent getPlaceSound(BlockState state, Level world, BlockPos pos, Player entity) {
         return state.getSoundType(world, pos, entity).getPlaceSound();
-    }
-
-    @ModifyReturnValue(method = "getBlock", at = @At("RETURN"))
-    private Block kilt$tryGetDelegate(Block original) {
-        if (original == null)
-            return null;
-
-        var delegate = ForgeRegistries.BLOCKS.getDelegate(original);
-        if (delegate.isPresent()) {
-            return delegate.get().value();
-        }
-
-        return original;
     }
 
     private Block getBlockRaw() {

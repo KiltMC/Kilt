@@ -3,9 +3,8 @@ package xyz.bluspring.kilt.mixin.compat.modmenu;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.neoforged.neoforge.client.ConfigScreenHandler;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,10 +19,11 @@ public abstract class ModMenuMixin {
         var kiltMod = KiltLoader.Companion.getInstance().getMod(modId);
         if (kiltMod != null) {
             // Kilt: Add Forge config screens to ModMenu
-            var screenExtension = kiltMod.getContainer().getCustomExtension(ConfigScreenHandler.ConfigScreenFactory.class);
+            var container = kiltMod.getContainer();
+            var screenExtension = container.getCustomExtension(IConfigScreenFactory.class);
 
             if (screenExtension.isPresent()) {
-                return screenExtension.get().screenFunction().apply(Minecraft.getInstance(), parent);
+                return screenExtension.get().createScreen(container, parent);
             }
         }
 

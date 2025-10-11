@@ -3,8 +3,8 @@ package xyz.bluspring.kilt.mixin.compat.forgeconfigapiport;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
-import net.neoforged.neoforge.common.ForgeConfigSpec;
+import fuzs.forgeconfigapiport.impl.services.CommonAbstractions;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,19 +15,19 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-@Mixin(value = ForgeConfigSpec.Builder.class, remap = false)
+@Mixin(value = ModConfigSpec.Builder.class, remap = false)
 public abstract class ForgeConfigSpecMixin {
     // Kilt: ForgeConfigAPIPort is missing these methods from newer versions of Forge.
 
-    @Shadow public abstract <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator);
+    @Shadow public abstract <T> ModConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator);
 
-    public <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
+    public <T> ModConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(String path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
         return defineListAllowEmpty(split(path), defaultValue, elementValidator);
     }
-    public <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(String path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
+    public <T> ModConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(String path, Supplier<List<? extends T>> defaultSupplier, Predicate<Object> elementValidator) {
         return defineListAllowEmpty(split(path), defaultSupplier, elementValidator);
     }
-    public <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
+    public <T> ModConfigSpec.ConfigValue<List<? extends T>> defineListAllowEmpty(List<String> path, List<? extends T> defaultValue, Predicate<Object> elementValidator) {
         return defineListAllowEmpty(path, () -> defaultValue, elementValidator);
     }
 
@@ -41,9 +41,9 @@ public abstract class ForgeConfigSpecMixin {
         return Lists.newArrayList(DOT_SPLITTER.split(path));
     }
 
-    @Mixin(value = ForgeConfigSpec.ConfigValue.class, remap = false)
+    @Mixin(value = ModConfigSpec.ConfigValue.class, remap = false)
     public static class ConfigValueMixin {
-        @Redirect(method = "get", at = @At(value = "INVOKE", target = "Lfuzs/forgeconfigapiport/impl/core/CommonAbstractions;isDevelopmentEnvironment()Z"))
+        @Redirect(method = "get", at = @At(value = "INVOKE", target = "Lfuzs/forgeconfigapiport/impl/services/CommonAbstractions;isDevelopmentEnvironment()Z"))
         private boolean kilt$disableDevEnvCrash(CommonAbstractions instance) {
             return false;
         }

@@ -1,4 +1,7 @@
 import net.fabricmc.loom.task.RemapJarTask
+import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
+
+apply<KiltLoomPlugin>()
 
 base {
     archivesName.set("Kilt-Create-Compat")

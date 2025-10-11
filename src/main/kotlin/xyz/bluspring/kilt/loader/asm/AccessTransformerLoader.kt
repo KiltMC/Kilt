@@ -10,8 +10,8 @@ import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.util.regex.Pattern
 
-// A reimplementation of Forge's Access Transformers.
-// The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
+// A reimplementation of NeoForge's Access Transformers.
+// The specification can be found here: https://github.com/neoforged/AccessTransformers/blob/main/FMLAT.md
 object AccessTransformerLoader {
     private val logger = LoggerFactory.getLogger("Kilt Access Transformers")
     private val debug = KiltFlags.ENABLE_ACCESS_TRANSFORMER_DEBUG

@@ -1,28 +1,6 @@
 package xyz.bluspring.kilt;
 
-import com.google.common.collect.Lists;
-import io.github.fabricators_of_create.porting_lib.extensions.extensions.ItemTransformExtensions;
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.core.Holder;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.neoforged.bus.api.Event;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistry;
-import org.joml.Vector3f;
-import xyz.bluspring.kilt.injections.client.color.block.BlockColorsInjection;
-import xyz.bluspring.kilt.injections.world.level.biome.BiomeSpecialEffects$GrassColorModifierInjection;
-import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentCategoryInjection;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import net.minecraft.world.level.biome.Biome;
 
 // I use this class to just throw stuff into and
 // see how the bytecode looks when it's built.
@@ -31,122 +9,8 @@ import java.util.function.Supplier;
 // not because the ASM-ifier doesn't actually work
 // for me.
 public class TestingMoreShit {
-    private static DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "fuck");
-
-    private static DeferredRegister<Block> BLOCKS2;
-
-    private IForgeRegistry<Block> block;
-
-    public TestingMoreShit(IForgeRegistry<Block> registry) {
-        block = registry;
-    }
-
-    public boolean moreRandomShit(Item item) {
-        var quack = new Item(new Item.Properties().durability(0));
-        var test = Item.class;
-        System.out.println(test);
-        //return ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
-        return quack.equals("a");
-    }
-
-    public Map<Holder.Reference<Block>, BlockColor> a() {
-        return ((BlockColorsInjection) this).kilt$getBlockColors();
-    }
-
-    private BiomeSpecialEffects$GrassColorModifierInjection.ColorModifier delegate;
-    public BiomeSpecialEffects$GrassColorModifierInjection.ColorModifier kilt$getDelegate() {
-        return this.delegate;
-    }
-
-    public int b(double x, double z, int c) {
-        return this.kilt$getDelegate().modifyGrassColor(x, z, c);
-    }
-
-    static {
-        try {
-            BLOCKS2 = DeferredRegister.create((ForgeRegistry<Block>) Class.forName("net.minecraftforge.registries.ForgeRegistries").getDeclaredField("BLOCKS").get(null), "fuck");
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static class TestingDoubleTime extends TestingMoreShit {
-        private final char test;
-        public TestingDoubleTime() {
-            super(ForgeRegistries.BLOCKS);
-            this.test = '\u0000';
-        }
-    }
-
-    public static class TestingTripleTime extends Block {
-        private final FlowingFluid bruh;
-        private final List<?> test;
-        private final Supplier<? extends FlowingFluid> supplier;
-
-        public TestingTripleTime(Supplier<? extends FlowingFluid> fluid, BlockBehaviour.Properties properties) {
-            super(properties);
-
-            this.bruh = null;
-            this.test = Lists.newArrayList();
-            this.registerDefaultState(this.stateDefinition.any().setValue(FlowingFluid.LEVEL, 0));
-            this.supplier = fluid;
-        }
-    }
-
-    public static abstract class TestingQuadrupleTime extends ItemTransform {
-        public TestingQuadrupleTime(Vector3f vector3f, Vector3f vector3f2, Vector3f vector3f3, Vector3f rightRotation) {
-            super(vector3f, vector3f2, vector3f3);
-            //noinspection RedundantCast
-            ((ItemTransformExtensions) this).setRightRotation(rightRotation);
-        }
-    }
-
-    public enum MoreTestingBullshit {
-        WELL, THEN;
-
-        public static TestingDoubleTime quack() {
-            return new TestingDoubleTime();
-        }
-
-        public boolean wow(Item item) {
-            return ((EnchantmentCategoryInjection) (Object) this).getDelegate() != null && ((EnchantmentCategoryInjection) (Object) this).getDelegate().test(item);
-        }
-    }
-
-    @FunctionalInterface
-    public interface FuckYouToo {
-        int fuckYouToo(double a, double b, int c);
-    }
-
-    public static class HowManyShitsDoINeedToTest extends Event {
-        public HowManyShitsDoINeedToTest() {
-            this(false);
-        }
-        public HowManyShitsDoINeedToTest(boolean a) {
-            super();
-        }
-
-        @FunctionalInterface
-        public interface FuckYouuuu extends FuckYouToo {
-            int fuckYouToo(double a, double b, int c);
-        }
-    }
-
-    public static class FuckingHell {
-        public FuckingHell() {}
-    }
-
-    public class DoISeriouslyNeedToTestThisToo {
-        public DoISeriouslyNeedToTestThisToo() {}
-    }
-
-    public interface TestingThis {
-        default ItemTransforms testThis() {
-            return ItemTransforms.NO_TRANSFORMS;
-        }
+    public static void test() {
+        Biome.ClimateSettings settings = null;
+        System.out.println(settings.downfall());
     }
 }

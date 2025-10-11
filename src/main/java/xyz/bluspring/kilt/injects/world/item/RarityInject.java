@@ -1,16 +1,18 @@
 // TRACKED HASH: ad9e0035fc910cb9d79f74951b83b361e6bd1ba9
 package xyz.bluspring.kilt.injects.world.item;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.neoforge.common.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.RarityInjection;
 
 import java.util.function.UnaryOperator;
 
+@IndexedEnum
+@NamedEnum(1)
+@NetworkedEnum(NetworkedEnum.NetworkCheck.BIDIRECTIONAL)
 @Mixin(Rarity.class)
 public class RarityInject implements RarityInjection, IExtensibleEnum {
     private UnaryOperator<Style> styleModifier;
@@ -26,12 +28,7 @@ public class RarityInject implements RarityInjection, IExtensibleEnum {
     }
 
     @CreateStatic
-    private static Rarity create(String name, ChatFormatting formatting) {
-        return RarityInjection.create(name, formatting);
-    }
-
-    @CreateStatic
-    private static Rarity create(String name, UnaryOperator<Style> styleModifier) {
-        return RarityInjection.create(name, styleModifier);
+    private static ExtensionInfo getExtensionInfo() {
+        return ExtensionInfo.nonExtended(Rarity.class);
     }
 }

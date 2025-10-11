@@ -15,16 +15,16 @@ public abstract class ModConfigMixin {
         throw new IllegalStateException();
     }
 
-    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, String modId, final String fileName) {}
-    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, String modId) {}
+    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec spec, String modId, final String fileName) {}
+    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec spec, String modId) {}
 
     @CreateInitializer
-    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, ModContainer mod, final String fileName) {
+    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec spec, ModContainer mod, final String fileName) {
         this(type, spec, mod.getModId(), fileName);
     }
 
     @CreateInitializer
-    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec<?> spec, ModContainer mod) {
+    public ModConfigMixin(final ModConfig.Type type, final IConfigSpec spec, ModContainer mod) {
         this(type, spec, mod.getModId(), defaultConfigName(type, mod.getModId()));
     }
 }

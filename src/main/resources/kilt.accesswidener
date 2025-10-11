@@ -26,9 +26,6 @@ accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_MASK Lcom/moja
 
 accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojang/blaze3d/vertex/VertexFormatElement;
 
-accessible method net/minecraft/world/entity/SpawnPlacements$Data <init> (Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;)V
-accessible method net/minecraft/world/item/crafting/Ingredient <init> ([Lnet/minecraft/world/item/crafting/Ingredient$Value;)V
-
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;

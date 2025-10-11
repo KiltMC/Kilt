@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.mixin.compat.indium;
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.moulberry.mixinconstraints.annotations.IfModAbsent;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import me.jellysquid.mods.sodium.client.world.WorldSlice;
+import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -31,11 +31,11 @@ public interface BakedModelMixin {
     )
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"))
     private void kilt$storeVariables(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, CallbackInfo ci) {
-        if (!(blockView instanceof WorldSlice))
+        if (!(blockView instanceof LevelSlice))
             return;
 
         // Indium uses Sodium's WorldSlice instead, get the original ClientLevel instead
-        FRAPIThreadedStorage.LEVEL.set(((WorldSliceAccessor) blockView).getWorld());
+        FRAPIThreadedStorage.LEVEL.set(((WorldSliceAccessor) blockView).getLevel());
         FRAPIThreadedStorage.POS.set(pos);
     }
 

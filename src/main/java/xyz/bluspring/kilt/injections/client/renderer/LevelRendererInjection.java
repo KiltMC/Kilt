@@ -7,8 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 public interface LevelRendererInjection {
-    Matrix4f kilt$getProjectionMatrix();
-
     Frustum getFrustum();
     int getTicks();
 }
