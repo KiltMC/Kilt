@@ -171,7 +171,7 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
 
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkCanPerformActionForge(ItemAbility toolAction, CallbackInfoReturnable<Boolean> cir) {
+    private void kilt$checkCanPerformActionForge(io.github.fabricators_of_create.porting_lib.tool.ItemAbility toolAction, CallbackInfoReturnable<Boolean> cir) {
         var forgeToolAction = ItemAbility.kilt$getNullable(toolAction.name());
         if (forgeToolAction != null && this.canPerformAction(forgeToolAction)) {
             cir.setReturnValue(true);
