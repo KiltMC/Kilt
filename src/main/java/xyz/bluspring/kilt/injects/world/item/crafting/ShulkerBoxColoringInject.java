@@ -24,7 +24,7 @@ public abstract class ShulkerBoxColoringInject {
     @Definition(id = "getItem", method = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;")
     @Definition(id = "DyeItem", type = DyeItem.class)
     @Expression("itemStack.getItem() instanceof DyeItem")
-    @ModifyExpressionValue(method = "matches(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/world/level/Level;)Z", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @ModifyExpressionValue(method = "matches(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/world/level/Level;)Z", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkIsDyeTag(boolean original, @Local ItemStack stack) {
         return original || stack.is(Tags.Items.DYES);
     }
@@ -32,7 +32,7 @@ public abstract class ShulkerBoxColoringInject {
     @Definition(id = "byItem", method = "Lnet/minecraft/world/level/block/Block;byItem(Lnet/minecraft/world/item/Item;)Lnet/minecraft/world/level/block/Block;")
     @Definition(id = "ShulkerBoxBlock", type = ShulkerBoxBlock.class)
     @Expression("byItem(?) instanceof ShulkerBoxBlock")
-    @ModifyExpressionValue(method = "assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @ModifyExpressionValue(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$tryStoreDyeColor(boolean original, @Share("dyeColor") LocalRef<DyeColor> dyeColor, @Local(ordinal = 1) ItemStack stack) {
         if (!original) {
             var tmp = DyeColorInjection.getColor(stack);
@@ -44,7 +44,7 @@ public abstract class ShulkerBoxColoringInject {
         return original;
     }
 
-    @ModifyArg(method = "assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/ShulkerBoxBlock;getColoredItemStack(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/item/ItemStack;"))
+    @ModifyArg(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/ShulkerBoxBlock;getColoredItemStack(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/item/ItemStack;"))
     private @Nullable DyeColor kilt$trySetCustomDyeColor(@Nullable DyeColor color, @Share("dyeColor") LocalRef<DyeColor> dyeColor) {
         if (dyeColor.get() != null)
             return dyeColor.get();

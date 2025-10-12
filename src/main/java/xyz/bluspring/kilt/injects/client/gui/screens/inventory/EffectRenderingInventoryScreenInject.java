@@ -23,6 +23,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtension
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
@@ -48,10 +49,15 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
 
     @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;", remap = false))
     private List<MobEffectInstance> kilt$filterOnlyRenderableEffects(Ordering<MobEffectInstance> instance, Iterable<MobEffectInstance> elements, Operation<List<MobEffectInstance>> original) {
-        return original.call(instance, elements).stream().filter(ForgeHooksClient::shouldRenderEffect).sorted().collect(Collectors.toList());
+        return original.call(instance, elements).stream().filter(ClientHooks::shouldRenderEffect).sorted().collect(Collectors.toList());
     }
 
-    @Inject(method = "renderIcons", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;getEffect()Lnet/minecraft/world/effect/MobEffect;", shift = At.Shift.BEFORE))
+    @ModifyArg(method = "renderEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V"))
+    private List<Component> effectiveTooltip(List<Component> tooltip, @Local MobEffectInstance mobEffectInstance) {
+        return ClientHooks.getEffectTooltip((EffectRenderingInventoryScreen<?>) (Object) this, mobEffectInstance, tooltip);
+    }
+
+    @Inject(method = "renderIcons", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;getEffect()Lnet/minecraft/core/Holder;"))
     private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, boolean isSmall, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(ordinal = 2) LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
         var renderer = IClientMobEffectExtensions.of(effectInstance);
 
@@ -69,7 +75,7 @@ public abstract class EffectRenderingInventoryScreenInject<T extends AbstractCon
         return shouldRender.get();
     }
 
-    @Inject(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectRenderingInventoryScreen;getEffectName(Lnet/minecraft/world/effect/MobEffectInstance;)Lnet/minecraft/network/chat/Component;", shift = At.Shift.BEFORE))
+    @Inject(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectRenderingInventoryScreen;getEffectName(Lnet/minecraft/world/effect/MobEffectInstance;)Lnet/minecraft/network/chat/Component;"))
     private void kilt$customRenderIconForge(GuiGraphics guiGraphics, int renderX, int yOffset, Iterable<MobEffectInstance> effects, CallbackInfo ci, @Local MobEffectInstance effectInstance, @Local(ordinal = 2) LocalIntRef i, @Share("kilt$shouldRender") LocalBooleanRef shouldRender) {
         var renderer = IClientMobEffectExtensions.of(effectInstance);
 

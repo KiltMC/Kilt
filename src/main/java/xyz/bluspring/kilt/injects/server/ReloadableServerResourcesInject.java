@@ -1,19 +1,27 @@
 // TRACKED HASH: d24928420f3c1ebf622411bc07206c361aa737b9
 package xyz.bluspring.kilt.injects.server;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagManager;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.crafting.conditions.ConditionContext;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.ConditionContext;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.neoforged.neoforge.resource.ContextAwareReloadListener;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,11 +36,17 @@ import xyz.bluspring.kilt.injections.server.ReloadableServerResourcesInjection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 @Mixin(ReloadableServerResources.class)
 public class ReloadableServerResourcesInject implements ReloadableServerResourcesInjection {
     @Shadow @Final private TagManager tagManager;
+    @Shadow
+    @Final
+    private ReloadableServerResources.ConfigurableRegistryLookup registryLookup;
+    @Shadow
+    @Final
+    private ReloadableServerRegistries.Holder fullRegistryHolder;
     @Unique
     private ICondition.IContext kilt$context;
 
@@ -47,36 +61,36 @@ public class ReloadableServerResourcesInject implements ReloadableServerResource
         return kilt$context;
     }
 
-    @Unique private static final ThreadLocal<List<PreparableReloadListener>> kilt$listeners = new ThreadLocal<>();
-    @Unique private static final ThreadLocal<ReloadableServerResources> kilt$serverResources = new ThreadLocal<>();
+    @Override
+    public HolderLookup.Provider getRegistryLookup() {
+        return registryLookup;
+    }
 
-    @ModifyArg(method = "loadResources", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
-    private static List<PreparableReloadListener> kilt$addForgeResourceReloadListener(List<PreparableReloadListener> listeners, @Local ReloadableServerResources serverResources, @Local(argsOnly = true) RegistryAccess.Frozen registryAccess, @Local(argsOnly = true) Commands.CommandSelection commandSelection) {
+    @ModifyArg(method = "method_58296", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
+    private static List<PreparableReloadListener> kilt$addForgeResourceReloadListener(List<PreparableReloadListener> listeners, @Local ReloadableServerResources serverResources, @Local(argsOnly = true) LayeredRegistryAccess<RegistryLayer> registryAccess, @Local(argsOnly = true) Commands.CommandSelection commandSelection, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
         var list = new ArrayList<>(listeners);
-        list.addAll(EventHooks.onResourceReload(serverResources, registryAccess));
-
-        kilt$listeners.set(list);
-        kilt$serverResources.set(serverResources);
-        kilt$blueprintWorkaround(null, registryAccess, null, commandSelection, 0, null, null);
-        kilt$listeners.remove();
-        kilt$serverResources.remove();
-
+        list.addAll(EventHooks.onResourceReload(serverResources, registryAccess.compositeAccess()));
+        listeners.forEach(rl -> {
+            if (rl instanceof ContextAwareReloadListener srl) srl.injectContext(serverResources.getConditionContext(), serverResources.getRegistryLookup());
+        });
+        listenersRef.set(list);
         return list;
     }
 
-    // Kilt: Special workaround specifically for Blueprint's mixin
-    private static CompletableFuture<ReloadableServerResources> kilt$blueprintWorkaround(ResourceManager resourceManager, RegistryAccess.Frozen registryAccess, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, int functionCompilationLevel, Executor backgroundExecutor, Executor gameExecutor) {
-        var serverResources = kilt$serverResources.get();
-        var listeners = kilt$listeners.get();
-
-        serverResources.listeners();
-        listeners.size();
-
-        return null;
+    @WrapOperation(method = "method_58296", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenApply(Ljava/util/function/Function;)Ljava/util/concurrent/CompletableFuture;"))
+    private static CompletableFuture injectContext(CompletableFuture instance, Function function, Operation<CompletableFuture> original, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
+        return original.call(instance.thenRun(() -> {
+            // Clear context after reload completes
+            listenersRef.get().forEach(rl -> {
+                if (rl instanceof ContextAwareReloadListener srl) {
+                    srl.injectContext(ICondition.IContext.EMPTY, RegistryAccess.EMPTY);
+                }
+            });
+        }), function);
     }
 
-    @Inject(method = "updateRegistryTags(Lnet/minecraft/core/RegistryAccess;)V", at = @At("TAIL"))
-    private void kilt$callTagUpdateEvent(RegistryAccess registryAccess, CallbackInfo ci) {
-        NeoForge.EVENT_BUS.post(new TagsUpdatedEvent(registryAccess, false, false));
+    @Inject(method = "updateRegistryTags()V", at = @At("TAIL"))
+    private void kilt$callTagUpdateEvent(CallbackInfo ci) {
+        NeoForge.EVENT_BUS.post(new TagsUpdatedEvent(this.fullRegistryHolder.get(), false, false));
     }
 }

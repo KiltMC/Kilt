@@ -15,6 +15,8 @@ accessible class net/minecraft/world/effect/MobEffectInstance$Details
 accessible method net/minecraft/world/effect/MobEffectInstance$Details <init> (IIZZZLjava/util/Optional;)V
 accessible class net/minecraft/world/inventory/BrewingStandMenu$PotionSlot
 
+accessible class net/minecraft/server/ReloadableServerResources$ConfigurableRegistryLookup
+
 accessible field com/mojang/blaze3d/platform/GlStateManager BLEND Lcom/mojang/blaze3d/platform/GlStateManager$BlendState;
 accessible field com/mojang/blaze3d/platform/GlStateManager DEPTH Lcom/mojang/blaze3d/platform/GlStateManager$DepthState;
 accessible field com/mojang/blaze3d/platform/GlStateManager CULL Lcom/mojang/blaze3d/platform/GlStateManager$CullState;

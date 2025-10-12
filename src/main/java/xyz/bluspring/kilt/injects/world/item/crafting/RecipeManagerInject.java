@@ -3,38 +3,68 @@ package xyz.bluspring.kilt.injects.world.item.crafting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.neoforged.neoforge.common.conditions.ConditionalOps;
 import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.resource.ContextAwareReloadListener;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.item.crafting.RecipeManagerInjection;
+import xyz.bluspring.kilt.injections.world.item.crafting.RecipeInjection;
 
 import java.util.Map;
 
 @Mixin(RecipeManager.class)
-public class RecipeManagerInject implements RecipeManagerInjection {
-    @CreateStatic
-    private static Recipe<?> fromJson(ResourceLocation location, JsonObject json, ICondition.IContext context) {
-        return RecipeManagerInjection.fromJson(location, json, context);
-    }
+public class RecipeManagerInject {
 
     @Shadow @Final private static Logger LOGGER;
-    private ICondition.IContext context = ICondition.IContext.EMPTY;
 
-    @Override
-    public void setContext(ICondition.IContext context) {
-        this.context = context;
+    @Shadow
+    @Final
+    private HolderLookup.Provider registries;
+
+    @WrapOperation(
+            method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/core/HolderLookup$Provider;createSerializationContext(Lcom/mojang/serialization/DynamicOps;)Lnet/minecraft/resources/RegistryOps;"
+            )
+    )
+    private RegistryOps<JsonElement> wrapConditionalContext(HolderLookup.Provider instance, DynamicOps<JsonElement> ops, Operation<RegistryOps<JsonElement>> original) {
+        if (this.registries != ((ContextAwareReloadListener) (Object) this).getRegistryLookup()) // Sanity check and warn if anything ends up different so it can be debugged more easily (hopefully this never happens)
+            LOGGER.warn("Kilt: Registry Lookup is different from ContextAwareReloadListener#getRegistryLookup!");
+
+        return new ConditionalOps<>(original.call(instance, ops), ((ContextAwareReloadListener) (Object) this).getContext());
+    }
+
+    @ModifyReceiver(
+            method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/mojang/serialization/Codec;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;"
+            )
+    )
+    private Codec<Recipe<?>> useConditionalCodec(Codec<Recipe<?>> instance, DynamicOps<JsonElement> dynamicOps, Object o) {
+        if (instance != RecipeInjection.CONDITIONAL_CODEC) {
+            return ConditionalOps.createConditionalCodecWithConditions(instance);
+        }
+
+        return RecipeInjection.CONDITIONAL_CODEC;
     }
 
     @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/crafting/RecipeManager;fromJson(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;"), method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V")

@@ -2,38 +2,49 @@ package xyz.bluspring.kilt.injects.world.level.pathfinder;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.world.level.pathfinder.PathfindingContextInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(WalkNodeEvaluator.class)
 public abstract class WalkNodeEvaluatorInject {
-    @WrapOperation(method = {"getNeighbors", "getMobJumpHeight"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;maxUpStep()F"))
-    private float kilt$useStepHeight(Mob instance, Operation<Float> original) {
-        return Math.max(instance.getStepHeight(), original.call(instance)); // Kilt: use whatever is highest honestly
-    }
+    @WrapOperation(method = "checkNeighbourBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/pathfinder/PathfindingContext;getPathTypeFromState(III)Lnet/minecraft/world/level/pathfinder/PathType;"), cancellable = true)
+    private static PathType kilt$tryGetAdjacentBlockPathType(PathfindingContext instance, int x, int y, int z, Operation<PathType> original, @Cancellable CallbackInfoReturnable<PathType> cir) {
+        PathType pathType = original.call(instance, x, y, z);
+        BlockPos currentEvalPos = ((PathfindingContextInjection) instance).currentEvalPos();
+        BlockState blockState = instance.level().getBlockState(currentEvalPos);
 
-    @Inject(method = "checkNeighbourBlocks", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/BlockGetter;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", shift = At.Shift.AFTER), cancellable = true)
-    private static void kilt$tryGetAdjacentBlockPathType(BlockGetter level, BlockPos.MutableBlockPos centerPos, BlockPathTypes nodeType, CallbackInfoReturnable<BlockPathTypes> cir, @Local BlockState state) {
-        try {
-            var blockPathType = state.getAdjacentBlockPathType(level, centerPos, null, nodeType);
-            if (blockPathType != null)
+        if (KiltHelper.INSTANCE.hasMethodOverride(blockState.getBlock().getClass(), Block.class, "getAdjacentBlockPathType", BlockState.class, BlockGetter.class, BlockPos.class, Mob.class, PathType.class)) {
+            PathType blockPathType = blockState.getAdjacentBlockPathType(instance.level(), currentEvalPos, null, pathType);
+            if (blockPathType != null) {
                 cir.setReturnValue(blockPathType);
+                return pathType;
+            }
+        }
 
-            var fluidState = state.getFluidState();
-            var fluidPathType = fluidState.getAdjacentBlockPathType(level, centerPos, null, nodeType);
-            if (fluidPathType != null)
-                cir.setReturnValue(fluidPathType);
-        } catch (NullPointerException ignored) {} // Kilt: The Forge deferred registry is going to be the fucking death of me. (crash only triggers w/ Lithium)
+        FluidState fluidState = blockState.getFluidState();
+        PathType fluidPathType = fluidState.getAdjacentBlockPathType(instance.level(), currentEvalPos, null, pathType);
+        if (fluidPathType != null) { // This replaces vanilla, should probably add a check for kilt stuff or something
+            cir.setReturnValue(fluidPathType);
+        }
+
+        return pathType;
     }
 
     @Inject(method = "getBlockPathTypeRaw", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/BlockGetter;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", shift = At.Shift.AFTER), cancellable = true)
