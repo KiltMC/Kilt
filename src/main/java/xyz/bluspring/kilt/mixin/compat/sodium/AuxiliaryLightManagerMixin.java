@@ -4,6 +4,6 @@ import net.caffeinemc.mods.sodium.client.world.SodiumAuxiliaryLightManager;
 import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(AuxiliaryLightManager.class)
+@Mixin(value = AuxiliaryLightManager.class, remap = false)
 public class AuxiliaryLightManagerMixin implements SodiumAuxiliaryLightManager {
 }

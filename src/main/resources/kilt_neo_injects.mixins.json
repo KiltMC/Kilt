@@ -162,6 +162,7 @@
     "server.packs.metadata.pack.PackMetadataSectionSerializerInject",
     "server.packs.repository.PackInject",
     "server.packs.repository.PackInject$InfoInject",
+    "server.packs.repository.PackInject$MetadataInject",
     "server.packs.repository.PackRepositoryInject",
     "server.packs.repository.ServerPacksSourceInject",
     "server.packs.resources.FallbackResourceManagerInject",

@@ -36,7 +36,7 @@ public class FabricLevelRenderHooksMixin {
         return ClientHooks.gatherAdditionalRenderers(origin, level); // We can't use the original list so lets hope no one modifies this before us
     }
 
-    @Inject(method = "runChunkMeshAppenders", at = @At("HEAD"))
+    @Inject(method = "runChunkMeshAppenders", at = @At("HEAD"), remap = false)
     private void addSectionGeometryEvent(List<?> renderers, Function<RenderType, VertexConsumer> typeToConsumer, LevelSlice slice, CallbackInfo ci) {
         AddSectionGeometryEvent.SectionRenderingContext context = new AddSectionGeometryEvent.SectionRenderingContext(typeToConsumer, slice, new PoseStack());
         for (Object o : renderers) {

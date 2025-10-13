@@ -1,8 +1,13 @@
 package xyz.bluspring.kilt.injections.world.level;
 
+import io.github.fabricators_of_create.porting_lib.extensions.common.LevelExtensions;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 public interface LevelInjection {
@@ -52,5 +57,9 @@ public interface LevelInjection {
         this.setDayTimeFraction(dayTimeStep - result);
 
         return result;
+    }
+
+    default void markAndNotifyBlock(BlockPos pos, @Nullable LevelChunk levelchunk, BlockState oldState, BlockState newState, int flags, int p_46608_) {
+        ((LevelExtensions) this).port_lib$markAndNotifyBlock(pos, levelchunk, oldState, newState, flags, p_46608_);
     }
 }

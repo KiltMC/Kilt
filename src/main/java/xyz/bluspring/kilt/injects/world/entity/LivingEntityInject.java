@@ -106,9 +106,12 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return original.call(instance) || instance.isInFluidType((fluidType, height) -> instance.canFluidExtinguish(fluidType));
     }
 
-    @WrapOperation(method = "tickEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z", ordinal = 0))
-    private boolean kilt$checkIfEffectExpired(Level instance, Operation<Boolean> original, @Local MobEffectInstance effect) {
-        return original.call(instance) || NeoForge.EVENT_BUS.post(new MobEffectEvent.Expired((LivingEntity) (Object) this, effect));
+    @ModifyExpressionValue(method = "tickEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z", ordinal = 0))
+    private boolean kilt$checkIfEffectExpired(boolean original, @Local MobEffectInstance effect) {
+        if (!original) {
+            return NeoForge.EVENT_BUS.post(new MobEffectEvent.Expired((LivingEntity) (Object) this, effect)).isCanceled();
+        }
+        return true;
     }
 
     @Inject(method = "updateInvisibilityStatus", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setInvisible(Z)V", ordinal = 1))
