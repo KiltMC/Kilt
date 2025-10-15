@@ -22,22 +22,14 @@ import java.util.Set;
 public class MobSpawnSettingsInject implements MobSpawnSettingsInjection {
     @Shadow @Final private Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> spawners;
     @Shadow @Final private Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> mobSpawnCosts;
-    @Unique private Set<MobCategory> typesView;
-    @Unique private Set<EntityType<?>> costView;
-
-    @Inject(method = "<init>", at = @At("TAIL"))
-    private void kilt$initViews(float creatureGenerationProbability, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> spawners, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> mobSpawnCosts, CallbackInfo ci) {
-        this.typesView = Collections.unmodifiableSet(this.spawners.keySet());
-        this.costView = Collections.unmodifiableSet(this.mobSpawnCosts.keySet());
-    }
 
     @Override
     public Set<MobCategory> getSpawnerTypes() {
-        return this.typesView;
+        return Collections.unmodifiableSet(this.spawners.keySet());
     }
 
     @Override
     public Set<EntityType<?>> getEntityTypes() {
-        return this.costView;
+        return Collections.unmodifiableSet(this.mobSpawnCosts.keySet());
     }
 }
