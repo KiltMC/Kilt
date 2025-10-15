@@ -5,5 +5,5 @@ import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(value = AuxiliaryLightManager.class, remap = false)
-public class AuxiliaryLightManagerMixin implements SodiumAuxiliaryLightManager {
+public interface AuxiliaryLightManagerMixin extends SodiumAuxiliaryLightManager {
 }
