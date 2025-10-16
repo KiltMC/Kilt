@@ -17,6 +17,9 @@
     "entrypoints": {
         "client": [
             "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsClient"
+        ],
+        "main": [
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompats"
         ]
     },
     "mixins": [

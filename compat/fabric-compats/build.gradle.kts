@@ -32,6 +32,8 @@ dependencies {
     modCompileOnly("maven.modrinth:invmove:${property("invmove_version")}")
 
     modCompileOnly("maven.modrinth:pehkui:${property("pehkui_version")}")
+
+    modCompileOnly("dev.architectury:architectury-fabric:${property("architectury_version")}")
 }
 
 tasks {

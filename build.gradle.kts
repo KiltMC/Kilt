@@ -203,7 +203,6 @@ dependencies {
     portingLibs.forEach { lib ->
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
-    modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
 
     // JiJ'd into main JAR alone
     include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
@@ -465,7 +464,6 @@ tasks {
             "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
             "fabric_asm_version" to project.property("fabric_asm_version"),
             "forge_config_version" to project.property("forgeconfigapiport_version"),
-            "architectury_version" to project.property("architectury_version"),
         )
 
         for ((key, value) in properties) {
@@ -593,7 +591,7 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
             embeds("porting_lib", "feature-recycler")
             incompatible("async", "embeddium")
@@ -605,7 +603,7 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
             embeds("porting-lib", "feature-recycler")
             incompatible("embeddium")

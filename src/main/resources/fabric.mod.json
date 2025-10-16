@@ -51,8 +51,7 @@
     "minecraft": "${minecraft_version}",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "mm": ">=${fabric_asm_version}",
-    "forgeconfigapiport": ">=${forge_config_version}",
-    "architectury": ">=${architectury_version}"
+    "forgeconfigapiport": ">=${forge_config_version}"
   },
   "custom": {
     "loom:injected_interfaces": {

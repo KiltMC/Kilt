@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.compat.architectury;
+package xyz.bluspring.kilt.compat.fabric.mixin.architectury;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
