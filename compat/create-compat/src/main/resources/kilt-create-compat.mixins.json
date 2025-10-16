@@ -5,6 +5,7 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "create_fabric.CreateRegistrateMixin",
+        "flywheel.BakedModelBuffererMixin",
         "registrate_fabric.AbstractRegistrateMixin",
         "registrate_fabric.AbstractRegistrateMixin$RegistrationMixin",
         "registrate_fabric.RegistryEntryMixin",
