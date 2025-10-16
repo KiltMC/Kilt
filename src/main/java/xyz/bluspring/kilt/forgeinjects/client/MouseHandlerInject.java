@@ -36,7 +36,7 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
         return this.accumulatedDY;
     }
 
-    @Inject(method = "onPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;"), cancellable = true)
+    @Inject(method = "onPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;", ordinal = 0), cancellable = true)
     private void kilt$onMouseButtonPre(long windowPointer, int button, int action, int modifiers, CallbackInfo ci) {
         if (ForgeHooksClient.onMouseButtonPre(button, action, modifiers)) {
             ci.cancel();
