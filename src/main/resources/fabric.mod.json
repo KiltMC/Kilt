@@ -352,8 +352,8 @@
         "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum",
         "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffects\u0024GrassColorModifierInjection"
       ],
-      "net/minecraft/advancements/AdvancementBuilder": [
-        "xyz/bluspring/kilt/injections/advancements/AdvancementBuilderInjection"
+      "net/minecraft/class_161": [
+        "xyz/bluspring/kilt/injections/advancements/AdvancementInjection"
       ],
       "com/mojang/blaze3d/platform/GlStateManager": [
         "xyz/bluspring/kilt/injections/blaze3d/platform/GlStateManagerInjection"
@@ -607,11 +607,26 @@
       "net/minecraft/class_2535": [
         "xyz/bluspring/kilt/injections/network/ConnectionInjection"
       ],
+      "net/minecraft/class_8039": [
+        "xyz/bluspring/kilt/injections/network/protocol/BundlerInfoInjection"
+      ],
+      "net/minecraft/class_8710": [
+        "xyz/bluspring/kilt/injections/network/protocol/common/custom/CustomPacketPayloadInjection"
+      ],
+      "net/minecraft/class_2817": [
+        "xyz/bluspring/kilt/injections/network/protocol/common/ServerboundCustomPayloadPacketInjection"
+      ],
       "net/minecraft/class_2924": [
         "xyz/bluspring/kilt/injections/network/protocol/status/ClientboundStatusResponsePacketInjection"
       ],
+      "net/minecraft/class_2926": [
+        "xyz/bluspring/kilt/injections/network/protocol/status/ServerStatusInjection"
+      ],
       "net/minecraft/class_9129": [
         "xyz/bluspring/kilt/injections/network/RegistryFriendlyByteBufInjection"
+      ],
+      "net/minecraft/class_7655\u0024class_7657": [
+        "xyz/bluspring/kilt/injections/resources/RegistryDataLoader\u0024RegistryDataInjection"
       ],
       "net/minecraft/class_6903": [
         "xyz/bluspring/kilt/injections/resources/RegistryOpsInjection"
@@ -621,6 +636,9 @@
       ],
       "net/minecraft/class_3193": [
         "xyz/bluspring/kilt/injections/server/level/ChunkHolderInjection"
+      ],
+      "net/minecraft/class_3898": [
+        "xyz/bluspring/kilt/injections/server/level/ChunkMapInjection"
       ],
       "net/minecraft/class_3204": [
         "xyz/bluspring/kilt/injections/server/level/DistanceManagerInjection"
@@ -646,11 +664,14 @@
       "net/minecraft/class_3272": [
         "xyz/bluspring/kilt/injections/server/packs/metadata/pack/PackMetadataSectionInjection"
       ],
-      "net/minecraft/server/packs/repository/PackInfo": [
-        "xyz/bluspring/kilt/injections/server/packs/repository/PackInfoInjection"
+      "net/minecraft/class_8617": [
+        "xyz/bluspring/kilt/injections/server/packs/OverlayMetadataSectionInjection"
       ],
       "net/minecraft/class_3288": [
         "xyz/bluspring/kilt/injections/server/packs/repository/PackInjection"
+      ],
+      "net/minecraft/server/packs/repository/PackMetadata": [
+        "xyz/bluspring/kilt/injections/server/packs/repository/PackMetadataInjection"
       ],
       "net/minecraft/class_4309": [
         "xyz/bluspring/kilt/injections/server/packs/resources/SimpleJsonResourceReloadListenerInjection"
@@ -766,6 +787,9 @@
       "net/minecraft/class_1856": [
         "xyz/bluspring/kilt/injections/world/item/crafting/IngredientInjection"
       ],
+      "net/minecraft/class_1860": [
+        "xyz/bluspring/kilt/injections/world/item/crafting/RecipeInjection"
+      ],
       "net/minecraft/class_3956": [
         "xyz/bluspring/kilt/injections/world/item/crafting/RecipeTypeInjection"
       ],
@@ -864,6 +888,9 @@
       ],
       "net/minecraft/class_1940": [
         "xyz/bluspring/kilt/injections/world/level/LevelSettingsInjection"
+      ],
+      "net/minecraft/class_9316": [
+        "xyz/bluspring/kilt/injections/world/level/pathfinder/PathfindingContextInjection"
       ],
       "net/minecraft/world/level/storage/LevelStorageAccess": [
         "xyz/bluspring/kilt/injections/world/level/storage/LevelStorageAccessInjection"

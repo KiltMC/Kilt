@@ -1,28 +1,32 @@
 package xyz.bluspring.kilt.injects.resources;
 
-import com.google.gson.JsonElement;
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.*;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
-import org.spongepowered.asm.mixin.Mixin;
+import net.neoforged.neoforge.common.conditions.ConditionalOps;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import net.neoforged.neoforge.registries.DataPackRegistriesHooks;
+import net.neoforged.neoforge.registries.RegistryBuilder;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.injections.resources.RegistryDataLoader$RegistryDataInjection;
 
-import java.util.Map;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Mixin(RegistryDataLoader.class)
@@ -36,26 +40,54 @@ public abstract class RegistryDataLoaderInject {
         return original;
     }*/
 
-    @Inject(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Decoder;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", shift = At.Shift.BEFORE))
-    private static <E> void kilt$checkShouldRegisterEntry(RegistryOps.RegistryInfoLookup lookup, ResourceManager manager, ResourceKey<? extends Registry<E>> registryKey, WritableRegistry<E> registry, Decoder<E> decoder, Map<ResourceKey<?>, Exception> exceptions, CallbackInfo ci, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry, @Local JsonElement jsonElement) {
-        shouldRegisterEntry.set(true);
+    @Shadow @Final @Mutable public static List<RegistryDataLoader.RegistryData<?>> SYNCHRONIZED_REGISTRIES;
+    @Shadow @Final private static Logger LOGGER;
 
-        if (!ICondition.shouldRegisterEntry(jsonElement)) {
-            shouldRegisterEntry.set(false);
+    @Inject(method= "<clinit>", at = @At("TAIL"))
+    private static void kilt$grabNetworkableRegistries(CallbackInfo ci) {
+        SYNCHRONIZED_REGISTRIES = DataPackRegistriesHooks.grabNetworkableRegistries(SYNCHRONIZED_REGISTRIES);
+    }
+
+    @ModifyReceiver(method = "loadElementFromResource", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Decoder;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;"))
+    private static <E, T> Decoder<E> kilt$parseWithCustomDecoder(Decoder<E> instance, DynamicOps<T> ops, T input) {
+        return ConditionalOps.createConditionalCodec(NeoForgeExtraCodecs.decodeOnly(instance))
+            .map(e -> e.orElse(null));
+    }
+
+    @WrapOperation(method = "loadElementFromResource", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/WritableRegistry;register(Lnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lnet/minecraft/core/RegistrationInfo;)Lnet/minecraft/core/Holder$Reference;"))
+    private static <T> Holder.Reference<T> kilt$onlyRegisterIfNotNull(WritableRegistry<T> instance, ResourceKey<T> tResourceKey, T t, RegistrationInfo registrationInfo, Operation<Holder.Reference<T>> original) {
+        if (t != null)
+            return original.call(instance, tResourceKey, t, registrationInfo);
+        else {
+            LOGGER.debug("Skipping loading registry entry {} as its conditions were not met", tResourceKey);
+            return null;
         }
     }
 
-    @WrapOperation(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/DataResult;getOrThrow(ZLjava/util/function/Consumer;)Ljava/lang/Object;"))
-    private static <R> R kilt$disableGetOrThrow(DataResult instance, boolean allowPartial, Consumer<String> onError, Operation<R> original, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry) {
-        // hoping mods don't rely on this :V
-        if (!shouldRegisterEntry.get())
-            return null;
-
-        return original.call(instance, allowPartial, onError);
+    @ModifyExpressionValue(method = "loadContentsFromManager", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/RegistryOps;create(Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;)Lnet/minecraft/resources/RegistryOps;"))
+    private static <T> RegistryOps<T> kilt$createConditionalOps(RegistryOps<T> original) {
+        return new ConditionalOps<>(original, ICondition.IContext.TAGS_INVALID);
     }
 
-    @WrapWithCondition(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/WritableRegistry;register(Lnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lcom/mojang/serialization/Lifecycle;)Lnet/minecraft/core/Holder$Reference;"))
-    private static <T> boolean kilt$disableEntryRegister(WritableRegistry<T> instance, ResourceKey<T> tResourceKey, T t, Lifecycle lifecycle, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry) {
-        return shouldRegisterEntry.get();
+    @Mixin(RegistryDataLoader.RegistryData.class)
+    public abstract static class RegistryDataInject<T> implements RegistryDataLoader$RegistryDataInjection<T> {
+        @Unique private Consumer<RegistryBuilder<T>> registryBuilderConsumer = registryBuilder -> {};
+
+        public RegistryDataInject(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
+        }
+
+        @CreateInitializer
+        public RegistryDataInject(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty, Consumer<RegistryBuilder<T>> registryBuilderConsumer) {
+            this(key, elementCodec, requiredNonEmpty);
+            this.registryBuilderConsumer = registryBuilderConsumer;
+        }
+
+        @Redirect(method = "create", at = @At(value = "NEW", target = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Lifecycle;)Lnet/minecraft/core/MappedRegistry;"))
+        private MappedRegistry<T> kilt$createRegistry(ResourceKey<? extends Registry<T>> resourceKey, Lifecycle lifecycle) {
+            var registryBuilder = new RegistryBuilder<>(resourceKey);
+            this.registryBuilderConsumer.accept(registryBuilder);
+
+            return (MappedRegistry<T>) registryBuilder.disableRegistrationCheck().create();
+        }
     }
 }

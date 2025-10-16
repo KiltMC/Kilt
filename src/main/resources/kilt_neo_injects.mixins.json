@@ -129,6 +129,7 @@
         "recipebook.PlaceRecipeInject",
         "resources.HolderSetCodecInject",
         "resources.RegistryDataLoaderInject",
+        "resources.RegistryDataLoaderInject$RegistryDataInject",
         "resources.RegistryOpsInject",
         "resources.ResourceKeyInject",
         "resources.ResourceLocationInject",
