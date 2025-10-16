@@ -18,7 +18,9 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.event.ContainerScreenEvent;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,13 +45,21 @@ public abstract class AbstractContainerScreenInject extends Screen implements Ab
         super(component);
     }
 
-    // implemented ContainerScreen.Render.Background, ContainerScreen.Render.Foreground
-
     @Shadow @Nullable protected Slot hoveredSlot;
     @Shadow protected int leftPos;
     @Shadow protected int topPos;
     @Shadow protected int imageWidth;
     @Shadow protected int imageHeight;
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V", shift = At.Shift.AFTER))
+    private void kilt$callRenderBackgroundEvent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background((AbstractContainerScreen<?>) (Object) this, guiGraphics, mouseX, mouseY));
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V", shift = At.Shift.AFTER))
+    private void kilt$callRenderForegroundEvent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground((AbstractContainerScreen<?>) (Object) this, guiGraphics, mouseX, mouseY));
+    }
 
     @CreateStatic
     private static void renderSlotHighlight(GuiGraphics guiGraphics, int x, int y, int blitOffset, int slotColor) {

@@ -1,15 +1,13 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
-import dev.architectury.event.EventResult
-import dev.architectury.event.events.client.ClientGuiEvent
-import dev.architectury.event.events.client.ClientRawInputEvent
 import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
 import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
@@ -62,38 +60,6 @@ class KiltClient : ClientModInitializer {
             ForgeEventFactory.onItemTooltip(stack, null, components, flag)
         }
 
-        val add = mutableMapOf<Screen, Consumer<GuiEventListener>>()
-
-        ClientGuiEvent.INIT_PRE.register { screen, access ->
-            add[screen] = Consumer<GuiEventListener> {
-                if (it is Renderable)
-                    screen.renderables.add(it)
-
-                if (it is NarratableEntry)
-                    (screen as ScreenAccessor).`kilt$getNarratables`().add(it)
-
-                (screen as ScreenAccessor).`kilt$getChildren`().add(it)
-            }
-
-            if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).`kilt$getChildren`(), add[screen]!!, screen::callRemoveWidget))) {
-                add.remove(screen)
-                EventResult.interruptFalse()
-            } else EventResult.pass()
-        }
-
-        ClientGuiEvent.INIT_POST.register { screen, _ ->
-            MinecraftForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).`kilt$getChildren`(), add[screen]!!, screen::callRemoveWidget))
-            add.remove(screen)
-        }
-
-        ClientGuiEvent.RENDER_CONTAINER_BACKGROUND.register { screen, poseStack, x, y, _ ->
-            MinecraftForge.EVENT_BUS.post(ContainerScreenEvent.Render.Background(screen, poseStack, x, y))
-        }
-
-        ClientGuiEvent.RENDER_CONTAINER_FOREGROUND.register { screen, poseStack, x, y, _ ->
-            MinecraftForge.EVENT_BUS.post(ContainerScreenEvent.Render.Foreground(screen, poseStack, x, y))
-        }
-
         /*ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
             if (MinecraftForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
                 EventResult.interruptFalse()
@@ -101,7 +67,7 @@ class KiltClient : ClientModInitializer {
                 EventResult.pass()
         }*/
 
-        ClientGuiEvent.RENDER_HUD.register { guiGraphics, delta ->
+        HudRenderCallback.EVENT.register { guiGraphics, delta ->
             forgeGui.render(guiGraphics, delta)
         }
 
@@ -196,13 +162,6 @@ class KiltClient : ClientModInitializer {
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
                 ForgeHooksClient.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
             }
-        }
-
-        ClientRawInputEvent.MOUSE_SCROLLED.register { client, amount ->
-            if (ForgeHooksClient.onMouseScroll(client.mouseHandler, amount)) {
-                EventResult.interruptTrue()
-            }
-            EventResult.pass()
         }
 
         /*RenderHandCallback.EVENT.register { event ->
