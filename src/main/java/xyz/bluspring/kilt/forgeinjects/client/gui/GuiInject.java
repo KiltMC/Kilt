@@ -158,6 +158,7 @@ public abstract class GuiInject implements GuiInjection {
     @Inject(method = "render", at = @At("HEAD"))
     private void kilt$resetForgeOverlayRenders(GuiGraphics guiGraphics, float partialTick, CallbackInfo ci) {
         ForgeGui.kilt$alreadyProcessedOverlays.clear();
+        this.kilt$getGui().kilt$setupRender(); // Kilt: set up GUI for rendering
     }
 
     // Vignette
