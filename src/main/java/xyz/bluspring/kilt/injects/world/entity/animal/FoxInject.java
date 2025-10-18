@@ -57,7 +57,7 @@ public abstract class FoxInject extends Animal {
         }
     }
 
-    @Mixin(targets = "net.minecraft.world.entity.animal.Fox$FoxEatBerriesGoal")
+    @Mixin(Fox.FoxEatBerriesGoal.class)
     public abstract static class FoxEatBerriesGoalInject extends MoveToBlockGoal {
         @Shadow @Final Fox field_17975;
 

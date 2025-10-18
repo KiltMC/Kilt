@@ -241,6 +241,6 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
 
     @WrapOperation(method = "drop(Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"))
     private ItemEntity kilt$callPlayerTossEvent(ServerPlayer instance, ItemStack droppedItem, boolean dropAround, boolean includeThrowerName, Operation<ItemEntity> original) {
-        return CommonHooks.kilt$onPlayerTossEvent(instance, droppedItem, includeThrowerName, () -> original.call(instance, droppedItem, dropAround, includeThrowerName));
+        return CommonHooks.kilt$onPlayerTossEvent(instance, () -> original.call(instance, droppedItem, dropAround, includeThrowerName));
     }
 }

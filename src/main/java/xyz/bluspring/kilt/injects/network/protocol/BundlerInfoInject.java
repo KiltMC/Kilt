@@ -14,8 +14,8 @@ import java.util.function.Consumer;
 
 @Mixin(BundlerInfo.class)
 public interface BundlerInfoInject extends BundlerInfoInjection {
-    @Mixin(targets = "net.minecraft.network.protocol.BundlerInfo$0")
-    abstract class BundlerInfoAnonymous0Inject<T extends PacketListener, P extends BundlePacket<? super T>> implements BundlerInfoInjection {
+    @Mixin(targets = "net.minecraft.network.protocol.BundlerInfo$1")
+    abstract class BundlerInfoAnonymous1Inject<T extends PacketListener, P extends BundlePacket<? super T>> implements BundlerInfoInjection {
         @Shadow @Final PacketType<P> val$bundlePacketType;
         @Shadow @Final BundleDelimiterPacket<T> val$delimiterPacket;
 

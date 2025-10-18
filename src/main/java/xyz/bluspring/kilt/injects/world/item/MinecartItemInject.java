@@ -17,7 +17,7 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(MinecartItem.class)
 public abstract class MinecartItemInject {
-    @Mixin(targets = "net.minecraft.world.item.MinecartItem$0")
+    @Mixin(targets = "net.minecraft.world.item.MinecartItem$1")
     public abstract static class AnonymousDispenseBehaviorInject {
         @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 1))
         private Comparable kilt$tryUseRailDirection(BlockState instance, Property property, Operation<Comparable> original, @Local Level level, @Local BlockPos pos) {

@@ -48,7 +48,7 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Unique private final Map<ResourceLocation, ParticleProvider<?>> kilt$providers = new HashMap<>();
 
-    @WrapOperation(method = {"register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V", "register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration;)V"}, at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;put(ILjava/lang/Object;)Ljava/lang/Object;"))
+    @WrapOperation(method = {"register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V", "register(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration;)V"}, at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;put(ILjava/lang/Object;)Ljava/lang/Object;", remap = false))
     private <T extends ParticleOptions> Object kilt$registerToForgeProviders(Int2ObjectMap<?> instance, int i, Object o, Operation<Object> original, @Local(argsOnly = true) ParticleType<T> particleType) {
         this.kilt$providers.put(BuiltInRegistries.PARTICLE_TYPE.getKey(particleType), (ParticleProvider<?>) o);
         return original.call(instance, i, o);
@@ -74,7 +74,7 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         this.kilt$clippingHelper = null;
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;enableDepthTest()V", shift = At.Shift.AFTER, ordinal = 0))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;enableDepthTest()V", shift = At.Shift.AFTER, ordinal = 0, remap = false))
     private void kilt$initActiveTexture(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci) {
         RenderSystem.activeTexture(GL32C.GL_TEXTURE2);
         RenderSystem.activeTexture(GL32C.GL_TEXTURE0);

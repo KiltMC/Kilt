@@ -29,7 +29,7 @@ public abstract class BrewingStandMenuInject {
         return original;
     }
 
-    @Mixin(targets = "net.minecraft.world.inventory.BrewingStandMenu$PotionSlot")
+    @Mixin(BrewingStandMenu.PotionSlot.class)
     public abstract static class PotionSlotInject implements BrewingStandMenuInjection.PotionSlotInjection {
         @Shadow public static boolean mayPlaceItem(ItemStack itemStack) {
             throw new IllegalStateException();

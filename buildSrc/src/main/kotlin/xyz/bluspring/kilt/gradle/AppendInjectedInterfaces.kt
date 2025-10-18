@@ -83,7 +83,7 @@ class AppendInjectedInterfaces(reader: Reader) : FilterReader(reader) {
 
             // Now we write it to the FMJ
             val fmj = JsonParser.parseReader(this.`in`).asJsonObject
-            val fmjInjectedInterfaces = fmj.getAsJsonObject("custom").getAsJsonObject("loom:injected_interfaces")
+            val fmjInjectedInterfaces = JsonObject()
 
             for ((className, injections) in injected) {
                 fmjInjectedInterfaces.add((mojToIntermediary[className] ?: className).replace("$", "$$$"), JsonArray().apply {
@@ -92,6 +92,8 @@ class AppendInjectedInterfaces(reader: Reader) : FilterReader(reader) {
                     }
                 })
             }
+
+            fmj.getAsJsonObject("custom").add("loom:injected_interfaces", fmjInjectedInterfaces)
 
             this.`in` = StringReader(gson.toJson(fmj)
                 .replace("$$$", "\\u0024") // why is this a thing

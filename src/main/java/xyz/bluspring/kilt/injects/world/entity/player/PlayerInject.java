@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injects.world.entity.player;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -13,6 +14,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,24 +24,24 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.extensions.IForgePlayer;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.damagesource.IScalingFunction;
+import net.neoforged.neoforge.common.extensions.IPlayerExtension;
 import net.neoforged.neoforge.event.EventHooks;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -52,56 +55,128 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.entity.PlayerInjection;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(Player.class)
-public abstract class PlayerInject extends LivingEntity implements IForgePlayer, PlayerInjection {
+public abstract class PlayerInject extends LivingEntity implements IPlayerExtension, PlayerInjection {
+    @Shadow public abstract float getDestroySpeed(BlockState state);
+    @Shadow @Final private Inventory inventory;
+    @Shadow @Final private Abilities abilities;
+    @Shadow public abstract void resetAttackStrengthTicker();
+
     @CreateStatic
     private static final String PERSISTED_NBT_TAG = PlayerInjection.PERSISTED_NBT_TAG;
 
-    @Shadow public abstract float getDestroySpeed(BlockState state);
-
-    @Shadow @Final private Inventory inventory;
-
-    @Shadow @Final private Abilities abilities;
-
-    @Shadow public abstract void resetAttackStrengthTicker();
+    @Unique private final Collection<MutableComponent> prefixes = new LinkedList<>();
+    @Unique private final Collection<MutableComponent> suffixes = new LinkedList<>();
+    @Unique @Nullable private Pose forcedPose;
+    @Unique private long lastDayTimeTick = -1L;
 
     protected PlayerInject(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
     }
 
-    // Kilt: handled via Architectury
-    /*@Inject(method = "tick", at = @At("HEAD"))
+    @ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
+    private static AttributeSupplier.Builder kilt$appendNeoCreativeFlightAttribute(AttributeSupplier.Builder original) {
+        return original
+            .add(NeoForgeMod.CREATIVE_FLIGHT);
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
     public void kilt$playerTickStart(CallbackInfo ci) {
-        EventHooks.onPlayerPreTick((Player) (Object) this);
+        EventHooks.firePlayerTickPre((Player) (Object) this);
+    }
+
+    @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isDay()Z", ordinal = 0))
+    private boolean kilt$checkShouldEntityContinueSleeping(boolean original) {
+        return !EventHooks.canEntityContinueSleeping(this, original ? Player.BedSleepingProblem.NOT_POSSIBLE_NOW : null);
+    }
+
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;awardStat(Lnet/minecraft/resources/ResourceLocation;)V"))
+    private void kilt$advanceRestStatIfCorrectDaytimeAdvance(Player instance, ResourceLocation resourceLocation, Operation<Void> original) {
+        if (this.level().getDayTimeFraction() < 0 || this.level().getDayTimeFraction() >= 1 || this.lastDayTimeTick != this.level().getDayTime() || !this.level().getGameRules().getRule(GameRules.RULE_DAYLIGHT).get()) {
+            this.lastDayTimeTick = this.level().getDayTime();
+            original.call(instance, resourceLocation);
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void kilt$playerTickEnd(CallbackInfo ci) {
-        EventHooks.onPlayerPostTick((Player) (Object) this);
-    }*/
+        EventHooks.firePlayerTickPost((Player) (Object) this);
+    }
+
+    @Inject(method = "updatePlayerPose", at = @At("HEAD"), cancellable = true)
+    private void kilt$useForcedPose(CallbackInfo ci) {
+        if (forcedPose != null) {
+            this.setPose(forcedPose);
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "die", at = @At("HEAD"), cancellable = true)
+    private void kilt$checkShouldDie(DamageSource damageSource, CallbackInfo ci) {
+        if (CommonHooks.onLivingDeath(this, damageSource)) {
+            ci.cancel();
+        }
+    }
+
+    @WrapOperation(method = "drop(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"))
+    private ItemEntity kilt$checkPlayerTossEvent(Player instance, ItemStack itemStack, boolean dropAround, boolean includeName, Operation<ItemEntity> original) {
+        return CommonHooks.kilt$onPlayerTossEvent(instance, () -> original.call(instance, itemStack, dropAround, includeName));
+    }
 
     private final AtomicReference<BlockPos> kilt$dugBlockPos = new AtomicReference<>();
 
+    @Override
     public float getDigSpeed(BlockState blockState, @Nullable BlockPos blockPos) {
         if (blockPos != null)
             this.kilt$dugBlockPos.set(blockPos);
         return this.getDestroySpeed(blockState);
     }
 
-    @Inject(at = @At("TAIL"), method = "getDestroySpeed", cancellable = true)
-    public void kilt$modifyBreakSpeed(BlockState state, CallbackInfoReturnable<Float> cir) {
+    @ModifyReturnValue(at = @At("RETURN"), method = "getDestroySpeed")
+    public float kilt$modifyBreakSpeed(float original, @Local(argsOnly = true) BlockState state) {
         var blockPos = this.kilt$dugBlockPos.getAndSet(null);
 
         if (blockPos != null)
-            cir.setReturnValue(EventHooks.getBreakSpeed((Player) (Object) this, state, cir.getReturnValue(), blockPos));
+            return EventHooks.getBreakSpeed((Player) (Object) this, state, original, blockPos);
+        return original;
     }
 
-    @ModifyReturnValue(method = "hasCorrectToolForDrops", at = @At("RETURN"))
-    private boolean kilt$checkHarvest(boolean original, BlockState state) {
-        return EventHooks.doPlayerHarvestCheck((Player) (Object) this, state, original);
+    @Override
+    public boolean hasCorrectToolForDrops(BlockState state, Level level, BlockPos pos) {
+        return EventHooks.doPlayerHarvestCheck((Player) (Object) this, state, level, pos);
+    }
+
+    @Inject(method = "hurt", at = @At("HEAD"))
+    private void kilt$storeOriginalAmount(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalAmount") LocalFloatRef amountRef) {
+        amountRef.set(amount);
+    }
+
+    @Definition(id = "amount", local = @Local(type = float.class, argsOnly = true))
+    @Expression("amount == 0.0")
+    @Inject(method = "hurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$modifyAccountToScale(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Local LocalFloatRef amountRef, @Share("originalAmount") LocalFloatRef originalAmountRef) {
+        var scalingFunction = source.type().scaling().getScalingFunction();
+
+        // Just handle it normally.
+        if (scalingFunction == IScalingFunction.DEFAULT)
+            return;
+
+        var scaled = scalingFunction.scaleDamage(source, (Player) (Object) this, originalAmountRef.get(), this.level().getDifficulty());
+        amountRef.set(scaled);
+    }
+
+    @Definition(id = "useItem", field = "Lnet/minecraft/world/entity/player/Player;useItem:Lnet/minecraft/world/item/ItemStack;")
+    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z")
+    @Definition(id = "SHIELD", field = "Lnet/minecraft/world/item/Items;SHIELD:Lnet/minecraft/world/item/Item;")
+    @Expression("this.useItem.is(SHIELD)")
+    @ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkCanBeShield(boolean original) {
+        return original || this.useItem.canPerformAction(ItemAbilities.SHIELD_BLOCK);
     }
 
     @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
@@ -225,19 +300,9 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
             .add(ForgeMod.ENTITY_REACH.get());
     }*/
 
-    @Unique private Pose forcedPose = null;
-
     @Unique private final LazyOptional<IItemHandler> playerMainHandler = LazyOptional.of(() -> new PlayerMainInvWrapper(inventory));
     @Unique private final LazyOptional<IItemHandler> playerEquipmentHandler = LazyOptional.of(() -> new CombinedInvWrapper(new PlayerArmorInvWrapper(inventory), new PlayerOffhandInvWrapper(inventory)));
     @Unique private final LazyOptional<IItemHandler> playerJoinedHandler = LazyOptional.of(() -> new PlayerInvWrapper(inventory));
-
-    @Inject(method = "updatePlayerPose", at = @At("HEAD"), cancellable = true)
-    private void kilt$useForcedPose(CallbackInfo ci) {
-        if (forcedPose != null) {
-            this.setPose(forcedPose);
-            ci.cancel();
-        }
-    }
 
     @Override
     public @Nullable Pose getForcedPose() {
