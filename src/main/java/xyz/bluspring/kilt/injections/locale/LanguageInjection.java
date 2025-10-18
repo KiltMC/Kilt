@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injections.locale;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -19,6 +20,11 @@ public interface LanguageInjection {
         kilt$componentOutput.remove();
     }
 
-    Map<String, String> getLanguageData();
-    @Nullable Component getComponent(String key);
+    default Map<String, String> getLanguageData() {
+        throw KiltHelper.createMixinException(LanguageInjection.class, "getLanguageData");
+    }
+
+    default @Nullable Component getComponent(String key) {
+        throw KiltHelper.createMixinException(LanguageInjection.class, "getComponent");
+    }
 }

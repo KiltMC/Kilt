@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.textures.ForgeTextureMetadata;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,29 +25,9 @@ public abstract class SpriteContentsInject implements SpriteContentsInjection {
     @Shadow @Final int width;
     @Shadow @Final int height;
 
-    @Nullable
-    public ForgeTextureMetadata forgeMeta;
-
-    public SpriteContentsInject(ResourceLocation name, FrameSize frameSize, NativeImage originalImage, AnimationMetadataSection metadata) {}
-
-    @CreateInitializer
-    public SpriteContentsInject(ResourceLocation name, FrameSize frameSize, NativeImage originalImage, AnimationMetadataSection metadata, @Nullable ForgeTextureMetadata forgeMeta) {
-        this.forgeMeta = forgeMeta;
-    }
-
     @Override
     public NativeImage getOriginalImage() {
         return this.originalImage;
-    }
-
-    @Override
-    public ForgeTextureMetadata kilt$getForgeMeta() {
-        return this.forgeMeta;
-    }
-
-    @Override
-    public void kilt$setForgeMeta(ForgeTextureMetadata metadata) {
-        this.forgeMeta = metadata;
     }
 
     @Inject(method = "upload", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/NativeImage;upload(IIIIIIIZZ)V", ordinal = 0, shift = At.Shift.BEFORE), cancellable = true)

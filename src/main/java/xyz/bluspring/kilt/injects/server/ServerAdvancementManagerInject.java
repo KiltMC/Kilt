@@ -20,7 +20,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.advancements.AdvancementBuilderInjection;
 
 @Mixin(ServerAdvancementManager.class)
 public abstract class ServerAdvancementManagerInject {

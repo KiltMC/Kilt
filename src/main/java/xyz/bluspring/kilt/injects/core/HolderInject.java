@@ -13,20 +13,18 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.bluspring.kilt.injections.HolderReferenceInjection;
+import xyz.bluspring.kilt.injections.core.HolderLookup$RegistryLookupInjection;
 
 import java.util.stream.Stream;
 
 @Mixin(Holder.class)
 public interface HolderInject<T> extends IHolderExtension<T> {
     @Shadow boolean is(TagKey<T> resourceKey);
-
     @Shadow Stream<TagKey<T>> tags();
-
     @Shadow T value();
 
     @Mixin(Holder.Reference.class)
-    abstract class ReferenceInject<T> implements HolderReferenceInjection, IHolderExtension<T> {
+    abstract class ReferenceInject<T> implements IHolderExtension<T> {
         @Shadow @Nullable private ResourceKey<T> key;
         @Shadow public abstract ResourceKey<T> key();
         @Shadow @Final private HolderOwner<T> owner;
@@ -35,7 +33,7 @@ public interface HolderInject<T> extends IHolderExtension<T> {
         @Override
         public <T1> @Nullable T1 getData(DataMapType<T, T1> type) {
             if (owner instanceof HolderLookup.RegistryLookup<T> lookup)
-                return ((HolderLookupInjection.RegistryLookupInjection<T>) lookup).getData(type, this.key());
+                return ((HolderLookup$RegistryLookupInjection<T>) lookup).getData(type, this.key());
 
             return null;
         }

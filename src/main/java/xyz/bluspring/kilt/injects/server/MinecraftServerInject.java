@@ -10,9 +10,9 @@ import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.ServerStatusPing;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -23,6 +23,8 @@ import java.util.Optional;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerInject implements MinecraftServerInjection {
+    @Shadow
+    private MinecraftServer.ReloadableResources resources;
     private Map<ResourceKey<Level>, long[]> perWorldTickTimes = Maps.newIdentityHashMap();
 
     @Override
@@ -57,11 +59,10 @@ public class MinecraftServerInject implements MinecraftServerInjection {
         return this.cachedServerStatus;
     }
 
-    @ModifyReturnValue(method = "buildServerStatus", at = @At("RETURN"))
-    private ServerStatus kilt$appendServerPing(ServerStatus original) {
-        original.setForgeData(Optional.of(new ServerStatusPing()));
-        return original;
+    @Override
+    public MinecraftServer.ReloadableResources getServerResources() {
+        return this.resources;
     }
 
-    // Tick Events implemented via Architectury
+    // Tick Events implemented via Fabric API
 }

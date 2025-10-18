@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.injections.core.HolderLookup$RegistryLookupInjection;
 
 @Mixin(HolderLookup.class)
 public interface HolderLookupInject {
@@ -17,7 +18,7 @@ public interface HolderLookupInject {
     }
 
     @Mixin(HolderLookup.RegistryLookup.class)
-    public interface RegistryLookupInject<T> extends HolderLookupInjection.RegistryLookupInjection<T> {
+    public interface RegistryLookupInject<T> extends HolderLookup$RegistryLookupInjection<T> {
         @Intrinsic
         @Override
         default <A> @Nullable A getData(DataMapType<T, A> attachment, ResourceKey<T> key) {
@@ -25,12 +26,12 @@ public interface HolderLookupInject {
         }
 
         @Mixin(HolderLookup.RegistryLookup.Delegate.class)
-        public interface DelegateInject<T> extends HolderLookupInjection.RegistryLookupInjection<T> {
+        public interface DelegateInject<T> extends HolderLookup$RegistryLookupInjection<T> {
             @Shadow HolderLookup.RegistryLookup<T> parent();
 
             @Override
             default <A> @Nullable A getData(DataMapType<T, A> attachment, ResourceKey<T> key) {
-                return ((HolderLookupInjection.RegistryLookupInjection<T>) this.parent()).getData(attachment, key);
+                return ((HolderLookup$RegistryLookupInjection<T>) this.parent()).getData(attachment, key);
             }
         }
     }

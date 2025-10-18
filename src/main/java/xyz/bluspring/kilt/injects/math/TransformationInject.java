@@ -2,7 +2,7 @@
 package xyz.bluspring.kilt.injects.math;
 
 import com.mojang.math.Transformation;
-import net.neoforged.neoforge.common.extensions.IForgeTransformation;
+import net.neoforged.neoforge.common.extensions.ITransformationExtension;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.injections.math.TransformationInjection;
 
 @Mixin(Transformation.class)
-public class TransformationInject implements IForgeTransformation, TransformationInjection {
+public class TransformationInject implements ITransformationExtension, TransformationInjection {
     @Shadow @Final private Matrix4f matrix;
     @Unique private Matrix3f normalTransform = null;
 

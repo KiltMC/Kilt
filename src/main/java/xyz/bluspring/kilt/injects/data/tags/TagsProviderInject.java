@@ -2,6 +2,7 @@
 package xyz.bluspring.kilt.injects.data.tags;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
@@ -13,13 +14,14 @@ import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagManager;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.common.extensions.IForgeTagAppender;
+import net.neoforged.neoforge.common.extensions.ITagAppenderExtension;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.injections.data.tags.TagsProvider$TagAppenderInjection;
 import xyz.bluspring.kilt.injections.data.tags.TagsProviderInjection;
 
 import java.nio.file.Path;
@@ -33,7 +35,7 @@ public abstract class TagsProviderInject<T> implements TagsProviderInjection {
 
     protected String modId = "vanilla";
     protected ExistingFileHelper existingFileHelper = null;
-    @Unique private final ExistingFileHelper.IResourceType resourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", TagManager.getTagDir(this.registryKey));
+    @Unique private final ExistingFileHelper.IResourceType resourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", Registries.tagsDirPath(this.registryKey));
     @Unique private final ExistingFileHelper.IResourceType elementResourceType = new ExistingFileHelper.ResourceType(PackType.SERVER_DATA, ".json", CommonHooks.prefixNamespace(this.registryKey.location()));
 
     @CreateInitializer
@@ -61,7 +63,7 @@ public abstract class TagsProviderInject<T> implements TagsProviderInjection {
     }
 
     @Mixin(TagsProvider.TagAppender.class)
-    public static class TagAppenderInject<T> implements IForgeTagAppender<T>, TagAppenderInjection {
+    public static class TagAppenderInject<T> implements ITagAppenderExtension<T>, TagsProvider$TagAppenderInjection {
         @Shadow @Final private TagBuilder builder;
         @Unique
         private String modId;

@@ -9,7 +9,7 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,14 +23,13 @@ public abstract class IntegratedServerInject extends MinecraftServer {
         super(thread, levelStorageAccess, packRepository, worldStem, proxy, dataFixer, services, chunkProgressListenerFactory);
     }
 
-    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/server/IntegratedServer;loadLevel()V", shift = At.Shift.BEFORE), cancellable = true)
+    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/server/IntegratedServer;loadLevel()V", shift = At.Shift.BEFORE))
     public void kilt$handleServerAboutToStart(CallbackInfoReturnable<Boolean> cir) {
-        if (!ServerLifecycleHooks.handleServerAboutToStart(this))
-            cir.setReturnValue(false);
+        ServerLifecycleHooks.handleServerAboutToStart(this);
     }
 
-    @Inject(method = "initServer", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "initServer", at = @At("RETURN"))
     public void kilt$handleServerStarting(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(ServerLifecycleHooks.handleServerStarting(this));
+        ServerLifecycleHooks.handleServerStarting(this);
     }
 }

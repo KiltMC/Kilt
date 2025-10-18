@@ -14,23 +14,14 @@ import java.util.Map;
 
 @FabricInjectedInterface(SimpleBakedModel.class)
 public interface SimpleBakedModelInjection {
-    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup, RenderTypeGroup fastRenderTypeGroup) {
-        var model = new SimpleBakedModel(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
-        ((SimpleBakedModelInjection) model).kilt$addRenderTypes(renderTypeGroup);
-        ((SimpleBakedModelInjection) model).kilt$addRenderTypesFast(fastRenderTypeGroup);
+    static SimpleBakedModel create(List<BakedQuad> unculledFaces, Map<Direction, List<BakedQuad>> culledFaces, boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides, RenderTypeGroup renderTypeGroup) {
+        var model = new SimpleBakedModel(unculledFaces, culledFaces, hasAmbientOcclusion, usesBlockLight, isGui3d, particleIcon, transforms, overrides);
+        model.kilt$addRenderTypes(renderTypeGroup);
 
         return model;
     }
 
-    static SimpleBakedModel create(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
-        return create(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides, renderTypeGroup, renderTypeGroup);
-    }
-
     default void kilt$addRenderTypes(RenderTypeGroup renderTypeGroup) {
-        throw new IllegalStateException();
-    }
-
-    default void kilt$addRenderTypesFast(RenderTypeGroup renderTypeGroup) {
         throw new IllegalStateException();
     }
 }

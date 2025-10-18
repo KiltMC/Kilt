@@ -30,23 +30,13 @@ public abstract class SimpleBakedModelInject implements BakedModelInject, Simple
     protected ChunkRenderTypeSet blockRenderTypes;
     protected List<RenderType> itemRenderTypes;
     protected List<RenderType> fabulousItemRenderTypes;
-    protected ChunkRenderTypeSet blockRenderTypesFast;
-    protected List<RenderType> itemRenderTypesFast;
-    protected List<RenderType> fabulousItemRenderTypesFast;
 
     public SimpleBakedModelInject(List<BakedQuad> unculledFaces, Map<Direction, List<BakedQuad>> culledFaces, boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides) {}
 
     @CreateInitializer
-    public SimpleBakedModelInject(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup) {
-        this(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
+    public SimpleBakedModelInject(List<BakedQuad> unculledFaces, Map<Direction, List<BakedQuad>> culledFaces, boolean hasAmbientOcclusion, boolean usesBlockLight, boolean isGui3d, TextureAtlasSprite particleIcon, ItemTransforms transforms, ItemOverrides overrides, RenderTypeGroup renderTypeGroup) {
+        this(unculledFaces, culledFaces, hasAmbientOcclusion, usesBlockLight, isGui3d, particleIcon, transforms, overrides);
         this.kilt$addRenderTypes(renderTypeGroup);
-    }
-
-    @CreateInitializer
-    public SimpleBakedModelInject(List<BakedQuad> list, Map<Direction, List<BakedQuad>> map, boolean bl, boolean bl2, boolean bl3, TextureAtlasSprite textureAtlasSprite, ItemTransforms itemTransforms, ItemOverrides itemOverrides, RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypeGroupFast) {
-        this(list, map, bl, bl2, bl3, textureAtlasSprite, itemTransforms, itemOverrides);
-        this.kilt$addRenderTypes(renderTypeGroup);
-        this.kilt$addRenderTypesFast(renderTypeGroupFast);
     }
 
     @Override
@@ -60,19 +50,7 @@ public abstract class SimpleBakedModelInject implements BakedModelInject, Simple
     }
 
     @Override
-    public void kilt$addRenderTypesFast(RenderTypeGroup renderTypeGroup) {
-        if (renderTypeGroup == null)
-            renderTypeGroup = RenderTypeGroup.EMPTY;
-
-        this.blockRenderTypesFast = !renderTypeGroup.isEmpty() ? ChunkRenderTypeSet.of(renderTypeGroup.block()) : null;
-        this.itemRenderTypesFast = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entity()) : null;
-        this.fabulousItemRenderTypesFast = !renderTypeGroup.isEmpty() ? List.of(renderTypeGroup.entityFabulous()) : null;
-    }
-
-    @Override
     public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
-        // TODO: Add support for fast render types
-
         if (blockRenderTypes != null)
             return blockRenderTypes;
 
@@ -96,14 +74,8 @@ public abstract class SimpleBakedModelInject implements BakedModelInject, Simple
 
         @Override
         public BakedModel build(RenderTypeGroup renderTypeGroup) {
-            return this.build(renderTypeGroup, RenderTypeGroup.EMPTY);
-        }
-
-        @Override
-        public BakedModel build(RenderTypeGroup renderTypeGroup, RenderTypeGroup renderTypesFast) {
             var model = this.build();
             ((SimpleBakedModelInjection) model).kilt$addRenderTypes(renderTypeGroup);
-            ((SimpleBakedModelInjection) model).kilt$addRenderTypesFast(renderTypesFast);
 
             return model;
         }

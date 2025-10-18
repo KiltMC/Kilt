@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.injects.server;
 
 import net.minecraft.server.Main;
-import net.minecraftforge.server.loading.ServerModLoader;
+import net.neoforged.neoforge.server.loading.ServerModLoader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,4 +13,6 @@ public abstract class MainInject {
     private static void kilt$initForgeLoader(String[] strings, CallbackInfo ci) {
         ServerModLoader.load();
     }
+
+    // TODO: oh jesus christ good luck.
 }

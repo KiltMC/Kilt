@@ -4,31 +4,38 @@ package xyz.bluspring.kilt.injects.network.protocol.status;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.kinds.App;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
-import net.minecraftforge.network.ServerStatusPing;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.injections.network.ServerStatusInjection;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.injections.network.protocol.status.ServerStatusInjection;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Mixin(ServerStatus.class)
-public class ServerStatusInject implements ServerStatusInjection {
-    @Unique
-    private Optional<ServerStatusPing> forgeData = Optional.empty();
+public abstract class ServerStatusInject implements ServerStatusInjection {
+    @Unique private boolean isModded = false;
 
-    @Override
-    @Nullable
-    public Optional<ServerStatusPing> forgeData() {
-        return forgeData;
+    public ServerStatusInject(Component description, Optional<ServerStatus.Players> players, Optional<ServerStatus.Version> version, Optional<ServerStatus.Favicon> favicon, boolean enforcesSecureChat) {}
+
+    @CreateInitializer
+    public ServerStatusInject(Component description, Optional<ServerStatus.Players> players, Optional<ServerStatus.Version> version, Optional<ServerStatus.Favicon> favicon, boolean enforcesSecureChat, boolean isModded) {
+        this(description, players, version, favicon, enforcesSecureChat);
+        this.kilt$setModded(isModded);
     }
 
     @Override
-    public void setForgeData(Optional<ServerStatusPing> data) {
-        forgeData = data;
+    public boolean isModded() {
+        return this.isModded;
+    }
+
+    @Override
+    public void kilt$setModded(boolean isModded) {
+        this.isModded = isModded;
     }
 
     // thanks @TropheusJ
@@ -36,12 +43,12 @@ public class ServerStatusInject implements ServerStatusInjection {
     @ModifyReturnValue(method = "method_49092", at = @At("RETURN"))
     private static App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> kilt$appendForgeData(App<RecordCodecBuilder.Mu<ServerStatus>, ServerStatus> original, @Local(argsOnly = true) RecordCodecBuilder.Instance<ServerStatus> instance) {
         return instance.group(original,
-            ServerStatusPing.CODEC
-                .optionalFieldOf("forgeData")
-                .forGetter(ServerStatusInjection::forgeData)
+            Codec.BOOL
+                .lenientOptionalFieldOf("isModded", Boolean.FALSE)
+                .forGetter(ServerStatus::isModded)
         )
-            .apply(instance, (status, forgeData) -> {
-                status.setForgeData(forgeData);
+            .apply(instance, (status, isModded) -> {
+                status.kilt$setModded(isModded);
                 return status;
             });
     }

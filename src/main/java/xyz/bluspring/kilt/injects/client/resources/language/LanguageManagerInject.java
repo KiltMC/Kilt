@@ -11,13 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.resources.language.LanguageManagerInjection;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
 @Mixin(LanguageManager.class)
 public abstract class LanguageManagerInject implements LanguageManagerInjection {
     @Shadow public abstract void setSelected(String selected);
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void kilt$setJavaLocaleOnInit(String currentCode, CallbackInfo ci) {
+    private void kilt$setJavaLocaleOnInit(String currentCode, Consumer reloadFallback, CallbackInfo ci) {
         this.setSelected(currentCode);
     }
 

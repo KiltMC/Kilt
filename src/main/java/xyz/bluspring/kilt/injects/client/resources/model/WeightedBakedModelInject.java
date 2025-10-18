@@ -9,15 +9,18 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.common.util.TriState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -65,13 +68,8 @@ public abstract class WeightedBakedModelInject implements IDynamicBakedModel {
     }
 
     @Override
-    public boolean useAmbientOcclusion(BlockState state) {
-        return this.wrapped.useAmbientOcclusion(state);
-    }
-
-    @Override
-    public boolean useAmbientOcclusion(BlockState state, RenderType renderType) {
-        return this.wrapped.useAmbientOcclusion(state, renderType);
+    public TriState useAmbientOcclusion(BlockState state, ModelData modelData, RenderType renderType) {
+        return this.wrapped.useAmbientOcclusion(state, modelData, renderType);
     }
 
     @Override
@@ -87,7 +85,12 @@ public abstract class WeightedBakedModelInject implements IDynamicBakedModel {
     @Override
     public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
         return WeightedRandom.getWeightedItem(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight)
-            .map(modelWrapper -> modelWrapper.getData().getRenderTypes(state, rand, data))
+            .map(modelWrapper -> modelWrapper.data().getRenderTypes(state, rand, data))
             .orElse(ChunkRenderTypeSet.none());
+    }
+
+    @Override
+    public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
+        return this.wrapped.getModelData(level, pos, state, modelData);
     }
 }

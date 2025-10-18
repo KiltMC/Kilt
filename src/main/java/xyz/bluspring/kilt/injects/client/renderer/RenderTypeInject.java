@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.injects.client.renderer;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.ForgeRenderTypes;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,32 +30,32 @@ public abstract class RenderTypeInject implements RenderTypeInjection {
 
     @Inject(at = @At("RETURN"), method = "text", cancellable = true)
     private static void kilt$text(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getText(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getText(resourceLocation));
     }
 
     @Inject(at = @At("RETURN"), method = "textIntensity", cancellable = true)
     private static void kilt$textIntensity(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getTextIntensity(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getTextIntensity(resourceLocation));
     }
 
     @Inject(at = @At("RETURN"), method = "textIntensityPolygonOffset", cancellable = true)
     private static void kilt$textIntensityPolygonOffset(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getTextIntensityPolygonOffset(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getTextIntensityPolygonOffset(resourceLocation));
     }
 
     @Inject(at = @At("RETURN"), method = "textPolygonOffset", cancellable = true)
     private static void kilt$textPolygonOffset(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getTextPolygonOffset(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getTextPolygonOffset(resourceLocation));
     }
 
     @Inject(at = @At("RETURN"), method = "textSeeThrough", cancellable = true)
     private static void kilt$textSeeThrough(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getTextSeeThrough(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getTextSeeThrough(resourceLocation));
     }
 
     @Inject(at = @At("RETURN"), method = "textIntensitySeeThrough", cancellable = true)
     private static void kilt$textIntensitySeeThrough(ResourceLocation resourceLocation, CallbackInfoReturnable<RenderType> cir) {
-        cir.setReturnValue(ForgeRenderTypes.getTextIntensitySeeThrough(resourceLocation));
+        cir.setReturnValue(NeoForgeRenderTypes.getTextIntensitySeeThrough(resourceLocation));
     }
 
     @Inject(method = "<clinit>", at = @At("TAIL"))

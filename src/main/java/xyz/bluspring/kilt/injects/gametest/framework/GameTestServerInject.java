@@ -8,7 +8,7 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,9 +22,8 @@ public abstract class GameTestServerInject extends MinecraftServer {
         super(serverThread, storageSource, packRepository, worldStem, proxy, fixerUpper, services, progressListenerFactory);
     }
 
-    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/gametest/framework/GameTestServer;loadLevel()V"), cancellable = true)
+    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/gametest/framework/GameTestServer;loadLevel()V"))
     private void kilt$checkServerAboutToStart(CallbackInfoReturnable<Boolean> cir) {
-        if (!ServerLifecycleHooks.handleServerAboutToStart(this))
-            cir.setReturnValue(false);
+        ServerLifecycleHooks.handleServerAboutToStart(this);
     }
 }

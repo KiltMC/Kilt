@@ -2,9 +2,9 @@
 package xyz.bluspring.kilt.injects.client.resources.model;
 
 import net.minecraft.client.resources.model.ModelBaker;
-import net.neoforged.neoforge.client.extensions.IForgeModelBaker;
+import net.neoforged.neoforge.client.extensions.IModelBakerExtension;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ModelBaker.class)
-public interface ModelBakerInject extends IForgeModelBaker {
+public interface ModelBakerInject extends IModelBakerExtension {
 }
