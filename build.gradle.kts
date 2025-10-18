@@ -58,7 +58,15 @@ loom {
     mixin {
         showMessageTypes.set(true)
 
-        messages.set(mutableMapOf("ACCESSOR_TARGET_NOT_FOUND" to "disabled"))
+        messages.set(mutableMapOf(
+            "ACCESSOR_TARGET_NOT_FOUND" to "disabled",
+
+            // Make sure that we don't accidentally leave broken mixins. This happens a lot, I don't know why the hell these aren't error-level by default.
+            "MIXIN_SOFT_TARGET_NOT_RESOLVED" to "error",
+            "TARGET_ELEMENT_NOT_FOUND" to "error",
+            "NO_OBFDATA_FOR_METHOD" to "error",
+            "MISSING_INJECTOR_DESC_SINGLETARGET" to "error"
+        ))
     }
 }
 
