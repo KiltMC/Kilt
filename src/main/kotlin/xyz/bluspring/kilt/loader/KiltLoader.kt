@@ -300,7 +300,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 metadata.getConfigElement<String>("version").orElse("1")
                     .run {
                         if (this == "\${file.jarVersion}")
-                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
+                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: "0.0NONE"
                         else if (this == "\${global.forgeVersion}")
                             SUPPORTED_FORGE_API_VERSION.toString()
                         else if (this == "\${global.mcVersion}")
