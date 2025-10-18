@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(InventoryMenu.class)
 public abstract class InventoryMenuInject {
-    @Mixin(targets = "net.minecraft.world.inventory.InventoryMenu$0")
+    @Mixin(targets = "net.minecraft.world.inventory.InventoryMenu$1")
     public abstract static class AnonymousEquipmentSlotInject {
         @Shadow @Final EquipmentSlot val$slot;
         @Shadow @Final Player val$owner;

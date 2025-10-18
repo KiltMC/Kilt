@@ -9,7 +9,7 @@ import xyz.bluspring.kilt.injections.world.level.BaseSpawnerInjection;
 
 @Mixin(MinecartSpawner.class)
 public abstract class MinecartSpawnerInject {
-    @Mixin(targets = "net.minecraft.world.entity.vehicle.MinecartSpawner$0")
+    @Mixin(targets = "net.minecraft.world.entity.vehicle.MinecartSpawner$1")
     public static abstract class BaseSpawnerInject implements BaseSpawnerInjection {
         @Shadow @Final private MinecartSpawner field_7747;
 

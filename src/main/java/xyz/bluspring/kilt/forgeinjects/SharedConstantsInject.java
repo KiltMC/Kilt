@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(SharedConstants.class)
 public abstract class SharedConstantsInject {
-    @WrapWithCondition(method = "<clinit>", at = @At(value = "INVOKE", target = "Lio/netty/util/ResourceLeakDetector;setLevel(Lio/netty/util/ResourceLeakDetector$Level;)V"))
+    @WrapWithCondition(method = "<clinit>", at = @At(value = "INVOKE", target = "Lio/netty/util/ResourceLeakDetector;setLevel(Lio/netty/util/ResourceLeakDetector$Level;)V", remap = false))
     private static boolean kilt$allowManualLevelSetting(ResourceLeakDetector.Level level) {
         return System.getProperty("io.netty.leakDetection.level") == null;
     }

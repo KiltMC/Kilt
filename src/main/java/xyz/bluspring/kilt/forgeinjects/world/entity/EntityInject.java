@@ -218,7 +218,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return true;
     }
 
-    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;clear()V", shift = At.Shift.AFTER))
+    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;clear()V", shift = At.Shift.AFTER, remap = false))
     private void kilt$clearForgeFluidHeight(CallbackInfoReturnable<Boolean> cir) {
         this.forgeFluidTypeHeight.clear();
     }
@@ -506,7 +506,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             cir.setReturnValue(false);
     }
 
-    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
+    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D", remap = false))
     private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
         if (fluidTypeRef.get() == null && interimCalcs.get() == null)
             return true;

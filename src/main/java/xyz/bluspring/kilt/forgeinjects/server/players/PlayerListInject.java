@@ -45,7 +45,7 @@ public abstract class PlayerListInject {
         ForgeEventFactory.firePlayerLoggedIn(player);
     }
 
-    @Inject(method = "load", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;debug(Ljava/lang/String;)V", shift = At.Shift.AFTER))
+    @Inject(method = "load", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;debug(Ljava/lang/String;)V", shift = At.Shift.AFTER, remap = false))
     private void kilt$firePlayerLoadEvent(ServerPlayer player, CallbackInfoReturnable<CompoundTag> cir) {
         ForgeEventFactory.firePlayerLoadingEvent(player, this.playerIo, player.getUUID().toString());
     }

@@ -206,7 +206,7 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
         return this.kilt$entityParts.values();
     }
 
-    @Mixin(targets = "net.minecraft.server.level.ServerLevel.EntityCallbacks")
+    @Mixin(targets = "net.minecraft.server.level.ServerLevel$EntityCallbacks")
     public static abstract class EntityCallbacksInject implements LevelCallback<Entity> {
         @Shadow @Final
         ServerLevel field_26936;

@@ -40,12 +40,12 @@ public abstract class HolderSetCodecInject<E> {
         this.combinedCodec = new ExtraCodecs.EitherCodec<>(this.forgeDispatchCodec, this.registryAwareCodec);
     }
 
-    @ModifyReceiver(method = "decode", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Codec;decode(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;"))
+    @ModifyReceiver(method = "decode", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Codec;decode(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", remap = false))
     private <T> Codec kilt$useCombinedCodec(Codec instance, DynamicOps<T> dynamicOps, T o) {
         return this.combinedCodec;
     }
 
-    @Redirect(method = "method_40385", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;"))
+    @Redirect(method = "method_40385", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;", remap = false))
     private static <T, E> E kilt$mapEitherCalls(Either<ICustomHolderSet<T>, Either<TagKey<T>, List<Holder<T>>>> instance, Function<TagKey<T>, HolderSet.Named<T>> function, Function<List<Holder<T>>, HolderSet.Direct<T>> function2) {
         return (E) instance.map(Function.identity(), tagOrList -> tagOrList.map(function, function2));
     }

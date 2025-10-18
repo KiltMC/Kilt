@@ -36,7 +36,7 @@ public abstract class RegistryDataLoaderInject {
         return original;
     }*/
 
-    @Inject(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Decoder;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", shift = At.Shift.BEFORE))
+    @Inject(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Decoder;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", shift = At.Shift.BEFORE, remap = false))
     private static <E> void kilt$checkShouldRegisterEntry(RegistryOps.RegistryInfoLookup lookup, ResourceManager manager, ResourceKey<? extends Registry<E>> registryKey, WritableRegistry<E> registry, Decoder<E> decoder, Map<ResourceKey<?>, Exception> exceptions, CallbackInfo ci, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry, @Local JsonElement jsonElement) {
         shouldRegisterEntry.set(true);
 
@@ -45,7 +45,7 @@ public abstract class RegistryDataLoaderInject {
         }
     }
 
-    @WrapOperation(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/DataResult;getOrThrow(ZLjava/util/function/Consumer;)Ljava/lang/Object;"))
+    @WrapOperation(method = "loadRegistryContents", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/DataResult;getOrThrow(ZLjava/util/function/Consumer;)Ljava/lang/Object;", remap = false))
     private static <R> R kilt$disableGetOrThrow(DataResult instance, boolean allowPartial, Consumer<String> onError, Operation<R> original, @Share("shouldRegisterEntry") LocalBooleanRef shouldRegisterEntry) {
         // hoping mods don't rely on this :V
         if (!shouldRegisterEntry.get())

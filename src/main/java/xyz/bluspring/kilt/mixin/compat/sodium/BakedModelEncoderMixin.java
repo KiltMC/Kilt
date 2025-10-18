@@ -16,8 +16,9 @@ public class BakedModelEncoderMixin {
     @ModifyArg(
             method = "writeQuadVertices(Lnet/caffeinemc/mods/sodium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lme/jellysquid/mods/sodium/client/model/quad/ModelQuadView;III)V",
             at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/caffeinemc/mods/sodium/api/vertex/format/common/ModelVertex;write(JFFFIFFIII)V"
+                value = "INVOKE",
+                target = "Lnet/caffeinemc/mods/sodium/api/vertex/format/common/ModelVertex;write(JFFFIFFIII)V",
+                remap = false
             ),
             index = 4
     )

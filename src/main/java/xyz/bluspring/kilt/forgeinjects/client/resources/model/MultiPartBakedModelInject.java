@@ -46,7 +46,7 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
 
     @Unique private BakedModel defaultModel;
 
-    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/tuple/Pair;getRight()Ljava/lang/Object;"))
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/tuple/Pair;getRight()Ljava/lang/Object;", remap = false))
     private <L, R> R kilt$setDefaultModel(Pair<L, R> instance, Operation<R> original) {
         var model = original.call(instance);
         this.defaultModel = (BakedModel) model;

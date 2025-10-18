@@ -25,18 +25,11 @@ import java.util.List;
 
 @Mixin(value = MobEffectInstance.class, priority = 1010)
 public abstract class MobEffectInstanceInject implements IForgeMobEffectInstance, MobEffectInstanceInjection {
-    @SuppressWarnings("MixinAnnotationTarget") @Shadow List<ItemStack> curativeItems;
-
     @Shadow public abstract MobEffect getEffect();
 
     @Inject(method = "<init>(Lnet/minecraft/world/effect/MobEffectInstance;)V", at = @At("TAIL"))
     private void kilt$initCurativeItems(MobEffectInstance other, CallbackInfo ci) {
-        this.curativeItems = ((MobEffectInstanceInjection) other).kilt$getDirectCurativeItems() == null ? null : new ArrayList<>(((MobEffectInstanceInjection) other).kilt$getDirectCurativeItems());
-    }
-
-    @Override
-    public List<ItemStack> kilt$getDirectCurativeItems() {
-        return this.curativeItems;
+        this.setCurativeItems(other.getCurativeItems() == null ? null : new ArrayList<>(other.getCurativeItems()));
     }
 
     @ModifyReturnValue(method = "getEffect", at = @At("RETURN"))

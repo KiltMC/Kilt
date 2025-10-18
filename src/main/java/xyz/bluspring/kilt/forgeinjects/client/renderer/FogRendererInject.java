@@ -19,7 +19,7 @@ public abstract class FogRendererInject {
     @Shadow private static float fogGreen;
     @Shadow private static float fogBlue;
 
-    @Inject(method = "setupColor", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clearColor(FFFF)V", ordinal = 1))
+    @Inject(method = "setupColor", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clearColor(FFFF)V", ordinal = 1, remap = false))
     private static void kilt$modifyFogColors(Camera activeRenderInfo, float partialTicks, ClientLevel level, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {
         var fogColor = ForgeHooksClient.getFogColor(activeRenderInfo, partialTicks, level, renderDistanceChunks, bossColorModifier, fogRed, fogGreen, fogBlue);
 

@@ -23,12 +23,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CommandsInject {
     @Shadow @Final private CommandDispatcher<CommandSourceStack> dispatcher;
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/CommandDispatcher;setConsumer(Lcom/mojang/brigadier/ResultConsumer;)V"))
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/CommandDispatcher;setConsumer(Lcom/mojang/brigadier/ResultConsumer;)V", remap = false))
     private void kilt$registerForgeCommands(Commands.CommandSelection selection, CommandBuildContext context, CallbackInfo ci) {
         ForgeEventFactory.onCommandRegister(this.dispatcher, selection, context);
     }
 
-    @WrapOperation(method = "performCommand", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/CommandDispatcher;execute(Lcom/mojang/brigadier/ParseResults;)I"))
+    @WrapOperation(method = "performCommand", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/CommandDispatcher;execute(Lcom/mojang/brigadier/ParseResults;)I", remap = false))
     private int kilt$callForgeCommandEvent(CommandDispatcher<CommandSourceStack> instance, ParseResults<CommandSourceStack> results, Operation<Integer> original) throws Exception {
         var event = new CommandEvent(results);
 
