@@ -6,6 +6,9 @@ import xyz.bluspring.knit.loader.mod.VersionConstraint
 
 class ForgeVersionConstraint(val range: VersionRange) : VersionConstraint {
     override fun matches(versionString: String): Boolean {
+        if (versionString == "0.0NONE") // Forge, what the fuck?
+            return true
+
         return range.containsVersion(DefaultArtifactVersion(versionString))
     }
 
