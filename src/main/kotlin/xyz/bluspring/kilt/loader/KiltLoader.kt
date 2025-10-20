@@ -87,10 +87,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
     init {
         val loader = FabricLoader.getInstance()
+        val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
         if (loader.environmentType == EnvType.CLIENT) {
-            val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
-
             // Kilt requires a hard dependency on Sodium, so let's just do this
             if (!loader.isModLoaded("sodium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended."))
@@ -98,6 +97,24 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
             } else if (loader.isModLoaded("embeddium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
+            }
+        }
+
+        if (loader.isModLoaded("twilightforest")) {
+            val tfContainer = loader.getModContainer("twilightforest").orElseThrow()
+
+            // Kilt does not and will not support The Twilight Forest Unofficial. Use the official Forge build instead.
+            if (tfContainer.metadata.authors.any { it.name == "marlester__" } && tfContainer.metadata.authors.any { it.name == "IAFEnvoy" }) {
+                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt does not support The Twilight Forest Unofficial, please use the official Forge build instead!"))
+            }
+        }
+
+        if (loader.isModLoaded("iceandfire")) {
+            val iafContainer = loader.getModContainer("iceandfire").orElseThrow()
+
+            // Kilt does not and will not support Ice and Fire "Community Edition".
+            if (iafContainer.metadata.authors.any { it.name == "IAFEnvoy" }) {
+                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt does not support Ice and Fire \"Community Edition\", please use the official Forge build instead!"))
             }
         }
 

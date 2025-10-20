@@ -602,7 +602,7 @@ tasks {
             requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
             embeds("porting_lib", "feature-recycler")
-            incompatible("async", "embeddium")
+            incompatible("async", "embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
 
         curseforge {
@@ -614,7 +614,7 @@ tasks {
             requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
             embeds("porting-lib", "feature-recycler")
-            incompatible("embeddium")
+            incompatible("embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
     }
 }
