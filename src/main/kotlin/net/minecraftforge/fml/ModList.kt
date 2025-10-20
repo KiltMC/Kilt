@@ -9,6 +9,7 @@ import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
@@ -50,7 +51,25 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
         get() = kiltMods.map { it.scanData }
 
     fun getModFileById(modid: String): IModFileInfo? {
-        return kiltMods.firstOrNull { it.modId == modid }?.owningFile
+        val fileInfo = kiltMods.firstOrNull { it.modId == modid }?.owningFile
+
+        if (fileInfo == null) {
+            var existingMod = FabricLoader.getInstance().getModContainer(modid)
+
+            if (existingMod.isEmpty) {
+                existingMod = FabricLoader.getInstance().getModContainer(modid.replace("_", "-"))
+            }
+
+            if (existingMod.isEmpty) {
+                existingMod = FabricLoader.getInstance().getModContainer(modid.replace("_", ""))
+            }
+
+            if (existingMod.isPresent) {
+                return FabricModFileInfoWrapper(existingMod.orElseThrow())
+            }
+        }
+
+        return fileInfo
     }
 
     fun forEachModFile(fileConsumer: Consumer<IModFile>) {
