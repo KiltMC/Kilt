@@ -42,7 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Mixin(value = BucketItem.class, priority = 1070)
-public abstract class BucketItemInject extends Item implements BucketItemInjection {
+@Implements(@Interface(iface = BucketItemInjection.class, prefix = "kilt$i$"))
+public abstract class BucketItemInject extends Item {
     @Mutable
     @Shadow @Final private Fluid content;
 
@@ -51,9 +52,8 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
     @Unique
     private final Supplier<? extends Fluid> fluidSupplier;
 
-    @Intrinsic
-    @Override
-    public Fluid getFluid() {
+    @Intrinsic(displace = true)
+    public Fluid kilt$i$getFluid() {
         if (fluidSupplier != null && this.content == null) {
             this.content = fluidSupplier.get();
         }
@@ -69,7 +69,7 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
             return result;
         }
 
-        return this.getFluid();
+        return this.kilt$i$getFluid();
     }
 
     @Unique
@@ -89,17 +89,17 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
     @SuppressWarnings("InvalidInjectorMethodSignature")
     @Inject(method = {"emptyContents", "use", "playEmptySound"}, at = @At("HEAD"))
     public void kilt$cacheContents(CallbackInfo ci) {
-        this.getFluid();
+        this.kilt$i$getFluid();
     }
 
     @Inject(method = "emptyContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/LiquidBlockContainer;canPlaceLiquid(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/Fluid;)Z", shift = At.Shift.AFTER), cancellable = true)
     public void kilt$loadContainedFluidStack(Player player, Level level, BlockPos pos, BlockHitResult result, CallbackInfoReturnable<Boolean> cir, @Local BlockState state, @Local Block block, @Local(ordinal = 0) boolean bl) {
         var containedFluidStack = Optional.ofNullable(this.kilt$container.get()).flatMap(FluidUtil::getFluidContained);
         // TODO: figure out how to capture bl2
-        var bl2 = state.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer)block).canPlaceLiquid(level, pos, state, this.getFluid());
+        var bl2 = state.isAir() || bl || block instanceof LiquidBlockContainer && ((LiquidBlockContainer)block).canPlaceLiquid(level, pos, state, this.kilt$i$getFluid());
 
-        if (bl2 && containedFluidStack.isPresent() && this.getFluid().getFluidType().isVaporizedOnPlacement(level, pos, containedFluidStack.get())) {
-            this.getFluid().getFluidType().onVaporize(player, level, pos, containedFluidStack.get());
+        if (bl2 && containedFluidStack.isPresent() && this.kilt$i$getFluid().getFluidType().isVaporizedOnPlacement(level, pos, containedFluidStack.get())) {
+            this.kilt$i$getFluid().getFluidType().onVaporize(player, level, pos, containedFluidStack.get());
 
             cir.setReturnValue(true);
         }
@@ -112,7 +112,7 @@ public abstract class BucketItemInject extends Item implements BucketItemInjecti
 
     @Redirect(method = "emptyContents", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/BucketItem;content:Lnet/minecraft/world/level/material/Fluid;", ordinal = 4))
     public Fluid kilt$checkIfCanPlaceLiquid(BucketItem instance, @Local Block block, @Local Level level, @Local BlockPos pos, @Local BlockState state) {
-        if (((LiquidBlockContainer) block).canPlaceLiquid(level, pos, state, this.getFluid()))
+        if (((LiquidBlockContainer) block).canPlaceLiquid(level, pos, state, this.kilt$i$getFluid()))
             return Fluids.WATER;
 
         return this.content;
