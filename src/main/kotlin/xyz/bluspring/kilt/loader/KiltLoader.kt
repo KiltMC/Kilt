@@ -95,12 +95,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended."))
             } else if (!loader.isModLoaded("indium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
-            } else if (loader.isModLoaded("embeddium")) {
+            } else if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
             }
         }
 
-        if (loader.isModLoaded("twilightforest")) {
+        if (loader.isModLoaded("twilightforest") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
             val tfContainer = loader.getModContainer("twilightforest").orElseThrow()
 
             // Kilt does not and will not support The Twilight Forest Unofficial. Use the official Forge build instead.
@@ -109,7 +109,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             }
         }
 
-        if (loader.isModLoaded("iceandfire")) {
+        if (loader.isModLoaded("iceandfire") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
             val iafContainer = loader.getModContainer("iceandfire").orElseThrow()
 
             // Kilt does not and will not support Ice and Fire "Community Edition".
