@@ -19,17 +19,39 @@ import java.util.Map;
 import java.util.Set;
 
 @Mixin(MobSpawnSettings.class)
-public class MobSpawnSettingsInject implements MobSpawnSettingsInjection {
+public abstract class MobSpawnSettingsInject implements MobSpawnSettingsInjection {
     @Shadow @Final private Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> spawners;
     @Shadow @Final private Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> mobSpawnCosts;
 
+    @Unique private Set<MobCategory> typesView;
+    @Unique private Set<EntityType<?>> costView;
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$initViews(float creatureGenerationProbability, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> spawners, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> mobSpawnCosts, CallbackInfo ci) {
+        this.typesView = Collections.unmodifiableSet(this.spawners.keySet());
+        this.costView = Collections.unmodifiableSet(this.mobSpawnCosts.keySet());
+    }
+
+    @Unique
+    private void kilt$tryRebuildViews() {
+        if (this.typesView.hashCode() != this.spawners.hashCode()) {
+            this.typesView = Collections.unmodifiableSet(this.spawners.keySet());
+        }
+
+        if (this.costView.hashCode() != this.mobSpawnCosts.hashCode()) {
+            this.costView = Collections.unmodifiableSet(this.mobSpawnCosts.keySet());
+        }
+    }
+
     @Override
     public Set<MobCategory> getSpawnerTypes() {
-        return Collections.unmodifiableSet(this.spawners.keySet());
+        this.kilt$tryRebuildViews();
+        return this.typesView;
     }
 
     @Override
     public Set<EntityType<?>> getEntityTypes() {
-        return Collections.unmodifiableSet(this.mobSpawnCosts.keySet());
+        this.kilt$tryRebuildViews();
+        return this.costView;
     }
 }
