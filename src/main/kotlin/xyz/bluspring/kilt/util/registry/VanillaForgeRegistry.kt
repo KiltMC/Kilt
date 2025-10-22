@@ -178,7 +178,14 @@ class VanillaForgeRegistry<V> : ForgeRegistry<V> {
         val registry = vanillaRegistry()!!
 
         val currentId = if (registry.containsKey(key) && registry is MappedRegistry) {
-            val id = registry.getId(registry.get(key))
+            val existingValue = registry.get(key)
+            val id = registry.getId(existingValue)
+
+            // Prevent accidental double-registering in the same place, because apparently some mods do that.
+            if (existingValue == value) {
+                return id
+            }
+
             registry.registerMapping(id, ResourceKey.create(registry.key(), key), value, registry.registryLifecycle())
             id
         } else {
