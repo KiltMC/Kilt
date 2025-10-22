@@ -126,6 +126,9 @@
     "lithium:options": {
       "mixin.entity.collisions.fluid": false
     },
+    "potatoptimize:options": {
+      "mixin.world.farmland": false
+    },
     "afl:classtransform": "kilt.classtransform.json"
   },
   "breaks": {
