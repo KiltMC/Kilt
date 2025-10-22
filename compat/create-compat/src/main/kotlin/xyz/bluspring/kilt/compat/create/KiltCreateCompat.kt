@@ -15,12 +15,6 @@ import xyz.bluspring.knit.loader.KnitLoader
 
 class KiltCreateCompat : ClientModInitializer {
     override fun onInitializeClient() {
-        if (Kilt.loader.hasMod("flywheel")) {
-            val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
-            KnitLoader.instance.displayErrorGUI(KILT_ERROR_MESSAGE, DependencyException("Detected Flywheel Forge, please use either Create Fabric or Flywheel Fabric via Vanillin!"))
-            return
-        }
-
         if (FabricLoader.getInstance().isModLoaded("flywheel") && FabricLoader.getInstance().getModContainer("flywheel").orElseThrow().metadata.version >= Version.parse("1.0.0")) {
             initFlywheelEvents()
         }
