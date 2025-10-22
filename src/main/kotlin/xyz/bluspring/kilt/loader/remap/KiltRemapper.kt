@@ -378,7 +378,7 @@ object KiltRemapper {
                 }
 
                 // Read mixin configs and add them to the list of mixins to fix
-                mixinConfigs.asFlow().concurrent().collect { config ->
+                mixinConfigs.asFlow().collect { config ->
                     val jsonEntry = jar.getJarEntry(config) ?: return@collect
                     val json = jar.getInputStream(jsonEntry).use {
                         JsonParser.parseReader(it.reader())
@@ -393,7 +393,8 @@ object KiltRemapper {
                         (json.get("client") as? JsonArray)?.asFlow() ?: emptyFlow(),
                         (json.get("server") as? JsonArray)?.asFlow() ?: emptyFlow()
                     ).collect {
-                        mixinClasses.add("$mixinPackage.${it.asString}")
+                        if (!it.isJsonNull)
+                            mixinClasses.add("$mixinPackage.${it.asString}")
                     }
 
                     runCatching { json.get("refmap")!!.asString }.onSuccess { refmaps.add(it) }
