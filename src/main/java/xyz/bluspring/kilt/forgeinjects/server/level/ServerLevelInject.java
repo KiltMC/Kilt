@@ -220,8 +220,12 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
                 return true;
 
             if (((Entity) object).isMultipartEntity()) {
-                for (PartEntity<?> part : ((Entity) object).getParts()) {
-                    ((ServerLevelInjection) field_26936).kilt$getEntityParts().put(part.getId(), part);
+                var parts = ((Entity) object).getParts();
+
+                if (parts != null) {
+                    for (PartEntity<?> part : parts) {
+                        ((ServerLevelInjection) field_26936).kilt$getEntityParts().put(part.getId(), part);
+                    }
                 }
             }
 
@@ -237,8 +241,12 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
                 return true;
 
             if (((Entity) object).isMultipartEntity()) {
-                for (PartEntity<?> part : ((Entity) object).getParts()) {
-                    ((ServerLevelInjection) field_26936).kilt$getEntityParts().remove(part.getId());
+                var parts = ((Entity) object).getParts();
+
+                if (parts != null) {
+                    for (PartEntity<?> part : parts) {
+                        ((ServerLevelInjection) field_26936).kilt$getEntityParts().remove(part.getId());
+                    }
                 }
             }
 
