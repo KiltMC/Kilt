@@ -270,7 +270,7 @@ object AccessTransformerLoader {
 
                     println("transforming method $mappedMethodName$mappedDescriptor")
 
-                    classNode.methods.filter { (it.name == mappedMethodName || it.name == "*") && it.desc == mappedDescriptor }.forEach { methodNode ->
+                    classNode.methods.filter { (it.name == mappedMethodName || it.name == "*") && (it.desc == "()" || it.desc == mappedDescriptor) }.forEach { methodNode ->
                         // access modifiers
                         if (methodTransformInfo.currentAccessType != AccessType.DEFAULT) {
                             AccessType.values().forEach { accessType ->
