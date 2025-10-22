@@ -356,7 +356,7 @@ object AccessTransformerLoader {
 
                     for (methodOpt in cls.methods) {
                         methodOpt.ifPresent {
-                            if (it.descriptor != mappedDescriptor)
+                            if (mappedDescriptor != "()" && it.descriptor != mappedDescriptor)
                                 return@ifPresent
 
                             // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
