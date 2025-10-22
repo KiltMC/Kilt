@@ -1,0 +1,50 @@
+/**
+ * Copied directly from JEI, meaning this is licensed under JEI's MIT license.
+ * License can be found here - https://github.com/mezz/JustEnoughItems/blob/1.20.1/LICENSE.txt
+ */
+package mezz.jei.api.forge;
+
+import mezz.jei.api.ingredients.IIngredientType;
+import mezz.jei.api.ingredients.IIngredientTypeWithSubtypes;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
+
+/**
+ * Built-in {@link IIngredientType} for Forge Minecraft.
+ *
+ * @since 9.6.0
+ */
+public final class ForgeTypes {
+    /**
+     * @since 9.7.0
+     */
+    public static final IIngredientTypeWithSubtypes<Fluid, FluidStack> FLUID_STACK = new IIngredientTypeWithSubtypes<>() {
+        @Override
+        public String getUid() {
+            return "fluid_stack";
+        }
+
+        @Override
+        public Class<? extends FluidStack> getIngredientClass() {
+            return FluidStack.class;
+        }
+
+        @Override
+        public Class<? extends Fluid> getIngredientBaseClass() {
+            return Fluid.class;
+        }
+
+        @Override
+        public Fluid getBase(FluidStack ingredient) {
+            return ingredient.getFluid();
+        }
+
+        @Override
+        public FluidStack getDefaultIngredient(Fluid base) {
+            return new FluidStack(base, FluidType.BUCKET_VOLUME);
+        }
+    };
+
+    private ForgeTypes() {}
+}
