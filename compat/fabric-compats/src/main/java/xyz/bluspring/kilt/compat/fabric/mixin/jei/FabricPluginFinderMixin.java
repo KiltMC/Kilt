@@ -25,7 +25,6 @@ public abstract class FabricPluginFinderMixin {
 
     @ModifyReturnValue(method = "getModPlugins", at = @At("RETURN"))
     private static List<IModPlugin> kilt$jei$appendForgeJEIPlugins(List<IModPlugin> original) {
-        var list = new ArrayList<>(original);
         var launcher = FabricLauncherBase.getLauncher();
 
         for (ForgeMod mod : KiltLoader.Companion.getInstance().getMods()) {
@@ -51,6 +50,6 @@ public abstract class FabricPluginFinderMixin {
             }
         }
 
-        return list;
+        return original;
     }
 }
