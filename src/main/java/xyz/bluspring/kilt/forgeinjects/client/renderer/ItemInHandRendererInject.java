@@ -1,6 +1,7 @@
 // TRACKED HASH: b73c34d168c602ac81d45109572d392b4ad484f8
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -76,10 +77,13 @@ public abstract class ItemInHandRendererInject {
         return original.call(instance, item) || instance.getItem() instanceof CrossbowItem;
     }
 
-    @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F", ordinal = 2), index = 0)
-    private float kilt$useReequipCheckForMainHand(float original, @Share("reequipM") LocalBooleanRef reequipM, @Local LocalPlayer localPlayer) {
-        float f = localPlayer.getAttackStrengthScale(1.0F);
-        return (!reequipM.get() ? f * f * f : 0.0F) - this.mainHandHeight;
+    @ModifyExpressionValue(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;", ordinal = 2))
+    private ItemStack kilt$useReequipCheckForMainHand(ItemStack original, @Local(ordinal = 0) ItemStack itemStack, @Share("reequipM") LocalBooleanRef reequipM) {
+        if (reequipM.get()) {
+            return null;
+        } else {
+            return itemStack;
+        }
     }
 
     @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F", ordinal = 3), index = 0)
