@@ -47,10 +47,11 @@ object AccessTransformerLoader {
                 // class name
                 val srgClassName = split[1].replace(".", "/")
 
-                if (((srgClassName.startsWith("net/minecraft/") || srgClassName.startsWith("com/mojang/"))
-                            // Handle access widening over Fabric
-                            && !widenAccessForVanillaClasses(split, srgClassName, accessWidener))
-                ) {
+                val isVanillaClass = srgClassName.startsWith("net/minecraft/") || srgClassName.startsWith("com/mojang/")
+                val handledViaAccessWidener =
+                    isVanillaClass && widenAccessForVanillaClasses(split, srgClassName, accessWidener) // Handle access widening over Fabric
+
+                if (!handledViaAccessWidener) {
                     // Otherwise, this is for every other class
                     handleAccessTransform(split, srgClassName)
                 }
@@ -321,15 +322,26 @@ object AccessTransformerLoader {
                 for (fieldOpt in classInfo.fields) {
                     val field = fieldOpt.orElse(null) ?: continue
 
-                    accessWidener.visitField(intermediaryClassName, field.mapped, remapper.mapDesc(field.descriptor), AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitField(intermediaryClassName, field.mapped, remapper.mapDesc(field.descriptor), AccessWidenerReader.AccessType.MUTABLE, true)
+                    val mappedDesc = remapper.mapDesc(field.descriptor)
+                    println("widening field: intermediaryClassName=$intermediaryClassName, fieldName=${field.mapped}, descriptor=$mappedDesc")
+                    accessWidener.visitField(intermediaryClassName, field.mapped, mappedDesc, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                    accessWidener.visitField(intermediaryClassName, field.mapped, mappedDesc, AccessWidenerReader.AccessType.MUTABLE, true)
+                }
+            } else if (split[2] == "*()") {
+
+                val classInfo = remapper.getClass(srgClassName).orElse(null)
+
+                if (classInfo == null) {
+                    logger.warn("Missing class reference (SRG: $srgClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                    return false
                 }
 
                 for (methodOpt in classInfo.methods) {
                     val method = methodOpt.orElse(null) ?: continue
 
-                    accessWidener.visitMethod(intermediaryClassName, method.mapped, remapper.mapMethodDesc(method.descriptor), AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitMethod(intermediaryClassName, method.mapped, remapper.mapMethodDesc(method.descriptor), AccessWidenerReader.AccessType.EXTENDABLE, true)
+                    val mappedMethodDesc = remapper.mapMethodDesc(method.descriptor)
+                    accessWidener.visitMethod(intermediaryClassName, method.mapped, mappedMethodDesc, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                    accessWidener.visitMethod(intermediaryClassName, method.mapped, mappedMethodDesc, AccessWidenerReader.AccessType.EXTENDABLE, true)
                 }
             } else if (split[2].contains("(")) { // method
                 var name = ""
@@ -356,13 +368,13 @@ object AccessTransformerLoader {
 
                     for (methodOpt in cls.methods) {
                         methodOpt.ifPresent {
-                            if (mappedDescriptor != "()" && it.descriptor != mappedDescriptor)
+                            if (descriptor != "()" && it.descriptor != mappedDescriptor)
                                 return@ifPresent
 
                             // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                            accessWidener.visitMethod(intermediaryClassName, it.mapped, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                            accessWidener.visitMethod(intermediaryClassName, it.mapped, it.descriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
                             // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                            accessWidener.visitMethod(intermediaryClassName, it.mapped, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
+                            accessWidener.visitMethod(intermediaryClassName, it.mapped, it.descriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
                         }
                     }
 
