@@ -1,6 +1,9 @@
 // TRACKED HASH: b73c34d168c602ac81d45109572d392b4ad484f8
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -23,9 +26,9 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
@@ -35,10 +38,6 @@ public abstract class ItemInHandRendererInject {
     @Shadow private ItemStack mainHandItem;
 
     @Shadow private ItemStack offHandItem;
-
-    @Shadow private float mainHandHeight;
-
-    @Shadow private float offHandHeight;
 
     @WrapWithCondition(method = "renderHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
     private boolean kilt$cancelRenderIfEventCancelled(ItemInHandRenderer instance, AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress, ItemStack stack, float equippedProgress, PoseStack poseStack, MultiBufferSource buffer, int combinedLight) {
@@ -62,28 +61,32 @@ public abstract class ItemInHandRendererInject {
             this.offHandItem = offhandStack;
     }
 
-    // TODO: implement when ternaries are fixed in MixinExtras
-    /*@Definition(id = "mainHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;")
-    @Definition(id = "itemStack", local = @Local)
+	@Unique
+	private static boolean kilt$shouldSkipReequip(boolean fabricSkipReequip, boolean forgeSkipReequip) {
+		if (forgeSkipReequip) {
+			return true;
+		}
+		return fabricSkipReequip;
+	}
+
+    @Definition(id = "mainHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;")
+    @Definition(id = "itemStack", local = @Local(type = ItemStack.class, ordinal = 0))
     @Expression("this.mainHandItem == itemStack")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$useReequipCheckForMainHand(boolean original) {
+    private boolean kilt$useReequipCheckForMainHand(boolean original, @Share("reequipM") LocalBooleanRef reequipM) {
+		return kilt$shouldSkipReequip(original, !reequipM.get());
+    }
 
-    }*/
+	@Definition(id = "offHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;offHandItem:Lnet/minecraft/world/item/ItemStack;")
+	@Definition(id = "itemStack2", local = @Local(type = ItemStack.class, ordinal = 1))
+	@Expression("this.offHandItem == itemStack2")
+	@ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
+	private boolean kilt$useReequipCheckForOffHand(boolean original, @Share("reequipO") LocalBooleanRef reequipO) {
+		return kilt$shouldSkipReequip(original, !reequipO.get());
+	}
 
     @WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 1))
     private boolean kilt$useCrossbowInstanceOfCheck(ItemStack instance, Item item, Operation<Boolean> original) {
         return original.call(instance, item) || instance.getItem() instanceof CrossbowItem;
-    }
-
-    @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F", ordinal = 2), index = 0)
-    private float kilt$useReequipCheckForMainHand(float original, @Share("reequipM") LocalBooleanRef reequipM, @Local LocalPlayer localPlayer) {
-        float f = localPlayer.getAttackStrengthScale(1.0F);
-        return (!reequipM.get() ? f * f * f : 0.0F) - this.mainHandHeight;
-    }
-
-    @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F", ordinal = 3), index = 0)
-    private float kilt$useReequipCheckForOffHand(float original, @Share("reequipO") LocalBooleanRef reequipO) {
-        return (!reequipO.get() ? 1.0F : 0.0F) - this.offHandHeight;
     }
 }
