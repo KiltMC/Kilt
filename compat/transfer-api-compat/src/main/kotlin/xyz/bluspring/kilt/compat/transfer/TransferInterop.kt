@@ -26,8 +26,7 @@ import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
 
 class TransferInterop : ModInitializer {
     override fun onInitialize() {
-        MinecraftForge.EVENT_BUS.register(::onAttachBlockEntityCapabilities)
-        MinecraftForge.EVENT_BUS.register(::onAttachItemStackCapabilities)
+        MinecraftForge.EVENT_BUS.register(this)
 
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)
