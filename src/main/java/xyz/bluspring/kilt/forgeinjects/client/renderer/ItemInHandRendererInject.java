@@ -1,6 +1,8 @@
 // TRACKED HASH: b73c34d168c602ac81d45109572d392b4ad484f8
 package xyz.bluspring.kilt.forgeinjects.client.renderer;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -26,7 +28,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
@@ -63,31 +64,24 @@ public abstract class ItemInHandRendererInject {
             this.offHandItem = offhandStack;
     }
 
-    // TODO: implement when ternaries are fixed in MixinExtras
-    /*@Definition(id = "mainHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;")
-    @Definition(id = "itemStack", local = @Local)
+    @Definition(id = "mainHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;")
+    @Definition(id = "itemStack", local = @Local(type = ItemStack.class, ordinal = 0))
     @Expression("this.mainHandItem == itemStack")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$useReequipCheckForMainHand(boolean original) {
+    private boolean kilt$useReequipCheckForMainHand(boolean original, @Share("reequipM") LocalBooleanRef reequipM) {
+		return !reequipM.get();
+    }
 
-    }*/
+	@Definition(id = "offHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;offHandItem:Lnet/minecraft/world/item/ItemStack;")
+	@Definition(id = "itemStack2", local = @Local(type = ItemStack.class, ordinal = 1))
+	@Expression("this.offHandItem == itemStack2")
+	@ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
+	private boolean kilt$useReequipCheckForOffHand(boolean original, @Share("reequipO") LocalBooleanRef reequipO) {
+		return !reequipO.get();
+	}
 
     @WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 1))
     private boolean kilt$useCrossbowInstanceOfCheck(ItemStack instance, Item item, Operation<Boolean> original) {
         return original.call(instance, item) || instance.getItem() instanceof CrossbowItem;
-    }
-
-    @ModifyExpressionValue(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;", ordinal = 2))
-    private ItemStack kilt$useReequipCheckForMainHand(ItemStack original, @Local(ordinal = 0) ItemStack itemStack, @Share("reequipM") LocalBooleanRef reequipM) {
-        if (reequipM.get()) {
-            return null;
-        } else {
-            return itemStack;
-        }
-    }
-
-    @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(FFF)F", ordinal = 3), index = 0)
-    private float kilt$useReequipCheckForOffHand(float original, @Share("reequipO") LocalBooleanRef reequipO) {
-        return (!reequipO.get() ? 1.0F : 0.0F) - this.offHandHeight;
     }
 }
