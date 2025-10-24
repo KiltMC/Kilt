@@ -26,6 +26,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -37,10 +38,6 @@ public abstract class ItemInHandRendererInject {
     @Shadow private ItemStack mainHandItem;
 
     @Shadow private ItemStack offHandItem;
-
-    @Shadow private float mainHandHeight;
-
-    @Shadow private float offHandHeight;
 
     @WrapWithCondition(method = "renderHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
     private boolean kilt$cancelRenderIfEventCancelled(ItemInHandRenderer instance, AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress, ItemStack stack, float equippedProgress, PoseStack poseStack, MultiBufferSource buffer, int combinedLight) {
@@ -64,12 +61,20 @@ public abstract class ItemInHandRendererInject {
             this.offHandItem = offhandStack;
     }
 
+	@Unique
+	private static boolean kilt$shouldSkipReequip(boolean fabricSkipReequip, boolean forgeSkipReequip) {
+		if (forgeSkipReequip) {
+			return true;
+		}
+		return fabricSkipReequip;
+	}
+
     @Definition(id = "mainHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;mainHandItem:Lnet/minecraft/world/item/ItemStack;")
     @Definition(id = "itemStack", local = @Local(type = ItemStack.class, ordinal = 0))
     @Expression("this.mainHandItem == itemStack")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$useReequipCheckForMainHand(boolean original, @Share("reequipM") LocalBooleanRef reequipM) {
-		return !reequipM.get();
+		return kilt$shouldSkipReequip(original, !reequipM.get());
     }
 
 	@Definition(id = "offHandItem", field = "Lnet/minecraft/client/renderer/ItemInHandRenderer;offHandItem:Lnet/minecraft/world/item/ItemStack;")
@@ -77,7 +82,7 @@ public abstract class ItemInHandRendererInject {
 	@Expression("this.offHandItem == itemStack2")
 	@ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
 	private boolean kilt$useReequipCheckForOffHand(boolean original, @Share("reequipO") LocalBooleanRef reequipO) {
-		return !reequipO.get();
+		return kilt$shouldSkipReequip(original, !reequipO.get());
 	}
 
     @WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 1))
