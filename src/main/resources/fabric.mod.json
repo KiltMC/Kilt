@@ -793,9 +793,6 @@
       "net/minecraft/class_3956": [
         "xyz/bluspring/kilt/injections/world/item/crafting/RecipeTypeInjection"
       ],
-      "net/minecraft/class_1869": [
-        "xyz/bluspring/kilt/injections/world/item/crafting/ShapedRecipeInjection"
-      ],
       "net/minecraft/class_1761": [
         "xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection"
       ],

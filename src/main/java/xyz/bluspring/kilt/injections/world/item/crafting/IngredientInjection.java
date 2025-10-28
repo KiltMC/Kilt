@@ -11,10 +11,12 @@ import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 
+@FabricInjectedInterface(Ingredient.class)
 public interface IngredientInjection {
     MapCodec<Ingredient> MAP_CODEC_NONEMPTY = CraftingHelper.makeIngredientMapCodec();
     Codec<List<Ingredient>> LIST_CODEC = MAP_CODEC_NONEMPTY.codec().listOf();

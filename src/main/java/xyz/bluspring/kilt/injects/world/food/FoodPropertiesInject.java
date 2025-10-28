@@ -1,64 +1,71 @@
 // TRACKED HASH: 7db9f60a09f2e5b156013ce9fa93086ae63920c1
 package xyz.bluspring.kilt.injects.world.food;
 
-import com.mojang.datafixers.util.Pair;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodProperties;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.food.FoodPropertiesBuilderInjection;
 import xyz.bluspring.kilt.injections.world.food.FoodPropertiesInjection;
+import xyz.bluspring.kilt.injections.world.food.FoodPropertiesPossibleEffectInjection;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Supplier;
 
 @Mixin(FoodProperties.class)
 public class FoodPropertiesInject implements FoodPropertiesInjection {
-    @Shadow @Final @Mutable
-    private List<Pair<MobEffectInstance, Float>> effects;
-    @Unique private List<Pair<Supplier<MobEffectInstance>, Float>> kilt$deferredEffects;
 
-    @Override
-    public void kilt$setDeferredEffects(List<Pair<Supplier<MobEffectInstance>, Float>> deferredEffects) {
-        this.kilt$deferredEffects = deferredEffects;
-    }
+    // TODO: patch in equals method?
 
-    @Inject(at = @At("HEAD"), method = "getEffects")
-    public void kilt$appendDeferredEffects(CallbackInfoReturnable<List<Pair<MobEffectInstance, Float>>> cir) {
-        if (!this.kilt$deferredEffects.isEmpty()) {
-            var list = new LinkedList<>(this.effects);
+    @Mixin(FoodProperties.PossibleEffect.class)
+    public static abstract class PossibleEffect$Inject implements FoodPropertiesPossibleEffectInjection {
+        @Shadow
+        @Final
+        private MobEffectInstance effect;
+        private Supplier<MobEffectInstance> kilt$effectSupplier;
 
-            for (Pair<Supplier<MobEffectInstance>, Float> deferredEffect : kilt$deferredEffects) {
-                var newPair = Pair.of(deferredEffect.getFirst().get(), deferredEffect.getSecond());
-                list.add(newPair);
+        public PossibleEffect$Inject(MobEffectInstance effect, float probability) {}
+
+        @CreateInitializer
+        public PossibleEffect$Inject(Supplier<MobEffectInstance> effectSupplier, float probability) {
+            this((MobEffectInstance) null, probability);
+            this.kilt$effectSupplier = effectSupplier;
+        }
+
+        @Override
+        public void kilt$setEffectSupplier(Supplier<MobEffectInstance> effectSupplier) {
+            this.kilt$effectSupplier = effectSupplier;
+        }
+
+        @Override
+        public Supplier<MobEffectInstance> effectSupplier() {
+            if (this.effect != null)
+                this.kilt$effectSupplier = () -> this.effect;
+            return kilt$effectSupplier;
+        }
+
+        @Inject(method = "effect", at = @At("HEAD"), cancellable = true)
+        private void changeEffect(CallbackInfoReturnable<MobEffectInstance> cir) {
+            if (this.effect == null && this.kilt$effectSupplier != null) {
+                cir.setReturnValue(new MobEffectInstance(this.kilt$effectSupplier.get()));
             }
-
-            this.kilt$deferredEffects.clear();
-            this.effects = list;
         }
     }
 
     @Mixin(FoodProperties.Builder.class)
     public static class BuilderInject implements FoodPropertiesBuilderInjection {
-        private final List<Pair<Supplier<MobEffectInstance>, Float>> kilt$deferredEffects = new LinkedList<>();
+
+        @Shadow
+        @Final
+        private ImmutableList.Builder<FoodProperties.PossibleEffect> effects;
 
         @Override
         public FoodProperties.Builder effect(Supplier<MobEffectInstance> effect, float probability) {
-            this.kilt$deferredEffects.add(Pair.of(effect, probability));
+            this.effects.add(FoodPropertiesPossibleEffectInjection.create(effect, probability));
             return (FoodProperties.Builder) (Object) this;
-        }
-
-        @Override
-        public List<Pair<Supplier<MobEffectInstance>, Float>> kilt$getDeferredEffects() {
-            return this.kilt$deferredEffects;
-        }
-
-        @Inject(at = @At("RETURN"), method = "build")
-        public void kilt$setDeferredEffects(CallbackInfoReturnable<FoodProperties> cir) {
-            ((FoodPropertiesInjection) cir.getReturnValue()).kilt$setDeferredEffects(kilt$deferredEffects);
         }
     }
 
