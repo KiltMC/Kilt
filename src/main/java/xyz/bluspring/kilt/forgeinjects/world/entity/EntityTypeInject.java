@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.network.PlayMessages;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,6 +28,12 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
     @Shadow @Nullable public abstract T create(Level level);
 
     @Shadow @Final private Holder.Reference<EntityType<?>> builtInRegistryHolder;
+    @Shadow
+    @Final
+    private int clientTrackingRange;
+    @Shadow
+    @Final
+    private int updateInterval;
     private BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
     private Predicate<EntityType<?>> velocityUpdateSupplier;
     private ToIntFunction<EntityType<?>> trackingRangeSupplier;
@@ -81,6 +88,20 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
     public void kilt$useForgeVelocityUpdate(CallbackInfoReturnable<Boolean> cir) {
         if (velocityUpdateSupplier != null)
             cir.setReturnValue(velocityUpdateSupplier.test((EntityType<?>) (Object) this));
+    }
+
+    // TODO: any better ideas?
+    private int defaultTrackingRangeSupplier() {
+        return this.clientTrackingRange;
+    }
+
+    private int defaultUpdateIntervalSupplier() {
+        return this.updateInterval;
+    }
+
+    private boolean defaultVelocitySupplier() {
+        var self = (EntityType<?>) (Object) this;
+        return self != EntityType.PLAYER && self != EntityType.LLAMA_SPIT && self != EntityType.WITHER && self != EntityType.BAT && self != EntityType.ITEM_FRAME && self != EntityType.GLOW_ITEM_FRAME && self != EntityType.LEASH_KNOT && self != EntityType.PAINTING && self != EntityType.END_CRYSTAL && self != EntityType.EVOKER_FANGS;
     }
 
     @Mixin(EntityType.Builder.class)
