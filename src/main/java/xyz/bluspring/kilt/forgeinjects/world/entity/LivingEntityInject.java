@@ -53,9 +53,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -69,29 +67,23 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityInject extends Entity implements IForgeLivingEntity, EntityExtensions, CapabilityProviderInjection, LivingEntityInjection {
+@Implements(@Interface(iface = IForgeLivingEntity.class, prefix = "kilt$i$"))
+public abstract class LivingEntityInject extends Entity implements EntityExtensions, CapabilityProviderInjection, LivingEntityInjection {
     public LivingEntityInject(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
 
     @Shadow public abstract boolean isAlive();
-
     @Shadow @Final private static EntityDataAccessor<Integer> DATA_EFFECT_COLOR_ID;
     @Shadow @Final private static EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
     @Shadow @Nullable protected Player lastHurtByPlayer;
-
     @Shadow public abstract ItemStack getItemInHand(InteractionHand hand);
-
     @Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
-
     @Shadow protected abstract void onEffectRemoved(MobEffectInstance effectInstance);
-
     @Shadow private boolean effectsDirty;
     @Shadow protected ItemStack useItem;
     @Shadow protected int useItemRemaining;
-
     @Shadow public abstract int getUseItemRemainingTicks();
-
     @Shadow public abstract InteractionHand getUsedItemHand();
 
     private LazyOptional<?>[] handlers = EntityEquipmentInvWrapper.create((LivingEntity) (Object) this);
@@ -430,4 +422,9 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
             .add(ForgeMod.ENTITY_GRAVITY.get())
             .add(ForgeMod.STEP_HEIGHT.get());
     }*/
+
+    @Intrinsic
+    public LivingEntity kilt$i$self() {
+        return (LivingEntity) (Object) this;
+    }
 }
