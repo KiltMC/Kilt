@@ -688,15 +688,20 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         if (!topType.className.contains("$"))
             return false
 
-        val classNameSplit = topType.className.split("$")
-        for ((index, typeLvl) in classNameSplit.withIndex()) {
-            if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
-                return true
-            else {
-                val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
-                if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+        try {
+            val classNameSplit = topType.className.split("$")
+            for ((index, typeLvl) in classNameSplit.withIndex()) {
+                if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
                     return true
+                else {
+                    val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
+                    if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+                        return true
+                }
             }
+        } catch (_: Throwable) {
+            // oh so that's why dedicated server kept crashing.
+            return false
         }
 
         return false
