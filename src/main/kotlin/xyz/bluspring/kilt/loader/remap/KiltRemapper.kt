@@ -78,9 +78,7 @@ object KiltRemapper {
     }
 
     internal val logger = LoggerFactory.getLogger("Kilt Remapper")
-
-    private val launcher = FabricLauncherBase.getLauncher()
-    internal val useNamed = launcher.defaultRuntimeNamespace != "intermediary"
+    internal val useNamed = FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace != "intermediary"
 
     // Remapper extensions
     fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
@@ -114,8 +112,6 @@ object KiltRemapper {
     private val kiltWorkaroundTree = TinyMappingFactory.load(
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
-
-    private val namespace: String = if (useNamed) launcher.defaultRuntimeNamespace else "intermediary"
 
     lateinit var enhancedRemapper: KiltEnhancedRemapper
 
@@ -645,13 +641,13 @@ object KiltRemapper {
                     FabricLoader.getInstance().gameDir,
                     "minecraft",
                     KiltLoader.MC_VERSION.friendlyString
-                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.defaultRuntimeNamespace}.jar"
+                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace}.jar"
 
             if (deobfJar.exists())
                 return deobfJar
         } else {
             // TODO: is there a better way of doing this?
-            val possibleMcGameJar = launcher.classPath.firstOrNull { path ->
+            val possibleMcGameJar = FabricLauncherBase.getLauncher().classPath.firstOrNull { path ->
                 val str = path.absolutePathString()
                 str.contains("net") && str.contains("minecraft") && str.contains("-loom.mappings.") && str.contains("minecraft-merged-")
             }

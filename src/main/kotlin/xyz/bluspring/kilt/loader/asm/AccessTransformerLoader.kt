@@ -2,8 +2,8 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.loader.impl.lib.accesswidener.AccessWidener
-import net.fabricmc.loader.impl.lib.accesswidener.AccessWidenerReader
+import net.fabricmc.loader.impl.lib.classtweaker.api.ClassTweaker
+import net.fabricmc.loader.impl.lib.classtweaker.api.visitor.AccessWidenerVisitor
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
@@ -29,7 +29,7 @@ object AccessTransformerLoader {
     }
 
     fun convertTransformers(data: ByteArray) {
-        val accessWidener = FabricLoaderImpl.INSTANCE.accessWidener
+        val accessWidener = FabricLoaderImpl.INSTANCE.classTweaker
 
         val textData = String(data)
         val delimiter = if (textData.contains("\r\n")) "\r\n" else "\n"
@@ -305,9 +305,10 @@ object AccessTransformerLoader {
         hasLoaded = true
     }
 
-    private fun widenAccessForVanillaClasses(split: List<String>, srgClassName: String, accessWidener: AccessWidener): Boolean {
+    private fun widenAccessForVanillaClasses(split: List<String>, srgClassName: String, classTweaker: ClassTweaker): Boolean {
         val intermediaryClassName = KiltRemapper.remapClass(srgClassName)
         val remapper = KiltRemapper.enhancedRemapper
+        val accessWidener = classTweaker.visitAccessWidener(intermediaryClassName)!! // it shouldn't be possible for this to be null.
 
         // field / method
         if (split.size > 2 && !split[2].startsWith("#")) {
@@ -324,8 +325,8 @@ object AccessTransformerLoader {
 
                     val mappedDesc = remapper.mapDesc(field.descriptor)
                     println("widening field: intermediaryClassName=$intermediaryClassName, fieldName=${field.mapped}, descriptor=$mappedDesc")
-                    accessWidener.visitField(intermediaryClassName, field.mapped, mappedDesc, AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitField(intermediaryClassName, field.mapped, mappedDesc, AccessWidenerReader.AccessType.MUTABLE, true)
+                    accessWidener.visitField(field.mapped, mappedDesc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+                    accessWidener.visitField(field.mapped, mappedDesc, AccessWidenerVisitor.AccessType.MUTABLE, true)
                 }
             } else if (split[2] == "*()") {
 
@@ -340,8 +341,8 @@ object AccessTransformerLoader {
                     val method = methodOpt.orElse(null) ?: continue
 
                     val mappedMethodDesc = remapper.mapMethodDesc(method.descriptor)
-                    accessWidener.visitMethod(intermediaryClassName, method.mapped, mappedMethodDesc, AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitMethod(intermediaryClassName, method.mapped, mappedMethodDesc, AccessWidenerReader.AccessType.EXTENDABLE, true)
+                    accessWidener.visitMethod(method.mapped, mappedMethodDesc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+                    accessWidener.visitMethod(method.mapped, mappedMethodDesc, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
                 }
             } else if (split[2].contains("(")) { // method
                 var name = ""
@@ -372,9 +373,9 @@ object AccessTransformerLoader {
                                 return@ifPresent
 
                             // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                            accessWidener.visitMethod(intermediaryClassName, it.mapped, it.descriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                            accessWidener.visitMethod(it.mapped, it.descriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
                             // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                            accessWidener.visitMethod(intermediaryClassName, it.mapped, it.descriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
+                            accessWidener.visitMethod(it.mapped, it.descriptor, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
                         }
                     }
 
@@ -384,21 +385,21 @@ object AccessTransformerLoader {
                 val methodName = remapper.mapMethodName(srgClassName.replace(".", "/"), name, descriptor)
 
                 // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.ACCESSIBLE, true)
+                accessWidener.visitMethod(methodName, mappedDescriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
                 // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                accessWidener.visitMethod(intermediaryClassName, methodName, mappedDescriptor, AccessWidenerReader.AccessType.EXTENDABLE, true)
+                accessWidener.visitMethod(methodName, mappedDescriptor, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
             } else { // field
                 val name = split[2]
 
                 val fieldInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.fields?.firstOrNull { it.original == name } ?: return false
                 val fieldName = KiltRemapper.enhancedRemapper.mapFieldName(srgClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
 
-                accessWidener.visitField(intermediaryClassName, fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerReader.AccessType.ACCESSIBLE, true)
-                accessWidener.visitField(intermediaryClassName, fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerReader.AccessType.MUTABLE, true)
+                accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+                accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.MUTABLE, true)
             }
         } else { // class
-            accessWidener.visitClass(intermediaryClassName, AccessWidenerReader.AccessType.ACCESSIBLE, true)
-            accessWidener.visitClass(intermediaryClassName, AccessWidenerReader.AccessType.EXTENDABLE, true)
+            accessWidener.visitClass(AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+            accessWidener.visitClass(AccessWidenerVisitor.AccessType.EXTENDABLE, true)
         }
 
         return true
