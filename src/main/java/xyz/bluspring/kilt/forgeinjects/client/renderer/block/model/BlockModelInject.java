@@ -32,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.renderer.block.model.BlockModelInjection;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -62,7 +63,7 @@ public abstract class BlockModelInject implements BlockModelInjection {
     @Inject(method = "getElements", at = @At("HEAD"), cancellable = true)
     private void kilt$cancelIfContainingCustomGeometry(CallbackInfoReturnable<List<BlockElement>> cir) {
         if (this.customData.hasCustomGeometry())
-            cir.setReturnValue(Collections.emptyList());
+            cir.setReturnValue(new ArrayList<>());
     }
 
     @Inject(method = "resolveParents", at = @At(value = "INVOKE", target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V", shift = At.Shift.BEFORE))
