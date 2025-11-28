@@ -100,24 +100,6 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             }
         }
 
-        if (loader.isModLoaded("twilightforest") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
-            val tfContainer = loader.getModContainer("twilightforest").orElseThrow()
-
-            // Kilt does not and will not support The Twilight Forest Unofficial. Use the official Forge build instead.
-            if (tfContainer.metadata.authors.any { it.name == "marlester__" } && tfContainer.metadata.authors.any { it.name == "IAFEnvoy" }) {
-                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt does not support The Twilight Forest Unofficial, please use the official Forge build instead!"))
-            }
-        }
-
-        if (loader.isModLoaded("iceandfire") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
-            val iafContainer = loader.getModContainer("iceandfire").orElseThrow()
-
-            // Kilt does not and will not support Ice and Fire "Community Edition".
-            if (iafContainer.metadata.authors.any { it.name == "IAFEnvoy" }) {
-                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt does not support Ice and Fire \"Community Edition\", please use the official Forge build instead!"))
-            }
-        }
-
         // Sanity check for determining if Fabric mods are bundling Forge classes for whatever reason
         for (container in loader.allMods) {
             // Ignore ourselves and whatever we know works correctly.
