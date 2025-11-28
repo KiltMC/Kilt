@@ -706,6 +706,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
     private fun constructMods(exception: Exception) {
         try {
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { mod -> FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT) }
             ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
         } catch (e: Throwable) {
             e.printStackTrace()
@@ -781,10 +782,6 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         if (exception.suppressed.isNotEmpty()) {
             throw exception
         }
-
-        ModLoadingContext.kiltActiveModId = mod.modId
-        mod.eventBus.post(FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT))
-        ModLoadingContext.kiltActiveModId = null
     }
 
     private fun loadTransformers(mod: ForgeMod) {
