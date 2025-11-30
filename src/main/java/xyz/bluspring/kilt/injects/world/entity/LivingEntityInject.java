@@ -1,6 +1,8 @@
 // TRACKED HASH: 0103ffc8bca3b91dd898021eb13bdca66921d3eb
 package xyz.bluspring.kilt.injects.world.entity;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
@@ -13,13 +15,13 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -29,76 +31,72 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.extensions.IForgeLivingEntity;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.common.*;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
 import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
-import net.neoforged.neoforge.event.entity.living.PotionColorCalculationEvent;
-import net.neoforged.neoforge.event.entity.living.ShieldBlockEvent;
-import net.neoforged.bus.api.Event;
-import net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityInject extends Entity implements IForgeLivingEntity, EntityExtensions, CapabilityProviderInjection, LivingEntityInjection {
+public abstract class LivingEntityInject extends Entity implements ILivingEntityExtension, LivingEntityInjection {
     public LivingEntityInject(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
 
     @Shadow public abstract boolean isAlive();
-
-    @Shadow @Final private static EntityDataAccessor<Integer> DATA_EFFECT_COLOR_ID;
-    @Shadow @Final private static EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
     @Shadow @Nullable protected Player lastHurtByPlayer;
-
     @Shadow public abstract ItemStack getItemInHand(InteractionHand hand);
-
     @Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
-
     @Shadow protected abstract void onEffectRemoved(MobEffectInstance effectInstance);
-
     @Shadow private boolean effectsDirty;
     @Shadow protected ItemStack useItem;
     @Shadow protected int useItemRemaining;
-
     @Shadow public abstract int getUseItemRemainingTicks();
+    @Shadow protected float lastHurt;
+    @Shadow private Optional<BlockPos> lastClimbablePos;
+    @Shadow public abstract ItemStack getMainHandItem();
+    @Shadow public abstract boolean isUsingItem();
 
-    @Shadow public abstract InteractionHand getUsedItemHand();
+    @Nullable
+    protected Stack<DamageContainer> damageContainers = new Stack<>();
 
-    private LazyOptional<?>[] handlers = EntityEquipmentInvWrapper.create((LivingEntity) (Object) this);
+    @Override
+    public Stack<DamageContainer> kilt$getDamageContainers() {
+        return this.damageContainers;
+    }
 
-    @WrapWithCondition(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"))
-    private <T extends ParticleOptions> boolean kilt$checkIfShouldSpawnParticles(ServerLevel instance, T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) BlockPos pos, @Local int i) {
-        return !state.addLandingEffects(instance, pos, state, (LivingEntity) (Object) this, i);
+    @WrapOperation(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"))
+    private <T extends ParticleOptions> int kilt$checkIfShouldSpawnParticles(ServerLevel instance, T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed, Operation<Integer> original, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) BlockPos pos, @Local int i) {
+        if (!state.addLandingEffects(instance, pos, state, (LivingEntity) (Object) this, i)) {
+            return original.call(instance, type, posX, posY, posZ, particleCount, xOffset, yOffset, zOffset, speed);
+        }
+
+        return 0;
     }
 
     @WrapOperation(method = "baseTick", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;isInPowderSnow:Z"))
@@ -114,13 +112,34 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return true;
     }
 
-    @Inject(method = "updateInvisibilityStatus", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setInvisible(Z)V", ordinal = 1))
-    private void kilt$calculateEffectColors(CallbackInfo ci, @Local Collection<MobEffectInstance> effects) {
-        var event = new PotionColorCalculationEvent((LivingEntity) (Object) this, this.entityData.get(DATA_EFFECT_COLOR_ID), this.entityData.get(DATA_EFFECT_AMBIENCE_ID), effects);
-        NeoForge.EVENT_BUS.post(event);
+    @WrapOperation(method = "updateSynchronizedMobEffectParticles", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;filter(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;"))
+    private <T extends MobEffectInstance> Stream<T> kilt$callAndUseEffectParticleModifyEvent(Stream<T> instance, Predicate<? super T> predicate, Operation<Stream<T>> original, @Share("events") LocalRef<Map<MobEffectInstance, EffectParticleModificationEvent>> eventsRef) {
+        eventsRef.set(new HashMap<>());
+        LivingEntity self = (LivingEntity) (Object) this;
 
-        this.entityData.set(DATA_EFFECT_AMBIENCE_ID, event.areParticlesHidden());
-        this.entityData.set(DATA_EFFECT_COLOR_ID, event.getColor());
+        return original.call(instance.peek(effect -> eventsRef.get().put(effect, NeoForge.EVENT_BUS.post(new EffectParticleModificationEvent(self, effect)))),
+            (Predicate<T>) effect -> {
+                var event = eventsRef.get().get(effect);
+
+                if (event.kilt$wasVisibilityModified()) {
+                    return event.isVisible();
+                }
+
+                return predicate.test(effect);
+            });
+    }
+
+    @WrapOperation(method = "updateSynchronizedMobEffectParticles", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"))
+    private <T extends MobEffectInstance, R extends ParticleOptions> Stream<R> kilt$tryGetEventParticleOptions(Stream<T> instance, Function<? super T, ? extends R> function, Operation<Stream<R>> original, @Share("events") LocalRef<Map<MobEffectInstance, EffectParticleModificationEvent>> eventsRef) {
+        return original.call(instance, (Function<? super T, ? extends R>) effect -> {
+            var event = eventsRef.get().get(effect);
+
+            if (event.getOriginalParticleOptions() != event.getParticleOptions()) {
+                return (R) event.getParticleOptions();
+            }
+
+            return function.apply(effect);
+        });
     }
 
     @ModifyReturnValue(method = "getVisibilityPercent", at = @At("RETURN"))
@@ -130,7 +149,7 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     @WrapWithCondition(method = "removeAllEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;onEffectRemoved(Lnet/minecraft/world/effect/MobEffectInstance;)V"))
     private boolean kilt$callRemoveEffectEvent(LivingEntity instance, MobEffectInstance effectInstance, @Share("shouldRemove") LocalBooleanRef shouldCancel) {
-        if (NeoForge.EVENT_BUS.post(new MobEffectEvent.Remove((LivingEntity) (Object) this, effectInstance))) {
+        if (EventHooks.onEffectRemoved(instance, effectInstance, null)) {
             shouldCancel.set(true);
             return false;
         }
@@ -143,28 +162,22 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return !shouldCancel.get();
     }
 
+    @WrapOperation(method = {"addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z", "forceAddEffect"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canBeAffected(Lnet/minecraft/world/effect/MobEffectInstance;)Z"))
+    private boolean kilt$tryCheckCanEffectBeApplied(LivingEntity instance, MobEffectInstance effectInstance, Operation<Boolean> original, @Local(argsOnly = true) Entity entity) {
+        return original.call(instance, effectInstance) || CommonHooks.canMobEffectBeApplied(instance, effectInstance, entity);
+    }
+
     @WrapOperation(method = "addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
     private <K, V> V kilt$callAddEffectEvent(Map<K, V> instance, K o, Operation<V> original, @Local(argsOnly = true) MobEffectInstance newEffect, @Local(argsOnly = true) Entity entity) {
-        @SuppressWarnings("MixinExtrasOperationParameters")
         var oldEffect = (MobEffectInstance) original.call(instance, o);
 
         NeoForge.EVENT_BUS.post(new MobEffectEvent.Added((LivingEntity) (Object) this, oldEffect, newEffect, entity));
         return (V) oldEffect;
     }
 
-    @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkIsEffectApplicable(MobEffectInstance effectInstance, CallbackInfoReturnable<Boolean> cir) {
-        var event = new MobEffectEvent.Applicable((LivingEntity) (Object) this, effectInstance);
-        NeoForge.EVENT_BUS.post(event);
-
-        if (event.getResult() != Event.Result.DEFAULT) {
-            cir.setReturnValue(event.getResult() == Event.Result.ALLOW);
-        }
-    }
-
     @Inject(method = "removeEffect", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkRemoveEffect(MobEffect effect, CallbackInfoReturnable<Boolean> cir) {
-        if (NeoForge.EVENT_BUS.post(new MobEffectEvent.Remove((LivingEntity) (Object) this, effect)))
+    private void kilt$checkRemoveEffect(Holder<MobEffect> effect, CallbackInfoReturnable<Boolean> cir) {
+        if (EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, null))
             cir.setReturnValue(false);
     }
 
@@ -179,42 +192,157 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
             ci.cancel();
     }
 
-    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkLivingAttackEvent(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!CommonHooks.onLivingAttack((LivingEntity) (Object) this, source, amount))
+    @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isSleeping()Z"), cancellable = true)
+    private void kilt$pushNewDamageContainer(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        damageContainers.push(new DamageContainer(source, amount));
+
+        if (CommonHooks.onEntityIncomingDamage((LivingEntity) (Object) this, damageContainers.peek()))
             cir.setReturnValue(false);
     }
 
-    @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-    private boolean kilt$checkShieldBlocked(LivingEntity instance, DamageSource damageSource, Operation<Boolean> original, @Share("event") LocalRef<ShieldBlockEvent> eventRef, @Local(argsOnly = true) float damage) {
-        var isBlocked = original.call(instance, damageSource);
+    @ModifyVariable(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;noActionTime:I", shift = At.Shift.AFTER), argsOnly = true)
+    private float kilt$modifyDamage(float value) {
+        DamageContainer container = this.damageContainers.peek();
+        if (value != container.getOriginalDamage())
+            return value;
 
-        if (isBlocked) {
-            eventRef.set(CommonHooks.onShieldBlock(instance, damageSource, damage));
-            isBlocked = !eventRef.get().isCanceled();
+        return container.getNewDamage();
+    }
+
+    @ModifyExpressionValue(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+    private boolean kilt$checkIsDamageBlocked(boolean original, @Share("shieldEvent") LocalRef<LivingShieldBlockEvent> shieldEvent) {
+        shieldEvent.set(CommonHooks.onDamageBlock((LivingEntity) (Object) this, damageContainers.peek(), original));
+
+        return shieldEvent.get().getBlocked();
+    }
+
+    @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurtCurrentlyUsedShield(F)V"))
+    private void kilt$setBlockedDamageToContainer(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("shieldEvent") LocalRef<LivingShieldBlockEvent> shieldEvent) {
+        damageContainers.peek().setBlockedDamage(shieldEvent.get());
+    }
+
+    @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurtCurrentlyUsedShield(F)V"))
+    private void kilt$checkShouldHurtCurrentShield(LivingEntity instance, float damageAmount, Operation<Void> original, @Share("shieldEvent") LocalRef<LivingShieldBlockEvent> shieldEvent) {
+        damageContainers.peek().setBlockedDamage(shieldEvent.get());
+
+        if (damageAmount != shieldEvent.get().getOriginalBlockedDamage()) {
+            original.call(instance, damageAmount); // Ensure modded damage goes through instead of ours.
+        } else if (shieldEvent.get().shieldDamage() > 0) {
+            original.call(instance, shieldEvent.get().shieldDamage());
+        }
+    }
+
+    @SuppressWarnings("DisallowedTargetInsn")
+    @Definition(id = "f", local = @Local(type = float.class, ordinal = 2))
+    @Definition(id = "amount", local = @Local(type = float.class, ordinal = 0, argsOnly = true))
+    @Expression("f = @(amount)")
+    @ModifyExpressionValue(method = "hurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private float kilt$modifyTotalBlockedDamage(float original, @Share("shieldEvent") LocalRef<LivingShieldBlockEvent> shieldEvent) {
+        if (original != shieldEvent.get().getOriginalBlockedDamage()) {
+            return original;
         }
 
-        return isBlocked;
+        return shieldEvent.get().getBlockedDamage();
     }
 
-    @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurtCurrentlyUsedShield(F)V"))
-    private boolean kilt$checkShieldTakesDamage(LivingEntity instance, float damageAmount, @Share("event") LocalRef<ShieldBlockEvent> eventRef) {
-        return eventRef.get().shieldTakesDamage();
+    @Definition(id = "amount", local = @Local(type = float.class, ordinal = 0, argsOnly = true))
+    @Expression("amount = @(0.0)")
+    @ModifyExpressionValue(method = "hurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private float kilt$modifyTotalDamage(float original, @Share("shieldEvent") LocalRef<LivingShieldBlockEvent> shieldEvent) {
+        if (original != 0.0) {
+            return original;
+        }
+
+        return shieldEvent.get().getDamageContainer().getNewDamage();
     }
 
-    // TODO: handle blocked damage and set total damage based on blocked damage
+    @Definition(id = "bl", local = @Local(type = boolean.class, ordinal = 0))
+    @Expression("bl = @(true)")
+    @ModifyExpressionValue(method = "hurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkIsDamageAmountFullyBlocked(boolean original, @Local(argsOnly = true) float damage) {
+        return original && damage <= 0;
+    }
 
-    @ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=1"))
-    private int kilt$checkIfDamageNegative(int original, @Local(argsOnly = true) float damageAmount) {
-        // why are bools handled this way
-        return ((original == 1) && (damageAmount <= 0)) ? 1 : original;
+    @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/WalkAnimationState;setSpeed(F)V"))
+    private void kilt$updateContainerWithVanillaChanges(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        damageContainers.peek().setNewDamage(amount); //update container with vanilla changes
+    }
+
+    @Inject(method = "hurt", at = {@At(value = "RETURN", ordinal = 4), @At(value = "RETURN", ordinal = 5)})
+    private void kilt$popContainerFromStack(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        damageContainers.pop();
+    }
+
+    @Inject(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;actuallyHurt(Lnet/minecraft/world/damagesource/DamageSource;F)V", ordinal = 0))
+    private void kilt$setContainerReductionByInvulnerability(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        damageContainers.peek().setReduction(DamageContainer.Reduction.INVULNERABILITY, this.lastHurt);
+    }
+
+    @Definition(id = "invulnerableTime", field = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I")
+    @Expression("this.invulnerableTime = @(20)")
+    @ModifyExpressionValue(method = "hurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private int kilt$modifyPostAttackInvulnerabilityTicks(int original) {
+        DamageContainer container = damageContainers.peek();
+
+        if (original != 20) {
+            return original;
+        }
+
+        return container.getPostAttackInvulnerabilityTicks();
+    }
+
+    @Inject(method = "hurt", at = @At("HEAD"))
+    private void kilt$storeInitialExpectedAmount(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("expectedAmount") LocalFloatRef expectedAmount) {
+        expectedAmount.set(amount);
+    }
+
+    @Definition(id = "amount", local = @Local(type = float.class, ordinal = 0, argsOnly = true))
+    @Expression("amount = ?")
+    @Inject(method = "hurt", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
+    private void kilt$updateExpectedAmount(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("expectedAmount") LocalFloatRef expectedAmount) {
+        expectedAmount.set(amount);
+    }
+
+    @ModifyVariable(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;getEntity()Lnet/minecraft/world/entity/Entity;"), argsOnly = true)
+    private float kilt$updateLocalAmountWithContainer(float original, @Share("expectedAmount") LocalFloatRef expectedAmount) {
+        DamageContainer container = damageContainers.peek();
+
+		if (original != expectedAmount.get()) {
+			return original;
+		}
+
+        return container.getNewDamage();
     }
 
     // TODO: implement TamableAnimal instanceof check
 
+    @Inject(method = "hurt", at = @At("TAIL"))
+    private void kilt$popDamageContainer(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        this.damageContainers.pop();
+    }
+
     @WrapOperation(method = "checkTotemDeathProtection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 0))
     private boolean kilt$checkTotemEvent(ItemStack instance, Item item, Operation<Boolean> original, @Local(argsOnly = true) DamageSource source, @Local InteractionHand hand) {
         return original.call(instance, item) && CommonHooks.onLivingUseTotem((LivingEntity) (Object) this, source, instance, hand);
+    }
+
+    @WrapOperation(method = "checkTotemDeathProtection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;removeAllEffects()Z"))
+    private boolean kilt$removeTotemEffects(LivingEntity instance, Operation<Boolean> original) {
+        var effects = this.activeEffects.values();
+        var shouldUseCures = false;
+
+        // Kilt: Mod compatibility :D
+        for (MobEffectInstance effect : effects) {
+            if (!effect.getCures().contains(EffectCures.PROTECTED_BY_TOTEM)) {
+                shouldUseCures = true;
+                break;
+            }
+        }
+
+        if (shouldUseCures)
+            return instance.removeEffectsCuredBy(EffectCures.PROTECTED_BY_TOTEM);
+        else
+            return original.call(instance);
     }
 
     @Inject(method = "die", at = @At("HEAD"), cancellable = true)
@@ -223,11 +351,9 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
             ci.cancel();
     }
 
-    // I know it may say it's erroring, but ordinal = 1 is correct.
-    // Why? I don't know. It makes no sense to me either.
     @WrapOperation(method = "createWitherRose", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
-    private boolean kilt$checkCanMobGrief(GameRules instance, GameRules.Key<GameRules.BooleanValue> key, Operation<Boolean> original, @Local(argsOnly = true, ordinal = 1) LivingEntity entity) {
-        return original.call(instance, key) || EventHooks.getMobGriefingEvent(this.level(), entity);
+    private boolean kilt$checkCanMobGrief(GameRules instance, GameRules.Key<GameRules.BooleanValue> key, Operation<Boolean> original, @Local(argsOnly = true) LivingEntity entity) {
+        return original.call(instance, key) || EventHooks.canEntityGrief(this.level(), entity);
     }
 
     @WrapOperation(method = "createWitherRose", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z"))
@@ -254,6 +380,16 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         z.set(event.getRatioZ());
     }
 
+    @Inject(method = "onClimbable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0), cancellable = true)
+    private void kilt$tryUseNeoLadderPos(CallbackInfoReturnable<Boolean> cir, @Local BlockState state, @Local BlockPos pos) {
+        var ladderPos = CommonHooks.isLivingOnLadder(state, this.level(), pos, (LivingEntity) (Object) this);
+
+        if (ladderPos.isPresent()) {
+            this.lastClimbablePos = ladderPos;
+            cir.setReturnValue(true);
+        }
+    }
+
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void kilt$checkIfCancelledFallDamage(CallbackInfoReturnable<Boolean> cir, @Local(argsOnly = true, ordinal = 0) LocalFloatRef fallDistance, @Local(argsOnly = true, ordinal = 1) LocalFloatRef multiplier) {
         var values = CommonHooks.onLivingFall((LivingEntity) (Object) this, fallDistance.get(), multiplier.get());
@@ -269,17 +405,89 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     // TODO: handle custom Forge sound type
 
-    @Inject(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInvulnerableTo(Lnet/minecraft/world/damagesource/DamageSource;)Z", shift = At.Shift.AFTER), cancellable = true)
-    private void kilt$cancelIfNegativeDamage(CallbackInfo ci, @Local(argsOnly = true) DamageSource source, @Local(argsOnly = true) LocalFloatRef damageAmount) {
-        damageAmount.set(CommonHooks.onLivingHurt((LivingEntity) (Object) this, source, damageAmount.get()));
-
-        if (damageAmount.get() <= 0)
-            ci.cancel();
+    @Definition(id = "slots", local = @Local(type = EquipmentSlot[].class, argsOnly = true))
+    @Expression("slots")
+    @Inject(method = "doHurtEquipment", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$useNeoArmorHurt(DamageSource damageSource, float damageAmount, EquipmentSlot[] slots, CallbackInfo ci, @Local int damage) {
+        CommonHooks.onArmorHurt(damageSource, slots, damage, (LivingEntity) (Object) this);
     }
 
-    @Inject(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setAbsorptionAmount(F)V", shift = At.Shift.BY, by = 2))
-    private void kilt$callDamageEvent(DamageSource damageSource, float damageAmount, CallbackInfo ci, @Local(argsOnly = true) DamageSource source, @Local(argsOnly = true) LocalFloatRef damageAmountRef) {
-        damageAmountRef.set(CommonHooks.onLivingDamage((LivingEntity) (Object) this, source, damageAmount));
+    @WrapWithCondition(method = "doHurtEquipment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+    private boolean kilt$cancelHurtAndBreak(ItemStack instance, int amount, LivingEntity entity, EquipmentSlot slot) {
+        // TODO Kilt: i hate this. can we please try to make this more mod compatible.
+        return false;
+    }
+
+    @Definition(id = "ServerPlayer", type = ServerPlayer.class)
+    @Expression("this instanceof ServerPlayer")
+    @Inject(method = "getDamageAfterMagicAbsorb", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$reduceEffectDamageInContainer(DamageSource damageSource, float damageAmount, CallbackInfoReturnable<Float> cir, @Local(ordinal = 3) float reduced) {
+        this.damageContainers.peek().setReduction(DamageContainer.Reduction.MOB_EFFECTS, reduced);
+    }
+
+    @ModifyExpressionValue(method = "getDamageAfterMagicAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterMagicAbsorb(FF)F"))
+    private float kilt$reduceEnchantDamageInContainer(float original) {
+        this.damageContainers.peek().setReduction(DamageContainer.Reduction.ENCHANTMENTS, this.damageContainers.peek().getNewDamage() - original);
+        return original;
+    }
+
+    // Kilt: I want you all to know that I really, really, *really* don't like the damage containers system.
+    //       It's so terribly convoluted, and it doesn't even make the code particularly extendable.
+    //       And it honestly makes the mod compatibility so much more annoying, because dear god I'm so
+    //       bloody worried about mixins that are actually using this that we're basically forced to overwrite.
+
+    @Inject(method = "actuallyHurt", at = @At("HEAD"))
+    private void kilt$storeOriginalDamage(DamageSource damageSource, float damageAmount, CallbackInfo ci, @Share("originalDamage") LocalFloatRef originalDamage, @Local(argsOnly = true) LocalFloatRef damageRef) {
+        originalDamage.set(damageAmount);
+        damageRef.set(this.damageContainers.peek().getNewDamage()); // Kilt: just directly use ours, i guess.
+    }
+
+    @WrapOperation(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+    private float kilt$tryReduceWithArmorAbsorb(LivingEntity instance, DamageSource damageSource, float damageAmount, Operation<Float> original) {
+        DamageContainer container = this.damageContainers.peek();
+
+        var reduced = original.call(instance, damageSource, container.getNewDamage());
+        container.setReduction(DamageContainer.Reduction.ARMOR, container.getNewDamage() - reduced);
+
+        return reduced;
+    }
+
+    @WrapOperation(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+    private float kilt$tryReduceWithMagicAbsorb(LivingEntity instance, DamageSource damageSource, float damageAmount, Operation<Float> original) {
+        return original.call(instance, damageSource, this.damageContainers.peek().getNewDamage());
+    }
+
+    @Inject(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(FF)F"))
+    private void kilt$callLivingPreDamageEvent(DamageSource damageSource, float damageAmount, CallbackInfo ci, @Share("damage") LocalFloatRef damageRef) {
+        damageRef.set(CommonHooks.onLivingDamagePre((LivingEntity) (Object) this, this.damageContainers.peek()));
+    }
+
+    @Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(FF)F"))
+    private float kilt$doAbsorptionModification(float a, float b) {
+        return this.damageContainers.peek().getNewDamage();
+    }
+
+    @Definition(id = "damageAmount", local = @Local(type = float.class, ordinal = 0, argsOnly = true))
+    @Definition(id = "f", local = @Local(type = float.class, ordinal = 1))
+    @Expression("f - damageAmount")
+    @ModifyExpressionValue(method = "actuallyHurt", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private float kilt$useAbsorbedDamage(float original, @Share("damage") LocalFloatRef damageRef) {
+        return Math.min(damageRef.get(), this.damageContainers.peek().getReduction(DamageContainer.Reduction.ABSORPTION));
+    }
+
+    @ModifyArg(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setAbsorptionAmount(F)V"))
+    private float kilt$clampAbsorptionAmount(float absorptionAmount) {
+        return Math.max(absorptionAmount, 0);
+    }
+
+    @Inject(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;gameEvent(Lnet/minecraft/core/Holder;)V", shift = At.Shift.AFTER))
+    private void kilt$callDamageTaken(DamageSource damageSource, float damageAmount, CallbackInfo ci) {
+        this.onDamageTaken(this.damageContainers.peek());
+    }
+
+    @Inject(method = "actuallyHurt", at = @At("TAIL"))
+    private void kilt$callLivingPostDamageEvent(DamageSource damageSource, float damageAmount, CallbackInfo ci) {
+        CommonHooks.onLivingDamagePost((LivingEntity) (Object) this, this.damageContainers.peek());
     }
 
     @Inject(method = "swing(Lnet/minecraft/world/InteractionHand;)V", at = @At("HEAD"), cancellable = true)
@@ -331,20 +539,21 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
 
     // TODO: how do we handle jumpInFluid???
 
+
     @Override
-    public boolean curePotionEffects(ItemStack curativeStack) {
-        if (this.level().isClientSide())
+    public boolean removeEffectsCuredBy(EffectCure cure) {
+        if (this.level().isClientSide)
             return false;
 
-        var ret = false;
-        var effects = this.activeEffects.values().iterator();
+        boolean ret = false;
+        Iterator<MobEffectInstance> itr = this.activeEffects.values().iterator();
 
-        while (effects.hasNext()) {
-            var effect = effects.next();
+        while (itr.hasNext()) {
+            MobEffectInstance effect = itr.next();
 
-            if (effect.isCurativeItem(curativeStack) && !NeoForge.EVENT_BUS.post(new MobEffectEvent.Remove((LivingEntity) (Object) this, effect))) {
+            if (effect.getCures().contains(cure) && !EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, cure)) {
                 this.onEffectRemoved(effect);
-                effects.remove();
+                itr.remove();
                 ret = true;
                 this.effectsDirty = true;
             }
@@ -353,83 +562,117 @@ public abstract class LivingEntityInject extends Entity implements IForgeLivingE
         return ret;
     }
 
-    // Kilt: this isn't in the patch, but we're doing this to workaround a stack overflow
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
-        return this.getCapability(cap, null);
-    }
+    // TODO: oh god there's so much
 
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER && this.isAlive()) {
-            if (side == null)
-                return handlers[2].cast();
-            else if (side.getAxis().isVertical())
-                return handlers[0].cast();
-            else if (side.getAxis().isHorizontal())
-                return handlers[1].cast();
-        }
+    // TODO: how do we handle jumpInFluid???
 
-        return this.kilt$getCapabilityWorkaround().getCapability(cap, side);
-    }
+    // TODO: elytra fly
 
-    @Redirect(method = "dropFromLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;getRandomItems(Lnet/minecraft/world/level/storage/loot/LootParams;JLjava/util/function/Consumer;)V"))
-    public void kilt$disableVanillaLootTable(LootTable instance, LootParams params, long seed, Consumer<ItemStack> output) {
-    }
-
-    @Inject(at = @At("TAIL"), method = "dropFromLootTable", locals = LocalCapture.CAPTURE_FAILHARD)
-    public void kilt$useForgeLootTables(DamageSource damageSource, boolean hitByPlayer, CallbackInfo ci, ResourceLocation resourceLocation, LootTable lootTable, LootParams.Builder builder, LootParams lootParams) {
-        var ctx = builder.create(LootContextParamSets.ENTITY);
-        lootTable.getRandomItems(ctx).forEach(((LivingEntity) (Object) this)::spawnAtLocation);
-    }
+    // TODO: updatingUsingItem
 
     @Inject(method = "updateUsingItem", at = @At("HEAD"))
-    private void kilt$onUseTickEvent(ItemStack usingItem, CallbackInfo ci) {
+    private void kilt$callItemUseTickEvent(ItemStack usingItem, CallbackInfo ci) {
         if (!usingItem.isEmpty())
-            this.useItemRemaining = EventHooks.onItemUseTick((LivingEntity) (Object) this, usingItem, getUseItemRemainingTicks());
+            this.useItemRemaining = EventHooks.onItemUseTick((LivingEntity) (Object) this, usingItem, this.getUseItemRemainingTicks());
     }
 
     @WrapWithCondition(method = "updateUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onUseTick(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;I)V"))
-    private boolean kilt$checkUseTick(ItemStack instance, Level level, LivingEntity livingEntity, int count) {
-        return getUseItemRemainingTicks() > 0;
+    private boolean kilt$checkStillHasRemainingTicks(ItemStack instance, Level level, LivingEntity livingEntity, int count) {
+        return this.getUseItemRemainingTicks() > 0;
     }
 
-    @Inject(method = "startUsingItem", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;useItem:Lnet/minecraft/world/item/ItemStack;"))
-    private void kilt$storeLastUsedItem(CallbackInfo ci, @Share("lastUsed") LocalRef<ItemStack> lastUsed) {
-        lastUsed.set(this.useItem);
+    @WrapOperation(method = "updateUsingItem", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;useItemRemaining:I", opcode = Opcodes.GETFIELD))
+    private int kilt$clampIfBelowZero(LivingEntity instance, Operation<Integer> original) {
+        int value = original.call(instance);
+
+        return Math.max(value, 0);
     }
 
-    @ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseDuration()I"))
-    private int kilt$onItemUseEvent(int original, @Local ItemStack itemStack, @Cancellable CallbackInfo ci, @Share("lastUsed") LocalRef<ItemStack> lastUsed) {
-        int duration = EventHooks.onItemUseStart((LivingEntity) (Object) this, itemStack, original);
-        if (duration <= 0) {
+    @Inject(method = "startUsingItem", at = @At("HEAD"))
+    private void kilt$storeCurrentUseItem(InteractionHand hand, CallbackInfo ci, @Share("useItem") LocalRef<ItemStack> useItemRef) {
+        useItemRef.set(this.useItem);
+    }
+
+    @WrapOperation(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseDuration(Lnet/minecraft/world/entity/LivingEntity;)I"))
+    private int kilt$tryStartUsingItem(ItemStack instance, LivingEntity entity, Operation<Integer> original, @Cancellable CallbackInfo ci, @Local(argsOnly = true) InteractionHand hand, @Share("useItem") LocalRef<ItemStack> useItemRef) {
+        int duration = EventHooks.onItemUseStart(entity, instance, hand, original.call(instance, entity));
+
+        if (duration < 0) {
             ci.cancel();
-            this.useItem = lastUsed.get();
+            this.useItem = useItemRef.get();
+            return 0;
         }
+
         return duration;
     }
 
     @WrapOperation(method = "completeUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;finishUsingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"))
-    private ItemStack kilt$onItemUseFinishEvent(ItemStack instance, Level level, LivingEntity livingEntity, Operation<ItemStack> original) {
-        ItemStack copy = this.useItem.copy();
-        return EventHooks.onItemUseFinish((LivingEntity) (Object) this, copy, getUseItemRemainingTicks(), original.call(instance, level, livingEntity));
+    private ItemStack kilt$tryFinishUsingItem(ItemStack instance, Level level, LivingEntity livingEntity, Operation<ItemStack> original) {
+        return EventHooks.onItemUseFinish(livingEntity, instance.copy(), livingEntity.getUseItemRemainingTicks(), original.call(instance, level, livingEntity));
     }
 
     @WrapOperation(method = "releaseUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;releaseUsing(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;I)V"))
-    private void kilt$onStopUsingItemEvent(ItemStack instance, Level level, LivingEntity livingEntity, int timeLeft, Operation<Void> original) {
-        if (!EventHooks.onUseItemStop((LivingEntity) (Object) this, useItem, getUseItemRemainingTicks())) {
-            ItemStack copy = (LivingEntity) (Object) this instanceof Player ? useItem.copy() : null;
+    private void kilt$checkShouldStopUsingItem(ItemStack instance, Level level, LivingEntity livingEntity, int timeLeft, Operation<Void> original) {
+        if (!EventHooks.onUseItemStop(livingEntity, instance, timeLeft)) {
+            ItemStack copy = livingEntity instanceof Player ? instance.copy() : null;
             original.call(instance, level, livingEntity, timeLeft);
-            if (copy != null && useItem.isEmpty()) EventHooks.onPlayerDestroyItem((Player) (Object) this, copy, getUsedItemHand());
+
+            if (copy != null && instance.isEmpty()) {
+                EventHooks.onPlayerDestroyItem((Player) livingEntity, copy, livingEntity.getUsedItemHand());
+            }
         }
     }
 
-    /*@ModifyReturnValue(method = "createLivingAttributes", at = @At("RETURN"))
-    private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
-        return original
-            .add(ForgeMod.SWIM_SPEED.get())
-            .add(ForgeMod.NAMETAG_DISTANCE.get())
-            .add(ForgeMod.ENTITY_GRAVITY.get())
-            .add(ForgeMod.STEP_HEIGHT.get());
-    }*/
+    @Inject(method = "stopUsingItem", at = @At("HEAD"))
+    private void kilt$tryStopUsingItem(CallbackInfo ci) {
+        if (this.isUsingItem() && !this.useItem.isEmpty())
+            this.useItem.onStopUsing((LivingEntity) (Object) this, this.useItemRemaining);
+    }
+
+    @Definition(id = "item", local = @Local(type = Item.class))
+    @Definition(id = "getUseAnimation", method = "Lnet/minecraft/world/item/Item;getUseAnimation(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/UseAnim;")
+    @Definition(id = "BLOCK", field = "Lnet/minecraft/world/item/UseAnim;BLOCK:Lnet/minecraft/world/item/UseAnim;")
+    @Expression("item.getUseAnimation(?) != BLOCK")
+    @ModifyExpressionValue(method = "isBlocking", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkCanPerformAction(boolean original) {
+        return original && !this.useItem.canPerformAction(ItemAbilities.SHIELD_BLOCK);
+    }
+
+    // TODO: bed checks
+
+    @ModifyReturnValue(method = "getProjectile", at = @At("RETURN"))
+    private ItemStack kilt$tryGetProjectileStack(ItemStack original, @Local(argsOnly = true) ItemStack weapon) {
+        return CommonHooks.getProjectile((LivingEntity) (Object) this, weapon, original);
+    }
+
+    @WrapOperation(method = "eat(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
+    private Object kilt$tryGetFoodProperties(ItemStack instance, DataComponentType dataComponentType, Operation<Object> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "getFoodProperties", ItemStack.class, LivingEntity.class)) {
+            return instance.getFoodProperties((LivingEntity) (Object) this);
+        }
+
+        return original.call(instance, dataComponentType);
+    }
+
+    @Override
+    public boolean shouldRiderFaceForward(Player player) {
+        return (Object) this instanceof Pig;
+    }
+
+    @Inject(method = "getEquipmentSlotForItem", at = @At("HEAD"), cancellable = true)
+    private void kilt$tryUseModdedSlot(ItemStack stack, CallbackInfoReturnable<EquipmentSlot> cir) {
+        EquipmentSlot slot = stack.getEquipmentSlot();
+
+        if (slot != null)
+            cir.setReturnValue(slot);
+    }
+
+    @ModifyReturnValue(method = "canDisableShield", at = @At("RETURN"))
+    private boolean kilt$checkCanDisableShield(boolean original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(this.getMainHandItem().getItem().getClass(), Item.class, "canDisableShield", ItemStack.class, ItemStack.class, LivingEntity.class, LivingEntity.class)) {
+            return this.getMainHandItem().canDisableShield(this.useItem, (LivingEntity) (Object) this, (LivingEntity) (Object) this);
+        }
+
+        return original;
+    }
 }
