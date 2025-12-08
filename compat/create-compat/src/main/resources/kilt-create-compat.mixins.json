@@ -8,6 +8,7 @@
         "flywheel.BakedModelBuffererMixin",
         "registrate_fabric.AbstractRegistrateMixin",
         "registrate_fabric.AbstractRegistrateMixin$RegistrationMixin",
+        "registrate_fabric.RegistrateMixin",
         "registrate_fabric.RegistryEntryMixin",
         "registrate_fabric.RegistryObjectMixin"
     ],
