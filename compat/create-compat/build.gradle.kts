@@ -18,6 +18,10 @@ dependencies {
     modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.20.1:1.0.4")
 }
 
+loom {
+    accessWidenerPath.set(file("src/main/resources/kilt-create-compat.accesswidener"))
+}
+
 tasks {
     processResources {
         val properties = mutableMapOf(
