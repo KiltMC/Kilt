@@ -13,8 +13,8 @@ import java.util.function.BiFunction
 
 
 class EntityBuilderAdapter<T : Entity>(
-    val builder : FabricEntityTypeBuilder<T>,
-    val registrateBuilder : EntityBuilderExtension<T>
+    val builder: FabricEntityTypeBuilder<T>,
+    val registrateBuilder: EntityBuilderExtension<T>
 ) : EntityType.Builder<T>(null, null) {
 
     override fun sized(width: Float, height: Float): EntityBuilderAdapter<T> {

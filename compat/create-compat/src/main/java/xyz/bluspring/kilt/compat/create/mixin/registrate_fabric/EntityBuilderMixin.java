@@ -59,9 +59,16 @@ public abstract class EntityBuilderMixin<T extends Entity, P> extends AbstractBu
     )
     public NonNullConsumer<Object> properties(NonNullConsumer<Object> after) {
         if (Kilt.Companion.getLoader().hasMod(getOwner().getModid())) {
-            return fabricBuilder -> after.accept(
-                    new EntityBuilderAdapter<>((FabricEntityTypeBuilder<T>) fabricBuilder, this)
-            );
+            EntityBuilderExtension<T> builder = this;
+            return fabricBuilder -> {
+                if (fabricBuilder instanceof FabricEntityTypeBuilder<?>) {
+                    after.accept(
+                            new EntityBuilderAdapter<>((FabricEntityTypeBuilder<T>) fabricBuilder, builder)
+                    );
+                } else { // Should probably never happen, but just in case.
+                    after.accept(fabricBuilder);
+                }
+            };
         }
         return after;
     }
@@ -76,10 +83,12 @@ public abstract class EntityBuilderMixin<T extends Entity, P> extends AbstractBu
         this.velocityUpdateSupplier = velocityUpdateSupplier;
     }
 
+    @Override
     public void kilt$setTrackingRangeSupplier(@NotNull ToIntFunction<EntityType<?>> trackingRangeSupplier) {
         this.trackingRangeSupplier = trackingRangeSupplier;
     }
 
+    @Override
     public void kilt$setUpdateIntervalSupplier(@NotNull ToIntFunction<EntityType<?>> updateIntervalSupplier) {
         this.updateIntervalSupplier = updateIntervalSupplier;
     }
