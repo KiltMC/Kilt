@@ -11,7 +11,29 @@ import java.util.stream.StreamSupport
 
 object InterModComms {
     @JvmRecord
-    data class IMCMessage(val senderModId: String, val modId: String, val method: String, val messageSupplier: Supplier<*>)
+    data class IMCMessage(val senderModId: String, val modId: String, val method: String, val messageSupplier: Supplier<*>) {
+
+        @Deprecated("use senderModId()")
+        fun getSenderModId(): String {
+            return this.senderModId
+        }
+
+        @Deprecated("use modId()")
+        fun getModId(): String {
+            return this.modId
+        }
+
+        @Deprecated("use method()")
+        fun getMethod(): String {
+            return this.method
+        }
+
+        @Deprecated("use messageSupplier()")
+        fun <T> getMessageSupplier(): Supplier<T> {
+            @Suppress("UNCHECKED_CAST")
+            return this.messageSupplier as Supplier<T>
+        }
+    }
 
     private val containerQueues = ConcurrentHashMap<String, ConcurrentLinkedQueue<IMCMessage>>()
     @JvmStatic
