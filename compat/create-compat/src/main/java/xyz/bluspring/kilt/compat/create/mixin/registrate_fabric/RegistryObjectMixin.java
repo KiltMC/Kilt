@@ -19,6 +19,10 @@ public abstract class RegistryObjectMixin<T> implements RegistryObjectForgeExten
 
     @Override
     public void updateReference(@NotNull RegisterEvent event) {
-        this.object = (T) event.getForgeRegistry().getValue(this.getId());
+        if (event.getForgeRegistry() != null) {
+            this.object = (T) event.getForgeRegistry().getValue(this.getId());
+        } else {
+            this.object = (T) event.getVanillaRegistry().get(this.getId());
+        }
     }
 }

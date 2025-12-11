@@ -31,6 +31,7 @@
         "fabric-language-kotlin": ">=${fabric_kotlin_version}",
         "kilt": "*"
     },
+    "accessWidener": "kilt-create-compat.accesswidener",
     "custom": {
         "modmenu": {
             "parent": "kilt"
