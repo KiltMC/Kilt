@@ -99,5 +99,30 @@ object MixinAdditionalRemapper {
                 }
             }
         }
+
+        run {
+            // GregTech is mixing into a forge added method that porting lib adds with a priority of 1100
+            val level = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_1937")
+            val levelMoj = "net.minecraft.world.level.Level"
+            if (!values.contains("priority") && (
+                        targetClassNames.contains(level.replace(".", "/")) || targetClassNames.contains(level) ||
+                                targetClassNames.contains(levelMoj.replace(".", "/")) || targetClassNames.contains(levelMoj)
+                        ) && classNode.name == "com/gregtechceu/gtceu/core/mixins/LevelMixin") {
+                val modifiedValues = values.toMutableMap()
+                modifiedValues["priority"] = 1150
+
+                if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                }
+            }
+        }
     }
 }
