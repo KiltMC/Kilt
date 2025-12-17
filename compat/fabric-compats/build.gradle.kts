@@ -27,10 +27,9 @@ dependencies {
     modCompileOnly("dev.emi:emi-fabric:${property("emi_version")}")
     modCompileOnly("mezz.jei:jei-${property("minecraft_version")}-fabric:${property("jei_version")}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${property("rei_version")}")
-    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${property("rei_version")}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${property("rei_version")}")
 
     modCompileOnly("maven.modrinth:accessories:${property("accessories_version")}")
-    modCompileOnly("maven.modrinth:accessories-cc-layer:${property("accessories_cc_version")}")
     modCompileOnly("maven.modrinth:snow-real-magic:${property("snowrealmagic_version")}")
     modCompileOnly("maven.modrinth:invmove:${property("invmove_version")}")
 

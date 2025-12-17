@@ -220,7 +220,7 @@ allprojects {
             implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
                 exclude("org.ow2.asm")
             })
-            modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}") {
+            modApi("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}") {
                 exclude("org.ow2.asm")
             }
         }
@@ -239,7 +239,7 @@ dependencies {
     include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
-    include("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")
+    include("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
