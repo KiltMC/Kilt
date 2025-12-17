@@ -151,7 +151,7 @@ allprojects {
             }
         }
 
-        maven("https://maven.terraformersmc.com/") {
+        maven("https://maven.terraformersmc.com/releases") {
             name = "TerraformersMC"
         }
 

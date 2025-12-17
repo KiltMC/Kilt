@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(SpriteCoordinateExpander.class)
 public abstract class SpriteCoordinateExpanderInject {
-    @ModifyReturnValue(method = {"vertex(DDD)Lcom/mojang/blaze3d/vertex/VertexConsumer;", "color", "uv", "overlayCoords", "uv2", "normal"}, at = @At("RETURN"))
+    @ModifyReturnValue(method = {"addVertex(FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;", "setColor", "setUv", "setUv1", "setUv2", "setNormal"}, at = @At("RETURN"))
     private VertexConsumer kilt$chainUseVertexConsumer(VertexConsumer original) {
         return (SpriteCoordinateExpander) (Object) this;
     }

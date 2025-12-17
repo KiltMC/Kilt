@@ -4,6 +4,8 @@ package xyz.bluspring.kilt.injects.client.gui.components;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -32,9 +34,13 @@ public class BossHealthOverlayInject {
         return !event.isCanceled();
     }
 
-    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"))
-    private boolean kilt$cancelStringIfCancelled(GuiGraphics instance, Font font, Component text, int x, int y, int color, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
-        return !eventRef.get().isCanceled();
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"))
+    private int kilt$cancelStringIfCancelled(GuiGraphics instance, Font font, Component text, int x, int y, int color, Operation<Integer> original, @Share("event") LocalRef<CustomizeGuiOverlayEvent.BossEventProgress> eventRef) {
+        if (!eventRef.get().isCanceled()) {
+            return original.call(instance, font, text, x, y, color);
+        }
+
+        return 0;
     }
 
     @Expression("10 + 9")

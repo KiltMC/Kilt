@@ -10,7 +10,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
@@ -47,7 +46,8 @@ public abstract class WalkNodeEvaluatorInject {
         return pathType;
     }
 
-    @Inject(method = "getBlockPathTypeRaw", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/BlockGetter;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", shift = At.Shift.AFTER), cancellable = true)
+    // please tell me this crash no longer occurs...
+    /*@Inject(method = "getBlockPathTypeRaw", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/BlockGetter;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", shift = At.Shift.AFTER), cancellable = true)
     private static void kilt$tryGetBlockPathType(BlockGetter level, BlockPos pos, CallbackInfoReturnable<BlockPathTypes> cir, @Local BlockState state) {
         try {
             var type = state.getBlockPathType(level, pos, null);
@@ -72,5 +72,5 @@ public abstract class WalkNodeEvaluatorInject {
             if (type != null)
                 cir.setReturnValue(type);
         } catch (NullPointerException ignored) {} // Kilt: The Forge deferred registry is going to be the fucking death of me. (crash only triggers w/ Lithium)
-    }
+    }*/
 }

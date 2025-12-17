@@ -30,25 +30,4 @@ public abstract class SpriteLoaderInject {
     private int kilt$avoidMipmapLowering(int value, @Local(argsOnly = true) int mipLevel) {
         return mipLevel;
     }
-
-    @ModifyReturnValue(method = "loadSprite", at = @At(value = "RETURN", ordinal = 2))
-    private static SpriteContents kilt$tryLoadSpriteContents(SpriteContents original, @Local(argsOnly = true) ResourceLocation location, @Local(argsOnly = true) Resource resource, @Local FrameSize frameSize, @Local NativeImage nativeImage, @Local AnimationMetadataSection metadata) {
-        var contents = ClientHooks.loadSpriteContents(location, resource, frameSize, nativeImage, metadata);
-
-        if (contents != null) {
-            return contents;
-        }
-
-        return original;
-    }
-
-    @Inject(method = "method_45841", at = @At("HEAD"), cancellable = true)
-    private void kilt$loadTextureSprite(Map<ResourceLocation, TextureAtlasSprite> map, int i, int j, SpriteContents spriteContents, int x, int y, CallbackInfo ci) {
-        var sprite = ClientHooks.loadTextureAtlasSprite(this.location, spriteContents, x, y, i, j, spriteContents.byMipLevel.length - 1);
-
-        if (sprite != null) {
-            map.put(spriteContents.name(), sprite);
-            ci.cancel();
-        }
-    }
 }
