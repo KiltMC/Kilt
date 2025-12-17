@@ -710,8 +710,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
     private fun constructMods(exception: Exception) {
         try {
-            ModLoader.get().kiltPostEventWrappingModsBuildEvent { mod -> FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT) }
-            ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
+//            ModLoader.runEventGenerator { mod -> FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT) }
+//            ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
         } catch (e: Throwable) {
             e.printStackTrace()
             exception.addSuppressed(e)

@@ -1,17 +1,40 @@
 package xyz.bluspring.kilt.injections.server.level;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.util.KiltHelper;
+
+import java.util.OptionalInt;
+import java.util.function.Consumer;
 
 public interface ServerPlayerInjection {
-    String getLanguage();
+    default String getLanguage() {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "getLanguage");
+    }
 
-    Component getTabListHeader();
-    void setTabListHeader(Component header);
+    default Component getTabListHeader() {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "getTabListHeader");
+    }
 
-    Component getTabListFooter();
-    void setTabListFooter(Component footer);
+    default void setTabListHeader(Component header) {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "setTabListHeader");
+    }
 
-    void setTabListHeaderFooter(Component header, Component footer);
+    default Component getTabListFooter() {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "getTabListFooter");
+    }
 
-    void refreshTabListName();
+    default void setTabListFooter(Component footer) {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "setTabListFooter");
+    }
+
+    default void setTabListHeaderFooter(Component header, Component footer) {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "setTabListHeaderFooter");
+    }
+
+    default void refreshTabListName() {
+        throw KiltHelper.createMixinException(ServerPlayerInjection.class, "refreshTabListName");
+    }
 }

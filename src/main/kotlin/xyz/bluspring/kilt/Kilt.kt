@@ -2,17 +2,13 @@ package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
+import io.github.fabricators_of_create.porting_lib.blocks.BlockEvents
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerTickEvents
-import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
@@ -99,22 +95,8 @@ class Kilt : ModInitializer {
                 event.isCanceled = true
         }
 
-        CriticalHitEvent.CRITICAL_HIT.register { event ->
-            val forgeEvent = ForgeHooks.getCriticalHit(event.player, event.entity, event.isVanillaCritical, event.oldDamageModifier)
-
-            if (forgeEvent == null) {
-                event.result = BaseEvent.Result.DENY
-            } else {
-                event.result = BaseEvent.Result.valueOf(forgeEvent.result.name)
-
-                if (forgeEvent.damageModifier != forgeEvent.oldDamageModifier)
-                    event.damageModifier = forgeEvent.damageModifier
-            }
-        }
-
-        LivingEntityEvents.LivingTickEvent.TICK.register { event ->
-            if (ForgeHooks.onLivingTick(event.entity))
-                event.isCanceled = true
+        CriticalHitEvent.EVENT.register { event ->
+            CommonHooks.fireCriticalHit(event.entity, event.target, event.isVanillaCritical, event.damageMultiplier)
         }
 
         PlayerInteractEvent.LeftClickEmpty.EVENT.register { event ->
@@ -169,27 +151,6 @@ class Kilt : ModInitializer {
 
         EntityEvents.EnteringSection.EVENT.register { event ->
             CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
-        }
-
-        BlockEvents.BLOCK_BREAK.register { event ->
-            val level = event.level
-            if (level is Level) {
-                val forgeEvent = BlockEvent.BreakEvent(level, event.pos, event.state, event.player);
-                forgeEvent.expToDrop = event.expToDrop
-                forgeEvent.isCanceled = event.isCanceled
-                forgeEvent.result = portingLibToEventBus(event.result)
-                MinecraftForge.EVENT_BUS.post(forgeEvent)
-                event.isCanceled = forgeEvent.isCanceled
-                event.expToDrop = forgeEvent.expToDrop
-                event.result = eventBusToPortingLib(forgeEvent.result)
-            }
-        }
-
-        EntityEvent.ANIMAL_TAME.register { animal, player ->
-            if (ForgeEventFactory.onAnimalTame(animal, player))
-                EventResult.interruptDefault()
-            else
-                EventResult.pass()
         }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
@@ -250,32 +211,6 @@ class Kilt : ModInitializer {
 
             if (!onServer) {
                 KiltClient.lateRegisterEvents()
-            }
-        }
-
-		fun portingLibToEventBus(result: BaseEvent.Result): Event.Result {
-			return when (result) {
-				BaseEvent.Result.ALLOW -> Event.Result.ALLOW
-				BaseEvent.Result.DEFAULT -> Event.Result.DEFAULT
-				BaseEvent.Result.DENY -> Event.Result.DENY
-				else -> Event.Result.DEFAULT
-			}
-		}
-
-		fun eventBusToPortingLib(result: Event.Result): BaseEvent.Result {
-			return when (result) {
-				Event.Result.ALLOW -> BaseEvent.Result.ALLOW
-				Event.Result.DEFAULT -> BaseEvent.Result.DEFAULT
-				Event.Result.DENY -> BaseEvent.Result.DENY
-				else -> BaseEvent.Result.DEFAULT
-			}
-		}
-
-        fun Event.Result.toVanilla(): InteractionResult {
-            return when (this) {
-                Event.Result.DEFAULT -> InteractionResult.PASS
-                Event.Result.DENY -> InteractionResult.FAIL
-                Event.Result.ALLOW -> InteractionResult.SUCCESS
             }
         }
     }

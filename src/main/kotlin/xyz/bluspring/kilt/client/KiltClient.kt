@@ -1,8 +1,7 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
-import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
+import io.github.fabricators_of_create.porting_lib.event.client.TextureAtlasStitchedEvent
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -27,6 +26,7 @@ import net.neoforged.neoforge.client.event.ScreenEvent
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.EventHooks
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
@@ -36,6 +36,7 @@ import java.util.function.Consumer
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
+        val loader = Kilt.loader
         val fabricLoader = FabricLoader.getInstance()
         val kiltErrorMessage = "Detected Flywheel Forge, please use either Create Fabric or Flywheel Fabric via Vanillin!"
 
@@ -58,10 +59,6 @@ class KiltClient : ClientModInitializer {
 
         ItemTooltipCallback.EVENT.register { stack, context, flags, components ->
             EventHooks.onItemTooltip(stack, null, components, flags, context)
-        }
-
-        HudRenderCallback.EVENT.register { guiGraphics, delta ->
-            forgeGui.render(guiGraphics, delta)
         }
 
         TextureAtlasStitchedEvent.EVENT.register { event ->
