@@ -5,6 +5,7 @@ import dev.engine_room.flywheel.api.event.EndClientResourceReloadEvent
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererEvent
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.loader.DependencyException
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.neoforged.neoforge.common.NeoForge
@@ -14,11 +15,6 @@ import xyz.bluspring.knit.loader.KnitLoader
 
 class KiltCreateCompat : ClientModInitializer {
     override fun onInitializeClient() {
-        if (Kilt.loader.hasMod("flywheel")) {
-            KnitLoader.instance.displayErrorGUI("Detected Flywheel Forge, please use either Create Fabric or Flywheel Fabric via Vanillin!", IllegalStateException())
-            return
-        }
-
         if (FabricLoader.getInstance().isModLoaded("flywheel") && FabricLoader.getInstance().getModContainer("flywheel").orElseThrow().metadata.version >= Version.parse("1.0.0")) {
             initFlywheelEvents()
         }

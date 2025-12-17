@@ -1,17 +1,23 @@
 // TRACKED HASH: 8ce7cfcc1608a79d687631411c28c60d1064aad3
 package xyz.bluspring.kilt.injects.server.level;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
+import io.github.fabricators_of_create.porting_lib.entity.ITeleporter;
+import io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
@@ -44,17 +50,17 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Objects;
 import java.util.OptionalInt;
 
-@Mixin(ServerPlayer.class)
+@Mixin(value = ServerPlayer.class, priority = 1100)
 public abstract class ServerPlayerInject extends Player implements ServerPlayerInjection {
     @Shadow public ServerGamePacketListenerImpl connection;
-
     @Shadow @Final public ServerPlayerGameMode gameMode;
-
     @Shadow private @Nullable Entity camera;
+    @Shadow public abstract ServerLevel serverLevel();
 
     public ServerPlayerInject(Level level, BlockPos pos, float yRot, GameProfile gameProfile) {
         super(level, pos, yRot, gameProfile);
@@ -66,30 +72,68 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             ci.cancel();
     }
 
-    // TODO: Implement changeDimension logic, somehow.
+    // This lacks the ITeleporter patches, because that patch handled by Porting Lib instead.
+    @Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true)
+    private void kilt$callTravelToDimensionEventVanilla(ServerLevel destination, CallbackInfoReturnable<Entity> cir, @Share("entryLevel") LocalRef<ServerLevel> entryLevel) {
+        entryLevel.set(this.serverLevel());
+
+        if (!ForgeHooks.onTravelToDimension(this, destination.dimension()))
+            cir.setReturnValue(null);
+    }
+
+    @WrapOperation(method = "changeDimension", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$useReviveCallOnChangeDimensionVanilla(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
+        }
+    }
 
     @ModifyVariable(method = "setGameMode", at = @At("HEAD"), argsOnly = true)
     private GameType kilt$callChangeGameType(GameType value, @Cancellable CallbackInfoReturnable<Boolean> cir) {
         value = CommonHooks.onChangeGameType(this, this.gameMode.getGameModeForPlayer(), value);
 
-        if (value == null) {
-            cir.setReturnValue(false);
-            return null;
+    @Inject(method = "changeDimension", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimensionEventVanilla(ServerLevel destination, CallbackInfoReturnable<Entity> cir,  @Share("entryLevel") LocalRef<ServerLevel> entryLevel) {
+        ForgeEventFactory.firePlayerChangedDimensionEvent((ServerPlayer) (Object) this, entryLevel.get().dimension(), destination.dimension());
+    }
+
+    // Porting Lib injects for the changeDimension patch
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$onTravelToDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension(this, pDestination.dimension()))
+            cir.setReturnValue(null);
+    }
+
+    @SuppressWarnings({"InvalidInjectorMethodSignature", "MixinAnnotationTarget"}) // We cannot target the "ServerPlayerMixin", so ServerPlayer is the closest we can get.
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
         }
-
-        return value;
     }
 
-    @Inject(method = "setCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;camera:Lnet/minecraft/world/entity/Entity;", ordinal = 0))
-    private void kilt$usePartEntityParentCamera(Entity entityToSpectate, CallbackInfo ci) {
-        while (this.camera instanceof PartEntity<?> partEntity)
-            this.camera = partEntity.getParent();
+    @SuppressWarnings("MixinAnnotationTarget") // same for over here.
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+        ForgeEventFactory.firePlayerChangedDimensionEvent(this, resourcekey, pDestination.dimension());
     }
 
-    @Inject(method = "updateOptions", at = @At("TAIL"))
-    private void kilt$addLanguageData(ServerboundClientInformationPacket packet, CallbackInfo ci) {
-        this.language = packet.language();
-    }
+    // Handled by Fabric API
+    /*@Inject(at = @At("HEAD"), method = "startSleepInBed", cancellable = true)
+    public void kilt$checkPlayerSleepEvent(BlockPos blockPos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
+        var ret = ForgeEventFactory.onPlayerSleepInBed((ServerPlayer) (Object) this, Optional.of(blockPos));
+        if (ret != null)
+            cir.setReturnValue(Either.left(ret));
+    }*/
 
     @Inject(method = "openMenu", at = @At(value = "INVOKE", target = "Ljava/util/OptionalInt;of(I)Ljava/util/OptionalInt;"))
     private void kilt$callContainerOpenEvent(MenuProvider menu, CallbackInfoReturnable<OptionalInt> cir) {
@@ -113,6 +157,29 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         this.tabListFooter = ((ServerPlayerInjection) that).getTabListFooter();
     }
 
+    @ModifyVariable(method = "setGameMode", at = @At("HEAD"), argsOnly = true)
+    private GameType kilt$callChangeGameType(GameType value, @Cancellable CallbackInfoReturnable<Boolean> cir) {
+        value = ForgeHooks.onChangeGameType(this, this.gameMode.getGameModeForPlayer(), value);
+
+        if (value == null) {
+            cir.setReturnValue(false);
+            return null;
+        }
+
+        return value;
+    }
+
+    @Inject(method = "updateOptions", at = @At("TAIL"))
+    private void kilt$addLanguageData(ServerboundClientInformationPacket packet, CallbackInfo ci) {
+        this.language = packet.language();
+    }
+
+    @Inject(method = "setCamera", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;camera:Lnet/minecraft/world/entity/Entity;", ordinal = 0))
+    private void kilt$usePartEntityParentCamera(Entity entityToSpectate, CallbackInfo ci) {
+        while (this.camera instanceof PartEntity<?> partEntity)
+            this.camera = partEntity.getParent();
+    }
+
     @ModifyReturnValue(method = "getTabListDisplayName", at = @At("RETURN"))
     private Component kilt$addTabListDisplayName(Component original) {
         if (!this.hasTabListName) {
@@ -132,9 +199,14 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             ci.cancel();
     }
 
-    @Inject(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
-    private void kilt$useReviveCall(ServerLevel newLevel, double x, double y, double z, float yaw, float pitch, CallbackInfo ci) {
-        this.revive(); // TODO: avoid double-calling maybe?
+    @WrapOperation(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$useReviveCall(ServerPlayer instance, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
+            this.revive();
+        } else {
+            original.call(instance);
+            this.reviveCaps();
+        }
     }
 
     @Inject(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;teleport(DDDFF)V", shift = At.Shift.AFTER))
@@ -148,14 +220,7 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     }
 
     // Handled by Fabric API
-    /*@Inject(at = @At("HEAD"), method = "startSleepInBed", cancellable = true)
-    public void kilt$checkPlayerSleepEvent(BlockPos blockPos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
-        var ret = EventHooks.onPlayerSleepInBed((ServerPlayer) (Object) this, Optional.of(blockPos));
-        if (ret != null)
-            cir.setReturnValue(Either.left(ret));
-    }
-
-    @Inject(method = "setRespawnPosition", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = "setRespawnPosition", at = @At("HEAD"), cancellable = true)
     private void kilt$checkPlayerSpawnSetEvent(ResourceKey<Level> dimension, @Nullable BlockPos position, float angle, boolean forced, boolean sendMessage, CallbackInfo ci) {
         if (EventHooks.onPlayerSpawnSet(this, dimension == null ? Level.OVERWORLD : dimension, position, forced))
             ci.cancel();

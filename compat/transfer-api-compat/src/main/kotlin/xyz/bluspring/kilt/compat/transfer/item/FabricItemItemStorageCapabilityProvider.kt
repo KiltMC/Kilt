@@ -1,8 +1,10 @@
 package xyz.bluspring.kilt.compat.transfer.item
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorages
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage
+import net.minecraft.core.Direction
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.common.capabilities.Capability
 import net.neoforged.neoforge.common.capabilities.ForgeCapabilities
@@ -10,10 +12,10 @@ import net.neoforged.neoforge.common.capabilities.ICapabilityProvider
 import net.neoforged.neoforge.common.util.LazyOptional
 
 class FabricItemItemStorageCapabilityProvider(val stack: ItemStack) : ICapabilityProvider {
-    override fun <T : Any?> getCapability(cap: Capability<T>): LazyOptional<T> {
+    override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
             val fabricStorage = ItemItemStorages.ITEM.getProvider(stack.item) ?: return LazyOptional.empty()
-            val storage = fabricStorage.find(stack, null) ?: return LazyOptional.empty()
+            val storage = fabricStorage.find(stack, ContainerItemContext.withConstant(stack)) ?: return LazyOptional.empty()
 
             // Ignore our own storage
             if (storage is ForgeSlottedStorage)

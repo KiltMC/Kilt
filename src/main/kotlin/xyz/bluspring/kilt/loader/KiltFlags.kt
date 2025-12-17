@@ -30,6 +30,10 @@ object KiltFlags {
     // be tested in development. This flag allows the mod to be loaded anyway, completely overriding their code.
     @JvmField val DISABLE_FORGE_SYSTEM_EXIT = "kilt.disableSystemExit".checkPropertyBoolean()
 
+    // Forcefully allow blocked mods to load in Kilt.
+    // These mods may cause issues with Kilt, so here be dragons!
+    @JvmField val FORCE_ALLOW_BLOCKED_MODS = "kilt.allowBlockedMods".checkPropertyBoolean()
+
     // Mainly for people who want to decompile Forge mods for themselves, and don't want to manually remap all SRG names.
     // This essentially disables most of Kilt's fixers that modify the mod's bytecode to make the mod work in Fabric.
     @JvmField val DISABLE_FIXERS = FORCE_REMAPPING && "kilt.disableFixers".checkPropertyBoolean()

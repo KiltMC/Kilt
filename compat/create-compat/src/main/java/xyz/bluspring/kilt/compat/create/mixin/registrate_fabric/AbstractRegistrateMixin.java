@@ -32,6 +32,7 @@ import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateRegistratio
 import xyz.bluspring.kilt.compat.create.extensions.RegistryEntryForgeExtension;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -142,12 +143,17 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
         @Final @Shadow private ResourceLocation name;
         @Shadow private RegistryEntry<T> delegate;
 
+        @Shadow
+        private List<NonNullConsumer<? super T>> callbacks;
+
         @Override
         public void register(@NotNull RegisterEvent event) {
             T entry = creator.get();
             var name = this.name;
             event.register(type, rh -> rh.register(name, entry));
             ((RegistryEntryForgeExtension) delegate).updateReference(event);
+            callbacks.forEach(c -> c.accept(entry));
+            callbacks.clear();
         }
 
         @Override

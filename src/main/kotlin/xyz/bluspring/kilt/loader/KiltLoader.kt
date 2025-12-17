@@ -54,6 +54,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -77,17 +78,41 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         "unloaded_activity" to "unloadedactivity"
     )
 
+    // This over here is a wall of shame for mods that use different mod IDs between their Forge and Fabric variants.
+    private val FORGE_TO_FABRIC_MODS = mapOf(
+        // Forge ID -> Fabric ID
+        "cloth_config" to "cloth-config",
+        "playeranimator" to "player-animator"
+    )
+
     init {
         val loader = FabricLoader.getInstance()
+        val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
         if (loader.environmentType == EnvType.CLIENT) {
             // Kilt requires a hard dependency on Sodium, so let's just do this
             if (!loader.isModLoaded("sodium")) {
-                KnitLoader.instance.displayError("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended.", IllegalStateException())
+                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended."))
             } else if (!loader.isModLoaded("indium")) {
-                KnitLoader.instance.displayError("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended.", IllegalStateException())
-            } else if (loader.isModLoaded("embeddium")) {
-                KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
+                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
+            } else if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
+                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
+            }
+        }
+
+        // Sanity check for determining if Fabric mods are bundling Forge classes for whatever reason
+        for (container in loader.allMods) {
+            // Ignore ourselves and whatever we know works correctly.
+            if (container.metadata.id == "kilt" || container.metadata.id == "forgeconfigapiport" ||
+                // If the mod parent is Kilt, then it's probably safe.
+                (container.containingMod.isPresent && container.containingMod.orElseThrow().metadata.id == "kilt")
+            )
+                continue
+
+            val path = container.findPath("net/minecraftforge")
+
+            if (path.isPresent && path.orElseThrow().isDirectory()) {
+                Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging Forge classes! This may lead to a game crash!")
             }
         }
     }
@@ -101,8 +126,18 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
-        if (dependencyId == "cloth_config")
-            return "cloth-config"
+        if (FORGE_TO_FABRIC_MODS.contains(dependencyId))
+            return FORGE_TO_FABRIC_MODS[dependencyId]!!
+
+        val loader = FabricLoader.getInstance()
+        if (loader.isModLoaded(dependencyId))
+            return dependencyId
+
+        // fun times.
+        if (loader.isModLoaded(dependencyId.replace("_", "-")))
+            return dependencyId.replace("_", "-")
+        else if (loader.isModLoaded(dependencyId.replace("_", "")))
+            return dependencyId.replace("_", "")
 
         return super.getNativeModId(dependencyId, nativeLoaderName)
     }
@@ -264,7 +299,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 metadata.getConfigElement<String>("version").orElse("1")
                     .run {
                         if (this == "\${file.jarVersion}")
-                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: this
+                            manifest?.mainAttributes?.getValue("Implementation-Version") ?: "0.0NONE"
                         else if (this == "\${global.forgeVersion}")
                             SUPPORTED_NEO_API_VERSION.toString()
                         else if (this == "\${global.mcVersion}")
@@ -323,6 +358,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
                 dependencies = dependencies,
                 mixinConfigs = manifest?.mainAttributes?.getValue("MixinConfigs")?.split(",")
+                    ?.filter { !it.trim().isBlank() } // why the FUCK is this a possibility.
                     ?.map { ModDefinition.MixinConfig(it) }
                     ?: emptyList(),
                 path = path,
@@ -367,8 +403,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
             // Loads gametests
             for (url in this::class.java.classLoader.getResources("META-INF/mods.toml")) {
+                if (url.file.contains(".jar") && url.file.contains("!/META-INF/mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
+                    continue
+
+                val path = Path(url.path.removePrefix("file:/"))
+
                 val toml = tomlParser.parse(url)
-                modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
+                modsList.addAll(parseModsToml(path, toml, null, isBuiltIn = true))
             }
 
             modsList
@@ -532,6 +573,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
         val exception = RuntimeException("Failed to load Forge mods in Kilt!")
 
+        // Initialize @Mod annotated constructors
+        initMods(exception)
+
+        // Register @EventBusSubscriber annotations
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
@@ -546,6 +591,9 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     }
             }.join()
         }
+
+        // Then construct mods in the CONSTRUCT loading stage
+        constructMods(exception)
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
@@ -626,23 +674,26 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         if (!topType.className.contains("$"))
             return false
 
-        val classNameSplit = topType.className.split("$")
-        for ((index, typeLvl) in classNameSplit.withIndex()) {
-            if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
-                return true
-            else {
-                val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
-                if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+        try {
+            val classNameSplit = topType.className.split("$")
+            for ((index, typeLvl) in classNameSplit.withIndex()) {
+                if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
                     return true
+                else {
+                    val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
+                    if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
+                        return true
+                }
             }
+        } catch (_: Throwable) {
+            // oh so that's why dedicated server kept crashing.
+            return false
         }
 
         return false
     }
 
-    fun initMods() {
-        val exception = RuntimeException("Failed to load Kilt mods!")
-
+    private fun initMods(exception: Exception) {
         runBlocking {
             sortedModOrder.asFlow()
                 .collect { mod ->
@@ -654,6 +705,16 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         exception.addSuppressed(RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})", e))
                     }
                 }
+        }
+    }
+
+    private fun constructMods(exception: Exception) {
+        try {
+            ModLoader.get().kiltPostEventWrappingModsBuildEvent { mod -> FMLConstructModEvent(mod.container, ModLoadingStage.CONSTRUCT) }
+            ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            exception.addSuppressed(e)
         }
     }
 
@@ -733,7 +794,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                     ModLoadingContext.get().activeContainer = null
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    exception.addSuppressed(extraThrowable)
+                    if (extraThrowable != null)
+                        exception.addSuppressed(extraThrowable)
                     exception.addSuppressed(e)
                     hasErrored = true
                 }

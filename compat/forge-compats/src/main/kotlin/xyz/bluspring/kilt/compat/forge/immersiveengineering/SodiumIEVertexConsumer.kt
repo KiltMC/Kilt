@@ -6,7 +6,10 @@ import me.jellysquid.mods.sodium.client.render.chunk.vertex.builder.ChunkMeshBuf
 import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder
 import net.minecraft.util.FastColor
 
-class SodiumIEVertexConsumer(val bufferBuilder: ChunkMeshBufferBuilder, val material: Material) : VertexConsumer {
+class SodiumIEVertexConsumer private constructor() : VertexConsumer {
+    private val vertexArray = arrayOfNulls<ChunkVertexEncoder.Vertex>(4)
+    private var currentIndex = 0
+
     var x = 0f
     var y = 0f
     var z = 0f
@@ -15,6 +18,19 @@ class SodiumIEVertexConsumer(val bufferBuilder: ChunkMeshBufferBuilder, val mate
     var v = 0f
     var light = 0
     var overlay = 0
+
+    private var builder: ChunkMeshBufferBuilder? = null
+    private var material: Material? = null
+
+    private fun bind(builder: ChunkMeshBufferBuilder, material: Material) {
+        this.builder = builder
+        this.material = material
+    }
+
+    fun unbind() {
+        this.builder = null
+        this.material = null
+    }
 
     override fun vertex(x: Double, y: Double, z: Double): VertexConsumer {
         this.x = x.toFloat()
@@ -61,10 +77,11 @@ class SodiumIEVertexConsumer(val bufferBuilder: ChunkMeshBufferBuilder, val mate
         vertex.v = v
         vertex.light = light
 
-        val array = vertexArray.get()
-        array[0] = vertex
+        vertexArray[currentIndex++] = vertex
 
-        bufferBuilder.push(array, material)
+        if (currentIndex >= 4) {
+            pushVertexData()
+        }
     }
 
     override fun defaultColor(defaultR: Int, defaultG: Int, defaultB: Int, defaultA: Int) {
@@ -73,7 +90,28 @@ class SodiumIEVertexConsumer(val bufferBuilder: ChunkMeshBufferBuilder, val mate
     override fun unsetDefaultColor() {
     }
 
+    private fun pushVertexData() {
+        if (this.builder == null)
+            throw IllegalStateException("Vertex consumer not bound!")
+
+        this.builder!!.push(vertexArray, material)
+
+        for (i in 0 until 4) {
+            this.vertexArray[i] = null
+        }
+
+        this.currentIndex = 0
+    }
+
     companion object {
-        private val vertexArray = ThreadLocal.withInitial { arrayOfNulls<ChunkVertexEncoder.Vertex>(1) }
+        private val consumerProvider = ThreadLocal.withInitial(::SodiumIEVertexConsumer)
+
+        @JvmStatic
+        fun grab(builder: ChunkMeshBufferBuilder, material: Material): SodiumIEVertexConsumer {
+            val consumer = consumerProvider.get()
+            consumer.bind(builder, material)
+
+            return consumer
+        }
     }
 }

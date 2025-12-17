@@ -56,7 +56,7 @@ public abstract class AbstractFurnaceBlockEntityInject extends BaseContainerBloc
         this.recipeType = recipeType;
     }
 
-    @Unique private static final ThreadLocal<AbstractFurnaceBlockEntity> kilt$furnaceBE = new ThreadLocal<>();
+    private static final ThreadLocal<AbstractFurnaceBlockEntity> kilt$furnaceBE = new ThreadLocal<>();
 
     @WrapOperation(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/Recipe;Lnet/minecraft/core/NonNullList;I)Z"))
     private static boolean kilt$useForgeCanBurn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> nonNullList, int i, Operation<Boolean> original, @Local(argsOnly = true) AbstractFurnaceBlockEntity furnaceBlockEntity) {

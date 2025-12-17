@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,6 +26,8 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
     @SuppressWarnings("MixinAnnotationTarget") // this is supposed to exist, but I guess mixin doesn't think so?
     @Shadow @Nullable public abstract T create(Level level);
     @Shadow @Final private Holder.Reference<EntityType<?>> builtInRegistryHolder;
+    @Shadow @Final private int clientTrackingRange;
+    @Shadow @Final private int updateInterval;
 
     @Unique private Predicate<EntityType<?>> trackDeltasSupplier;
     @Unique private ToIntFunction<EntityType<?>> trackingRangeSupplier;
@@ -66,6 +69,20 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
     public void kilt$useForgeVelocityUpdate(CallbackInfoReturnable<Boolean> cir) {
         if (trackDeltasSupplier != null)
             cir.setReturnValue(trackDeltasSupplier.test((EntityType<?>) (Object) this));
+    }
+
+    // TODO: any better ideas?
+    private int defaultTrackingRangeSupplier() {
+        return this.clientTrackingRange;
+    }
+
+    private int defaultUpdateIntervalSupplier() {
+        return this.updateInterval;
+    }
+
+    private boolean defaultVelocitySupplier() {
+        var self = (EntityType<?>) (Object) this;
+        return self != EntityType.PLAYER && self != EntityType.LLAMA_SPIT && self != EntityType.WITHER && self != EntityType.BAT && self != EntityType.ITEM_FRAME && self != EntityType.GLOW_ITEM_FRAME && self != EntityType.LEASH_KNOT && self != EntityType.PAINTING && self != EntityType.END_CRYSTAL && self != EntityType.EVOKER_FANGS;
     }
 
     @Mixin(EntityType.Builder.class)

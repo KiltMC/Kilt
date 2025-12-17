@@ -11,11 +11,11 @@ import java.util.List;
 
 @Mixin(Screen.class)
 public interface ScreenAccessor {
-    @Accessor
-    List<GuiEventListener> getChildren();
+    @Accessor("children")
+    List<GuiEventListener> kilt$getChildren();
 
-    @Accessor
-    List<NarratableEntry> getNarratables();
+    @Accessor("narratables")
+    List<NarratableEntry> kilt$getNarratables();
 
     @Invoker
     void callRemoveWidget(GuiEventListener listener);

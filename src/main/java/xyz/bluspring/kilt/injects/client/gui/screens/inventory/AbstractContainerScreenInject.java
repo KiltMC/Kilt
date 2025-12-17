@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.injects.client.gui.screens.inventory;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -15,7 +17,9 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,9 +30,13 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+import xyz.bluspring.kilt.injections.client.gui.GuiGraphicsInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.AbstractContainerScreenInjection;
 import xyz.bluspring.kilt.injections.world.inventory.SlotInjection;
 import xyz.bluspring.kilt.mixin.client.gui.screens.inventory.AbstractContainerScreenAccessor;
+
+import java.util.List;
+import java.util.Optional;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenInject extends Screen implements AbstractContainerScreenInjection {
@@ -36,13 +44,21 @@ public abstract class AbstractContainerScreenInject extends Screen implements Ab
         super(component);
     }
 
-    // implemented ContainerScreen.Render.Background, ContainerScreen.Render.Foreground
-
     @Shadow @Nullable protected Slot hoveredSlot;
     @Shadow protected int leftPos;
     @Shadow protected int topPos;
     @Shadow protected int imageWidth;
     @Shadow protected int imageHeight;
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V", shift = At.Shift.AFTER))
+    private void kilt$callRenderBackgroundEvent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        NeoForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background((AbstractContainerScreen<?>) (Object) this, guiGraphics, mouseX, mouseY));
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V", shift = At.Shift.AFTER))
+    private void kilt$callRenderForegroundEvent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        NeoForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground((AbstractContainerScreen<?>) (Object) this, guiGraphics, mouseX, mouseY));
+    }
 
     @CreateStatic
     private static void renderSlotHighlight(GuiGraphics guiGraphics, int x, int y, int blitOffset, int slotColor) {
@@ -58,6 +74,13 @@ public abstract class AbstractContainerScreenInject extends Screen implements Ab
             return original;
 
         return AbstractContainerScreenInjection.kilt$slotColor.get();
+    }
+
+    @WrapOperation(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V"))
+    private void kilt$wrapTooltipRenderWithStack(GuiGraphics instance, Font font, List<Component> tooltipLines, Optional<TooltipComponent> visualTooltipComponent, int mouseX, int mouseY, Operation<Void> original, @Local ItemStack stack) {
+        ((GuiGraphicsInjection) instance).kilt$setTooltipStack(stack);
+        original.call(instance, font, tooltipLines, visualTooltipComponent, mouseX, mouseY);
+        ((GuiGraphicsInjection) instance).kilt$setTooltipStack(ItemStack.EMPTY);
     }
 
     @Inject(method = "renderFloatingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))

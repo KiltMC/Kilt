@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class AccountProfileKeyPairManagerInject {
     @Shadow @Final private UserApiService userApiService;
 
-    @WrapWithCondition(method = "method_44291", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Throwable;)V"))
+    @WrapWithCondition(method = "method_44291", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Throwable;)V", remap = false))
     private boolean kilt$checkOffline(Logger instance, String s, Throwable throwable) {
         // TODO: add a throw for if the user is cracked
         return FMLLoader.isProduction() || this.userApiService != UserApiService.OFFLINE;

@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
+import org.spongepowered.asm.mixin.connect.IMixinConnector
 import thedarkcolour.kotlinforforge.neoforge.KotlinModContainer
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
@@ -58,7 +59,7 @@ class NeoForgeMod(
     lateinit var modObject: Any
 
     var parent: NeoForgeMod? = null
-    var manifest: Manifest? = null
+    var manifest: Manifest? = this.definition.additionalData.get("manifest") as? Manifest?
 
     val loader = definition.additionalData["loader"] as? String? ?: "javafml"
 
@@ -98,6 +99,21 @@ class NeoForgeMod(
     init {
         this.dependencies.forEach {
             it.owner = this
+        }
+    }
+
+    override fun loadAdditionalMixinConfigs() {
+        if (manifest != null) {
+            // Is Forge incapable of choosing a singular spot for defining mixins too???? what the fuck???????
+            val mixinConnector = manifest?.mainAttributes?.getValue("MixinConnector")?.trim() ?: return
+            val connectorClass = Class.forName(mixinConnector)
+
+            if (!IMixinConnector::class.java.isAssignableFrom(connectorClass)) {
+                throw IllegalStateException("Class $mixinConnector in mod ${this.definition.displayName} (${this.definition.id}) is not a mixin connector!")
+            }
+
+            val connector = connectorClass.getDeclaredConstructor().newInstance() as IMixinConnector
+            connector.connect()
         }
     }
 

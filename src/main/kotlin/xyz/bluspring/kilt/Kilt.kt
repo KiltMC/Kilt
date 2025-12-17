@@ -2,9 +2,13 @@ package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
-import dev.architectury.event.CompoundEventResult
-import dev.architectury.event.EventResult
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.PlayerTickEvents
+import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
@@ -12,18 +16,27 @@ import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerIn
 import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 import net.neoforged.bus.api.Event
 import net.neoforged.neoforge.common.CommonHooks
@@ -37,10 +50,14 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
+import xyz.bluspring.kilt.util.KiltHelper
 import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        // We have no reason to retain this info.
+        KiltHelper.clearForgeClassNodes()
+
         registerFabricEvents()
     }
 
@@ -79,6 +96,24 @@ class Kilt : ModInitializer {
             })
 
             if (forgeEvent.isCanceled)
+                event.isCanceled = true
+        }
+
+        CriticalHitEvent.CRITICAL_HIT.register { event ->
+            val forgeEvent = ForgeHooks.getCriticalHit(event.player, event.entity, event.isVanillaCritical, event.oldDamageModifier)
+
+            if (forgeEvent == null) {
+                event.result = BaseEvent.Result.DENY
+            } else {
+                event.result = BaseEvent.Result.valueOf(forgeEvent.result.name)
+
+                if (forgeEvent.damageModifier != forgeEvent.oldDamageModifier)
+                    event.damageModifier = forgeEvent.damageModifier
+            }
+        }
+
+        LivingEntityEvents.LivingTickEvent.TICK.register { event ->
+            if (ForgeHooks.onLivingTick(event.entity))
                 event.isCanceled = true
         }
 
@@ -136,8 +171,22 @@ class Kilt : ModInitializer {
             CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
         }
 
-        dev.architectury.event.events.common.EntityEvent.ANIMAL_TAME.register { animal, player ->
-            if (EventHooks.onAnimalTame(animal, player))
+        BlockEvents.BLOCK_BREAK.register { event ->
+            val level = event.level
+            if (level is Level) {
+                val forgeEvent = BlockEvent.BreakEvent(level, event.pos, event.state, event.player);
+                forgeEvent.expToDrop = event.expToDrop
+                forgeEvent.isCanceled = event.isCanceled
+                forgeEvent.result = portingLibToEventBus(event.result)
+                MinecraftForge.EVENT_BUS.post(forgeEvent)
+                event.isCanceled = forgeEvent.isCanceled
+                event.expToDrop = forgeEvent.expToDrop
+                event.result = eventBusToPortingLib(forgeEvent.result)
+            }
+        }
+
+        EntityEvent.ANIMAL_TAME.register { animal, player ->
+            if (ForgeEventFactory.onAnimalTame(animal, player))
                 EventResult.interruptDefault()
             else
                 EventResult.pass()
@@ -179,6 +228,11 @@ class Kilt : ModInitializer {
             if (CommonHooks.onLivingDrops(event.entity, event.source, event.drops, event.isRecentlyHit))
                 event.isCanceled = true
         }
+
+        EntityElytraEvents.CUSTOM.register { entity, tickElytra ->
+            val chestPiece = entity.getItemBySlot(EquipmentSlot.CHEST)
+            chestPiece.canElytraFly(entity) && chestPiece.elytraFlightTick(entity, entity.fallFlyingTicks)
+        }
     }
 
     companion object {
@@ -191,13 +245,37 @@ class Kilt : ModInitializer {
         val gson = GsonBuilder().setPrettyPrinting().create()
 
         fun load(onServer: Boolean) {
-            loader.initMods()
-
             // config load should be here
             var loaded = false
 
             if (!onServer) {
                 KiltClient.lateRegisterEvents()
+            }
+        }
+
+		fun portingLibToEventBus(result: BaseEvent.Result): Event.Result {
+			return when (result) {
+				BaseEvent.Result.ALLOW -> Event.Result.ALLOW
+				BaseEvent.Result.DEFAULT -> Event.Result.DEFAULT
+				BaseEvent.Result.DENY -> Event.Result.DENY
+				else -> Event.Result.DEFAULT
+			}
+		}
+
+		fun eventBusToPortingLib(result: Event.Result): BaseEvent.Result {
+			return when (result) {
+				Event.Result.ALLOW -> BaseEvent.Result.ALLOW
+				Event.Result.DEFAULT -> BaseEvent.Result.DEFAULT
+				Event.Result.DENY -> BaseEvent.Result.DENY
+				else -> BaseEvent.Result.DEFAULT
+			}
+		}
+
+        fun Event.Result.toVanilla(): InteractionResult {
+            return when (this) {
+                Event.Result.DEFAULT -> InteractionResult.PASS
+                Event.Result.DENY -> InteractionResult.FAIL
+                Event.Result.ALLOW -> InteractionResult.SUCCESS
             }
         }
     }

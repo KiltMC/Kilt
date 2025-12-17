@@ -10,7 +10,8 @@ class KiltMixinCanceller : MixinCanceller {
         "org.violetmoon.quark.mixin.mixins.ConcretePowderBlockMixin",
         "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin",
         "dev.ghen.thirst.foundation.mixin.MixinPotionItem",
-        "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin"
+        "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin",
+        "fuzs.nightconfigfixes.mixin.ConfigParserFabricMixin" // Replaced by ConfigParserTransform in Kilt
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {

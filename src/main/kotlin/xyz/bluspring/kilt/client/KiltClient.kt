@@ -1,18 +1,19 @@
 package xyz.bluspring.kilt.client
 
 import com.google.common.collect.ImmutableMap
-import dev.architectury.event.EventResult
-import dev.architectury.event.events.client.ClientGuiEvent
-import dev.architectury.event.events.client.ClientRawInputEvent
-import io.github.fabricators_of_create.porting_lib.event.client.TextureAtlasStitchedEvent
+import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents
+import io.github.fabricators_of_create.porting_lib.event.client.TextureStitchCallback
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
+import net.fabricmc.loader.DependencyException
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
@@ -29,11 +30,20 @@ import net.neoforged.neoforge.event.EventHooks
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 import xyz.bluspring.kilt.mixin.LevelRendererAccessor
 import xyz.bluspring.kilt.mixin.ScreenAccessor
+import xyz.bluspring.knit.loader.KnitLoader
 import java.util.function.Consumer
 
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
+        val fabricLoader = FabricLoader.getInstance()
+        val kiltErrorMessage = "Detected Flywheel Forge, please use either Create Fabric or Flywheel Fabric via Vanillin!"
+
+        if ((loader.hasMod("quartz") || loader.hasMod("simpleclouds")) && !fabricLoader.isModLoaded("threatengl")) {
+            KnitLoader.instance.displayErrorGUI(kiltErrorMessage, DependencyException("Mods requiring newer OpenGL detected, please install the ThreatenGL mod to fix this error!"))
+            return
+        }
+
         registerFabricEvents()
 
         hasInitialized = true
@@ -50,90 +60,14 @@ class KiltClient : ClientModInitializer {
             EventHooks.onItemTooltip(stack, null, components, flags, context)
         }
 
-        val add = mutableMapOf<Screen, Consumer<GuiEventListener>>()
-
-        ClientGuiEvent.INIT_PRE.register { screen, access ->
-            add[screen] = Consumer<GuiEventListener> {
-                if (it is Renderable)
-                    screen.renderables.add(it)
-
-                if (it is NarratableEntry)
-                    (screen as ScreenAccessor).narratables.add(it)
-
-                (screen as ScreenAccessor).children.add(it)
-            }
-
-            if (NeoForge.EVENT_BUS.post(ScreenEvent.Init.Pre(screen, (screen as ScreenAccessor).children, add[screen]!!, screen::callRemoveWidget)).isCanceled) {
-                add.remove(screen)
-                EventResult.interruptFalse()
-            } else EventResult.pass()
+        HudRenderCallback.EVENT.register { guiGraphics, delta ->
+            forgeGui.render(guiGraphics, delta)
         }
-
-        ClientGuiEvent.INIT_POST.register { screen, _ ->
-            NeoForge.EVENT_BUS.post(ScreenEvent.Init.Post(screen, (screen as ScreenAccessor).children, add[screen]!!, screen::callRemoveWidget))
-            add.remove(screen)
-        }
-
-        ClientGuiEvent.RENDER_CONTAINER_BACKGROUND.register { screen, poseStack, x, y, _ ->
-            NeoForge.EVENT_BUS.post(ContainerScreenEvent.Render.Background(screen, poseStack, x, y))
-        }
-
-        ClientGuiEvent.RENDER_CONTAINER_FOREGROUND.register { screen, poseStack, x, y, _ ->
-            NeoForge.EVENT_BUS.post(ContainerScreenEvent.Render.Foreground(screen, poseStack, x, y))
-        }
-
-        /*ClientGuiEvent.RENDER_PRE.register { screen, poseStack, x, y, delta ->
-            if (NeoForge.EVENT_BUS.post(ScreenEvent.Render.Pre(screen, poseStack, x, y, delta)))
-                EventResult.interruptFalse()
-            else
-                EventResult.pass()
-        }*/
-
-        /*ClientGuiEvent.RENDER_POST.register { screen, poseStack, x, y, delta ->
-            if (screen != null)
-                NeoForge.EVENT_BUS.post(ScreenEvent.Render.Post(screen, poseStack, x, y, delta))
-        }*/
 
         TextureAtlasStitchedEvent.EVENT.register { event ->
             val forgeEvent = net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent(event.atlas)
             ModLoader.postEventWrapContainerInModOrder(forgeEvent)
         }
-
-        /*WorldRenderEvents.AFTER_ENTITIES.register {
-            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_ENTITIES, it)
-            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_PARTICLES, it)
-        }
-
-        WorldRenderEvents.AFTER_TRANSLUCENT.register {
-            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS, it)
-        }
-
-        WorldRenderEvents.AFTER_SETUP.register {
-            postRenderLevelStage(RenderLevelStageEvent.Stage.AFTER_SKY, it)
-        }
-
-        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register { context, hitResult ->
-            if (hitResult == null)
-                return@register false
-
-            when (hitResult.type) {
-                HitResult.Type.BLOCK -> {
-                    if (hitResult !is BlockHitResult)
-                        return@register false
-
-                    return@register !NeoForge.EVENT_BUS.post(RenderHighlightEvent.Block(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
-                }
-
-                HitResult.Type.ENTITY -> {
-                    if (hitResult !is EntityHitResult)
-                        return@register false
-
-                    return@register !NeoForge.EVENT_BUS.post(RenderHighlightEvent.Entity(context.worldRenderer(), context.camera(), hitResult, context.tickDelta(), context.matrixStack(), context.consumers()))
-                }
-
-                else -> return@register false
-            }
-        }*/
 
         RegisterGeometryLoadersCallback.EVENT.register { map ->
             shouldPostGeoLoaders = true
@@ -181,13 +115,6 @@ class KiltClient : ClientModInitializer {
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
                 ClientHooks.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
             }
-        }
-
-        ClientRawInputEvent.MOUSE_SCROLLED.register { client, xScroll, yScroll ->
-            if (ClientHooks.onMouseScroll(client.mouseHandler, xScroll, yScroll)) {
-                EventResult.interruptTrue()
-            }
-            EventResult.pass()
         }
 
         /*RenderHandCallback.EVENT.register { event ->

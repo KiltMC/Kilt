@@ -15,7 +15,8 @@ object MixinAdditionalRemapper {
     val MIXIN_METHOD_EXPLICIT_REGEX = Regex("(L(?:\\w+(/)?)*;)\\w+(?:\\((?:Z|B|C|S|I|J|F|D|L(?:\\w+(/)?)*;)*\\)(?:Z|B|C|S|I|J|F|D|V|L(?:\\w+(/)?)*;))?")
 
     val HARDCODED_REMAPPED_MIXINS = mapOf(
-        "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/Model;Z)V" to "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/HumanoidModel;Z)V"
+        "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/Model;Z)V" to "renderTrim(Lnet/minecraft/world/item/ArmorMaterial;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/armortrim/ArmorTrim;Lnet/minecraft/client/model/HumanoidModel;Z)V",
+        "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;I)V" to "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;)V"
     )
 
     fun remapClass(classNode: ClassNode) {
@@ -84,6 +85,31 @@ object MixinAdditionalRemapper {
             )) {
                 val modifiedValues = values.toMutableMap()
                 modifiedValues["priority"] = 1050
+
+                if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
+                    classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
+                    classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
+                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                    })
+                }
+            }
+        }
+
+        run {
+            // GregTech is mixing into a forge added method that porting lib adds with a priority of 1100
+            val level = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_1937")
+            val levelMoj = "net.minecraft.world.level.Level"
+            if (!values.contains("priority") && (
+                        targetClassNames.contains(level.replace(".", "/")) || targetClassNames.contains(level) ||
+                                targetClassNames.contains(levelMoj.replace(".", "/")) || targetClassNames.contains(levelMoj)
+                        ) && classNode.name == "com/gregtechceu/gtceu/core/mixins/LevelMixin") {
+                val modifiedValues = values.toMutableMap()
+                modifiedValues["priority"] = 1150
 
                 if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
                     classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }

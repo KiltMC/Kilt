@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
+import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper
 import xyz.bluspring.kilt.loader.KiltLoader
 
 class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
@@ -23,6 +24,12 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
 
         if (modId == "sophisticatedcore" || modId == "creativecore") {
             return FabricLoader.getInstance().isModLoaded(modId) && !KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
+        }
+
+        if (modId == "accessories") {
+            return FabricLoader.getInstance().isModLoaded("accessories")
+                    && !KiltLoader.instance.hasMod("accessories")
+                    && KiltLoader.instance.hasMod("cclayer")
         }
 
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
@@ -44,6 +51,7 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
+        MixinExtensionHelper.preApply(targetClassName, targetClass, mixinClassName, mixinInfo)
     }
 
     override fun postApply(
@@ -52,5 +60,6 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
+        MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo)
     }
 }

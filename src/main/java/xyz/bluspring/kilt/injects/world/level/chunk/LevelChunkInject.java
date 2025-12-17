@@ -1,6 +1,7 @@
 // TRACKED HASH: 366d1f3fc3927ab11616be112b636f33f5fe6585
 package xyz.bluspring.kilt.injects.world.level.chunk;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -42,11 +43,13 @@ import xyz.bluspring.kilt.injections.world.level.chunk.LevelChunkInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Map;
+import java.util.function.BiFunction;
 
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccess implements ChunkAccessInjection, IForgeLevelChunk, LevelChunkInjection {
     @Shadow public abstract Level getLevel();
     @Shadow @Final private Level level;
+    @Shadow @Final private Map tickersInLevel;
 
     @Unique private final CapabilityProvider.AsField<LevelChunk> capProvider = new CapabilityProvider.AsField<>(LevelChunk.class, (LevelChunk) (Object) this);
 
@@ -103,7 +106,11 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
 
     @Inject(method = "clearAllBlockEntities", at = @At("HEAD"))
     private void kilt$unloadBlockEntities(CallbackInfo ci) {
-        this.blockEntities.values().forEach(BlockEntity::onChunkUnloaded);
+        this.blockEntities.values().forEach((blockEntity) -> {
+            if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), IForgeBlockEntity.class, "onChunkUnloaded")) {
+                blockEntity.onChunkUnloaded();
+            }
+        });
     }
 
     @Inject(method = "registerAllBlockEntitiesAfterLevelLoad", at = @At("HEAD"))
@@ -156,5 +163,27 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
     @Override
     public LevelAccessor getWorldForge() {
         return this.getLevel();
+    }
+
+    // Kilt: not a Forge patch, but is needed to try to avoid a CME when working with FRAPI/Indium (+ Continuity?)
+    @WrapOperation(method = "updateBlockEntityTicker", at = @At(value = "INVOKE", target = "Ljava/util/Map;compute(Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;"))
+    private <K, V> V kilt$trySynchronizeToAvoidCME(Map<K, V> instance, K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction, Operation<V> original) {
+        synchronized (this.tickersInLevel) {
+            return original.call(instance, key, remappingFunction);
+        }
+    }
+
+    @WrapMethod(method = "clearAllBlockEntities")
+    private void kilt$trySynchronizeClearToAvoidCME(Operation<Void> original) {
+        synchronized (this.tickersInLevel) {
+            original.call();
+        }
+    }
+
+    @WrapOperation(method = "removeBlockEntityTicker", at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;"))
+    private <K, V> V kilt$trySynchronizeRemoveToAvoidCME(Map<K, V> instance, Object o, Operation<V> original) {
+        synchronized (this.tickersInLevel) {
+            return original.call(instance, o);
+        }
     }
 }

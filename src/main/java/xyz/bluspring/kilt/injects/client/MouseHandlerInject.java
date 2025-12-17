@@ -2,6 +2,8 @@ package xyz.bluspring.kilt.injects.client;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
@@ -34,11 +36,35 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
         return this.accumulatedDY;
     }
 
-    @Inject(method = "onPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;"), cancellable = true)
+    @Inject(method = "onPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;", ordinal = 0), cancellable = true)
     private void kilt$onMouseButtonPre(long windowPointer, int button, int action, int modifiers, CallbackInfo ci) {
         if (ClientHooks.onMouseButtonPre(button, action, modifiers)) {
             ci.cancel();
         }
+    }
+
+    @WrapOperation(method = "method_1611", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseClicked(DDI)Z"))
+    private static boolean kilt$callScreenMouseClickEvents(Screen instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+        var value = ForgeHooksClient.onScreenMouseClickedPre(instance, mouseX, mouseY, button);
+
+        if (!value) {
+            value = original.call(instance, mouseX, mouseY, button);
+            value = ForgeHooksClient.onScreenMouseClickedPost(instance, mouseX, mouseY, button, value);
+        }
+
+        return value;
+    }
+
+    @WrapOperation(method = "method_1605", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseReleased(DDI)Z"))
+    private static boolean kilt$callScreenMouseReleaseEvents(Screen instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+        var value = ForgeHooksClient.onScreenMouseReleasedPre(instance, mouseX, mouseY, button);
+
+        if (!value) {
+            value = original.call(instance, mouseX, mouseY, button);
+            value = ForgeHooksClient.onScreenMouseReleasedPost(instance, mouseX, mouseY, button, value);
+        }
+
+        return value;
     }
 
     @Inject(method = "onPress", at = @At("TAIL"))
@@ -46,6 +72,29 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
         if (windowPointer == this.minecraft.getWindow().getWindow()) {
             ClientHooks.onMouseButtonPost(button, action, modifiers);
         }
+    }
+
+    @WrapOperation(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseScrolled(DDD)Z"))
+    private boolean kilt$callScreenMouseScrollEvents(Screen instance, double mouseX, double mouseY, double amount, Operation<Boolean> original, @Cancellable CallbackInfo ci) {
+        if (ForgeHooksClient.onScreenMouseScrollPre((MouseHandler) (Object) this, instance, amount)) {
+            ci.cancel();
+            return true;
+        }
+
+        if (original.call(instance, mouseX, mouseY, amount)) {
+            ci.cancel();
+            return true;
+        }
+
+        ForgeHooksClient.onScreenMouseScrollPost((MouseHandler) (Object) this, instance, amount);
+
+        return false;
+    }
+
+    @Inject(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z"), cancellable = true)
+    private void kilt$callForgeMouseScrollEvent(long windowPointer, double xOffset, double yOffset, CallbackInfo ci, @Local(ordinal = 2) double amount) {
+        if (ForgeHooksClient.onMouseScroll((MouseHandler) (Object) this, amount))
+            ci.cancel();
     }
 
     @WrapOperation(method = "method_1602", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseDragged(DDIDD)Z"))

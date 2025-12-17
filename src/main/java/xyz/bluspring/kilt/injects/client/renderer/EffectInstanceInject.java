@@ -1,16 +1,24 @@
 package xyz.bluspring.kilt.injects.client.renderer;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.shaders.Program;
+import kotlin.text.StringsKt;
 import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.resources.ResourceLocation;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(EffectInstance.class)
+@Mixin(value = EffectInstance.class, priority = 1250)
 public abstract class EffectInstanceInject {
-    // Kilt: Handled by Architectury
-    /*@Shadow @Final private static String EFFECT_SHADER_PATH;
+    @Shadow @Final private static String EFFECT_SHADER_PATH;
 
     @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
     private ResourceLocation kilt$tryLoadNamespacedEffectInstance(String location, Operation<ResourceLocation> original, @Local(argsOnly = true) String fullLocation) {
-        if (fullLocation.contains(":")) {
+        if (StringsKt.count(location, c -> c == ':') == 1) {
             var rl = ResourceLocation.tryParse(fullLocation);
 
             if (rl != null) {
@@ -23,7 +31,7 @@ public abstract class EffectInstanceInject {
 
     @WrapOperation(method = "getOrCreate", at = @At(value = "NEW", target = "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
     private static ResourceLocation kilt$tryLoadNamespacedEffectInstance(String location, Operation<ResourceLocation> original, @Local(argsOnly = true) String fullLocation, @Local(argsOnly = true) Program.Type programType) {
-        if (fullLocation.contains(":")) {
+        if (StringsKt.count(location, c -> c == ':') == 1) {
             var rl = ResourceLocation.tryParse(fullLocation);
 
             if (rl != null) {
@@ -32,5 +40,5 @@ public abstract class EffectInstanceInject {
         }
 
         return original.call(location);
-    }*/
+    }
 }

@@ -34,6 +34,12 @@ public abstract class KeyMappingMixin implements IKeyBinding {
         }
     }
 
+    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "getLocalizedName", prefix = "handler")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    private void kilt$amecsapi$avoidHandlingLocalizedName(CallbackInfo ci) {
+        ci.cancel();
+    }
+
     @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "onKeyPressed", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
     private static boolean kilt$amecsapi$avoidCallbackCancel(CallbackInfo instance) {

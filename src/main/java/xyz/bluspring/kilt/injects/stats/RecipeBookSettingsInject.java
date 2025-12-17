@@ -17,8 +17,9 @@ import xyz.bluspring.kilt.injections.stats.RecipeBookSettingsInjection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(RecipeBookSettings.class)
-public class RecipeBookSettingsInject implements RecipeBookSettingsInjection {
+// Increase priority, because Farmer's Delight Refabricated makes the map immutable again.
+@Mixin(value = RecipeBookSettings.class, priority = 1500)
+public abstract class RecipeBookSettingsInject implements RecipeBookSettingsInjection {
     @CreateStatic
     private static void addTagsForType(RecipeBookType type, String openTag, String filteringTag) {
         RecipeBookSettingsInjection.addTagsForType(type, openTag, filteringTag);

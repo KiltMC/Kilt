@@ -53,6 +53,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
@@ -218,6 +219,13 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
     @ModifyExpressionValue(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/InteractionResult;shouldSwing()Z"))
     private boolean kilt$onlySwingHandIfNeeded(boolean original, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent) {
         return original && (inputEvent.get() == null || inputEvent.get().shouldSwingHand());
+    }
+
+    @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 1))
+    private void rightClickAir(CallbackInfo ci, @Local ItemStack stack, @Local InteractionHand hand) {
+        if (stack.isEmpty() && (this.hitResult == null || this.hitResult.getType() == HitResult.Type.MISS)) {
+            ForgeHooks.onEmptyClick(this.player, hand);
+        }
     }
 
     @Inject(method = "pickBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z", ordinal = 0), cancellable = true)

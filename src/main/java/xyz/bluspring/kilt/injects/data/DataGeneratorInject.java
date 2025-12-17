@@ -1,6 +1,7 @@
 // TRACKED HASH: de027ad643273d383b040eb1533f1634a1ff65cd
 package xyz.bluspring.kilt.injects.data;
 
+import net.minecraft.WorldVersion;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -8,6 +9,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.data.DataGeneratorInjection;
 
 import java.nio.file.Path;
@@ -21,7 +25,13 @@ public class DataGeneratorInject implements DataGeneratorInjection {
     @Shadow @Final private PackOutput vanillaPackOutput;
     @Shadow @Final private Path rootOutputFolder;
     @Shadow @Final private Set<String> allProviderIds;
-    @Unique private final Map<String, DataProvider> providersView = Collections.unmodifiableMap(this.providersToRun);
+
+    private Map<String, DataProvider> providersView;
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void kilt$initDataProvidersView(Path rootOutputFolder, WorldVersion version, boolean alwaysGenerate, CallbackInfo ci) {
+        this.providersView = Collections.unmodifiableMap(this.providersToRun);
+    }
 
     @Override
     public Map<String, DataProvider> getProvidersView() {

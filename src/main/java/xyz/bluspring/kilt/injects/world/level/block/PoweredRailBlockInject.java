@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -22,10 +21,8 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.PoweredRailBlockInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -69,7 +66,7 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
         this.registerDefaultState(); // oh fuck i forgot about this
     }
 
-    @ModifyArg(method = "findPoweredRailSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 0))
+    @ModifyArg(method = "findPoweredRailSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 0), require = 0)
     public Property<RailShape> kilt$useForgeShape(Property<RailShape> original) {
         if (original == SHAPE) {
             return this.getShapeProperty();
@@ -102,7 +99,7 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
         return ((PoweredRailBlock) state.getBlock());
     }
 
-    @ModifyArg(method = "updateState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 1))
+    @ModifyArg(method = "updateState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 1), require = 0)
     public Property kilt$useForgeShapeForAscension(Property original) {
         if (original != SHAPE)
             return original;
@@ -110,10 +107,12 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
         return getShapeProperty();
     }
 
-    @Inject(method = "createBlockStateDefinition", at = @At("HEAD"), cancellable = true)
-    public void kilt$useForgeShapeForDefinition(StateDefinition.Builder<Block, BlockState> builder, CallbackInfo ci) {
-        builder.add(getShapeProperty(), POWERED, WATERLOGGED);
+    @ModifyArg(method = "createBlockStateDefinition", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/StateDefinition$Builder;add([Lnet/minecraft/world/level/block/state/properties/Property;)Lnet/minecraft/world/level/block/state/StateDefinition$Builder;"))
+    private Property<?>[] kilt$useForgeShapeForDefinition(Property<?>[] properties) {
+        if (properties.length > 0 && properties[0] == SHAPE) {
+            properties[0] = getShapeProperty();
+        }
 
-        ci.cancel();
+        return properties;
     }
 }

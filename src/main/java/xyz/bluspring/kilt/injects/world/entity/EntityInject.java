@@ -1,6 +1,7 @@
 // TRACKED HASH: 34fb617752c8022973f9dca4fb9eed32600931bf
 package xyz.bluspring.kilt.injects.world.entity;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.google.common.base.Predicates;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -68,7 +69,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
-@Mixin(Entity.class)
+@Mixin(value = Entity.class, priority = 1100)
 @Extends(AttachmentHolder.class)
 public abstract class EntityInject implements IEntityExtension, EntityInjection {
     @Shadow public Level level;
@@ -206,7 +207,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         return true;
     }
 
-    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;clear()V", shift = At.Shift.AFTER))
+    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;clear()V", shift = At.Shift.AFTER, remap = false))
     private void kilt$clearForgeFluidHeight(CallbackInfoReturnable<Boolean> cir) {
         this.forgeFluidTypeHeight.clear();
     }
@@ -467,7 +468,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
             cir.setReturnValue(false);
     }
 
-    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D"))
+    @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D", remap = false))
     private boolean kilt$ensureIsActuallyInTag(Object2DoubleMap instance, Object o, double v, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
         if (fluidTypeRef.get() == null && interimCalcs.get() == null)
             return true;
@@ -593,5 +594,13 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
 
     public EntityDimensions getDimensionsForge(Pose pose) {
         return getDimensions(pose);
+    }
+
+    // Porting Lib injects
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, remap = false)
+    private void kilt$onTravelToDimension(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        if (!ForgeHooks.onTravelToDimension((Entity) (Object) this, pDestination.dimension()))
+            cir.setReturnValue(null);
     }
 }

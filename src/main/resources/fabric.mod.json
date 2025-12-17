@@ -52,8 +52,7 @@
     "minecraft": "${minecraft_version}",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "mm": ">=${fabric_asm_version}",
-    "forgeconfigapiport": ">=${forge_config_version}",
-    "architectury": ">=${architectury_version}"
+    "forgeconfigapiport": ">=${forge_config_version}"
   },
   "custom": {
     "kilt:access_transformer": [
@@ -922,7 +921,11 @@
     },
     "lithium:options": {
       "mixin.entity.collisions.fluid": false
-    }
+    },
+    "potatoptimize:options": {
+      "mixin.world.farmland": false
+    },
+    "afl:classtransform": "kilt.classtransform.json"
   },
   "breaks": {
     "quilt_loader": "*",

@@ -49,7 +49,7 @@ public abstract class TagLoaderInject<T> {
         return !((TagLoaderInjection.EntryWithSourceInjection) (Object) entryWithSource).remove();
     }
 
-    @ModifyArg(method = "build(Lnet/minecraft/tags/TagEntry$Lookup;Ljava/util/List;)Lcom/mojang/datafixers/util/Either;", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;right(Ljava/lang/Object;)Lcom/mojang/datafixers/util/Either;"))
+    @ModifyArg(method = "build(Lnet/minecraft/tags/TagEntry$Lookup;Ljava/util/List;)Lcom/mojang/datafixers/util/Either;", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;right(Ljava/lang/Object;)Lcom/mojang/datafixers/util/Either;", remap = false))
     private <R> R kilt$removeEntriesFromBuilder(R value, @Share("removed") LocalRef<Set<T>> removed) {
         var set = (ImmutableSet<T>) value;
         var list = new ArrayList<>(List.copyOf(set));

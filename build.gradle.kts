@@ -190,6 +190,7 @@ allprojects {
         // To change the versions see the gradle.properties file
         minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
         mappings (loom.layered {
+            mappings(rootProject.file("workarounds/fix_yarn_mapping.tiny")) // for the cases where other mods are making the mistake of using Yarn and having conflicting names
             officialMojangMappings()
             parchment("org.parchmentmc.data:parchment-${rootProject.property("parchment_version")}:${rootProject.property("parchment_release")}@zip")
         })
@@ -232,7 +233,6 @@ dependencies {
     portingLibs.forEach { lib ->
         modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
     }
-    modApi("dev.architectury:architectury-fabric:${property("architectury_version")}")
 
     // JiJ'd into main JAR alone
     //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
@@ -334,7 +334,26 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
+
+    // Workarounds
+    include(modImplementation("maven.modrinth:feature-recycler:${rootProject.property("feature_recycler_version")}")!!) // Required for features - see #376, #391, #361, #352
 }
+
+// yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
+// FIXME: why does this not work.
+//loom.runs {
+//    afterEvaluate {
+//        configureEach {
+//            vmArg("-javaagent:${configurations.compileClasspath.get().find { it.name.contains("sponge-mixin") }}")
+//            vmArg("-XX:+IgnoreUnrecognizedVMOptions") // in the case the below doesnt work bc that JVM doesnt have it
+//            vmArg("-XX:+AllowEnhancedClassRedefinition")
+//            property("mixin.hotSwap", "true")
+//            property("mixin.debug.export", "true")
+//            property("kilt.storeModifiedCoreMods", "true")
+//            property("classtransform.dumpClasses", "true")
+//        }
+//    }
+//}
 
 configurations.all {
     exclude("cpw.mods", "modlauncher")
@@ -473,7 +492,6 @@ tasks {
             "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
             "fabric_asm_version" to project.property("fabric_asm_version"),
             "forge_config_version" to project.property("forgeconfigapiport_version"),
-            "architectury_version" to project.property("architectury_version"),
         )
 
         for ((key, value) in properties) {
@@ -603,10 +621,10 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
-            embeds("porting_lib")
-            incompatible("async", "embeddium")
+            embeds("porting_lib", "feature-recycler")
+            incompatible("async", "embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
 
         curseforge {
@@ -615,9 +633,10 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "architectury-api", "forge-config-api-port-fabric", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
-            incompatible("embeddium")
+            embeds("porting-lib", "feature-recycler")
+            incompatible("embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
     }
 }

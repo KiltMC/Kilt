@@ -59,7 +59,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 197
+    const val REMAPPER_VERSION = 208
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -78,9 +78,7 @@ object KiltRemapper {
     }
 
     internal val logger = LoggerFactory.getLogger("Kilt Remapper")
-
-    private val launcher = FabricLauncherBase.getLauncher()
-    internal val useNamed = launcher.defaultRuntimeNamespace != "intermediary"
+    internal val useNamed = FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace != "intermediary"
 
     // Remapper extensions
     fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
@@ -114,8 +112,6 @@ object KiltRemapper {
     private val kiltWorkaroundTree = TinyMappingFactory.load(
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
-
-    private val namespace: String = if (useNamed) launcher.defaultRuntimeNamespace else "intermediary"
 
     lateinit var enhancedRemapper: KiltEnhancedRemapper
 
@@ -357,7 +353,7 @@ object KiltRemapper {
 
             val mixinClasses = Collections.synchronizedSet(ClassNameHashSet())
             val refmaps = Collections.synchronizedSet(CaseInsensitiveStringHashSet())
-            val refmapJsons = Collections.synchronizedMap<JarEntry, JsonObject>(mutableMapOf())
+            val mixinRefmaps = Collections.synchronizedMap<JarEntry, MixinRefmap>(mutableMapOf())
 
             // JAR validation information stripping.
             // If we can find out how to use this to our advantage prior to remapping,
@@ -365,10 +361,20 @@ object KiltRemapper {
             val manifestEntry = jar.getJarEntry("META-INF/MANIFEST.MF")
             if (manifestEntry != null) {
                 val manifest = jar.getInputStream(manifestEntry).use { Manifest(it) }
-                val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",") ?: listOf()
+                val mixinConfigs = manifest.mainAttributes.getValue("MixinConfigs")?.split(",")?.toMutableSet() ?: mutableSetOf()
+
+                // Search for more mixin configs, because apparently it's possible to define with a fucking class.
+                for (entry in jar.stream()) {
+                    if (entry.name.endsWith(".mixin.json") || entry.name.endsWith(".mixins.json")) {
+                        mixinConfigs.add(entry.name)
+                    } else if (entry.name.endsWith(".refmap.json")) {
+                        // Search for more refmaps too, because they're probably defined in class too.
+                        refmaps.add(entry.name)
+                    }
+                }
 
                 // Read mixin configs and add them to the list of mixins to fix
-                mixinConfigs.asFlow().concurrent().collect { config ->
+                mixinConfigs.asFlow().collect { config ->
                     val jsonEntry = jar.getJarEntry(config) ?: return@collect
                     val json = jar.getInputStream(jsonEntry).use {
                         JsonParser.parseReader(it.reader())
@@ -383,7 +389,8 @@ object KiltRemapper {
                         (json.get("client") as? JsonArray)?.asFlow() ?: emptyFlow(),
                         (json.get("server") as? JsonArray)?.asFlow() ?: emptyFlow()
                     ).collect {
-                        mixinClasses.add("$mixinPackage.${it.asString}")
+                        if (!it.isJsonNull)
+                            mixinClasses.add("$mixinPackage.${it.asString}")
                     }
 
                     runCatching { json.get("refmap")!!.asString }.onSuccess { refmaps.add(it) }
@@ -412,7 +419,26 @@ object KiltRemapper {
                         val json = jar.getInputStream(entry).use { it.reader(Charsets.UTF_8).use { r -> JsonParser.parseReader(r) } }
 
                         if (json.isJsonObject) {
-                            refmapJsons[entry] = json.asJsonObject
+                            val obj = json.asJsonObject
+
+                            // Be careful, because they might not even have the data in the first place.
+                            if (obj.has("mappings")) {
+                                mixinRefmaps[entry] = MixinRefmap(
+                                    Collections.synchronizedMap(
+                                        obj.getAsJsonObject("mappings").asMap()
+                                            .map {
+                                                it.key to it.value.asJsonObject.asMap().map { b ->
+                                                    b.key to b.value.asString
+                                                }
+                                                    .associate { b -> b.first to b.second }
+                                                    .toMutableMap()
+                                            }
+                                            .associate { it.first to it.second }
+                                            .toMutableMap()
+                                    ),
+                                    Collections.synchronizedMap(mutableMapOf())
+                                )
+                            }
                         }
 
                         return@collect
@@ -448,7 +474,7 @@ object KiltRemapper {
                         KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
                             .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
                     ) {
-                        MixinRemapper.remapClass(originalNode, enhancedRemapper, refmapJsons.values)
+                        MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
                         MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
 
                         if (!KiltFlags.DISABLE_FIXERS) {
@@ -487,15 +513,29 @@ object KiltRemapper {
             }
             
             // If for whatever reason the refmap remapping missed something, we need to remap it immediately.
-            MixinRemapper.remapUnmappedRefmaps(refmapJsons.values, enhancedRemapper)
+            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedRemapper)
 
             // Now, let's write the refmap JSONs
-            for ((entry, json) in refmapJsons) {
-                // First, let's remove the "searge" data map.
-                json.getAsJsonObject("data").remove("searge")
+            for ((entry, refmap) in mixinRefmaps) {
+                val json = JsonObject()
+
+                // First, write the mappings directly.
+                val mappings = JsonObject()
+                for ((mixinClass, nameMappings) in refmap.mappings) {
+                    val classMapping = JsonObject()
+                    for ((named, obfuscated) in nameMappings) {
+                        classMapping.addProperty(named, obfuscated)
+                    }
+
+                    mappings.add(mixinClass, classMapping)
+                }
+                json.add("mappings", mappings)
 
                 // Now, let's add the mappings data map directly to "named:intermediary"
-                json.getAsJsonObject("data").add("named:intermediary", json.getAsJsonObject("mappings"))
+                val dataMap = JsonObject()
+                dataMap.add("named:intermediary", mappings)
+
+                json.add("data", dataMap)
 
                 jarOutputStream.putNextEntry(entry)
                 jarOutputStream.write(gson.toJson(json).toByteArray(Charsets.UTF_8))
@@ -538,7 +578,7 @@ object KiltRemapper {
         logger.info("Finished remapping mods!")
 
         if (exception.suppressed.isNotEmpty()) {
-            logger.error("Ran into some errors, we're not going to continue with the repairing process.")
+            logger.error("Ran into some errors during the remapping process, cannot continue!")
             throw exception
         }
     }
@@ -601,13 +641,13 @@ object KiltRemapper {
                     FabricLoader.getInstance().gameDir,
                     "minecraft",
                     KiltLoader.MC_VERSION.friendlyString
-                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${launcher.defaultRuntimeNamespace}.jar"
+                ) / "${FabricLoader.getInstance().environmentType.name.lowercase()}-${FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace}.jar"
 
             if (deobfJar.exists())
                 return deobfJar
         } else {
             // TODO: is there a better way of doing this?
-            val possibleMcGameJar = launcher.classPath.firstOrNull { path ->
+            val possibleMcGameJar = FabricLauncherBase.getLauncher().classPath.firstOrNull { path ->
                 val str = path.absolutePathString()
                 str.contains("net") && str.contains("minecraft") && str.contains("-loom.mappings.") && str.contains("minecraft-merged-")
             }

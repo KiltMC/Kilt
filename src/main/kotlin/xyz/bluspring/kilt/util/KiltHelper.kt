@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.util
 
+import cpw.mods.util.Lazy
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.neoforged.fml.ModLoadingContext
@@ -10,13 +11,17 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
+import java.lang.reflect.Modifier
 import java.nio.file.Path
 import java.util.*
 import java.util.jar.JarFile
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
-    private val cachedForgeClassNodes = getForgeClassNodesInternal()
+
+    private val cachedForgeClassNodes = Lazy.of { getForgeClassNodesInternal() }
+    private var isForgeClassNodesCleared = false
+
     private val cachedHasMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
     private val cachedHasNoMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
 
@@ -58,7 +63,13 @@ object KiltHelper {
         var currentClass: Class<*>? = topClass
         while (currentClass != null && currentClass != superClass && currentClass != Object::class.java && superClass.isAssignableFrom(topClass)) {
             try {
-                currentClass.getDeclaredMethod(methodName, *methodArgs)
+                val method = currentClass.getDeclaredMethod(methodName, *methodArgs)
+                // If a Fabric mod has this method signature but is private, it could cause a game crash.
+                if (Modifier.isPrivate(method.modifiers)) {
+                    cachedHasNoMethodOverride.add(overrideData)
+                    return false
+                }
+
                 cachedHasMethodOverride.add(overrideData)
                 return true
             } catch (_: NoSuchMethodException) {
@@ -74,7 +85,16 @@ object KiltHelper {
     }
 
     fun getForgeClassNodes(): List<ClassNode> {
-        return cachedForgeClassNodes
+        if (isForgeClassNodesCleared) {
+            throw IllegalStateException("Forge class nodes have already been cleared!")
+        }
+
+        return cachedForgeClassNodes.get()
+    }
+
+    fun clearForgeClassNodes() {
+        cachedForgeClassNodes.get().clear()
+        isForgeClassNodesCleared = true
     }
 
     fun joinToString(array: Array<String>, separator: String): String {
@@ -123,7 +143,7 @@ object KiltHelper {
         return File(fullPath).toPath()
     }
 
-    private fun getForgeClassNodesInternal(): List<ClassNode> {
+    private fun getForgeClassNodesInternal(): MutableList<ClassNode> {
         val list = mutableListOf<ClassNode>()
 
         if (!FabricLoader.getInstance().isDevelopmentEnvironment) {

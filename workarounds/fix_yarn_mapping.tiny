@@ -1,0 +1,3 @@
+tiny	2	0	intermediary	named
+c	aqario/fowlplay/common/entity/HawkEntity	aqario/fowlplay/common/entity/HawkEntity
+	m	()Z	isFlapping	fowlplay$isFlapping

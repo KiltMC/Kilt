@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Mixin(value = LiquidBlock.class, priority = 1070)
-public abstract class LiquidBlockInject extends Block implements LiquidBlockInjection {
+@Implements(@Interface(iface = LiquidBlockInjection.class, prefix = "kilt$i$"))
+public abstract class LiquidBlockInject extends Block {
     @Shadow @Final @Mutable
     protected FlowingFluid fluid;
 
@@ -37,9 +38,8 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
         super(properties);
     }
 
-    @Intrinsic
-    @Override
-    public FlowingFluid getFluid() {
+    @Intrinsic(displace = true)
+    public FlowingFluid kilt$i$getFluid() {
         if (this.supplier != null && this.fluid == null)
             this.fluid = (FlowingFluid) this.supplier.get();
 
@@ -51,7 +51,7 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
     @SuppressWarnings("InvalidInjectorMethodSignature")
     @Inject(at = @At("HEAD"), method = {"isPathfindable", "getPickupSound", "pickupBlock", "shouldSpreadLiquid", "onPlace", "skipRendering", "updateShape", "neighborChanged"})
     public void kilt$cacheFluidState(CallbackInfo ci) {
-        this.getFluid();
+        this.kilt$i$getFluid();
     }
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V")
@@ -85,12 +85,12 @@ public abstract class LiquidBlockInject extends Block implements LiquidBlockInje
     private boolean fluidStateCacheInitialized = false;
     protected synchronized void initFluidStateCache() {
         if (!fluidStateCacheInitialized) {
-            this.stateCache.add(this.getFluid().getSource(false));
+            this.stateCache.add(this.kilt$i$getFluid().getSource(false));
 
             for (int i = 1; i < 8; ++i)
-                this.stateCache.add(this.getFluid().getFlowing(8 - i, false));
+                this.stateCache.add(this.kilt$i$getFluid().getFlowing(8 - i, false));
 
-            this.stateCache.add(getFluid().getFlowing(8, true));
+            this.stateCache.add(this.kilt$i$getFluid().getFlowing(8, true));
             fluidStateCacheInitialized = true;
         }
     }

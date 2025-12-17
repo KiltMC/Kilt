@@ -10,7 +10,7 @@ import xyz.bluspring.kilt.loader.KiltLoader;
 
 @Mixin(FabricIconHandler.class)
 public abstract class FabricIconHandlerMixin {
-    @WrapWithCondition(method = "createIcon", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/Validate;validState(ZLjava/lang/String;[Ljava/lang/Object;)V"))
+    @WrapWithCondition(method = "createIcon", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/Validate;validState(ZLjava/lang/String;[Ljava/lang/Object;)V", remap = false))
     private static boolean kilt$useIconAnywayIfForge(boolean expression, String message, Object[] values, @Local(argsOnly = true) ModContainer iconSource) {
         return !KiltLoader.Companion.getInstance().hasMod(iconSource.getMetadata().getId());
     }

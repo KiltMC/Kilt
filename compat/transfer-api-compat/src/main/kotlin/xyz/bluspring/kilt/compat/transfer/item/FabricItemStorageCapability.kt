@@ -23,8 +23,13 @@ class FabricItemStorageCapability(val storage: SlottedStorage<ItemVariant>) : II
             return stack.copyWithCount(stack.count - insertedCount.toInt())
         }
 
-        val insertedCount = StorageUtil.tryInsertStacking(storage.getSlot(slot), ItemVariant.of(stack), stack.count.toLong(), null)
-        return stack.copyWithCount(stack.count - insertedCount.toInt())
+        TransferUtil.getTransaction().use {
+            val insertedCount = StorageUtil.tryInsertStacking(storage.getSlot(slot), ItemVariant.of(stack), stack.count.toLong(), it)
+            val inserted = stack.copyWithCount(stack.count - insertedCount.toInt())
+            it.commit()
+
+            return inserted
+        }
     }
 
     override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
