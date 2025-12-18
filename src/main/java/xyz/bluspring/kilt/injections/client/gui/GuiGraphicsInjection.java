@@ -8,18 +8,37 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface GuiGraphicsInjection {
-    int drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean dropShadow);
-    int drawString(Font font, @Nullable String text, float x, float y, int color, boolean dropShadow);
-    void blitRepeating(ResourceLocation atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset, int sourceWidth, int sourceHeight, int textureWidth, int textureHeight);
+    default int drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean dropShadow) {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "drawString");
+    }
 
-    void renderComponentTooltip(Font font, List<? extends FormattedText> tooltips, int mouseX, int mouseY, ItemStack stack);
-    void renderTooltip(Font font, List<Component> textComponents, Optional<TooltipComponent> tooltipComponent, ItemStack stack, int mouseX, int mouseY);
+    default int drawString(Font font, @Nullable String text, float x, float y, int color, boolean dropShadow)  {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "drawString");
+    }
 
-    ItemStack kilt$getTooltipStack();
-    void kilt$setTooltipStack(ItemStack stack);
+    default void blitRepeating(ResourceLocation atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset, int sourceWidth, int sourceHeight, int textureWidth, int textureHeight) {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "blitRepeating");
+    }
+
+    default void renderComponentTooltip(Font font, List<? extends FormattedText> tooltips, int mouseX, int mouseY, ItemStack stack) {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "renderComponentTooltip");
+    }
+
+    default void renderTooltip(Font font, List<Component> textComponents, Optional<TooltipComponent> tooltipComponent, ItemStack stack, int mouseX, int mouseY) {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "renderTooltip");
+    }
+
+    default ItemStack kilt$getTooltipStack() {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "kilt$getTooltipStack");
+    }
+
+    default void kilt$setTooltipStack(ItemStack stack) {
+        throw KiltHelper.createMixinException(GuiGraphicsInjection.class, "kilt$setTooltipStack");
+    }
 }
