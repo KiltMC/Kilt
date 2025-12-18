@@ -11,7 +11,8 @@
         "registrate_fabric.EntityBuilderMixin",
         "registrate_fabric.RegistrateMixin",
         "registrate_fabric.RegistryEntryMixin",
-        "registrate_fabric.RegistryObjectMixin"
+        "registrate_fabric.RegistryObjectMixin",
+        "registrate_fabric.AbstractBuilderMixin"
     ],
     "client": [
     ],

@@ -5,10 +5,13 @@ import com.google.common.collect.Table;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.FluidBuilder;
+import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -24,9 +27,8 @@ import net.minecraftforge.registries.RegisterEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
+import xyz.bluspring.kilt.compat.create.TinyTater;
 import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateForgeExtension;
 import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateRegistrationForgeExtension;
 import xyz.bluspring.kilt.compat.create.extensions.RegistryEntryForgeExtension;
@@ -55,6 +57,8 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
     @Shadow @Final private Multimap<ResourceKey<? extends Registry<?>>, Runnable> afterRegisterCallbacks;
 
     @Shadow @Final private Set<ResourceKey<? extends Registry<?>>> completedRegistrations;
+
+    @Shadow protected abstract S self();
 
     public IEventBus getModEventBus() {
         return FMLJavaModLoadingContext.get().getModEventBus();
@@ -160,5 +164,10 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
         public @NotNull ResourceLocation getName() {
             return name;
         }
+    }
+
+    public <T extends SimpleFlowableFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        /* at runtime this will be turned into FluidBuilder$FluidTypeFactory */ TinyTater typeFactory, NonNullFunction<SimpleFlowableFluid.Properties, T> fluidFactory) {
+        return ((AbstractRegistrate<S>) (Object) this).fluid(self(), name, stillTexture, flowingTexture, fluidFactory);
     }
 }

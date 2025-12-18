@@ -20,6 +20,9 @@
         ],
         "preLaunch": [
             "xyz.bluspring.kilt.compat.create.KiltCreateCompatPreLaunch"
+        ],
+        "mm:early_risers": [
+            "xyz.bluspring.kilt.compat.create.CompatEarlyRiser"
         ]
     },
     "mixins": [
