@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @IfModLoaded("registrate-fabric")
 @Mixin(RegistryEntry.class)
-public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtension {
+public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtension<T> {
     @Shadow @Final private @Nullable RegistryObject<T> delegate;
 
     @Shadow public abstract <R, E extends R> RegistryEntry<E> getSibling(ResourceKey<? extends Registry<R>> registryType);
@@ -33,5 +33,10 @@ public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtensi
     @Override
     public @NotNull <R, E extends R> RegistryEntry<E> getSibling(@NotNull IForgeRegistry<R> registry) {
         return this.getSibling(registry.getRegistryKey());
+    }
+
+    @Override
+    public @NotNull ResourceKey<T> getKey() {
+        return ((RegistryObjectForgeExtension<T>) this.delegate).getKey();
     }
 }

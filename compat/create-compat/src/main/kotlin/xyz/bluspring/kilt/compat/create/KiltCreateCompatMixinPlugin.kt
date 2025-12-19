@@ -5,8 +5,8 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
-import xyz.bluspring.kilt.compat.create.mixin.registrate_fabric.AbstractRegistrateMixin
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
     lateinit var mixinPackage: String
@@ -58,7 +58,7 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
 
         if(mixinClassName?.contains("AbstractRegistrateMixin") == true) {
             val method = targetClass?.methods?.firstOrNull { methodNode ->
-                methodNode.desc == "(Ljava/lang/String;Lnet/minecraft/class_2960;Lnet/minecraft/class_2960;Lxyz/bluspring/kilt/compat/create/TinyTater;Lcom/tterrag/registrate/util/nullness/NonNullFunction;)Lcom/tterrag/registrate/builders/FluidBuilder;"
+                methodNode.desc == KiltRemapper.remapDescriptor("(Ljava/lang/String;Lnet/minecraft/class_2960;Lnet/minecraft/class_2960;Lxyz/bluspring/kilt/compat/create/TinyTater;Lcom/tterrag/registrate/util/nullness/NonNullFunction;)Lcom/tterrag/registrate/builders/FluidBuilder;")
             } ?: return
 
             method.desc = method.desc.replace("L$tinyTaterToken;", "L$fluidTypeFactoryInterface;")
