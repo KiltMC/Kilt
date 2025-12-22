@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
+import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
@@ -45,6 +46,7 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
+        MixinExtensionHelper.preApply(targetClassName, targetClass, mixinClassName, mixinInfo)
     }
 
     override fun postApply(
@@ -53,19 +55,17 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
-        val tinyTaterToken = "xyz/bluspring/kilt/compat/create/TinyTater"
+        MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo)
+
+        val tinyTaterToken = "xyz/bluspring/kilt/compat/create/registrate/FluidTypeFactoryToken"
         val fluidTypeFactoryInterface = "com/tterrag/registrate/builders/FluidBuilder\$FluidTypeFactory"
 
         if(mixinClassName?.contains("AbstractRegistrateMixin") == true) {
             val method = targetClass?.methods?.firstOrNull { methodNode ->
-                methodNode.desc == KiltRemapper.remapDescriptor("(Ljava/lang/String;Lnet/minecraft/class_2960;Lnet/minecraft/class_2960;Lxyz/bluspring/kilt/compat/create/TinyTater;Lcom/tterrag/registrate/util/nullness/NonNullFunction;)Lcom/tterrag/registrate/builders/FluidBuilder;")
+                methodNode.desc == KiltRemapper.remapDescriptor("(Ljava/lang/String;Lnet/minecraft/class_2960;Lnet/minecraft/class_2960;L$tinyTaterToken;Lcom/tterrag/registrate/util/nullness/NonNullFunction;)Lcom/tterrag/registrate/builders/FluidBuilder;")
             } ?: return
 
             method.desc = method.desc.replace("L$tinyTaterToken;", "L$fluidTypeFactoryInterface;")
         }
-
-//                for (method in targetClass.methods) {
-//                    method.desc = method.desc.replace("L$tinyTaterToken;", "L$fluidTypeFactoryInterface;")
-//                }
     }
 }

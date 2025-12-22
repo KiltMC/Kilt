@@ -10,9 +10,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.RegisterEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.compat.create.extensions.RegistryObjectForgeExtension;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 

@@ -9,4 +9,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Extends {
     Class<?> value();
+
+    /**
+     * Whether the mixin should override the target class.
+     * @return true if the mixin should override the target class, false otherwise.
+     */
+    boolean override() default false;
 }

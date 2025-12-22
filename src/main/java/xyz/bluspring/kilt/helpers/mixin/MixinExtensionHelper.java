@@ -41,11 +41,10 @@ public final class MixinExtensionHelper {
         var extend = Annotations.getVisible(classNode, Extends.class);
         var oldSuper = targetClass.superName;
         if (extend != null) {
-            if (targetClass.superName != null && !targetClass.superName.equals("java/lang/Object"))
-                throw new IllegalStateException(String.format("Class %s should not already have a super class! (tried extend by %s, has %s)", targetClassName, mixinClassName, classNode.superName));
-
             var visitor = new AnnotationValueVisitor();
             extend.accept(visitor);
+            if (targetClass.superName != null && !targetClass.superName.equals("java/lang/Object") && visitor.values.get("override").equals(false))
+                throw new IllegalStateException(String.format("Class %s should not already have a super class! (tried extend by %s, has %s)", targetClassName, mixinClassName, classNode.superName));
             var className = ((Type) visitor.values.get("value")).getClassName();
             targetClass.superName = className.replace(".", "/");
             if (targetClass.signature != null)
@@ -57,44 +56,61 @@ public final class MixinExtensionHelper {
                 var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
                 initializer.visitCode();
 
-                for (AbstractInsnNode insnNode : methodNode.instructions) {
-                    if (insnNode instanceof MethodInsnNode methodInsn) {
-                        // super()/this()
-                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
-                            } else { // super()
-                                var superName = methodInsn.owner.equals(oldSuper) ? targetClass.superName : methodInsn.owner;
+                 for (AbstractInsnNode insnNode : methodNode.instructions) {
+                     if (insnNode instanceof MethodInsnNode methodInsn) {
+                         // super()/this()
+                         if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
+                             } else { // super()
+                                 // Redirect any super call to the target's actual superclass
+                                 var superName = methodInsn.owner.equals(oldSuper) || methodInsn.owner.equals("java/lang/Object")
+                                         ? targetClass.superName
+                                         : methodInsn.owner;
 
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", methodInsn.desc, false);
-                            }
-                        } else {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) {
-                                methodInsn.owner = slashedTargetClassName;
-                            }
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", methodInsn.desc, false);
+                             }
+                         } else if (insnNode.getOpcode() == Opcodes.INVOKEVIRTUAL && methodInsn.name.equals("kilt$mixin$superCall")) { // super()
+                             // Find the existing super call we already added and remove it then swap it for our custom one.
+                             AbstractInsnNode superCall = null;
+                             for (AbstractInsnNode insn : initializer.instructions) {
+                                 if (insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode)insn).name.equals("<init>")) {
+                                     superCall = insn;
+                                     break;
+                                 }
+                             }
+                             if (superCall != null) {
+                                 initializer.instructions.remove(superCall);
+                             }
 
-                            initializer.instructions.add(methodInsn);
-                        }
-                    } else {
-                        if (insnNode instanceof FieldInsnNode fieldInsn) {
-                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
-                                fieldInsn.owner = slashedTargetClassName;
-                            }
+                             initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), "<init>", methodInsn.desc, false);
+                         } else {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) {
+                                 methodInsn.owner = slashedTargetClassName;
+                             }
 
-                            initializer.instructions.add(fieldInsn);
-                        } else {
-                            initializer.instructions.add(insnNode);
-                        }
-                    }
-                }
+                             initializer.instructions.add(methodInsn);
+                         }
+                     } else {
+                         if (insnNode instanceof FieldInsnNode fieldInsn) {
+                             if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                 fieldInsn.owner = slashedTargetClassName;
+                             }
 
-                initializer.visitEnd();
+                             initializer.instructions.add(fieldInsn);
+                         } else {
+                             initializer.instructions.add(insnNode);
+                         }
+                     }
+                 }
 
-                initializer.localVariables = methodNode.localVariables;
+                 initializer.visitEnd();
 
-                // We don't need the method's instructions anymore.
-                methodNode.instructions.clear();
-                targetClass.methods.add(initializer);
+                 initializer.localVariables = methodNode.localVariables;
+
+                 // We don't need the method's instructions anymore.
+                 methodNode.instructions.clear();
+                 targetClass.methods.add(initializer);
             }
         }
     }
@@ -197,6 +213,9 @@ public final class MixinExtensionHelper {
 
         for (MethodNode methodNode : targetClass.methods) {
             if (extend != null && methodNode.name.equals("<init>")) {
+                var annotationVisitor = new AnnotationValueVisitor();
+                extend.accept(annotationVisitor);
+
                 if (!containsThisCall(targetClass, methodNode.instructions)) {
                     methodsToRemove.add(methodNode);
 
@@ -207,9 +226,12 @@ public final class MixinExtensionHelper {
 
                     MethodInsnNode insnToRemove = null;
                     for (AbstractInsnNode insn : insnList) {
-                        if (insn instanceof MethodInsnNode methodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL && methodInsnNode.owner.equals("java/lang/Object")) {
-                            insnList.insert(insn, new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "()V"));
+                        if (insn instanceof MethodInsnNode methodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL &&
+                                (methodInsnNode.owner.equals("java/lang/Object") || (Boolean.TRUE).equals(annotationVisitor.values.get("override"))))
+                        {
+                            insnList.insert(insn, new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", methodInsnNode.desc, false));
                             insnToRemove = methodInsnNode;
+                            break;
                         }
                     }
 
@@ -217,6 +239,9 @@ public final class MixinExtensionHelper {
 
                     var newNode = new MethodNode(Opcodes.ASM9, methodNode.access, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(new String[0]));
                     newNode.instructions = insnList;
+                    newNode.maxStack = methodNode.maxStack;
+                    newNode.maxLocals = methodNode.maxLocals;
+
                     replacementNodes.add(newNode);
                 }
             }

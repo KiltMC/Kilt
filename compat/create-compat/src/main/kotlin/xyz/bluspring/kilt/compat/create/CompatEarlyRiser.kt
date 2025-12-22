@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.compat.create
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 

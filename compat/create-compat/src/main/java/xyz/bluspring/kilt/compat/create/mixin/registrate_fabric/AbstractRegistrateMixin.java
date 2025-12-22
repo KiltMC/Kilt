@@ -28,7 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
-import xyz.bluspring.kilt.compat.create.TinyTater;
+import xyz.bluspring.kilt.compat.create.registrate.FluidTypeFactoryToken;
 import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateForgeExtension;
 import xyz.bluspring.kilt.compat.create.extensions.AbstractRegistrateRegistrationForgeExtension;
 import xyz.bluspring.kilt.compat.create.extensions.RegistryEntryForgeExtension;
@@ -167,7 +167,7 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
     }
 
     public <T extends SimpleFlowableFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        /* at runtime this will be turned into FluidBuilder$FluidTypeFactory */ TinyTater typeFactory, NonNullFunction<SimpleFlowableFluid.Properties, T> fluidFactory) {
+        /* at runtime this will be turned into FluidBuilder$FluidTypeFactory */ FluidTypeFactoryToken typeFactory, NonNullFunction<SimpleFlowableFluid.Properties, T> fluidFactory) {
         return ((AbstractRegistrate<S>) (Object) this).fluid(self(), name, stillTexture, flowingTexture, fluidFactory);
     }
 }
