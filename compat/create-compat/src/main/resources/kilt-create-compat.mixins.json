@@ -4,8 +4,8 @@
   "package": "xyz.bluspring.kilt.compat.create.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "registrate_fabric.SimpleFlowableFluidPropertiesAccessor",
     "create_fabric.CreateRegistrateMixin",
+    "create_fabric.FluidMixin",
     "flywheel.BakedModelBuffererMixin",
     "registrate_fabric.AbstractBuilderMixin",
     "registrate_fabric.AbstractRegistrateMixin",
@@ -16,7 +16,9 @@
     "registrate_fabric.RegistrateMixin",
     "registrate_fabric.RegistryEntryMixin",
     "registrate_fabric.RegistryObjectMixin",
-    "registrate_fabric.SimpleFlowableFluidMixin"
+    "registrate_fabric.SimpleFlowableFluidMixin",
+    "registrate_fabric.SimpleFlowableFluidMixin$PropertiesMixin",
+    "registrate_fabric.SimpleFlowableFluidPropertiesAccessor"
   ],
   "client": [
   ],

@@ -2,21 +2,26 @@ package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.ForgeMod;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.compat.create.extensions.SimpleFlowableFluidPropertiesExtension;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
+
+import java.util.function.Supplier;
 
 @IfModLoaded("registrate-fabric")
 @Mixin(SimpleFlowableFluid.class)
 @Extends(value = ForgeFlowingFluid.class, override = true)
-public class SimpleFlowableFluidMixin {
+public abstract class SimpleFlowableFluidMixin extends Fluid {
     protected SimpleFlowableFluidMixin(SimpleFlowableFluid.Properties properties) {}
 
 //    @Unique
@@ -52,8 +57,30 @@ public class SimpleFlowableFluidMixin {
         forgeFlowingFluid.kilt$levelDecreasePerBlock(propertiesAccessor.getLevelDecreasePerBlock());
         forgeFlowingFluid.kilt$explosionResistance(propertiesAccessor.getBlastResistance());
         forgeFlowingFluid.kilt$tickRate(propertiesAccessor.getTickRate());
-        FlowingFluid fluid = (FlowingFluid) (Object) this;
-        forgeFlowingFluid.kilt$fluidType(() -> ForgeHooks.getVanillaFluidType(fluid));
+        @Nullable
+        var fluidType = ((SimpleFlowableFluidPropertiesExtension) properties).kilt$getFluidType();
+        if (fluidType != null) {
+            forgeFlowingFluid.kilt$fluidType(fluidType);
+        } else {
+//            forgeFlowingFluid.kilt$fluidType(() -> ForgeHooks.getVanillaFluidType((Fluid) (Object) this));
+        }
+    }
+
+    @IfModLoaded("registrate-fabric")
+    @Mixin(SimpleFlowableFluid.Properties.class)
+    public static class PropertiesMixin implements SimpleFlowableFluidPropertiesExtension {
+        @Unique
+        private Supplier<? extends FluidType> kilt$fluidType;
+
+        @Override
+        public @Nullable Supplier<? extends @NotNull FluidType> kilt$getFluidType() {
+            return kilt$fluidType;
+        }
+
+        @Override
+        public void kilt$setFluidType(@NotNull Supplier<? extends @NotNull FluidType> fluidType) {
+            kilt$fluidType = fluidType;
+        }
     }
 }
 
