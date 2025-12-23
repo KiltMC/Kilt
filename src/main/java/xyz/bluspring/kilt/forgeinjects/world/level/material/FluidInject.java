@@ -14,7 +14,7 @@ public abstract class FluidInject implements IForgeFluid {
 
     @NotNull
     @Override
-    public FluidType getFluidType() {
+    public FluidType forge$getFluidType() {
         if (forgeFluidType == null)
             forgeFluidType = ForgeHooks.getVanillaFluidType((Fluid) (Object) this);
 
