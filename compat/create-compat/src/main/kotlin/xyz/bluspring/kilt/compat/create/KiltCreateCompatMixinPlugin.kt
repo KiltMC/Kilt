@@ -1,19 +1,27 @@
 package xyz.bluspring.kilt.compat.create
 
+import com.bawnorton.mixinsquared.ext.ExtensionRegistrar
+import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import com.moulberry.mixinconstraints.MixinConstraints
+import com.moulberry.mixinconstraints.mixin.MixinConstraintsBootstrap
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper
 import xyz.bluspring.kilt.loader.KiltLoader
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
     lateinit var mixinPackage: String
 
     override fun onLoad(mixinPackage: String) {
         this.mixinPackage = mixinPackage
+
+        // just in case
+        MixinExtrasBootstrap.init()
+        MixinConstraintsBootstrap.init(mixinPackage)
+
+        ExtensionRegistrar.register(KiltCreateCompatMixinExtension())
     }
 
     override fun getRefMapperConfig(): String? {
@@ -51,21 +59,20 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
 
     override fun postApply(
         targetClassName: String?,
-        targetClass: ClassNode?,
+        targetClass: ClassNode,
         mixinClassName: String?,
         mixinInfo: IMixinInfo?
     ) {
         MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo)
 
-        val tinyTaterToken = "xyz/bluspring/kilt/compat/create/registrate/FluidTypeFactoryToken"
-        val fluidTypeFactoryInterface = "com/tterrag/registrate/builders/FluidBuilder\$FluidTypeFactory"
+        val packageName = mixinClassName?.removePrefix("$mixinPackage.")?.replaceAfter(".", "")?.removeSuffix(".")
 
-        if(mixinClassName?.contains("AbstractRegistrateMixin") == true) {
-            val method = targetClass?.methods?.firstOrNull { methodNode ->
-                methodNode.desc == KiltRemapper.remapDescriptor("(Ljava/lang/String;Lnet/minecraft/class_2960;Lnet/minecraft/class_2960;L$tinyTaterToken;Lcom/tterrag/registrate/util/nullness/NonNullFunction;)Lcom/tterrag/registrate/builders/FluidBuilder;")
-            } ?: return
-
-            method.desc = method.desc.replace("L$tinyTaterToken;", "L$fluidTypeFactoryInterface;")
+        if (packageName == "registrate_fabric") {
+            for (method in targetClass.methods) {
+                if (method.desc.contains("L${KiltCreateCompatMixinExtension.TINY_TATER_TOKEN};")) {
+                    KiltCreateCompatMixinExtension.modifyMethodDesc(method)
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.helpers.mixin;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -106,7 +107,22 @@ public final class MixinExtensionHelper {
 
                  initializer.visitEnd();
 
-                 initializer.localVariables = methodNode.localVariables;
+                 var lvt = new ArrayList<>(methodNode.localVariables);
+                 for (int i = 0; i < lvt.size(); i++) {
+                     LocalVariableNode lv = lvt.get(i);
+
+                     if (lv.desc.contains("L" + slashedMixinClassName + ";")) {
+                         var signature = lv.signature;
+
+                         if (signature != null) {
+                             signature = signature.replace("L" + slashedMixinClassName + ";", "L" + slashedTargetClassName + ";");
+                         }
+
+                         lvt.set(i, new LocalVariableNode(lv.name, lv.desc.replace("L" + slashedMixinClassName + ";", "L" + slashedTargetClassName + ";"), signature, lv.start, lv.end, lv.index));
+                     }
+                 }
+
+                 initializer.localVariables = lvt;
 
                  // We don't need the method's instructions anymore.
                  methodNode.instructions.clear();

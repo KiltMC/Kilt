@@ -6,20 +6,27 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.extensions.IForgeFluid;
 import net.minecraftforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.bluspring.kilt.injections.world.level.material.FluidInjection;
 
 @Mixin(Fluid.class)
+@Implements(@Interface(iface = FluidInjection.class, prefix = "forge$i$"))
 public abstract class FluidInject implements IForgeFluid {
     private FluidType forgeFluidType;
 
     @NotNull
-    @Override
-    public FluidType forge$getFluidType() {
+    public FluidType forge$i$getFluidType() {
         if (forgeFluidType == null)
             forgeFluidType = ForgeHooks.getVanillaFluidType((Fluid) (Object) this);
 
         return forgeFluidType;
     }
 
-
+    @Override
+    public FluidType forge$getFluidType() {
+        return this.forge$i$getFluidType();
+    }
 }

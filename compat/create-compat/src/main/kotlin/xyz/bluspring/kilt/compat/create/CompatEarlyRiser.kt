@@ -39,7 +39,7 @@ class CompatEarlyRiser : Runnable {
             Opcodes.V17,
             Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT or Opcodes.ACC_INTERFACE,
             fluidTypeFactoryInterface,
-            null, "java/lang/Object", null
+            null, "java/lang/Object", arrayOf("xyz/bluspring/kilt/compat/create/registrate/FluidTypeFactoryToken")
         )
 
         writer.visitNestHost(fluidBuilder)
