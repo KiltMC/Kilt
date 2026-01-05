@@ -37,6 +37,7 @@
     "geckolib.RenderProviderMixin",
     "invmove.IForgeKeyMappingMixin",
     "jei.FabricPluginFinderMixin",
+    "jei.FluidStackMixin",
     "mkb.IKeyBindingMixin",
     "mkb.IKeyConflictContextMixin",
     "mkb.KeyConflictContextMixin",
