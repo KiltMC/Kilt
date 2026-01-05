@@ -4,6 +4,7 @@
     "package": "xyz.bluspring.kilt.compat.create.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "create_fabric.AllFluidsMixin",
         "create_fabric.CreateRegistrateMixin",
         "flywheel.BakedModelBuffererMixin",
         "registrate_fabric.AbstractRegistrateMixin",
