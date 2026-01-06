@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import org.jetbrains.annotations.NotNull;
@@ -62,8 +61,6 @@ public abstract class SimpleFlowableFluidMixin extends Fluid {
         var fluidType = ((SimpleFlowableFluidPropertiesExtension) properties).kilt$getFluidType();
         if (fluidType != null) {
             forgeFlowingFluid.kilt$fluidType(fluidType);
-        } else {
-//            forgeFlowingFluid.kilt$fluidType(() -> ForgeHooks.getVanillaFluidType((Fluid) (Object) this));
         }
     }
 

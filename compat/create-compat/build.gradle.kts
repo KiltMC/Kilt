@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    modImplementation("maven.modrinth:create-fabric:0.5.1-j-build.1631+mc1.20.1")
+	modImplementation("maven.modrinth:create-fabric:6.0.8.1+build.1744-mc1.20.1")
     modImplementation("io.github.tropheusj:milk-lib:1.2.60")
     modImplementation("com.tterrag.registrate_fabric:Registrate:1.3.79-MC1.20.1")
 
