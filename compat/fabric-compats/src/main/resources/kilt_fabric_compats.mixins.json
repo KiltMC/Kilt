@@ -46,6 +46,7 @@
         "sophisticatedcore.IForgeBlockStateMixin",
         "sophisticatedcore.IForgeItemMixin",
         "sophisticatedcore.IForgeItemStackMixin",
+        "valkyrienskies.EntityMixin",
         "wthit.WailaMixin"
     ],
     "client": [
