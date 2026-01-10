@@ -49,14 +49,6 @@ class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
             }
         }
 
-        // Make Create Fabric not mixin into instances of `getFluidType` other than Porting Lib's
-        if (mixinClassName == "com.simibubi.create.foundation.mixin.fabric.FluidMixin" &&
-            annotationNode.`is`(Inject::class.java) && handlerNode.name == "getFluidType")
-        {
-            val injectNode = annotationNode.`as`(AdjustableInjectNode::class.java)
-            injectNode.method[0] = "getFluidType()Lio/github/fabricators_of_create/porting_lib/fluids/mixin/FluidType;"
-        }
-
         return annotationNode
     }
 }
