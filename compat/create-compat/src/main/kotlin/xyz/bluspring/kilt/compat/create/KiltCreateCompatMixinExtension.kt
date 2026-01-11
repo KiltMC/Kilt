@@ -56,6 +56,11 @@ class KiltCreateCompatMixinExtension : IExtension {
                                         this[1] = Handle(lambdaTarget.tag, lambdaTarget.owner, lambdaTarget.name, lambdaTarget.desc.replace("L$TINY_TATER_TOKEN;", "L$FLUID_TYPE_FACTORY_INTERFACE;"), lambdaTarget.isInterface)
                                     }.toTypedArray()
                                 )
+                            } else if (node.desc.contains("L$TINY_TATER_TOKEN;")) {
+                                insnsToReplace[node] = InvokeDynamicInsnNode(
+                                    node.name, node.desc.replace("L$TINY_TATER_TOKEN;", "L$FLUID_TYPE_FACTORY_INTERFACE;"), node.bsm,
+                                    *node.bsmArgs.toList().toTypedArray()
+                                )
                             }
                         }
                     }

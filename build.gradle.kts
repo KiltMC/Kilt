@@ -172,6 +172,10 @@ allprojects {
 
     apply(plugin = "fabric-loom")
 
+    tasks.jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
     dependencies {
         // To change the versions see the gradle.properties file
         minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
