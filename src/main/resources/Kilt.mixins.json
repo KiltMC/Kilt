@@ -123,6 +123,7 @@
     "compat.sodium.ItemRendererMixin",
     "compat.sodium.LevelRendererMixin",
     "debug.PoseStackMixin"
+    "compat.forge.crackerslib.CompatHelperMixin"
   ],
   "injectors": {
     "defaultRequire": 1
