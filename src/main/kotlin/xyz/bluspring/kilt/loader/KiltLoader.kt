@@ -25,6 +25,7 @@ import net.minecraftforge.fml.config.ConfigTracker
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.event.lifecycle.*
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
+import net.minecraftforge.fml.loading.FMLConfig
 import net.minecraftforge.fml.loading.FMLPaths
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -491,6 +492,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     override fun preInitialize() {
         // DON'T TRY TO MAKE THIS USE "Environment.Keys".
         // OTHERWISE THE BUILD WILL FAIL.
+        FMLConfig.load()
         environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
         environment.computePropertyIfAbsent(IEnvironment.buildKey("MODFILEFACTORY", ModFileFactory::class.java).get()) { KiltModFileFactory() }
 

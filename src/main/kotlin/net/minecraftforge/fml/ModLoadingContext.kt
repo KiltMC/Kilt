@@ -1,6 +1,5 @@
 package net.minecraftforge.fml
 
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
@@ -45,16 +44,14 @@ open class ModLoadingContext {
         this.getActiveContainer().registerExtensionPoint(point, extension)
     }
 
-    // Thank gOD ForgeConfigApiPort uses a different package name for ModLoadingContext, otherwise
-    // this wouldn't work well at all.
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>, fileName: String) {
-        val modId = this.activeNamespace
-        ForgeConfigRegistry.INSTANCE.register(modId, type, spec, fileName)
+        if (spec.isEmpty) return
+        this.container.addConfig(ModConfig(type, spec, this.container, fileName))
     }
 
     fun registerConfig(type: ModConfig.Type, spec: IConfigSpec<*>) {
-        val modId = this.activeNamespace
-        ForgeConfigRegistry.INSTANCE.register(modId, type, spec)
+        if (spec.isEmpty) return
+        this.container.addConfig(ModConfig(type, spec, this.container))
     }
 
     // TODO: properly implement display tests?

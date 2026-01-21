@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 import java.security.MessageDigest
+import kotlin.io.path.name
+import kotlin.io.path.relativeTo
 
 plugins {
     kotlin("jvm")
@@ -32,9 +34,23 @@ fabricApi {
 
 sourceSets {
     getByName("main") {
-        java.srcDir("src/main/java")
-        java.srcDir("src/main/kotlin")
-        java.srcDir("forge/src/main/java")
+        java {
+            srcDir("src/main/java")
+            srcDir("src/main/kotlin")
+            srcDir("forge/src/main/java")
+            srcDir("forge/fmlcore/src/main/java")
+
+            exclude {
+                val relativePath = it.file.toPath().relativeTo(project.rootDir.toPath())
+
+                // Hilarious trickery to force Gradle to only import the config package
+                if (relativePath.getName(0).name == "forge" && relativePath.getName(1).name == "fmlcore" && it.file.isFile) {
+                    return@exclude !it.relativePath.startsWith("net/minecraftforge/fml/config")
+                }
+
+                false
+            }
+        }
 
         resources.srcDir("forge/src/generated/resources")
         resources.srcDir("forge/src/main/resources")
@@ -224,7 +240,6 @@ dependencies {
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
     modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 
     // Forge stuff
     api(include("xyz.bluspring:eventbus:${property("eventbus_version")}") {
@@ -293,7 +308,7 @@ dependencies {
     // Compatibility layers
     listOf(
         "transfer-api-compat", "forge-compats", "create-compat",
-        "curios-trinkets-compat", "fabric-compats"
+        "curios-trinkets-compat", "fabric-compats", "forge-config-api"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
     }
@@ -467,8 +482,7 @@ tasks {
             "fabric_version" to project.property("fabric_version"),
             "minecraft_version" to project.property("minecraft_version"),
             "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
-            "fabric_asm_version" to project.property("fabric_asm_version"),
-            "forge_config_version" to project.property("forgeconfigapiport_version"),
+            "fabric_asm_version" to project.property("fabric_asm_version")
         )
 
         for ((key, value) in properties) {
@@ -596,9 +610,9 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "sodium", "indium")
             optional("modmenu")
-            embeds("porting_lib")
+            embeds("porting_lib", "forge-config-api-port")
             incompatible("async", "embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
 
@@ -608,9 +622,9 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin", "sodium", "indium")
             optional("modmenu")
-            embeds("porting-lib")
+            embeds("porting-lib", "forge-config-api-port-fabric")
             incompatible("embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
     }
