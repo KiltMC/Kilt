@@ -95,7 +95,7 @@ public abstract class ItemEntityInject extends EntityInject implements ItemEntit
             return stateRef.get().getFriction(this.level(), groundPosRef.get(), (ItemEntity) (Object) this);
         }
 
-        return 0;
+        return original.call(instance);
     }
 
     @ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=6000"))
