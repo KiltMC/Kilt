@@ -314,9 +314,6 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
-
-    // Workarounds
-    include(modImplementation("maven.modrinth:feature-recycler:${rootProject.property("feature_recycler_version")}")!!) // Required for features - see #376, #391, #361, #352
 }
 
 // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
@@ -601,7 +598,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
             optional("modmenu")
-            embeds("porting_lib", "feature-recycler")
+            embeds("porting_lib")
             incompatible("async", "embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
 
@@ -613,7 +610,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
             optional("modmenu")
-            embeds("porting-lib", "feature-recycler")
+            embeds("porting-lib")
             incompatible("embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
         }
     }
