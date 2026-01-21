@@ -79,10 +79,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     )
 
     // This over here is a wall of shame for mods that use different mod IDs between their Forge and Fabric variants.
-    private val FORGE_TO_FABRIC_MODS = mapOf(
+    val FORGE_TO_FABRIC_MODS = mapOf(
         // Forge ID -> Fabric ID
         "cloth_config" to "cloth-config",
-        "playeranimator" to "player-animator"
+        "playeranimator" to "player-animator",
+
+        // This list isn't a wall of shame though :D
+        "rubidium" to "sodium",
+        "embeddium" to "sodium",
+        "oculus" to "iris",
     )
 
     init {
