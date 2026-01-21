@@ -1,11 +1,17 @@
 package xyz.bluspring.kilt.forgeinjects.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Final;
@@ -16,11 +22,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.client.OptionsInjection;
 
 import java.io.File;
+import java.util.function.Function;
 
 @Mixin(Options.class)
-public abstract class OptionsInject {
+public abstract class OptionsInject implements OptionsInjection {
     // Kilt: we don't have much reason to fix this
 
     @Shadow @Final public KeyMapping keyUp;
@@ -37,9 +45,88 @@ public abstract class OptionsInject {
     @Shadow @Final public KeyMapping keyTogglePerspective;
     @Shadow @Final public KeyMapping keySmoothCamera;
 
+    @Shadow
+    protected abstract void processOptions(Options.FieldAccess fieldAccess);
+
+    @Shadow
+    public abstract void load();
+
+    @Unique private boolean kilt$loadOptionsLimited = false;
+
     @Inject(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;minecraft:Lnet/minecraft/client/Minecraft;"))
     private void kilt$setForgeKeybindProperties(Minecraft minecraft, File gameDirectory, CallbackInfo ci) {
         this.setForgeKeybindProperties();
+    }
+
+    @Override
+    public void load(boolean limited) {
+        this.kilt$loadOptionsLimited = limited;
+        this.load();
+        this.kilt$loadOptionsLimited = false;
+    }
+
+    @Inject(method = "processOptions", at = @At("HEAD"))
+    private void kilt$initShouldBeLimited(Options.FieldAccess accessor, CallbackInfo ci, @Share("limited") LocalBooleanRef isLimited) {
+        isLimited.set(this.kilt$loadOptionsLimited);
+    }
+
+    @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Lnet/minecraft/client/OptionInstance;)V"))
+    private <T> void kilt$preventRunIfLimited(Options.FieldAccess instance, String s, OptionInstance<T> tOptionInstance, Operation<Void> original, @Share("limited") LocalBooleanRef isLimited) {
+        if (isLimited.get()) {
+            return;
+        }
+
+        original.call(instance, s, tOptionInstance);
+    }
+
+    @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;I)I"))
+    private int kilt$returnSelfIfLimited(Options.FieldAccess instance, String s, int i, Operation<Integer> original, @Share("limited") LocalBooleanRef isLimited) {
+        if (isLimited.get()) {
+            return i;
+        }
+
+        return original.call(instance, s, i);
+    }
+
+    @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Z)Z"))
+    private boolean kilt$returnSelfIfLimited(Options.FieldAccess instance, String s, boolean b, Operation<Boolean> original, @Share("limited") LocalBooleanRef isLimited) {
+        if (isLimited.get()) {
+            if (s.equals("onboardAccessibility")) { // Kilt: Pretty good marker for us to stop using the limited rules
+                isLimited.set(false);
+            }
+
+            return b;
+        }
+
+        return original.call(instance, s, b);
+    }
+
+    @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
+    private String kilt$returnSelfIfLimited(Options.FieldAccess instance, String s, String s2, Operation<String> original, @Share("limited") LocalBooleanRef isLimited) {
+        if (isLimited.get()) {
+            return s2;
+        }
+
+        return original.call(instance, s, s2);
+    }
+
+    @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Ljava/lang/Object;Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;"))
+    private <T> T kilt$returnSelfIfLimited(Options.FieldAccess instance, String s, T t, Function<String, T> stringTFunction, Function<T, String> tStringFunction, Operation<T> original, @Share("limited") LocalBooleanRef isLimited) {
+        if (isLimited.get()) {
+            return t;
+        }
+
+        return original.call(instance, s, t, stringTFunction, tStringFunction);
+    }
+
+    @Inject(method = "processOptions", at = @At("TAIL"))
+    private void kilt$callProcessOptions(Options.FieldAccess accessor, CallbackInfo ci) {
+        this.processOptionsForge(accessor);
+    }
+
+    @Unique
+    private void processOptionsForge(Options.FieldAccess processor) {
+        // technically here in case someone mixins into here for some reason.
     }
 
     @ModifyExpressionValue(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;saveString()Ljava/lang/String;"))
@@ -60,6 +147,12 @@ public abstract class OptionsInject {
         }
 
         return name;
+    }
+
+    @Inject(method = "broadcastOptions", at = @At("HEAD"), cancellable = true)
+    private void kilt$avoidPreSavingOptions(CallbackInfo ci) {
+        if (ClientModLoader.isLoading())
+            ci.cancel();
     }
 
     @Unique
