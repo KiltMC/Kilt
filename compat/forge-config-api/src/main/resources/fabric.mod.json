@@ -7,9 +7,6 @@
     "authors": [
         "BluSpring"
     ],
-    "provides": [
-        "forgeconfigapiport"
-    ],
     "contact": {
         "sources": "https://github.com/KiltMC/Kilt",
         "issues": "https://github.com/KiltMC/Kilt/issues"
@@ -31,6 +28,5 @@
         }
     },
     "mixins": [
-        "kilt_forge_config.mixins.json"
     ]
 }

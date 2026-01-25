@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.workarounds
 
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraftforge.fml.config.ModConfig
 
 // Little workaround since I don't want the Forge Config API Port code in this main codebase.
@@ -10,9 +11,11 @@ interface ForgeConfigApiPortCompat {
 
     companion object : ForgeConfigApiPortCompat {
         val instance: ForgeConfigApiPortCompat? by lazy {
-            try {
-                Class.forName("xyz.bluspring.kilt.compat.forgeconfig.KiltForgeConfigAPIPortCompat").getDeclaredConstructor().newInstance() as? ForgeConfigApiPortCompat
-            } catch (_: Throwable) { null }
+            if (FabricLoader.getInstance().isModLoaded("forgeconfigapiport")) {
+                try {
+                    Class.forName("xyz.bluspring.kilt.compat.forgeconfig.KiltForgeConfigAPIPortCompat").getDeclaredConstructor().newInstance() as? ForgeConfigApiPortCompat
+                } catch (_: Throwable) { null }
+            } else null
         }
 
         override fun fireConfigLoadEvent(modId: String, config: ModConfig?) {

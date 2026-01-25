@@ -450,6 +450,38 @@ class KiltEarlyRiser : Runnable {
                 }
             }
         }
+
+        // Forcefully load the Forge config classes to override Forge Config API Port.
+        run {
+            val modifiedConfigClasses = listOf(
+                "net.minecraftforge.fml.config.ConfigFileTypeHandler",
+                "net.minecraftforge.fml.config.ConfigTracker",
+                "net.minecraftforge.fml.config.IConfigSpec",
+                "net.minecraftforge.fml.config.ModConfig",
+                "net.minecraftforge.common.ForgeConfigSpec"
+            )
+
+            val helperUrl = Kilt::class.java.classLoader.getResource("net/minecraftforge/common/MinecraftForge.class")!!
+
+            for (className in modifiedConfigClasses) {
+                ClassTinkerers.addReplacement(className) { classNode ->
+                    // Reset everything to a blank state, because fuck that
+                    classNode.fields?.clear()
+                    classNode.methods?.clear()
+                    classNode.visibleAnnotations?.clear()
+                    classNode.invisibleAnnotations?.clear()
+                    classNode.visibleTypeAnnotations?.clear()
+                    classNode.invisibleTypeAnnotations?.clear()
+
+                    val url = URL(
+                        helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
+                            .replace("net/minecraftforge/common/MinecraftForge", className.replace(".", "/"))
+                    )
+                    val classReader = ClassReader(url.readBytes())
+                    classReader.accept(classNode, 0)
+                }
+            }
+        }
     }
 
     private val ignoredKeywords = listOf("kilt", "fml", "mixin", "modlauncher", "kotlinforforge", "architectury", "versions")

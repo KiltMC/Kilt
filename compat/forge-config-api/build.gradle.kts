@@ -1,10 +1,15 @@
 import net.fabricmc.loom.task.RemapJarTask
+import org.gradle.kotlin.dsl.dependencies
 
 base {
     archivesName.set("Kilt-Forge-Config-API")
 }
 
 version = property("mod_version") as String
+
+dependencies {
+    modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
+}
 
 tasks {
     processResources {

@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.compat.forgeconfig
 
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents
-import net.fabricmc.api.ModInitializer
 import net.minecraftforge.fml.config.ModConfig
 import xyz.bluspring.kilt.workarounds.ForgeConfigApiPortCompat
 
