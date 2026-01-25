@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.compat.create.registrate
 
+import com.google.common.collect.ImmutableMap
+import com.mojang.serialization.MapCodec
 import com.tterrag.registrate.fabric.SimpleFlowableFluid
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -11,6 +13,8 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.Property
 import net.minecraft.world.level.material.Fluid
 import net.minecraft.world.level.material.FluidState
 import net.minecraftforge.fluids.ForgeFlowingFluid
@@ -28,9 +32,47 @@ class SimpleWrappedForgeFlowingFluid(private val wrapped: ForgeFlowingFluid) : S
         .blastResistance(wrapped.explosionResistance)
         .tickRate(wrapped.tickRate)
 ) {
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Comparable<T>> setValue(
+        state: FluidState, property: Property<T>, value: Any
+    ) {
+        state.setValue(property, value as T)
+    }
+
     init {
         (BuiltInRegistries.FLUID as MappedRegistryAccessor<*>).unregisteredIntrusiveHolders.remove(wrapped)
-        (wrapped as FluidAccessor).setBuiltInRegistryHolder(this.builtInRegistryHolder())
+        val wrappedAccessor = wrapped as FluidAccessor
+        @Suppress("DEPRECATION")
+        wrappedAccessor.setBuiltInRegistryHolder(this.builtInRegistryHolder())
+
+        val builder: StateDefinition.Builder<Fluid?, FluidState?> = StateDefinition.Builder(this)
+        wrappedAccessor.callCreateFluidStateDefinition(builder)
+        @Suppress("CAST_NEVER_SUCCEEDS")
+        (this as FluidAccessor).setStateDefinition(
+            builder.create(
+                { obj: Fluid? -> obj!!.defaultFluidState() },
+                { owner: Fluid?, values: ImmutableMap<Property<*>?, Comparable<*>?>?, propertiesCodec: MapCodec<FluidState?>? ->
+                    FluidState(
+                        owner,
+                        values,
+                        propertiesCodec
+                    )
+                }
+            )
+        )
+
+        val state = getStateDefinition().any()
+        val wrappedState = wrapped.defaultFluidState()
+
+        for ((key, value) in wrappedState.values) {
+            setValue(state, key, value)
+        }
+
+        registerDefaultState(state)
+    }
+
+    override fun createFluidStateDefinition(builder: StateDefinition.Builder<Fluid?, FluidState?>) {
+        // Skip this because we replace it completely above.
     }
 
     override fun getPickupSound(): Optional<SoundEvent> {
