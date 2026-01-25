@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
@@ -11,10 +12,7 @@ import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -32,7 +30,6 @@ import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.compat.create.registrate.FluidBuilderHelper;
 import xyz.bluspring.kilt.compat.create.registrate.FluidTypeExtensionHelper;
 import xyz.bluspring.kilt.compat.create.registrate.FluidTypeFactoryToken;
-import xyz.bluspring.kilt.compat.create.registrate.SimpleWrappedForgeFlowingFluid;
 import xyz.bluspring.kilt.compat.create.registrate.injects.FluidBuilderInjection;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
@@ -40,6 +37,7 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 @SuppressWarnings("rawtypes")
 @IfModLoaded("registrate-fabric")
@@ -205,11 +203,23 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
         }
     }
 
-    @Inject(method = "lambda$source$6", at = @At("HEAD"), remap = false, cancellable = true)
-    private void kilt$tryCreateWrapped(NonNullFunction factory, CallbackInfoReturnable<SimpleFlowableFluid> cir) {
+    @WrapOperation(
+            method = "source",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/tterrag/registrate/util/nullness/NonNullSupplier;lazy(Ljava/util/function/Supplier;)Lcom/tterrag/registrate/util/nullness/NonNullSupplier;"
+            ),
+            remap = false
+    )
+    private NonNullSupplier<T> kilt$tryCreateWrapped(
+            Supplier<@NonnullType T> creator, Operation<NonNullSupplier<T>> original,
+            @Local(argsOnly = true) NonNullFunction<ForgeFlowingFluid.Properties, ? extends ForgeFlowingFluid> factory
+    ) {
         if (this.kilt$isForge) {
-            cir.setReturnValue(new SimpleWrappedForgeFlowingFluid((ForgeFlowingFluid) factory.apply(this.kilt$makeForgeProperties())));
+            Supplier<?> forgeCreator = () -> factory.apply(this.kilt$makeForgeProperties());
+            return original.call(forgeCreator);
         }
+        return original.call(creator);
     }
 
     @WrapOperation(method = "register()Lcom/tterrag/registrate/util/entry/FluidEntry;", at = @At(value = "INVOKE", target = "Lcom/tterrag/registrate/builders/FluidBuilder;onRegister(Lcom/tterrag/registrate/util/nullness/NonNullConsumer;)Lcom/tterrag/registrate/builders/Builder;"), remap = false)
