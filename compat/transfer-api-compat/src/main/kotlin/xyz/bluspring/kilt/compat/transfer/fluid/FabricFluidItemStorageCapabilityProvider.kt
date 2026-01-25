@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.transfer.fluid
 
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.minecraft.core.Direction
 import net.minecraft.world.item.ItemStack
@@ -12,7 +13,7 @@ class FabricFluidItemStorageCapabilityProvider(val stack: ItemStack) : ICapabili
     override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> {
         if (cap == ForgeCapabilities.FLUID_HANDLER_ITEM) {
             val fabricStorage = FluidStorage.ITEM.getProvider(stack.item) ?: return LazyOptional.empty()
-            val storage = fabricStorage.find(stack, null) ?: return LazyOptional.empty()
+            val storage = fabricStorage.find(stack, ContainerItemContext.withConstant(stack)) ?: return LazyOptional.empty()
 
             if (storage is ForgeFluidStorage)
                 return LazyOptional.empty()
