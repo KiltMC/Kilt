@@ -12,6 +12,7 @@ import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.lang.reflect.Modifier
+import java.net.URLDecoder
 import java.nio.file.Path
 import java.util.*
 import java.util.jar.JarFile
@@ -140,7 +141,7 @@ object KiltHelper {
         val classUrl = launcher.targetClassLoader.getResource(path) ?: return null
         val fullPath = classUrl.path.replace("/$path", "")
 
-        return File(fullPath).toPath()
+        return File(URLDecoder.decode(fullPath, Charsets.UTF_8)).toPath()
     }
 
     private fun getForgeClassNodesInternal(): MutableList<ClassNode> {
