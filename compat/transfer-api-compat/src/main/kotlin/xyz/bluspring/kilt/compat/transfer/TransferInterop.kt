@@ -11,6 +11,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.ForgeCapabilities
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.event.AttachCapabilitiesEvent
+import net.minecraftforge.eventbus.api.EventPriority
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.Kilt
@@ -145,7 +146,7 @@ class TransferInterop : ModInitializer {
             )
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOW)
     fun onAttachItemStackCapabilities(event: AttachCapabilitiesEvent<ItemStack>) {
         val stack = event.`object`
         if (ItemItemStorages.ITEM.getProvider(stack.item) != null)
