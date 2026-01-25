@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.compat.create.registrate
 import com.tterrag.registrate.fabric.SimpleFlowableFluid
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.BlockGetter
@@ -13,7 +14,9 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.material.Fluid
 import net.minecraft.world.level.material.FluidState
 import net.minecraftforge.fluids.ForgeFlowingFluid
+import xyz.bluspring.kilt.compat.create.mixin.registrate_fabric.FluidAccessor
 import xyz.bluspring.kilt.compat.create.mixin.registrate_fabric.ForgeFlowingFluidAccessor
+import xyz.bluspring.kilt.compat.create.mixin.registrate_fabric.MappedRegistryAccessor
 import java.util.Optional
 
 class SimpleWrappedForgeFlowingFluid(private val wrapped: ForgeFlowingFluid) : SimpleFlowableFluid(
@@ -25,6 +28,11 @@ class SimpleWrappedForgeFlowingFluid(private val wrapped: ForgeFlowingFluid) : S
         .blastResistance(wrapped.explosionResistance)
         .tickRate(wrapped.tickRate)
 ) {
+    init {
+        (BuiltInRegistries.FLUID as MappedRegistryAccessor<*>).unregisteredIntrusiveHolders.remove(wrapped)
+        (wrapped as FluidAccessor).setBuiltInRegistryHolder(this.builtInRegistryHolder())
+    }
+
     override fun getPickupSound(): Optional<SoundEvent> {
         return wrapped.pickupSound
     }
