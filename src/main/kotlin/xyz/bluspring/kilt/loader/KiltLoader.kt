@@ -40,6 +40,8 @@ import net.minecraftforge.forgespi.locating.ModFileFactory
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
+import thedarkcolour.kotlinforforge.KotlinModContainer
+import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
@@ -650,10 +652,14 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
                     val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
 
+                    val bus = if (mod.container is KotlinModContainer && busType == Mod.EventBusSubscriber.Bus.MOD)
+                        KotlinModLoadingContext.get().getKEventBus()
+                    else busType.bus().get()
+
                     if (obj != null)
-                        busType.bus().get().register(obj)
+                        bus.register(obj)
                     else
-                        busType.bus().get().register(clazz)
+                        bus.register(clazz)
 
                     ModLoadingContext.kiltActiveModId = null
 
