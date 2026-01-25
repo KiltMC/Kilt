@@ -458,7 +458,8 @@ class KiltEarlyRiser : Runnable {
                 "net.minecraftforge.fml.config.ConfigTracker",
                 "net.minecraftforge.fml.config.IConfigSpec",
                 "net.minecraftforge.fml.config.ModConfig",
-                "net.minecraftforge.common.ForgeConfigSpec"
+                "net.minecraftforge.common.ForgeConfigSpec",
+                $$"net.minecraftforge.common.ForgeConfigSpec$Builder"
             )
 
             val helperUrl = Kilt::class.java.classLoader.getResource("net/minecraftforge/common/MinecraftForge.class")!!
