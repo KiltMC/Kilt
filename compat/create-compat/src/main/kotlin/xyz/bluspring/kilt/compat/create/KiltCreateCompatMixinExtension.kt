@@ -13,6 +13,7 @@ import org.objectweb.asm.tree.LocalVariableNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.MixinEnvironment
+import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_CLASS_NAME
@@ -24,14 +25,26 @@ class KiltCreateCompatMixinExtension : IExtension {
         const val TINY_TATER_TOKEN = "xyz/bluspring/kilt/compat/create/registrate/FluidTypeFactoryToken"
         const val FLUID_TYPE_FACTORY_INTERFACE = "com/tterrag/registrate/builders/FluidBuilder\$FluidTypeFactory"
 
+        fun shouldRemap(mixinInfo: IMixinInfo?, method: MethodNode): Boolean {
+            if (method.desc.contains("L$TINY_TATER_TOKEN;")) return true
+            if (method.name.equals($$"kilt$create") && mixinInfo?.name == "registrate_fabric.FluidBuilderMixin") return true
+            if (method.name.equals("createFluidBuilder") && mixinInfo?.name == "registrate_fabric.FluidBuilderHelperMixin") return true
+            return false
+        }
+
         fun modifyMethodDesc(method: MethodNode) {
             val insnsToReplace = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
             val lvsToReplace = mutableMapOf<LocalVariableNode, LocalVariableNode>()
 
             for (node in method.instructions) {
                 if (node is MethodInsnNode) {
-                    if (node.desc.contains("L$TINY_TATER_TOKEN;")) {
-                        insnsToReplace[node] = MethodInsnNode(node.opcode, node.owner, node.name, node.desc.replace("L$TINY_TATER_TOKEN;", "L$FLUID_TYPE_FACTORY_INTERFACE;", node.itf))
+                    if (node.desc.contains("L$TINY_TATER_TOKEN;") || node.owner.equals(TINY_TATER_TOKEN)) {
+                        insnsToReplace[node] = MethodInsnNode(
+                            node.opcode,
+                            node.owner.replace(TINY_TATER_TOKEN, FLUID_TYPE_FACTORY_INTERFACE, node.itf),
+                            node.name,
+                            node.desc.replace("L$TINY_TATER_TOKEN;", "L$FLUID_TYPE_FACTORY_INTERFACE;", node.itf)
+                        )
                     }
                 } else if (node is InvokeDynamicInsnNode) {
                     if (Opcodes.H_INVOKESTATIC != node.bsm.tag)
@@ -102,7 +115,7 @@ class KiltCreateCompatMixinExtension : IExtension {
                     var wasModified = false
 
                     for (method in mixinClassNode.methods) {
-                        if (!method.desc.contains("L$TINY_TATER_TOKEN;")) continue
+                        if (!shouldRemap(mixinInfo, method)) continue
 
                         modifyMethodDesc(method)
                         wasModified = true
