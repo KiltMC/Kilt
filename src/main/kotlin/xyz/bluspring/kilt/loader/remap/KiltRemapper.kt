@@ -33,6 +33,7 @@ import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinCancellableInitFixer
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinShadowRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinStaticMethodFixer
@@ -464,8 +465,6 @@ object KiltRemapper {
 
             val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
                 this.collect { (entry, originalNode) ->
-                    val remappedNode = ClassNode(Opcodes.ASM9)
-
                     // only do this on mixin classes, please
                     // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
                     if (originalNode.name in mixinClasses ||
@@ -480,9 +479,11 @@ object KiltRemapper {
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
                             MixinStaticMethodFixer.fixClass(originalNode)
+                            MixinCancellableInitFixer.fixClass(originalNode)
                         }
                     }
 
+                    val remappedNode = ClassNode(Opcodes.ASM9)
                     originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                     if (!KiltFlags.DISABLE_FIXERS) {
