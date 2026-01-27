@@ -2,6 +2,8 @@
 package xyz.bluspring.kilt.forgeinjects.resources;
 
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
@@ -45,8 +47,8 @@ public abstract class HolderSetCodecInject<E> {
         return this.combinedCodec;
     }
 
-    @Redirect(method = "method_40385", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;", remap = false))
-    private static <T, E> E kilt$mapEitherCalls(Either<ICustomHolderSet<T>, Either<TagKey<T>, List<Holder<T>>>> instance, Function<TagKey<T>, HolderSet.Named<T>> function, Function<List<Holder<T>>, HolderSet.Direct<T>> function2) {
-        return (E) instance.map(Function.identity(), tagOrList -> tagOrList.map(function, function2));
+    @WrapOperation(method = "method_40385", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;", remap = false))
+    private static <T, E> E kilt$mapEitherCalls(Either<ICustomHolderSet<T>, Either<TagKey<T>, List<Holder<T>>>> instance, Function<TagKey<T>, HolderSet.Named<T>> function, Function<List<Holder<T>>, HolderSet.Direct<T>> function2, Operation<E> original) {
+        return (E) instance.map(Function.identity(), tagOrList -> original.call(instance, function, function2));
     }
 }
