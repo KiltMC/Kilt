@@ -85,7 +85,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     tasks {
-        create("printConfigurations") {
+        register("printConfigurations") {
             doLast {
                 println("Project Name: ${project.name} configurations:")
                 configurations.forEach { config ->
