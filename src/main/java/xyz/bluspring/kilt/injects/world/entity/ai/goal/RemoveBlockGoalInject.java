@@ -21,7 +21,7 @@ public abstract class RemoveBlockGoalInject {
 
     @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkMobGriefing(boolean original) {
-        return original || EventHooks.getMobGriefingEvent(this.removerMob.level(), this.removerMob);
+        return original || EventHooks.canEntityGrief(this.removerMob.level(), this.removerMob);
     }
 
     @Inject(method = "isValidTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/ChunkAccess;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", ordinal = 0), cancellable = true)

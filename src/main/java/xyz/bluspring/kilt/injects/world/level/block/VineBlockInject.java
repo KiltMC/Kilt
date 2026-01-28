@@ -8,12 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.VineBlock;
-import net.neoforged.neoforge.common.IForgeShearable;
+import net.neoforged.neoforge.common.IShearable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(VineBlock.class)
-public abstract class VineBlockInject implements IForgeShearable {
+public abstract class VineBlockInject implements IShearable {
     @Definition(id = "random", local = @Local(type = RandomSource.class, argsOnly = true))
     @Definition(id = "nextInt", method = "Lnet/minecraft/util/RandomSource;nextInt(I)I")
     @Expression("random.nextInt(?) == ?")

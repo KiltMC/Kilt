@@ -6,18 +6,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(PickaxeItem.class)
 public abstract class PickaxeItemInject extends DiggerItem {
-    public PickaxeItemInject(float attackDamageModifier, float attackSpeedModifier, Tier tier, TagKey<Block> blocks, Properties properties) {
-        super(attackDamageModifier, attackSpeedModifier, tier, blocks, properties);
+    public PickaxeItemInject(Tier tier, TagKey<Block> blocks, Properties properties) {
+        super(tier, blocks, properties);
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-        return ToolActions.DEFAULT_PICKAXE_ACTIONS.contains(toolAction);
+    public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+        return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(toolAction);
     }
 }

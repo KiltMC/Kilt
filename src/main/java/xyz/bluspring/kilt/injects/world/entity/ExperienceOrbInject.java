@@ -29,7 +29,6 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(ExperienceOrb.class)
 public abstract class ExperienceOrbInject extends Entity {
-    @Shadow protected abstract BlockPos getBlockPosBelowThatAffectsMyMovement();
 
     public ExperienceOrbInject(EntityType<?> entityType, Level level) {
         super(entityType, level);
@@ -56,12 +55,9 @@ public abstract class ExperienceOrbInject extends Entity {
     @Expression("player.takeXpDelay = ?")
     @Inject(method = "playerTouch", at = @At("MIXINEXTRAS:EXPRESSION"), cancellable = true)
     private void kilt$callPickupExpEvent(Player player, CallbackInfo ci) {
-        if (NeoForge.EVENT_BUS.post(new PlayerXpEvent.PickupXp(player, (ExperienceOrb) (Object) this)))
+        if (NeoForge.EVENT_BUS.post(new PlayerXpEvent.PickupXp(player, (ExperienceOrb) (Object) this)).isCanceled())
             ci.cancel();
     }
 
-    @Redirect(method = "repairPlayerItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ExperienceOrb;xpToDurability(I)I"))
-    private int kilt$tryUseXpRepairRatio(ExperienceOrb instance, int xp, @Local ItemStack stack) {
-        return (int) (xp * stack.getXpRepairRatio()); // TODO: how do we make this more mod-compatible
-    }
+    // Kilt TODO: missing stuff
 }

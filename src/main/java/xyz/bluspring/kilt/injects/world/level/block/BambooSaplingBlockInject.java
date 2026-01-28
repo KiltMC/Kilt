@@ -7,7 +7,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.block.BambooSaplingBlock;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 
@@ -15,6 +15,6 @@ import org.spongepowered.asm.mixin.injection.Constant;
 public abstract class BambooSaplingBlockInject {
     @WrapOperation(method = "getDestroyProgress", constant = @Constant(classValue = SwordItem.class))
     private boolean kilt$checkCanPerformSwordDig(Object object, Operation<Boolean> original, @Local(argsOnly = true) Player player) {
-        return original.call(object) || player.getMainHandItem().canPerformAction(ToolActions.SWORD_DIG);
+        return original.call(object) || player.getMainHandItem().canPerformAction(ItemAbilities.SWORD_DIG);
     }
 }

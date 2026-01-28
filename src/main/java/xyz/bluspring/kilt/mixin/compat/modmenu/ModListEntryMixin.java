@@ -20,7 +20,7 @@ public abstract class ModListEntryMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIFFIIII)V", ordinal = 0))
     private void kilt$tryRenderCroppedIcon(GuiGraphics instance, ResourceLocation resourceLocation, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, Operation<Void> original) {
         if (this.mod.getBadges().contains(Mod.Badge.PATCHWORK_FORGE)) {
-            var texture = Minecraft.getInstance().textureManager.getTexture(resourceLocation);
+            var texture = Minecraft.getInstance().getTextureManager().getTexture(resourceLocation);
 
             if (texture instanceof DynamicTexture dynamicTexture) {
                 var nativeImage = dynamicTexture.getPixels();

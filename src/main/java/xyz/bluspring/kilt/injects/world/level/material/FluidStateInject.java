@@ -2,9 +2,9 @@
 package xyz.bluspring.kilt.injects.world.level.material;
 
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.common.extensions.IForgeFluidState;
+import net.neoforged.neoforge.common.extensions.IFluidStateExtension;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(FluidState.class)
-public abstract class FluidStateInject implements IForgeFluidState {
+public abstract class FluidStateInject implements IFluidStateExtension {
 }

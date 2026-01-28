@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
-import net.neoforged.neoforge.common.extensions.IForgeBaseRailBlock;
+import net.neoforged.neoforge.common.extensions.IBaseRailBlockExtension;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(BaseRailBlock.class)
-public abstract class BaseRailBlockInject implements IForgeBaseRailBlock {
+public abstract class BaseRailBlockInject implements IBaseRailBlockExtension {
     @Shadow @Final private boolean isStraight;
 
     @Shadow public abstract Property<RailShape> getShapeProperty();

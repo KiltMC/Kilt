@@ -16,7 +16,7 @@ public abstract class RabbitInject {
 
         @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.getMobGriefingEvent(this.rabbit.level(), this.rabbit);
+            return original || EventHooks.canEntityGrief(this.rabbit.level(), this.rabbit);
         }
     }
 }

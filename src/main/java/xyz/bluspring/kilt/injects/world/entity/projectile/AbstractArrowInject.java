@@ -44,48 +44,6 @@ public abstract class AbstractArrowInject extends Projectile {
         return original || this.isInFluidType((fluidType, height) -> entity.canFluidExtinguish(fluidType));
     }
 
-    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;onHit(Lnet/minecraft/world/phys/HitResult;)V"))
-    private void kilt$handleOnHit(AbstractArrow instance, HitResult hitResult, Operation<Void> original, @Local LocalRef<EntityHitResult> entityHitResult, @Share("currentImpulse") LocalBooleanRef currentImpulse) {
-        var result = EventHooks.onProjectileImpactResultNullable(instance, hitResult);
-        if (result == null) {
-            if (hitResult.getType() != HitResult.Type.ENTITY) {
-                entityHitResult.set(null); // This is our best way of getting a break in here, honestly.
-                return;
-            }
-
-            result = ProjectileImpactEvent.ImpactResult.SKIP_ENTITY;
-        }
-
-        switch (result) {
-            case SKIP_ENTITY: {
-                if (hitResult.getType() != HitResult.Type.ENTITY) {
-                    original.call(instance, hitResult);
-                    currentImpulse.set(true);
-                    break;
-                }
-
-                ignoredEntities.add(entityHitResult.get().getEntity().getId());
-                entityHitResult.set(null);
-                break;
-            }
-
-            case STOP_AT_CURRENT_NO_DAMAGE: {
-                this.discard();
-                entityHitResult.set(null);
-                break;
-            }
-
-            case STOP_AT_CURRENT: {
-                this.setPierceLevel((byte) 0);
-            }
-
-            case DEFAULT: {
-                original.call(instance, hitResult);
-                currentImpulse.set(true);
-            }
-        }
-    }
-
     @Definition(id = "hasImpulse", field = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hasImpulse:Z")
     @Expression("this.hasImpulse = @(true)")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))

@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LivingEntityRendererInject<T extends LivingEntity, M extends EntityModel<T>> {
     @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"), cancellable = true)
     private void kilt$callLivingRenderPreEvent(T entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
-        if (NeoForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity, (LivingEntityRenderer<T, M>) (Object) this, partialTicks, poseStack, buffer, packedLight)))
+        if (NeoForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity, (LivingEntityRenderer<T, M>) (Object) this, partialTicks, poseStack, buffer, packedLight)).isCanceled())
             ci.cancel();
     }
 

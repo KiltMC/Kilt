@@ -17,6 +17,6 @@ public abstract class AllayInject extends PathfinderMob {
 
     @ModifyReturnValue(method = "wantsToPickUp", at = @At("RETURN"))
     private boolean kilt$checkMobGriefingEvent(boolean original) {
-        return original && EventHooks.getMobGriefingEvent(this.level(), this);
+        return original && EventHooks.canEntityGrief(this.level(), this);
     }
 }

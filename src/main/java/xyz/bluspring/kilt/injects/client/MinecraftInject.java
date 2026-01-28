@@ -44,6 +44,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.extensions.IMinecraftExtension;
 import net.neoforged.neoforge.client.loading.ClientModLoader;
 import net.neoforged.fml.ModLoader;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import net.neoforged.neoforge.common.extensions.IEntityExtension;
@@ -86,11 +87,6 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
 
     // This has to be public, it's a field that is used by the WorkaroundFixer.
     public Gui kilt$forgeGui = null;
-
-    @Override
-    public float getPartialTick() {
-        return realPartialTick;
-    }
 
     @Inject(method = "getBlockColors", at = @At("HEAD"))
     private void kilt$workaroundEmptyBlockColors(CallbackInfoReturnable<BlockColors> cir) {
@@ -224,7 +220,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
     @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 1))
     private void rightClickAir(CallbackInfo ci, @Local ItemStack stack, @Local InteractionHand hand) {
         if (stack.isEmpty() && (this.hitResult == null || this.hitResult.getType() == HitResult.Type.MISS)) {
-            ForgeHooks.onEmptyClick(this.player, hand);
+            CommonHooks.onEmptyClick(this.player, hand);
         }
     }
 

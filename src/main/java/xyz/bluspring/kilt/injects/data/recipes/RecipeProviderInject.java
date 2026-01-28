@@ -12,6 +12,7 @@ import net.neoforged.neoforge.common.conditions.WithConditions;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.injections.advancements.AdvancementInjection;
 import xyz.bluspring.kilt.injections.data.recipes.RecipeProviderInjection;
 
 import java.util.Optional;

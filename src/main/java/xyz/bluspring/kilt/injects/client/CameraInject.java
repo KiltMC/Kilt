@@ -27,12 +27,6 @@ public class CameraInject implements CameraInjection {
     @Shadow private Vec3 position;
 
     @Override
-    public void setAnglesInternal(float yaw, float pitch) {
-        this.yRot = yaw;
-        this.xRot = pitch;
-    }
-
-    @Override
     public BlockState getBlockAtCamera() {
         if (!this.initialized)
             return Blocks.AIR.defaultBlockState();

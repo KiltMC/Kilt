@@ -20,11 +20,10 @@ import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.injections.world.level.NaturalSpawnerInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(NaturalSpawner.class)
-public class NaturalSpawnerInject implements NaturalSpawnerInjection {
+public abstract class NaturalSpawnerInject {
     @WrapOperation(method = "createState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityType;getCategory()Lnet/minecraft/world/entity/MobCategory;"))
     private static MobCategory kilt$tryUseNeoClassification(EntityType<?> instance, Operation<MobCategory> original, @Local Entity entity) {
         if (KiltHelper.INSTANCE.hasMethodOverride(entity.getClass(), IEntityExtension.class, "getClassification", boolean.class)) {

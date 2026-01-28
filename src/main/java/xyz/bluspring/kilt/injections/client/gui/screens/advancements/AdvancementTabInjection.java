@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.injections.client.gui.screens.advancements;
 
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.advancements.AdvancementTab;
@@ -12,7 +13,7 @@ public interface AdvancementTabInjection {
     void kilt$setPage(int page);
     void kilt$setIndex(int index);
 
-    static AdvancementTab create(Minecraft mc, AdvancementsScreen screen, AdvancementTabType type, int index, int page, Advancement adv, DisplayInfo info) {
+    static AdvancementTab create(Minecraft mc, AdvancementsScreen screen, AdvancementTabType type, int index, int page, AdvancementNode adv, DisplayInfo info) {
         var tab = new AdvancementTab(mc, screen, type, index, adv, info);
         ((AdvancementTabInjection) tab).kilt$setPage(page);
 

@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injects.client.gui.screens;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -51,21 +53,21 @@ public abstract class ScreenInject implements ScreenInjection {
 
     @WrapOperation(method = {"init(Lnet/minecraft/client/Minecraft;II)V", "rebuildWidgets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;init()V"))
     private void kilt$tryCallForgeScreenInit(Screen instance, Operation<Void> original) {
-        if (!MinecraftForge.EVENT_BUS.post(new ScreenEvent.Init.Pre((Screen) (Object) this, this.children, ((ScreenInjection) instance)::kilt$addEventWidget, ((ScreenAccessor) this)::callRemoveWidget))) {
+        if (!NeoForge.EVENT_BUS.post(new ScreenEvent.Init.Pre((Screen) (Object) this, this.children, ((ScreenInjection) instance)::kilt$addEventWidget, ((ScreenAccessor) this)::callRemoveWidget)).isCanceled()) {
             original.call(instance);
         }
 
-        MinecraftForge.EVENT_BUS.post(new ScreenEvent.Init.Post((Screen) (Object) this, this.children, ((ScreenInjection) instance)::kilt$addEventWidget, ((ScreenAccessor) this)::callRemoveWidget));
+        NeoForge.EVENT_BUS.post(new ScreenEvent.Init.Post((Screen) (Object) this, this.children, ((ScreenInjection) instance)::kilt$addEventWidget, ((ScreenAccessor) this)::callRemoveWidget));
     }
 
-    @Inject(method = "renderBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(IIIIII)V", shift = At.Shift.AFTER))
-    private void kilt$callRenderBackgroundEvent(GuiGraphics guiGraphics, CallbackInfo ci) {
-        MinecraftForge.EVENT_BUS.post(new ScreenEvent.BackgroundRendered((Screen) (Object) this, guiGraphics));
+    @Inject(method = "renderBackground", at = @At("TAIL"))
+    private void kilt$callRenderBackgroundEvent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        NeoForge.EVENT_BUS.post(new ScreenEvent.BackgroundRendered((Screen) (Object) this, guiGraphics));
     }
 
-    @Inject(method = "renderDirtBackground", at = @At("TAIL"))
-    private void kilt$callRenderDirtBackgroundEvent(GuiGraphics guiGraphics, CallbackInfo ci) {
-        MinecraftForge.EVENT_BUS.post(new ScreenEvent.BackgroundRendered((Screen) (Object) this, guiGraphics));
+    @Inject(method = "renderBlurredBackground", at = @At("HEAD"))
+    private void kilt$fixNeoIssue1504(float partialTick, CallbackInfo ci) {
+        RenderSystem.disableDepthTest();
     }
 
     public Minecraft getMinecraft() {

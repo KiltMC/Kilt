@@ -12,6 +12,11 @@ public class CrashReportCategoryInject implements CrashReportCategoryInjection {
 
     @Override
     public void applyStackTrace(Throwable trace) {
-        this.stackTrace = trace.getStackTrace();
+        this.setStackTrace(trace.getStackTrace());
+    }
+
+    @Override
+    public void setStackTrace(StackTraceElement[] stackTrace) {
+        this.stackTrace = stackTrace;
     }
 }

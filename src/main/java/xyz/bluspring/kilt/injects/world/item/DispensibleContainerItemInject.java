@@ -2,9 +2,9 @@
 package xyz.bluspring.kilt.injects.world.item;
 
 import net.minecraft.world.item.DispensibleContainerItem;
-import net.neoforged.neoforge.common.extensions.IForgeDispensibleContainerItem;
+import net.neoforged.neoforge.common.extensions.IDispensibleContainerItemExtension;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(DispensibleContainerItem.class)
-public interface DispensibleContainerItemInject extends IForgeDispensibleContainerItem {
+public interface DispensibleContainerItemInject extends IDispensibleContainerItemExtension {
 }

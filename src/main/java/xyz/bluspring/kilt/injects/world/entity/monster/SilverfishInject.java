@@ -28,7 +28,7 @@ public abstract class SilverfishInject extends Monster {
 
         @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefingEvent(boolean original) {
-            return original && EventHooks.getMobGriefingEvent(this.mob.level(), this.mob);
+            return original && EventHooks.canEntityGrief(this.mob.level(), this.mob);
         }
     }
 
@@ -38,7 +38,7 @@ public abstract class SilverfishInject extends Monster {
 
         @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefingEvent(boolean original) {
-            return original && EventHooks.getMobGriefingEvent(this.silverfish.level(), this.silverfish);
+            return original && EventHooks.canEntityGrief(this.silverfish.level(), this.silverfish);
         }
     }
 }

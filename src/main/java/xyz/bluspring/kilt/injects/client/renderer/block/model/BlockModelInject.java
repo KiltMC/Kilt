@@ -85,7 +85,8 @@ public abstract class BlockModelInject implements BlockModelInjection {
     public void kilt$handleCustomModels(ModelBaker modelBaker, BlockModel ownerModel, Function<Material, TextureAtlasSprite> spriteGetter, ModelState state, boolean guiLight3d, CallbackInfoReturnable<BakedModel> cir) {
         // Avoid replacing the bake process entirely, unless there are any obvious tells that
         // the model data is from a Forge model
-        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || customData.visibilityData.kilt$hasAnyData() || customData.getCustomGeometry() instanceof IUnbakedGeometry<?> || getRootModel() == ModelBakery.GENERATION_MARKER) {
+        // Kilt TODO: fix
+        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || /*customData.visibilityData.kilt$hasAnyData() ||*/ customData.getCustomGeometry() instanceof IUnbakedGeometry<?> || getRootModel() == ModelBakery.GENERATION_MARKER) {
             cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, state, guiLight3d));
         }
     }

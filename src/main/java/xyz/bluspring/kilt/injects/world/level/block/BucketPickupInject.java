@@ -2,9 +2,9 @@
 package xyz.bluspring.kilt.injects.world.level.block;
 
 import net.minecraft.world.level.block.BucketPickup;
-import net.neoforged.neoforge.common.extensions.IForgeBucketPickup;
+import net.neoforged.neoforge.common.extensions.IBucketPickupExtension;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BucketPickup.class)
-public interface BucketPickupInject extends IForgeBucketPickup {
+public interface BucketPickupInject extends IBucketPickupExtension {
 }

@@ -16,7 +16,7 @@ public abstract class EvokerInject {
 
         @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.getMobGriefingEvent(field_7268.level(), field_7268);
+            return original || EventHooks.canEntityGrief(field_7268.level(), field_7268);
         }
     }
 }

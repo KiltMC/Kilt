@@ -25,9 +25,9 @@ public abstract class CocoaBlockInject {
 
     @WrapOperation(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
     private boolean kilt$callCropEvents(ServerLevel instance, BlockPos blockPos, BlockState blockState, int i, Operation<Boolean> original, @Share("originalResult") LocalIntRef originalResult, @Local(argsOnly = true) BlockState state) {
-        if (CommonHooks.onCropsGrowPre(instance, blockPos, state, originalResult.get() == 0)) {
+        if (CommonHooks.canCropGrow(instance, blockPos, state, originalResult.get() == 0)) {
             var value = original.call(instance, blockPos, blockState, i);
-            CommonHooks.onCropsGrowPost(instance, blockPos, state);
+            CommonHooks.fireCropGrowPost(instance, blockPos, state);
 
             return value;
         }

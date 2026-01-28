@@ -89,16 +89,16 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         return set.stream().toList();
     }
 
-    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private <V> V kilt$removeIfClippingHelper(V original) {
-        if (kilt$clippingHelper != null) {
-            var list = (Iterable<Particle>) original;
-            var clippingHelper = kilt$clippingHelper;
-            return (V) Streams.stream(list).filter(p -> !(p.shouldCull() && !clippingHelper.isVisible(p.getBoundingBox()))).toList();
-        }
-
-        return original;
-    }
+//    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+//    private <V> V kilt$removeIfClippingHelper(V original) {
+//        if (kilt$clippingHelper != null) {
+//            var list = (Iterable<Particle>) original;
+//            var clippingHelper = kilt$clippingHelper;
+//            return (V) Streams.stream(list).filter(p -> !(p.shouldCull() && !clippingHelper.isVisible(p.getBoundingBox()))).toList();
+//        }
+//
+//        return original;
+//    }
 
     @ModifyExpressionValue(method = "destroy", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;shouldSpawnTerrainParticles()Z"))
     private boolean kilt$callDestroyEffects(boolean original, @Local(argsOnly = true) BlockPos pos, @Local(argsOnly = true) BlockState state) {

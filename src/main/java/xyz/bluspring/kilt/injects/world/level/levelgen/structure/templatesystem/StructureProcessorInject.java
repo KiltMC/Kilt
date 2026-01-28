@@ -8,12 +8,13 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.helpers.mixin.AbstractOverride;
 import xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem.StructureProcessorInjection;
 
 @Mixin(StructureProcessor.class)
 public abstract class StructureProcessorInject implements StructureProcessorInjection {
-    @AbstractOverride
+    @Shadow
     @Nullable
     public StructureTemplate.StructureBlockInfo processBlock(LevelReader level, BlockPos blockPos, BlockPos pos, StructureTemplate.StructureBlockInfo blockInfo, StructureTemplate.StructureBlockInfo relativeBlockInfo, StructurePlaceSettings settings) {
         return relativeBlockInfo;
@@ -23,5 +24,11 @@ public abstract class StructureProcessorInject implements StructureProcessorInje
     @Nullable
     public StructureTemplate.StructureBlockInfo process(LevelReader level, BlockPos blockPos, BlockPos pos, StructureTemplate.StructureBlockInfo blockInfo, StructureTemplate.StructureBlockInfo relativeBlockInfo, StructurePlaceSettings settings, @Nullable StructureTemplate template) {
         return processBlock(level, blockPos, pos, blockInfo, relativeBlockInfo, settings);
+    }
+
+    @Override
+    @Nullable
+    public StructureTemplate.StructureEntityInfo processEntity(LevelReader world, BlockPos seedPos, StructureTemplate.StructureEntityInfo rawEntityInfo, StructureTemplate.StructureEntityInfo entityInfo, StructurePlaceSettings placementSettings, StructureTemplate template) {
+        return entityInfo;
     }
 }

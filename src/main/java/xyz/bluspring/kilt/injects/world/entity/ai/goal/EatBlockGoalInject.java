@@ -19,6 +19,6 @@ public abstract class EatBlockGoalInject extends Goal {
 
     @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkMobGriefing(boolean original) {
-        return original && EventHooks.getMobGriefingEvent(this.level, this.mob);
+        return original && EventHooks.canEntityGrief(this.level, this.mob);
     }
 }

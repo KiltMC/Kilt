@@ -23,7 +23,7 @@ public abstract class TextureAtlasInject implements TextureAtlasInjection {
 
     @Inject(method = "upload", at = @At("TAIL"))
     private void kilt$callTextureStitchPostEvent(SpriteLoader.Preparations preparations, CallbackInfo ci) {
-        ClientHooks.onTextureStitchedPost((TextureAtlas) (Object) this);
+        ClientHooks.onTextureAtlasStitched((TextureAtlas) (Object) this);
     }
 
     @Override

@@ -36,7 +36,7 @@ public abstract class EnderDragonInject extends Mob {
 
     @ModifyExpressionValue(method = "checkWalls", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkCanInvokeMobGriefing(boolean original) {
-        return original || EventHooks.getMobGriefingEvent(this.level(), this);
+        return original || EventHooks.canEntityGrief(this.level(), this);
     }
 
     @ModifyArg(method = "tickDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ExperienceOrb;award(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;I)V"))

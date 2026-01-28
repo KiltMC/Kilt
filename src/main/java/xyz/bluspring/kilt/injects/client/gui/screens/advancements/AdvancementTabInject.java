@@ -26,10 +26,10 @@ public class AdvancementTabInject implements AdvancementTabInjection {
     @Shadow @Final @Mutable private int index;
     @Unique private int page;
 
-    public AdvancementTabInject(Minecraft p_97145_, AdvancementsScreen p_97146_, AdvancementTabType p_97147_, int p_97148_, Advancement p_97149_, DisplayInfo p_97150_) {}
+    public AdvancementTabInject(Minecraft p_97145_, AdvancementsScreen p_97146_, AdvancementTabType p_97147_, int p_97148_, AdvancementNode p_97149_, DisplayInfo p_97150_) {}
 
     @CreateInitializer
-    public AdvancementTabInject(Minecraft mc, AdvancementsScreen screen, AdvancementTabType type, int index, int page, Advancement adv, DisplayInfo info) {
+    public AdvancementTabInject(Minecraft mc, AdvancementsScreen screen, AdvancementTabType type, int index, int page, AdvancementNode adv, DisplayInfo info) {
         this(mc, screen, type, index, adv, info);
         this.page = page;
     }

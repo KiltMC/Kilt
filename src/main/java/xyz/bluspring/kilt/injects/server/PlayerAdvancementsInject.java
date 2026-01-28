@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.injects.server;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,23 +20,23 @@ public abstract class PlayerAdvancementsInject {
     @Shadow private ServerPlayer player;
 
     @Inject(method = "award", at = @At("HEAD"), cancellable = true)
-    private void kilt$cancelIfFakePlayer(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
+    private void kilt$cancelIfFakePlayer(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
         if (this.player instanceof FakePlayer)
             cir.setReturnValue(false);
     }
 
     @Inject(method = "award", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z", ordinal = 0, shift = At.Shift.BY, by = 2))
-    private void kilt$callAdvancementProgressed(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir, @Local AdvancementProgress advancementProgress) {
+    private void kilt$callAdvancementProgressed(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir, @Local AdvancementProgress advancementProgress) {
         EventHooks.onAdvancementProgressedEvent(this.player, advancement, advancementProgress, criterionKey, AdvancementEvent.AdvancementProgressEvent.ProgressType.GRANT);
     }
 
     @Inject(method = "award", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/AdvancementRewards;grant(Lnet/minecraft/server/level/ServerPlayer;)V", shift = At.Shift.AFTER))
-    private void kilt$callAdvancementEarned(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
+    private void kilt$callAdvancementEarned(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
         EventHooks.onAdvancementEarnedEvent(this.player, advancement);
     }
 
     @Inject(method = "revoke", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z", ordinal = 0, shift = At.Shift.BY, by = 2))
-    private void kilt$callAdvancementProgressedRevoke(Advancement advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir, @Local AdvancementProgress advancementProgress) {
+    private void kilt$callAdvancementProgressedRevoke(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir, @Local AdvancementProgress advancementProgress) {
         EventHooks.onAdvancementProgressedEvent(this.player, advancement, advancementProgress, criterionKey, AdvancementEvent.AdvancementProgressEvent.ProgressType.REVOKE);
     }
 }

@@ -121,8 +121,7 @@
         "net/neoforged/neoforge/common/extensions/IHolderLookupProviderExtension"
       ],
       "net/minecraft/class_6885": [
-        "net/neoforged/neoforge/common/extensions/IHolderSetExtension<TT;>",
-        "xyz/bluspring/kilt/injections/core/HolderSetInjection"
+        "net/neoforged/neoforge/common/extensions/IHolderSetExtension<TT;>"
       ],
       "net/minecraft/class_2378": [
         "net/neoforged/neoforge/registries/IRegistryExtension<TT;>"
@@ -800,9 +799,6 @@
       ],
       "net/minecraft/class_1890": [
         "xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentHelperInjection"
-      ],
-      "net/minecraft/class_1887": [
-        "xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentInjection"
       ],
       "net/minecraft/world/item/ItemProperties": [
         "xyz/bluspring/kilt/injections/world/item/ItemPropertiesInjection"

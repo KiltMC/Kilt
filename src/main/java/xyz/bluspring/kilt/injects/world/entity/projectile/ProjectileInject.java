@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class ProjectileInject {
     @ModifyExpressionValue(method = "mayInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkCanInvokeMobGriefing(boolean original, @Local(argsOnly = true) Level level, @Local Entity entity) {
-        return original || EventHooks.getMobGriefingEvent(level, entity);
+        return original || EventHooks.canEntityGrief(level, entity);
     }
 }

@@ -49,8 +49,9 @@ public abstract class MultiPlayerGameModeInject {
 
     @Inject(method = "destroyBlock", at = @At("HEAD"), cancellable = true)
     private void kilt$callStartBreakEvent(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (minecraft.player.getMainHandItem().onBlockStartBreak(pos, minecraft.player))
-            cir.setReturnValue(false);
+        // Kilt TODO: impl
+        /*if (minecraft.player.getMainHandItem().onBlockStartBreak(pos, minecraft.player))
+            cir.setReturnValue(false);*/
     }
 
     @WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", ordinal = 0))

@@ -86,6 +86,8 @@ public abstract class GameRendererInject {
         return 1000f - ClientHooks.getGuiFarPlane();
     }
 
+    // Kilt TODO: fix
+    /*
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;renderWithTooltip(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
     private void kilt$callForgeDrawScreenEvent(Screen instance, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, Operation<Void> original) {
         ClientHooks.kilt$drawScreen(instance, guiGraphics, mouseX, mouseY, partialTick, original);
@@ -104,4 +106,5 @@ public abstract class GameRendererInject {
         this.minecraft.getProfiler().popPush("forge_render_last");
         ClientHooks.dispatchRenderStage(RenderLevelStageEvent.Stage.AFTER_LEVEL, this.minecraft.levelRenderer, poseStack2, matrix, ((LevelRendererAccessor) this.minecraft.levelRenderer).getTicks(), camera, ((LevelRendererInjection) this.minecraft.levelRenderer).getFrustum());
     }
+     */
 }

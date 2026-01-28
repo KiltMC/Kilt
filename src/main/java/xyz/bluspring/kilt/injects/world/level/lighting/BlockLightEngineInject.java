@@ -10,7 +10,7 @@ import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.level.lighting.BlockLightEngine;
 import net.minecraft.world.level.lighting.BlockLightSectionStorage;
 import net.minecraft.world.level.lighting.LightEngine;
-import net.minecraftforge.common.extensions.IForgeBlock;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +28,7 @@ public abstract class BlockLightEngineInject extends LightEngine<BlockLightSecti
 
     @WrapOperation(method = "getEmission", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
     private int kilt$useForgeLightEmissionCheck(BlockState instance, Operation<Integer> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getLightEmission", BlockState.class, BlockGetter.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IBlockExtension.class, "getLightEmission", BlockState.class, BlockGetter.class, BlockPos.class)) {
             return instance.getLightEmission(chunkSource.getLevel(), mutablePos);
         } else {
             return original.call(instance);
@@ -37,7 +37,7 @@ public abstract class BlockLightEngineInject extends LightEngine<BlockLightSecti
 
     @WrapOperation(method = "method_51532", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
     private int kilt$useForgeLightEmissionCheck(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getLightEmission", BlockState.class, BlockGetter.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IBlockExtension.class, "getLightEmission", BlockState.class, BlockGetter.class, BlockPos.class)) {
             return instance.getLightEmission(chunkSource.getLevel(), pos);
         } else {
             return original.call(instance);

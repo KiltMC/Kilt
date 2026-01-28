@@ -43,6 +43,7 @@
         "PoiTypesAccessor",
         "PropertiesAccessor",
         "RaiderTypeAccessor",
+        "RailStateAccessor",
         "RarityAccessor",
         "RecipeBookCategoriesAccessor",
         "RecipeBookSettingsAccessor",
@@ -58,7 +59,6 @@
         "WorldSliceAccessor",
         "client.gui.components.ButtonBuilderAccessor",
         "client.renderer.item.ItemPropertiesAccessor",
-        "compat.architectury.RegistrarManagerImplMixin",
         "compat.fabric_api.Int2ObjectMapTrackerMixin",
         "compat.fabric_api.PackRepositoryMixin",
         "compat.fabric_api.recipe.CustomIngredientPacketCodecMixin",
@@ -96,7 +96,6 @@
         "client.gui.components.DebugScreenOverlayMixin",
         "client.gui.screens.inventory.AbstractContainerScreenAccessor",
         "client.sounds.ChannelAccessHandleMixin",
-        "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
         "compat.fabric_api.rendering.FabricBakedModelMixin",
         "compat.fabric_api.rendering.VanillaModelEncoderMixin",
         "compat.indium.BakedModelMixin",
@@ -104,6 +103,7 @@
         "compat.modmenu.ModListEntryMixin",
         "compat.owo.ShaderInstanceMixin",
         "compat.ratatouille.ShaderInstanceMixin",
+        "compat.sodium.ItemRendererMixin",
         "debug.PoseStackMixin"
     ],
     "injectors": {

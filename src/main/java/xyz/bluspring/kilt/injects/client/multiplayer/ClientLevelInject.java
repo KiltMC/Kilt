@@ -82,7 +82,8 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
 
     @Inject(method = "setBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler;retainKnownServerState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/player/LocalPlayer;)V", shift = At.Shift.AFTER))
     private void kilt$retainCurrentSnapshot(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> cir, @Share("snapshot") LocalRef<BlockSnapshot> snapshotRef) {
-        this.blockStatePredictionHandler.retainSnapshot(snapshotRef.get());
+        // Kilt TODO: impl
+//        this.blockStatePredictionHandler.retainSnapshot(snapshotRef.get());
     }
 
     @Inject(at = @At("TAIL"), method = "<init>")

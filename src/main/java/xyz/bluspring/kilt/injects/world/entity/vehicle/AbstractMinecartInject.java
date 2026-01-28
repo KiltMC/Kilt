@@ -9,8 +9,8 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.IMinecartCollisionHandler;
-import net.neoforged.neoforge.common.extensions.IForgeAbstractMinecart;
-import net.neoforged.neoforge.common.extensions.IForgeBaseRailBlock;
+import net.neoforged.neoforge.common.extensions.IAbstractMinecartExtension;
+import net.neoforged.neoforge.common.extensions.IBaseRailBlockExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +20,7 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.entity.AbstractMinecartInjection;
 
 @Mixin(AbstractMinecart.class)
-public abstract class AbstractMinecartInject extends Entity implements AbstractMinecartInjection, IForgeAbstractMinecart {
+public abstract class AbstractMinecartInject extends Entity implements AbstractMinecartInjection, IAbstractMinecartExtension {
     public AbstractMinecartInject(EntityType<?> entityType, Level level) {
         super(entityType, level);
     }
@@ -113,7 +113,7 @@ public abstract class AbstractMinecartInject extends Entity implements AbstractM
         if (!state.is(BlockTags.RAILS))
             return getMaxSpeed();
 
-        var railMaxSpeed = ((IForgeBaseRailBlock) state.getBlock()).getRailMaxSpeed(state, this.level(), pos, (AbstractMinecart) (Object) this);
+        var railMaxSpeed = ((IBaseRailBlockExtension) state.getBlock()).getRailMaxSpeed(state, this.level(), pos, (AbstractMinecart) (Object) this);
 
         return Math.min(railMaxSpeed, getCurrentCartSpeedCapOnRail());
     }

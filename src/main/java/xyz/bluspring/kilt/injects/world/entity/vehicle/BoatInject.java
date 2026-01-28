@@ -15,14 +15,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.common.extensions.IForgeBoat;
+import net.neoforged.neoforge.common.extensions.IBoatExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(Boat.class)
-public abstract class BoatInject extends Entity implements IForgeBoat {
+public abstract class BoatInject extends Entity implements IBoatExtension {
     @Shadow private int lerpSteps;
 
     @Shadow private double lerpX;

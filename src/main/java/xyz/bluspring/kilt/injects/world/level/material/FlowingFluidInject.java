@@ -20,7 +20,7 @@ public abstract class FlowingFluidInject extends FluidInject {
 
     @WrapOperation(method = "getNewLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;isSource()Z"))
     private boolean kilt$checkCanCreateSource(FluidState instance, Operation<Boolean> original, @Local(argsOnly = true) Level level, @Local(ordinal = 1) BlockPos pos, @Local(ordinal = 1) BlockState state) {
-        return original.call(instance) && EventHooks.canCreateFluidSource(level, pos, state, instance.canConvertToSource(level, pos));
+        return original.call(instance) && EventHooks.canCreateFluidSource(level, pos, state);
     }
 
     @Redirect(method = "getNewLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FlowingFluid;canConvertToSource(Lnet/minecraft/world/level/Level;)Z"))

@@ -57,7 +57,7 @@ public abstract class EnderManInject extends Monster {
 
         @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.getMobGriefingEvent(this.enderman.level(), this.enderman);
+            return original || EventHooks.canEntityGrief(this.enderman.level(), this.enderman);
         }
 
         @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/EnderMan$EndermanLeaveBlockGoal;canPlaceBlock(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Z"))
@@ -77,7 +77,7 @@ public abstract class EnderManInject extends Monster {
 
         @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
         private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.getMobGriefingEvent(this.enderman.level(), this.enderman);
+            return original || EventHooks.canEntityGrief(this.enderman.level(), this.enderman);
         }
     }
 }

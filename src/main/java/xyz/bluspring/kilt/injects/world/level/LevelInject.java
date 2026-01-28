@@ -34,7 +34,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
-import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
@@ -44,7 +43,7 @@ import java.util.function.Predicate;
 
 @Mixin(value = Level.class, priority = 1111) // higher priority to mixin to Porting Lib
 @Extends(AttachmentHolder.class)
-public abstract class LevelInject implements CapabilityProviderInjection, ILevelExtension, LevelInjection {
+public abstract class LevelInject implements ILevelExtension, LevelInjection {
     public boolean restoringBlockSnapshots = false;
     public boolean captureBlockSnapshots = false;
 
@@ -175,11 +174,11 @@ public abstract class LevelInject implements CapabilityProviderInjection, ILevel
         EventHooks.onNeighborNotify((Level) (Object) this, pos, this.getBlockState(pos), EnumSet.allOf(Direction.class), false).isCanceled();
     }
 
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.mixin.common.LevelMixin", name = "port_lib$onBlockEntitiesLoad")
+    /*@TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.mixin.common.LevelMixin", name = "port_lib$onBlockEntitiesLoad")
     @Redirect(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/ArrayList;forEach(Ljava/util/function/Consumer;)V", remap = false))
     private void kilt$loadBlockEntitiesForge(ArrayList<BlockEntity> instance, Consumer<BlockEntity> consumer) {
         instance.forEach(BlockEntity::onLoad);
-    }
+    }*/ // TODO: a
 
     @Inject(method = "getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;", at = @At("TAIL"))
     private void kilt$addPartEntitiesToList(Entity entity, AABB area, Predicate<? super Entity> predicate, CallbackInfoReturnable<List<Entity>> cir, @Local List<Entity> list) {

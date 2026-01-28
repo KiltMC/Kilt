@@ -30,13 +30,4 @@ public abstract class IllusionerInject extends SpellcasterIllager {
 
         return ProjectileUtilInjection.getWeaponHoldingHand(shooter, item -> item instanceof BowItem);
     }
-
-    @ModifyExpressionValue(method = "performRangedAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getMobArrow(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;"))
-    private AbstractArrow kilt$tryUseCustomArrow(AbstractArrow original) {
-        if (this.getMainHandItem().getItem() instanceof BowItem bow) {
-            return ((BowItemInjection) bow).customArrow(original);
-        }
-
-        return original;
-    }
 }

@@ -11,8 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.fluids.FluidInteractionRegistry;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.fluids.FluidInteractionRegistry;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,43 +30,8 @@ public abstract class LiquidBlockInject extends Block {
     @Shadow @Final @Mutable
     protected FlowingFluid fluid;
 
-    @Mutable
-    @Shadow @Final private List<FluidState> stateCache;
-
     public LiquidBlockInject(Properties properties) {
         super(properties);
-    }
-
-    @Intrinsic(displace = true)
-    public FlowingFluid kilt$i$getFluid() {
-        if (this.supplier != null && this.fluid == null)
-            this.fluid = (FlowingFluid) this.supplier.get();
-
-        return this.fluid;
-    }
-
-    // This isn't a part of Forge itself, but it needs to be done in order to
-    // make sure the Vanilla checks are able to actually have fluid function properly.
-    @SuppressWarnings("InvalidInjectorMethodSignature")
-    @Inject(at = @At("HEAD"), method = {"isPathfindable", "getPickupSound", "pickupBlock", "shouldSpreadLiquid", "onPlace", "skipRendering", "updateShape", "neighborChanged"})
-    public void kilt$cacheFluidState(CallbackInfo ci) {
-        this.kilt$i$getFluid();
-    }
-
-    @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V")
-    public void kilt$setFluidSupplier(FlowingFluid flowingFluid, BlockBehaviour.Properties properties, CallbackInfo ci) {
-        fluidStateCacheInitialized = true;
-
-        @SuppressWarnings("SimplifyOptionalCallChains") var fluidSupplier = ForgeRegistries.FLUIDS.getDelegate(flowingFluid).orElse(null);
-
-        if (fluidSupplier != null)
-            supplier = fluidSupplier;
-    }
-
-    @Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", shift = At.Shift.BEFORE), method = "getFluidState")
-    public void kilt$loadFluidStateCaches(BlockState blockState, CallbackInfoReturnable<FluidState> cir) {
-        if (!fluidStateCacheInitialized)
-            initFluidStateCache();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/LiquidBlock;shouldSpreadLiquid(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"), method = "neighborChanged")
@@ -78,31 +42,5 @@ public abstract class LiquidBlockInject extends Block {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/LiquidBlock;shouldSpreadLiquid(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"), method = "onPlace")
     public boolean kilt$useForgeOnPlace(LiquidBlock instance, Level level, BlockPos blockPos, BlockState blockState) {
         return !FluidInteractionRegistry.canInteract(level, blockPos);
-    }
-
-    private Supplier<? extends Fluid> supplier;
-
-    private boolean fluidStateCacheInitialized = false;
-    protected synchronized void initFluidStateCache() {
-        if (!fluidStateCacheInitialized) {
-            this.stateCache.add(this.kilt$i$getFluid().getSource(false));
-
-            for (int i = 1; i < 8; ++i)
-                this.stateCache.add(this.kilt$i$getFluid().getFlowing(8 - i, false));
-
-            this.stateCache.add(this.kilt$i$getFluid().getFlowing(8, true));
-            fluidStateCacheInitialized = true;
-        }
-    }
-
-    @CreateInitializer
-    public LiquidBlockInject(Supplier<? extends FlowingFluid> fluidSupplier, BlockBehaviour.Properties properties) {
-        super(properties);
-
-        this.fluid = null;
-        this.stateCache = Lists.newArrayList();
-        this.registerDefaultState(this.stateDefinition.any().setValue(LiquidBlock.LEVEL, 0));
-
-        this.supplier = fluidSupplier;
     }
 }

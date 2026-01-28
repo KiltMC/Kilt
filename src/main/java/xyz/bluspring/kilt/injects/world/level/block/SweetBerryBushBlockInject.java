@@ -22,11 +22,11 @@ public abstract class SweetBerryBushBlockInject {
     @Expression("random.nextInt(5) == 0")
     @ModifyExpressionValue(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkPreGrowCrops(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) BlockPos pos, @Local(argsOnly = true) BlockState state) {
-        return CommonHooks.onCropsGrowPre(level, pos, state, original);
+        return CommonHooks.canCropGrow(level, pos, state, original);
     }
 
-    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;gameEvent(Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/gameevent/GameEvent$Context;)V", shift = At.Shift.AFTER))
+    @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;gameEvent(Lnet/minecraft/core/Holder;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/gameevent/GameEvent$Context;)V", shift = At.Shift.AFTER))
     private void kilt$callPostGrowCrops(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
-        CommonHooks.onCropsGrowPost(level, pos, state);
+        CommonHooks.fireCropGrowPost(level, pos, state);
     }
 }

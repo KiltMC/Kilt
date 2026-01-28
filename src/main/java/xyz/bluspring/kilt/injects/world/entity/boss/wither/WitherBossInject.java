@@ -20,7 +20,7 @@ public abstract class WitherBossInject extends Monster {
 
     @ModifyExpressionValue(method = "customServerAiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkCanInvokeMobGriefing(boolean original) {
-        return original || EventHooks.getMobGriefingEvent(this.level(), this);
+        return original || EventHooks.canEntityGrief(this.level(), this);
     }
 
     @ModifyExpressionValue(method = "customServerAiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/boss/wither/WitherBoss;canDestroy(Lnet/minecraft/world/level/block/state/BlockState;)Z"))

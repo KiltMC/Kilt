@@ -17,6 +17,6 @@ public abstract class LargeFireballInject extends Fireball {
 
     @ModifyExpressionValue(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkCanInvokeMobGriefing(boolean original) {
-        return original || EventHooks.getMobGriefingEvent(this.level(), this.getOwner());
+        return original || EventHooks.canEntityGrief(this.level(), this.getOwner());
     }
 }

@@ -17,13 +17,14 @@ public abstract class AbstractClientPlayerInject extends Player {
         super(level, pos, yRot, gameProfile);
     }
 
-    @WrapOperation(method = "getFieldOfViewModifier", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F"))
-    private float kilt$getForgeFovModifier(float delta, float start, float end, Operation<Float> original) {
-        var modified = ClientHooks.getFieldOfViewModifier(this, end);
-        if (ClientHooks.kilt$isDefault.getAndSet(false)) {
-            return original.call(delta, start, end);
-        }
-
-        return modified;
-    }
+    // Kilt TODO: fix
+//    @WrapOperation(method = "getFieldOfViewModifier", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F"))
+//    private float kilt$getForgeFovModifier(float delta, float start, float end, Operation<Float> original) {
+//        var modified = ClientHooks.getFieldOfViewModifier(this, end);
+//        if (ClientHooks.kilt$isDefault.getAndSet(false)) {
+//            return original.call(delta, start, end);
+//        }
+//
+//        return modified;
+//    }
 }

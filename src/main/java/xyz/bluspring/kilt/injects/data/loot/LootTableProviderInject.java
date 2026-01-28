@@ -2,7 +2,9 @@
 package xyz.bluspring.kilt.injects.data.loot;
 
 import com.google.common.collect.Sets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.*;
 import org.spongepowered.asm.mixin.Final;
@@ -24,12 +26,12 @@ public class LootTableProviderInject implements LootTableProviderInjection {
 
     @Override
     public void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationContext) {
-        for (ResourceLocation location : Sets.difference(BuiltInLootTables.all(), map.keySet())) {
+        for (ResourceKey<LootTable> location : Sets.difference(BuiltInLootTables.all(), map.keySet())) {
             validationContext.reportProblem("Missing built-in table: " + location);
         }
 
         map.forEach((location, table) -> {
-            table.validate(validationContext.setParams(table.getParamSet()).enterElement("{" + location + "}", new LootDataId<>(LootDataType.TABLE, location)));
+            table.validate(validationContext.setParams(table.getParamSet()).enterElement("{" + location + "}", ResourceKey.create(Registries.LOOT_TABLE, location)));
         });
     }
 }

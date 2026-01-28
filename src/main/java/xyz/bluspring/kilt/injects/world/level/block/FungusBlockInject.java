@@ -19,9 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FungusBlockInject {
     @ModifyReceiver(method = "method_46682", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/Holder;value()Ljava/lang/Object;"))
     private static Holder<ConfiguredFeature<?, ?>> kilt$useForgeEventFeature(Holder<ConfiguredFeature<?, ?>> instance, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) RandomSource randomSource, @Local(argsOnly = true) BlockPos pos, @Cancellable CallbackInfo ci) {
-        var event = EventHooks.blockGrowFeature(level, randomSource, pos, instance);
+        var event = EventHooks.fireBlockGrowFeature(level, randomSource, pos, instance);
 
-        if (event.getResult().equals(Event.Result.DENY)) {
+        if (event.isCanceled()) {
             ci.cancel();
             return instance;
         }

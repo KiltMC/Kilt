@@ -36,10 +36,10 @@ public interface PackInjection {
                 Pack adaptedChild = new Pack(
                         new PackLocationInfo(child.location().id(), child.location().title(), CHILD_SOURCE, child.location().knownPackInfo()),
                         child.resources,
-                        new Pack.Metadata(child.metadata.description(), child.metadata.compatibility(), child.metadata.requestedFeatures(), child.metadata.overlays(), true),
-                        new PackSelectionConfig(false, child.getDefaultPosition(), child.isFixedPosition()),
-                        List.of()
+                        PackMetadataInjection.create(child.metadata.description(), child.metadata.compatibility(), child.metadata.requestedFeatures(), child.metadata.overlays(), true),
+                        new PackSelectionConfig(false, child.getDefaultPosition(), child.isFixedPosition())
                 );
+                adaptedChild.kilt$setChildren(List.of());
                 flattenedChildren.add(adaptedChild);
                 remainingChildren.addAll(child.getChildren());
             }

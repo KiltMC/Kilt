@@ -23,10 +23,10 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(WalkNodeEvaluator.class)
 public abstract class WalkNodeEvaluatorInject {
-    @WrapOperation(method = "checkNeighbourBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/pathfinder/PathfindingContext;getPathTypeFromState(III)Lnet/minecraft/world/level/pathfinder/PathType;"), cancellable = true)
+    @WrapOperation(method = "checkNeighbourBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/pathfinder/PathfindingContext;getPathTypeFromState(III)Lnet/minecraft/world/level/pathfinder/PathType;"))
     private static PathType kilt$tryGetAdjacentBlockPathType(PathfindingContext instance, int x, int y, int z, Operation<PathType> original, @Cancellable CallbackInfoReturnable<PathType> cir) {
         PathType pathType = original.call(instance, x, y, z);
-        BlockPos currentEvalPos = ((PathfindingContextInjection) instance).currentEvalPos();
+        BlockPos currentEvalPos = instance.currentEvalPos();
         BlockState blockState = instance.level().getBlockState(currentEvalPos);
 
         if (KiltHelper.INSTANCE.hasMethodOverride(blockState.getBlock().getClass(), Block.class, "getAdjacentBlockPathType", BlockState.class, BlockGetter.class, BlockPos.class, Mob.class, PathType.class)) {

@@ -7,12 +7,24 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.geometry.BlockGeometryBakingContext;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.function.Function;
 
 public interface BlockModelInjection {
-    ResourceLocation getParentLocation();
-    BlockGeometryBakingContext kilt$getCustomData();
-    ItemOverrides getOverrides(ModelBaker baker, BlockModel blockModel, Function<Material, TextureAtlasSprite> spriteGetter);
-    String getSerializedName();
+    default ResourceLocation getParentLocation() {
+        throw KiltHelper.createMixinException(BlockModelInjection.class, "getParentLocation");
+    }
+
+    default BlockGeometryBakingContext kilt$getCustomData() {
+        throw KiltHelper.createMixinException(BlockModelInjection.class, "kilt$getCustomData");
+    }
+
+    default ItemOverrides getOverrides(ModelBaker baker, BlockModel blockModel, Function<Material, TextureAtlasSprite> spriteGetter) {
+        throw KiltHelper.createMixinException(BlockModelInjection.class, "getOverrides");
+    }
+
+    default String getSerializedName() {
+        throw KiltHelper.createMixinException(BlockModelInjection.class, "getSerializedName");
+    }
 }

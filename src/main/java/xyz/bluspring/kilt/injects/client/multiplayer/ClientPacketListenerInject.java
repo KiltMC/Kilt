@@ -88,8 +88,9 @@ public abstract class ClientPacketListenerInject extends ClientCommonPacketListe
     }
 
     @ModifyExpressionValue(method = "handleConfigurationStart", at = @At(value = "NEW", target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/network/Connection;Lnet/minecraft/client/multiplayer/CommonListenerCookie;)Lnet/minecraft/client/multiplayer/ClientConfigurationPacketListenerImpl;"))
-    private ClientConfigurationPacketListenerImplInject kilt$appendConnectionTypeToListener(ClientConfigurationPacketListenerImplInject original) {
-        original.kilt$setConnectionType(connectionType);
+    private ClientConfigurationPacketListenerImpl kilt$appendConnectionTypeToListener(ClientConfigurationPacketListenerImpl original) {
+        // Kilt TODO: impl
+//        original.kilt$setConnectionType(connectionType);
         return original;
     }
 

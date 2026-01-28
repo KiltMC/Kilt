@@ -33,6 +33,6 @@ public abstract class PiglinInject extends AbstractPiglin {
 
     @ModifyExpressionValue(method = "wantsToPickUp", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkMobGriefingEvent(boolean original) {
-        return original && EventHooks.getMobGriefingEvent(this.level(), this);
+        return original && EventHooks.canEntityGrief(this.level(), this);
     }
 }

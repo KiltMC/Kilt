@@ -24,7 +24,7 @@ public interface IngredientInjection {
 
     static Ingredient create(ICustomIngredient customIngredient) {
         Ingredient ingredient = new Ingredient(new Ingredient.Value[0]);
-        ((IngredientInjection) ingredient).kilt$setCustomIngredient(customIngredient);
+        ingredient.kilt$setCustomIngredient(customIngredient);
 
         return ingredient;
     }

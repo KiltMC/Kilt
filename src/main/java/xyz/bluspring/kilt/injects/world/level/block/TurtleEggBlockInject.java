@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class TurtleEggBlockInject {
     @ModifyExpressionValue(method = "canDestroyEgg", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkMobGriefing(boolean original, @Local(argsOnly = true) Level level, @Local(argsOnly = true) Entity entity) {
-        return original && EventHooks.getMobGriefingEvent(level, entity);
+        return original && EventHooks.canEntityGrief(level, entity);
     }
 }

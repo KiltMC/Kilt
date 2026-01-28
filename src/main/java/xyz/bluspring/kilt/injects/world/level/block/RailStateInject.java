@@ -6,7 +6,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.RailStateAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.BlockGetter;
@@ -23,6 +22,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.mixin.RailStateAccessor;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
@@ -75,7 +75,7 @@ public abstract class RailStateInject {
     @Inject(method = "connectTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;setValue(Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Ljava/lang/Object;"), cancellable = true)
     private void kilt$checkIsValidRailShape(RailState state, CallbackInfo ci, @Local RailShape newShape) {
         if (!this.block.isValidRailShape(newShape)) {
-            this.connections.remove(((RailStateAccessor) state).port_lib$getPos());
+            this.connections.remove(((RailStateAccessor) state).getPos());
             ci.cancel();
         }
     }

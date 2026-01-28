@@ -8,16 +8,16 @@ import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.ShovelItemInjection;
 
 @Mixin(ShovelItem.class)
 public abstract class ShovelItemInject extends DiggerItem implements ShovelItemInjection {
-    public ShovelItemInject(float attackDamageModifier, float attackSpeedModifier, Tier tier, TagKey<Block> blocks, Properties properties) {
-        super(attackDamageModifier, attackSpeedModifier, tier, blocks, properties);
+    public ShovelItemInject(Tier tier, TagKey<Block> blocks, Properties properties) {
+        super(tier, blocks, properties);
     }
 
     @CreateStatic
@@ -26,7 +26,7 @@ public abstract class ShovelItemInject extends DiggerItem implements ShovelItemI
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-        return ToolActions.DEFAULT_SHOVEL_ACTIONS.contains(toolAction);
+    public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+        return ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(toolAction);
     }
 }

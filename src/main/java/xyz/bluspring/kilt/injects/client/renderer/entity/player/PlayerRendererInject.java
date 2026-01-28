@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerRendererInject {
     @WrapOperation(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
     private <T extends LivingEntity> void kilt$callPlayerRenderEvent(PlayerRenderer instance, T entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, Operation<Void> original) {
-        if (NeoForge.EVENT_BUS.post(new RenderPlayerEvent.Pre((AbstractClientPlayer) entity, (PlayerRenderer) (Object) this, partialTicks, poseStack, buffer, packedLight)))
+        if (NeoForge.EVENT_BUS.post(new RenderPlayerEvent.Pre((AbstractClientPlayer) entity, (PlayerRenderer) (Object) this, partialTicks, poseStack, buffer, packedLight)).isCanceled())
             return;
 
         //noinspection MixinExtrasOperationParameters
@@ -63,7 +63,7 @@ public abstract class PlayerRendererInject {
         return !ClientHooks.renderSpecificFirstPersonArm(poseStack, buffer, combinedLight, player, HumanoidArm.LEFT);
     }
 
-    @WrapOperation(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isInWater()Z"))
+    @WrapOperation(method = "setupRotations(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isInWater()Z"))
     private boolean kilt$checkCanSwimInFluidType(AbstractClientPlayer instance, Operation<Boolean> original) {
         return original.call(instance) || instance.isInFluidType((fluidType, height) -> instance.canSwimInFluidType(fluidType));
     }

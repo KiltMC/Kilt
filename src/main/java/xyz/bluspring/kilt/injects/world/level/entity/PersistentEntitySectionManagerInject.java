@@ -37,7 +37,7 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
 
     @Inject(method = "addEntity", at = @At("HEAD"), cancellable = true)
     private void kilt$callEntityJoinLevelEvent(T entity, boolean worldGenSpawned, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.kilt$callWithoutEvent.getAndSet(false) && entity instanceof Entity e && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(e, e.level(), worldGenSpawned)))
+        if (!this.kilt$callWithoutEvent.getAndSet(false) && entity instanceof Entity e && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(e, e.level(), worldGenSpawned)).isCanceled())
             cir.setReturnValue(false);
     }
 
@@ -49,7 +49,7 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
     @Inject(method = {"method_31857", "method_31863", "method_31864"}, at = @At("TAIL"))
     private void kilt$callEntityAddedToWorld(EntityAccess entityAccess, CallbackInfo ci) {
         if (entityAccess instanceof Entity entity)
-            entity.onAddedToWorld();
+            entity.onAddedToLevel();
     }
 
     @Mixin(PersistentEntitySectionManager.Callback.class)

@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.injections.world.entity.item;
 
+import xyz.bluspring.kilt.util.KiltHelper;
+
 public interface ItemEntityInjection {
-    int kilt$getLifespan();
+    default int kilt$getLifespan() {
+        throw KiltHelper.createMixinException(ItemEntityInjection.class, "kilt$getLifespan");
+    }
 }

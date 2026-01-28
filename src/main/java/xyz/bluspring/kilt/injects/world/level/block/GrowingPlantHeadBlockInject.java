@@ -23,11 +23,11 @@ public abstract class GrowingPlantHeadBlockInject {
     @Expression("random.nextDouble() < this.growPerTickProbability")
     @ModifyExpressionValue(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$callForgeCropsGrowPreEvent(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) BlockPos pos, @Local(argsOnly = true) BlockState state) {
-        return CommonHooks.onCropsGrowPre(level, pos, state, original);
+        return CommonHooks.canCropGrow(level, pos, state, original);
     }
 
     @Inject(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;setBlockAndUpdate(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z", shift = At.Shift.AFTER))
     private void kilt$callForgeCropsGrowPostEvent(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
-        CommonHooks.onCropsGrowPost(level, pos, state);
+        CommonHooks.fireCropGrowPost(level, pos, state);
     }
 }

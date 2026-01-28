@@ -48,9 +48,4 @@ public abstract class BowItemInject implements BowItemInjection {
 
         return flag;
     }
-
-    @Override
-    public AbstractArrow customArrow(AbstractArrow arrow) {
-        return arrow;
-    }
 }
