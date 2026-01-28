@@ -3,8 +3,9 @@ package xyz.bluspring.kilt.injects.tags;
 
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
-import net.neoforged.neoforge.common.extensions.IForgeRawTagBuilder;
+import net.neoforged.neoforge.common.extensions.ITagBuilderExtension;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.injections.tags.TagBuilderInjection;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Mixin(TagBuilder.class)
-public class TagBuilderInject implements TagBuilderInjection, IForgeRawTagBuilder {
+public class TagBuilderInject implements TagBuilderInjection, ITagBuilderExtension {
     private final List<TagEntry> removeEntries = new ArrayList<>();
 
     @Override
@@ -26,12 +27,20 @@ public class TagBuilderInject implements TagBuilderInjection, IForgeRawTagBuilde
         return (TagBuilder) (Object) this;
     }
 
-    // what the fuck is this even used for??
-    private boolean replace = false;
+    @Unique private boolean replace = false;
 
     @Override
     public TagBuilder replace(boolean value) {
         this.replace = value;
         return (TagBuilder) (Object) this;
+    }
+
+    public TagBuilder replace() {
+        return this.replace(true);
+    }
+
+    @Override
+    public boolean isReplace() {
+        return replace;
     }
 }

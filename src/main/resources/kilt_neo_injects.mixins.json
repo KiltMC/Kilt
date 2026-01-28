@@ -146,6 +146,7 @@
         "server.level.WorldGenRegionInject",
         "server.network.ServerConnectionListenerInject",
         "server.network.ServerGamePacketListenerImplInject",
+        "server.network.ServerGamePacketListenerImplInject$AnonymousServerboundInteractPacketHandlerInject",
         "server.network.ServerStatusPacketListenerImplInject",
         "server.packs.AbstractPackResourcesInject",
         "server.packs.metadata.pack.PackMetadataSectionInject",

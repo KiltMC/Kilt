@@ -4,8 +4,9 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.neoforged.neoforge.resource.ContextAwareReloadListener;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
+import xyz.bluspring.kilt.workarounds.ContextAwareReloadListenerWorkaround;
 
 @Extends(ContextAwareReloadListener.class)
 @Mixin(SimplePreparableReloadListener.class)
-public abstract class SimplePreparableReloadListenerInject {
+public abstract class SimplePreparableReloadListenerInject implements ContextAwareReloadListenerWorkaround {
 }

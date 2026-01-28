@@ -21,7 +21,7 @@ public abstract class VillageSiegeInject {
     private Vec3 kilt$callVillageSiegeEvent(VillageSiege instance, ServerLevel level, BlockPos pos, Operation<Vec3> original, @Cancellable CallbackInfoReturnable<Boolean> cir, @Local Player player) {
         var siegeLocation = original.call(instance, level, pos);
 
-        if (siegeLocation != null && NeoForge.EVENT_BUS.post(new VillageSiegeEvent((VillageSiege) (Object) this, level, player, siegeLocation))) {
+        if (siegeLocation != null && NeoForge.EVENT_BUS.post(new VillageSiegeEvent((VillageSiege) (Object) this, level, player, siegeLocation)).isCanceled()) {
             cir.setReturnValue(false);
             return null;
         }

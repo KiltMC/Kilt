@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injections.tags;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
 import xyz.bluspring.kilt.processor.FabricInjectedInterface;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.stream.Stream;
 
@@ -22,5 +23,9 @@ public interface TagBuilderInjection {
 
     default TagBuilder replace() {
         return replace(true);
+    }
+
+    default boolean isReplace() {
+        throw KiltHelper.createMixinException(TagBuilderInjection.class, "isReplace");
     }
 }

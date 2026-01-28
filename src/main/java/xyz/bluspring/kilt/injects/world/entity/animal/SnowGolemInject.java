@@ -7,20 +7,20 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.IForgeShearable;
+import net.neoforged.neoforge.common.IShearable;
 import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(SnowGolem.class)
-public abstract class SnowGolemInject extends AbstractGolem implements IForgeShearable {
+public abstract class SnowGolemInject extends AbstractGolem implements IShearable {
     protected SnowGolemInject(EntityType<? extends AbstractGolem> entityType, Level level) {
         super(entityType, level);
     }
 
     @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
     private boolean kilt$checkMobGriefing(boolean original) {
-        return original || EventHooks.getMobGriefingEvent(this.level(), this);
+        return original || EventHooks.canEntityGrief(this.level(), this);
     }
 
     @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z"))

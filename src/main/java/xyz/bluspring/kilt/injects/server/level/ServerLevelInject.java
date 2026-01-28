@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injects.server.level;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -15,17 +16,22 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListener;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProgressListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
@@ -41,18 +47,20 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.attachment.LevelAttachmentsSavedData;
+import net.neoforged.neoforge.capabilities.CapabilityListenerHolder;
+import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.IOUtilities;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.extensions.IForgeLevel;
-import net.neoforged.neoforge.common.util.LevelCapabilityData;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.common.extensions.ILevelExtension;
+import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -69,30 +77,34 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Mixin(ServerLevel.class)
-public abstract class ServerLevelInject extends Level implements ServerLevelInjection, IForgeLevel {
+public abstract class ServerLevelInject extends Level implements ServerLevelInjection, ILevelExtension {
     protected ServerLevelInject(WritableLevelData levelData, ResourceKey<Level> dimension, RegistryAccess registryAccess, Holder<DimensionType> dimensionTypeRegistration, Supplier<ProfilerFiller> profiler, boolean isClientSide, boolean isDebug, long biomeZoomSeed, int maxChainedNeighborUpdates) {
         super(levelData, dimension, registryAccess, dimensionTypeRegistration, profiler, isClientSide, isDebug, biomeZoomSeed, maxChainedNeighborUpdates);
     }
 
-    @Shadow public abstract DimensionDataStorage getDataStorage();
+    @Shadow @Final @Mutable private List<CustomSpawner> customSpawners;
+    @Shadow @Final private ServerLevelData serverLevelData;
+    @Shadow @Final private MinecraftServer server;
 
-    @Shadow @Final private List<ServerPlayer> players;
-    @Unique private LevelCapabilityData capabilityData;
     @Unique final Int2ObjectMap<PartEntity<?>> kilt$entityParts = new Int2ObjectOpenHashMap<>();
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$addInitCapabilities(MinecraftServer server, Executor dispatcher, LevelStorageSource.LevelStorageAccess levelStorageAccess, ServerLevelData serverLevelData, ResourceKey dimension, LevelStem levelStem, ChunkProgressListener progressListener, boolean isDebug, long biomeZoomSeed, List customSpawners, boolean tickTime, RandomSequences randomSequences, CallbackInfo ci) {
-        this.initCapabilities();
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/WritableLevelData;getDayTime()J"), method = "tick")
-    public long kilt$useLevelDaytime(WritableLevelData instance) {
-        return ((ServerLevel) (Object) this).getDayTime();
+        LevelAttachmentsSavedData.init((ServerLevel) (Object) this);
+        this.customSpawners = EventHooks.getCustomSpawners((ServerLevel) (Object) this, this.customSpawners);
     }
 
     @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;setDayTime(J)V"))
     public long kilt$useForgeDaytime(long l) {
-        return EventHooks.onSleepFinished((ServerLevel) (Object) this, l, ((ServerLevel) (Object) this).getDayTime());
+        return EventHooks.onSleepFinished((ServerLevel) (Object) this, l, this.getDayTime());
+    }
+
+    @Definition(id = "getForcedChunks", method = "Lnet/minecraft/server/level/ServerLevel;getForcedChunks()Lit/unimi/dsi/fastutil/longs/LongSet;")
+    @Definition(id = "isEmpty", method = "Lit/unimi/dsi/fastutil/longs/LongSet;isEmpty()Z")
+    @Expression("this.getForcedChunks().isEmpty() == false")
+    @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkHasForcedChunks(boolean original) {
+        return original || ForcedChunkManager.hasForcedChunks((ServerLevel) (Object) this);
     }
 
     @WrapWithCondition(method = "method_31420", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;guardEntityTick(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/Entity;)V"))
@@ -100,39 +112,71 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
         return !entity.isRemoved() && !(entity instanceof PartEntity<?>);
     }
 
-    @WrapOperation(method = "tickChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;shouldFreeze(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"))
+    @Definition(id = "setDayTime", method = "Lnet/minecraft/server/level/ServerLevel;setDayTime(J)V")
+    @Definition(id = "levelData", field = "Lnet/minecraft/server/level/ServerLevel;levelData:Lnet/minecraft/world/level/storage/WritableLevelData;")
+    @Definition(id = "getDayTime", method = "Lnet/minecraft/world/level/storage/WritableLevelData;getDayTime()J")
+    @Expression("this.setDayTime(this.levelData.getDayTime() + @(1))")
+    @ModifyExpressionValue(method = "tickTime", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private long kilt$useAdvanceDaytime(long original) {
+        if (this.getDayTimePerTick() < 0) {
+            return original;
+        }
+
+        return advanceDaytime();
+    }
+
+    @WrapOperation(method = "tickPrecipitation", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;shouldFreeze(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"))
     private boolean kilt$checkAreaLoaded(Biome instance, LevelReader level, BlockPos pos, Operation<Boolean> original) {
         return this.isAreaLoaded(pos, 1) && original.call(instance, level, pos);
     }
 
-    @WrapWithCondition(method = "tickPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;rideTick()V"))
-    private boolean kilt$checkIfEntityCanUpdate(Entity instance) {
-        return instance.canUpdate();
+    @Redirect(method = "advanceWeatherCycle", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;)V"), require = 0)
+    private void kilt$limitToCurrentDimension(PlayerList instance, Packet<?> packet) {
+        instance.broadcastAll(packet, this.dimension());
+    }
+
+    @WrapOperation(method = "tickNonPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
+    private void kilt$callEntityTickEvents(Entity instance, Operation<Void> original) {
+        if (!EventHooks.fireEntityTickPre(instance).isCanceled()) {
+            original.call(instance);
+            EventHooks.fireEntityTickPost(instance);
+        }
+    }
+
+    @Inject(method = "save", at = @At("TAIL"))
+    private void kilt$handleSaveEvent(ProgressListener progress, boolean flush, boolean skipSave, CallbackInfo ci) {
+        if (!skipSave) {
+            NeoForge.EVENT_BUS.post(new LevelEvent.Save(this));
+
+            if (flush) {
+                IOUtilities.waitUntilIOWorkerComplete(); // Kilt TODO: is this needed?
+            }
+        }
     }
 
     @Inject(method = "addPlayer", at = @At("HEAD"), cancellable = true)
     private void kilt$callEntityJoinLevelEvent(ServerPlayer player, CallbackInfo ci) {
-        if (MinecraftForge.EVENT_BUS.post(new EntityJoinLevelEvent(player, this))) {
+        if (NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(player, this)).isCanceled()) {
             ci.cancel();
         }
     }
 
     @WrapOperation(method = "addPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;addNewEntity(Lnet/minecraft/world/level/entity/EntityAccess;)Z"))
     private <T extends EntityAccess> boolean kilt$markAddWithoutEvent(PersistentEntitySectionManager<T> instance, T entityAccess, Operation<Boolean> original) {
-        ((PersistentEntitySectionManagerInjection<T>) instance).kilt$markWithoutEvent();
+        instance.kilt$markWithoutEvent();
         return original.call(instance, entityAccess);
     }
 
     @Inject(method = "addPlayer", at = @At("TAIL"))
     private void kilt$addEntityToWorld(ServerPlayer player, CallbackInfo ci) {
-        player.onAddedToWorld();
+        player.onAddedToLevel();
     }
 
     @WrapOperation(method = "addEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;addNewEntity(Lnet/minecraft/world/level/entity/EntityAccess;)Z"))
     private <T extends EntityAccess> boolean kilt$checkEntityAddToWorld(PersistentEntitySectionManager<T> instance, T entity, Operation<Boolean> original) {
         //noinspection MixinExtrasOperationParameters
         if (original.call(instance, entity)) {
-            ((Entity) entity).onAddedToWorld();
+            ((Entity) entity).onAddedToLevel();
             return true;
         } else {
             return false;
@@ -170,7 +214,7 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     }
 
     @Inject(method = "gameEvent", at = @At("HEAD"), cancellable = true)
-    private void kilt$callVanillaGameEvent(GameEvent event, Vec3 position, GameEvent.Context context, CallbackInfo ci) {
+    private void kilt$callVanillaGameEvent(Holder<GameEvent> event, Vec3 position, GameEvent.Context context, CallbackInfo ci) {
         if (!CommonHooks.onVanillaGameEvent(this, event, position, context))
             ci.cancel();
     }
@@ -178,7 +222,7 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     @Inject(method = "updateNeighborsAt", at = @At("HEAD"))
     private void kilt$notifyNeighborsEvent(BlockPos pos, Block block, CallbackInfo ci) {
         EventHooks.onNeighborNotify(this, pos, this.getBlockState(pos), EnumSet.allOf(Direction.class), false)
-            .isCanceled(); // TODO: what's this for? why is this in Forge's patch?
+            .isCanceled(); // TODO: what's this for? why is this in Forge's patch? // 2026 update: it's still there, why?
     }
 
     @Inject(method = "updateNeighborsAtExceptFromFacing", at = @At("HEAD"), cancellable = true)
@@ -188,12 +232,6 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
 
         if (EventHooks.onNeighborNotify(this, pos, this.getBlockState(pos), directions, false).isCanceled())
             ci.cancel();
-    }
-
-    protected void initCapabilities() {
-        this.gatherCapabilities();
-        capabilityData = this.getDataStorage().computeIfAbsent(e -> LevelCapabilityData.load(e, this.getCapabilities()), () -> new LevelCapabilityData(getCapabilities()), LevelCapabilityData.ID);
-        capabilityData.setCapabilities(getCapabilities());
     }
 
     @Override
@@ -224,7 +262,7 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
 
                 if (parts != null) {
                     for (PartEntity<?> part : parts) {
-                        ((ServerLevelInjection) field_26936).kilt$getEntityParts().put(part.getId(), part);
+                        field_26936.kilt$getEntityParts().put(part.getId(), part);
                     }
                 }
             }
@@ -245,7 +283,7 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
 
                 if (parts != null) {
                     for (PartEntity<?> part : parts) {
-                        ((ServerLevelInjection) field_26936).kilt$getEntityParts().remove(part.getId());
+                        field_26936.kilt$getEntityParts().remove(part.getId());
                     }
                 }
             }
@@ -255,8 +293,53 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
 
         @Inject(method = "onTrackingEnd(Lnet/minecraft/world/entity/Entity;)V", at = @At("TAIL"))
         private void kilt$callEntityLevelRemoveEvent(Entity entity, CallbackInfo ci) {
-            entity.onRemovedFromWorld();
+            entity.onRemovedFromLevel();
             NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(entity, field_26936));
+        }
+    }
+
+    @Unique private final CapabilityListenerHolder capListenerHolder = new CapabilityListenerHolder();
+
+    @Override
+    public void invalidateCapabilities(BlockPos pos) {
+        this.capListenerHolder.invalidatePos(pos);
+    }
+
+    @Override
+    public void invalidateCapabilities(ChunkPos pos) {
+        this.capListenerHolder.invalidateChunk(pos);
+    }
+
+    @Override
+    public void registerCapabilityListener(BlockPos pos, ICapabilityInvalidationListener listener) {
+        this.capListenerHolder.addListener(pos, listener);
+    }
+
+    @Override
+    public void cleanCapabilityListenerReferences() {
+        this.capListenerHolder.clean();
+    }
+
+    @Override
+    public void setDayTimeFraction(float dayTimeFraction) {
+        this.serverLevelData.setDayTimeFraction(dayTimeFraction);
+    }
+
+    @Override
+    public float getDayTimeFraction() {
+        return this.serverLevelData.getDayTimeFraction();
+    }
+
+    @Override
+    public float getDayTimePerTick() {
+        return this.serverLevelData.getDayTimePerTick();
+    }
+
+    @Override
+    public void setDayTimePerTick(float dayTimePerTick) {
+        if (dayTimePerTick != this.getDayTimePerTick() && dayTimePerTick != 0f) {
+            this.serverLevelData.setDayTimePerTick(dayTimePerTick);
+            this.server.forceTimeSynchronization();
         }
     }
 }

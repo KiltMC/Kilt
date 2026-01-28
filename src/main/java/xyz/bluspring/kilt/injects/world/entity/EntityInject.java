@@ -595,12 +595,4 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
     public EntityDimensions getDimensionsForge(Pose pose) {
         return getDimensions(pose);
     }
-
-    // Porting Lib injects
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
-    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, remap = false)
-    private void kilt$onTravelToDimension(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
-        if (!ForgeHooks.onTravelToDimension((Entity) (Object) this, pDestination.dimension()))
-            cir.setReturnValue(null);
-    }
 }

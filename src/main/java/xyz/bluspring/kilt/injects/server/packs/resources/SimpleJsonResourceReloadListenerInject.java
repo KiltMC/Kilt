@@ -6,12 +6,13 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.injections.server.packs.resources.SimpleJsonResourceReloadListenerInjection;
 
 @Mixin(SimpleJsonResourceReloadListener.class)
-public class SimpleJsonResourceReloadListenerInject {
+public class SimpleJsonResourceReloadListenerInject implements SimpleJsonResourceReloadListenerInjection {
     @Shadow @Final private String directory;
 
-    protected ResourceLocation getPreparedPath(ResourceLocation rl) {
-        return new ResourceLocation(rl.getNamespace(), this.directory + "/" + rl.getPath() + ".json");
+    public ResourceLocation getPreparedPath(ResourceLocation rl) {
+        return rl.withPath(this.directory + "/" + rl.getPath() + ".json");
     }
 }
