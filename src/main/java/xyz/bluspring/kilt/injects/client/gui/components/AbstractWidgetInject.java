@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.gui.AbstractWidgetInjection;
+import xyz.bluspring.kilt.injections.client.gui.components.AbstractWidgetInjection;
 
 @Mixin(AbstractWidget.class)
 public class AbstractWidgetInject implements AbstractWidgetInjection {
@@ -15,7 +15,7 @@ public class AbstractWidgetInject implements AbstractWidgetInjection {
     protected int packedFGColor = AbstractWidgetInjection.UNSET_FG_COLOR;
 
     @CreateStatic
-    private static int UNSET_FG_COLOR = AbstractWidgetInjection.UNSET_FG_COLOR;
+    private static final int UNSET_FG_COLOR = AbstractWidgetInjection.UNSET_FG_COLOR;
 
     @Override
     public int getFGColor() {
@@ -23,11 +23,6 @@ public class AbstractWidgetInject implements AbstractWidgetInjection {
             return packedFGColor;
 
         return this.active ? 16777215 : 10526880; // white : light grey
-    }
-
-    @Override
-    public void setHeight(int value) {
-        this.height = value;
     }
 
     @Override

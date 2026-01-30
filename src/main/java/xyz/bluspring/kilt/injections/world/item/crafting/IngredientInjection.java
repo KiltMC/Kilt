@@ -10,6 +10,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import net.neoforged.neoforge.common.crafting.IngredientType;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -51,5 +52,10 @@ public interface IngredientInjection {
 
     default void kilt$setCustomIngredient(ICustomIngredient customIngredient) {
         throw KiltHelper.createMixinException(IngredientInjection.class, "kilt$setCustomIngredient");
+    }
+
+    interface ValueInjection {
+        // Kilt: Assuming and hoping mods aren't changing this out of being a map for some weird reason.
+        MapCodec<Ingredient.Value> MAP_CODEC = NeoForgeExtraCodecs.xor(MapCodec.assumeMapUnsafe(Ingredient.ItemValue.CODEC), MapCodec.assumeMapUnsafe(Ingredient.TagValue.CODEC));
     }
 }

@@ -36,6 +36,7 @@
         "LootPoolEntryContainerAccessor",
         "MappedRegistryAccessor",
         "MatchToolAccessor",
+        "MenuScreensAccessor",
         "MinecraftServerAccessor",
         "MobCategoryAccessor",
         "MobSpawnSettingsAccessor",

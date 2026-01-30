@@ -48,6 +48,9 @@ accessible method net/minecraft/world/item/crafting/Ingredient <init> ([Lnet/min
 
 accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojang/blaze3d/vertex/VertexFormatElement;
 
+accessible field net/minecraft/world/item/crafting/Ingredient$ItemValue CODEC Lcom/mojang/serialization/Codec;
+accessible field net/minecraft/world/item/crafting/Ingredient$TagValue CODEC Lcom/mojang/serialization/Codec;
+
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;

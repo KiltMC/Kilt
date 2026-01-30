@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineInject implements ParticleEngineInjection {
@@ -108,6 +109,19 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     @ModifyExpressionValue(method = {"method_34020", "crack"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDDLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/client/particle/TerrainParticle;"))
     private TerrainParticle kilt$handleUpdateSprite(TerrainParticle original, @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
         return original.updateSprite(state, pos);
+    }
+
+    @Override
+    public void iterateParticles(Consumer<Particle> consumer) {
+        for (ParticleRenderType particleRenderType : this.particles.keySet()) {
+            if (particleRenderType == ParticleRenderType.NO_RENDER)
+                continue;
+
+            Iterable<Particle> particles = this.particles.get(particleRenderType);
+            if (particles != null) {
+                particles.forEach(consumer);
+            }
+        }
     }
 
     @Override

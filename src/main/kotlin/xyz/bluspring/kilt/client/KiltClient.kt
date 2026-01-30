@@ -6,32 +6,21 @@ import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeome
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.loader.DependencyException
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.components.Renderable
-import net.minecraft.client.gui.components.events.GuiEventListener
-import net.minecraft.client.gui.narration.NarratableEntry
-import net.minecraft.client.gui.screens.Screen
+import net.minecraft.resources.ResourceLocation
 import net.neoforged.fml.ModLoader
 import net.neoforged.neoforge.client.ClientHooks
-import net.neoforged.neoforge.client.event.ContainerScreenEvent
 import net.neoforged.neoforge.client.event.ModelEvent
-import net.neoforged.neoforge.client.event.ScreenEvent
-import net.neoforged.neoforge.common.CommonHooks
-import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.client.model.geometry.IGeometryLoader
 import net.neoforged.neoforge.event.EventHooks
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
-import xyz.bluspring.kilt.mixin.LevelRendererAccessor
-import xyz.bluspring.kilt.mixin.ScreenAccessor
 import xyz.bluspring.knit.loader.KnitLoader
-import java.util.function.Consumer
 
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
@@ -69,7 +58,11 @@ class KiltClient : ClientModInitializer {
         RegisterGeometryLoadersCallback.EVENT.register { map ->
             shouldPostGeoLoaders = true
 
-            ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(map))
+            val neoMap = mutableMapOf<ResourceLocation, IGeometryLoader<*>>()
+            ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
+
+            // Convert, because it just works.
+            map.putAll(neoMap)
         }
 
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
@@ -156,8 +149,10 @@ class KiltClient : ClientModInitializer {
         fun lateRegisterEvents() {
             if (shouldPostGeoLoaders) {
                 val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
-                ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(map))
+                val neoMap = mutableMapOf<ResourceLocation, IGeometryLoader<*>>()
+                ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
 
+                map.putAll(neoMap)
                 GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
                 GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })
             }

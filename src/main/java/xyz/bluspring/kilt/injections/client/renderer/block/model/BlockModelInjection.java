@@ -3,8 +3,10 @@ package xyz.bluspring.kilt.injections.client.renderer.block.model;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.geometry.BlockGeometryBakingContext;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -24,7 +26,13 @@ public interface BlockModelInjection {
         throw KiltHelper.createMixinException(BlockModelInjection.class, "getOverrides");
     }
 
-    default String getSerializedName() {
-        throw KiltHelper.createMixinException(BlockModelInjection.class, "getSerializedName");
+    default BakedModel bakeVanilla(ModelBaker baker, BlockModel model, Function<Material, TextureAtlasSprite> spriteGetter, ModelState state, boolean guiLight3d) {
+        throw KiltHelper.createMixinException(BlockModelInjection.class, "bakeVanilla");
+    }
+
+    interface GuiLightInjection {
+        default String getSerializedName() {
+            throw KiltHelper.createMixinException(GuiLightInjection.class, "getSerializedName");
+        }
     }
 }

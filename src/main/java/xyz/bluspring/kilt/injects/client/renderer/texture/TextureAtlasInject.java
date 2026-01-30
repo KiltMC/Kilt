@@ -27,7 +27,7 @@ public abstract class TextureAtlasInject implements TextureAtlasInjection {
     }
 
     @Override
-    public Set<ResourceLocation> getTextureLocations() {
-        return Collections.unmodifiableSet(texturesByName.keySet());
+    public Map<ResourceLocation, TextureAtlasSprite> getTextures() {
+        return Collections.unmodifiableMap(texturesByName);
     }
 }

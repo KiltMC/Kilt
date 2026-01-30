@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.gui.AbstractWidgetInjection;
+import xyz.bluspring.kilt.injections.client.gui.components.AbstractWidgetInjection;
 
 @Mixin(AbstractButton.class)
 public abstract class AbstractButtonInject extends AbstractWidget implements AbstractWidgetInjection {

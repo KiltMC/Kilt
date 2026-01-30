@@ -87,7 +87,8 @@
         "xyz/bluspring/kilt/injections/client/gui/GuiGraphicsInjection"
       ],
       "net/minecraft/class_339": [
-        "net/neoforged/neoforge/client/extensions/IAbstractWidgetExtension"
+        "net/neoforged/neoforge/client/extensions/IAbstractWidgetExtension",
+        "xyz/bluspring/kilt/injections/client/gui/components/AbstractWidgetInjection"
       ],
       "net/minecraft/class_5294": [
         "net/neoforged/neoforge/client/extensions/IDimensionSpecialEffectsExtension"
@@ -249,7 +250,8 @@
         "net/neoforged/neoforge/common/extensions/IBaseRailBlockExtension"
       ],
       "net/minecraft/class_2248": [
-        "net/neoforged/neoforge/common/extensions/IBlockExtension"
+        "net/neoforged/neoforge/common/extensions/IBlockExtension",
+        "xyz/bluspring/kilt/injections/world/level/block/BlockInjection"
       ],
       "net/minecraft/class_2263": [
         "net/neoforged/neoforge/common/extensions/IBucketPickupExtension"
@@ -457,6 +459,9 @@
       ],
       "net/minecraft/class_793": [
         "xyz/bluspring/kilt/injections/client/renderer/block/model/BlockModelInjection"
+      ],
+      "net/minecraft/class_793$class_4751": [
+        "xyz/bluspring/kilt/injections/client/renderer/block/model/BlockModelInjection$GuiLightInjection"
       ],
       "net/minecraft/class_804": [
         "xyz/bluspring/kilt/injections/client/renderer/block/model/ItemTransformInjection"
@@ -913,6 +918,18 @@
       ],
       "net/minecraft/class_238": [
         "xyz/bluspring/kilt/injections/world/phys/AABBInjection"
+      ],
+      "net/minecraft/class_437": [
+        "xyz/bluspring/kilt/injections/client/gui/screens/ScreenInjection"
+      ],
+      "net/minecraft/class_1836": [
+        "xyz/bluspring/kilt/injections/world/item/TooltipFlagInjection"
+      ],
+      "net/minecraft/class_1792$class_9635": [
+        "xyz/bluspring/kilt/injections/world/item/ItemInjection$TooltipContextInjection"
+      ],
+      "net/minecraft/class_7654": [
+        "xyz/bluspring/kilt/injections/resources/FileToIdConverterInjection"
       ]
     },
     "lithium:options": {

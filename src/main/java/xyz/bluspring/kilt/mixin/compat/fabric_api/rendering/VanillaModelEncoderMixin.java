@@ -49,7 +49,7 @@ public class VanillaModelEncoderMixin {
         if (modelDataManager == null)
             return original.call(model, state, direction, randomSource);
 
-        var modelData = model.getModelData(level, pos, state, modelDataManager.getAt(new ChunkPos(pos)).getOrDefault(pos, ModelData.EMPTY));
+        var modelData = model.getModelData(level, pos, state, modelDataManager.getAt(pos));
         var renderTypes = model.getRenderTypes(state, randomSource, modelData);
 
         if (modelData == ModelData.EMPTY && (renderTypes.isEmpty() ||

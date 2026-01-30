@@ -19,10 +19,10 @@ import java.util.function.Supplier;
 public interface FabricBakedModelMixin {
     @Inject(method = "emitBlockQuads", at = @At("HEAD"))
     private void kilt$storeVariables(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context, CallbackInfo ci) {
-        if (!(blockView instanceof ClientLevel))
+        if (!(blockView instanceof ClientLevel level))
             return;
 
-        FRAPIThreadedStorage.LEVEL.set(blockView);
+        FRAPIThreadedStorage.LEVEL.set(level);
         FRAPIThreadedStorage.POS.set(pos);
     }
 

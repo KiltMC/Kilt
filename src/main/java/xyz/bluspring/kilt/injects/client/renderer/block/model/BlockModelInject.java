@@ -46,6 +46,12 @@ public abstract class BlockModelInject implements BlockModelInjection {
 
     @Shadow public abstract BlockModel getRootModel();
 
+    @Shadow
+    public abstract BakedModel bake(ModelBaker modelBaker, Function<Material, TextureAtlasSprite> function, ModelState modelState);
+
+    @Shadow
+    public abstract BakedModel bake(ModelBaker modelBaker, BlockModel blockModel, Function<Material, TextureAtlasSprite> function, ModelState modelState, boolean bl);
+
     public final BlockGeometryBakingContext customData = new BlockGeometryBakingContext((BlockModel) (Object) this);
 
     @WrapOperation(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/gson/GsonBuilder;registerTypeAdapter(Ljava/lang/reflect/Type;Ljava/lang/Object;)Lcom/google/gson/GsonBuilder;", ordinal = 0, remap = false), remap = false)
@@ -73,6 +79,16 @@ public abstract class BlockModelInject implements BlockModelInjection {
         }
     }
 
+    @Unique private boolean kilt$isVanilla = false;
+
+    public BakedModel bakeVanilla(ModelBaker baker, BlockModel model, Function<Material, TextureAtlasSprite> spriteGetter, ModelState state, boolean guiLight3d) {
+        this.kilt$isVanilla = true;
+        BakedModel baked = this.bake(baker, model, spriteGetter, state, guiLight3d);
+        this.kilt$isVanilla = false;
+
+        return baked;
+    }
+
     /*public BakedModel bakeVanilla(ModelBakery modelBakery, BlockModel blockModel, Function<Material, TextureAtlasSprite> function, ModelState modelState, ResourceLocation resourceLocation, boolean bl, RenderTypeGroup renderTypes) {
         return UnbakedGeometryHelper.bakeVanilla((BlockModel) (Object) this, modelBakery, blockModel, function, modelState, resourceLocation);
     }*/
@@ -86,8 +102,10 @@ public abstract class BlockModelInject implements BlockModelInjection {
         // Avoid replacing the bake process entirely, unless there are any obvious tells that
         // the model data is from a Forge model
         // Kilt TODO: fix
-        if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || /*customData.visibilityData.kilt$hasAnyData() ||*/ customData.getCustomGeometry() instanceof IUnbakedGeometry<?> || getRootModel() == ModelBakery.GENERATION_MARKER) {
-            cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, state, guiLight3d));
+        if (!this.kilt$isVanilla) {
+            if (customData.getRenderTypeHint() != null || !customData.getRootTransform().isIdentity() || /*customData.visibilityData.kilt$hasAnyData() ||*/ customData.getCustomGeometry() instanceof IUnbakedGeometry<?> || getRootModel() == ModelBakery.GENERATION_MARKER) {
+                cir.setReturnValue(UnbakedGeometryHelper.bake((BlockModel) (Object) this, modelBaker, ownerModel, spriteGetter, state, guiLight3d));
+            }
         }
     }
 
@@ -106,11 +124,6 @@ public abstract class BlockModelInject implements BlockModelInjection {
         return this.overrides.isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(baker, blockModel, this.overrides);
     }
 
-    @Override
-    public String getSerializedName() {
-        return this.name;
-    }
-
     @Mixin(BlockModel.Deserializer.class)
     public static class DeserializerInject {
         @Unique private static final ExtendedBlockModelDeserializer EXTENDED_BLOCK_MODEL_DESERIALIZER = new ExtendedBlockModelDeserializer();
@@ -118,6 +131,16 @@ public abstract class BlockModelInject implements BlockModelInjection {
         @Inject(method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/BlockModel;", at = @At("RETURN"))
         private void kilt$attachExtendedForgeData(JsonElement json, Type type, JsonDeserializationContext context, CallbackInfoReturnable<BlockModel> cir) {
             EXTENDED_BLOCK_MODEL_DESERIALIZER.kilt$deserialize(json, type, context, cir.getReturnValue());
+        }
+    }
+
+    @Mixin(BlockModel.GuiLight.class)
+    public abstract static class GuiLightInject implements GuiLightInjection {
+        @Shadow @Final private String name;
+
+        @Override
+        public String getSerializedName() {
+            return this.name;
         }
     }
 }

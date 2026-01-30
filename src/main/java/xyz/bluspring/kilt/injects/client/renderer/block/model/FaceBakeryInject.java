@@ -28,7 +28,7 @@ public abstract class FaceBakeryInject {
     @WrapOperation(method = "bakeQuad", at = @At(value = "NEW", target = "([IILnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Z)Lnet/minecraft/client/renderer/block/model/BakedQuad;"))
     private BakedQuad kilt$transformQuadFromForge(int[] vertices, int tintIndex, Direction direction, TextureAtlasSprite sprite, boolean shade, Operation<BakedQuad> original, @Local(argsOnly = true) BlockElementFace face) {
         ClientHooks.fillNormal(vertices, direction);
-        var data = ((BlockElementFaceInjection) (Object) face).getFaceData();
+        var data = face.faceData();
 
         var quad = data.ambientOcclusion() ? original.call(vertices, tintIndex, direction, sprite, shade) : BakedQuadInjection.withAo(vertices, tintIndex, direction, sprite, shade, false);
         if (!ExtraFaceData.DEFAULT.equals(data)) {

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.client.model.ExtraFaceData;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,26 +26,28 @@ import java.lang.reflect.Type;
 @Mixin(BlockElementFace.class)
 public abstract class BlockElementFaceInject implements BlockElementFaceInjection {
     @Unique private ExtraFaceData faceData;
-    @Unique private BlockElement parent;
+    @Unique private MutableObject<BlockElement> parent = new MutableObject<>();
 
     public BlockElementFaceInject(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUV uv) {}
+
     @CreateInitializer
-    public BlockElementFaceInject(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUV uv, @Nullable ExtraFaceData faceData) {
+    public BlockElementFaceInject(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUV uv, @Nullable ExtraFaceData faceData, MutableObject<BlockElement> parent) {
         this(cullForDirection, tintIndex, texture, uv);
         this.faceData = faceData;
-    }
-
-    @Override
-    public void kilt$setParent(BlockElement parent) {
         this.parent = parent;
     }
 
     @Override
-    public ExtraFaceData getFaceData() {
+    public void kilt$setParent(MutableObject<BlockElement> parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public ExtraFaceData faceData() {
         if (this.faceData != null)
             return this.faceData;
         else if (this.parent != null)
-            return ((BlockElementInjection) this.parent).getFaceData();
+            return this.parent.getValue().getFaceData();
 
         return ExtraFaceData.DEFAULT;
     }
@@ -59,9 +62,9 @@ public abstract class BlockElementFaceInject implements BlockElementFaceInjectio
         @Inject(method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/BlockElementFace;", at = @At("RETURN"))
         private void kilt$readForgeFaceData(JsonElement json, Type type, JsonDeserializationContext context, CallbackInfoReturnable<BlockElementFace> cir, @Local JsonObject jsonObject) {
             var face = cir.getReturnValue();
-            var faceData = ExtraFaceData.read(jsonObject.get("forge_data"), null);
+            var faceData = ExtraFaceData.read(jsonObject.get("neoforge_data"), null);
 
-            ((BlockElementFaceInjection) (Object) face).kilt$setFaceData(faceData);
+            face.kilt$setFaceData(faceData);
         }
     }
 }

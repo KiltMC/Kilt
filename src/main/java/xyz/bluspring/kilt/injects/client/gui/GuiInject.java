@@ -1,6 +1,7 @@
 // TRACKED HASH: fd1859323d2b7b647915a5c458b0159a1f4e13b1
 package xyz.bluspring.kilt.injects.client.gui;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -13,9 +14,14 @@ import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.gui.GuiLayerManager;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.EventHooks;
+import org.jetbrains.annotations.ApiStatus;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,6 +29,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.gui.GuiInjection;
 
 import static net.neoforged.neoforge.client.gui.VanillaGuiLayers.*;
@@ -293,4 +300,27 @@ public abstract class GuiInject implements GuiInjection {
 
     // Kilt: now starts the actual Neo patches
     // TODO: .... probably do that later lmao
+
+    @ApiStatus.Internal
+    public void initModdedOverlays() {
+        this.layerManager.initModdedLayers();
+    }
+
+    @Override
+    public int getLayerCount() {
+        return this.layerManager.getLayerCount();
+    }
+
+    @Mixin(Gui.HeartType.class)
+    public abstract static class HeartTypeInject implements IExtensibleEnum {
+        @ModifyReturnValue(method = "forPlayer", at = @At("RETURN"))
+        private static Gui.HeartType kilt$firePlayerHeartTypeEvent(Gui.HeartType original, @Local(argsOnly = true) Player player) {
+            return EventHooks.firePlayerHeartTypeEvent(player, original);
+        }
+
+        @CreateStatic
+        private static ExtensionInfo getExtensionInfo() {
+            return ExtensionInfo.nonExtended(Gui.HeartType.class);
+        }
+    }
 }

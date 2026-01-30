@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injects.world.item;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
@@ -58,6 +59,22 @@ public abstract class ItemInject implements IItemExtension, ItemInjection, Rende
         @Override
         public boolean getCanRepair() {
             return canRepair;
+        }
+    }
+
+    @Mixin(Item.TooltipContext.class)
+    public interface TooltipContextInject extends ItemInjection.TooltipContextInjection {
+        @Override
+        default Level level() {
+            return null;
+        }
+
+        @Mixin(targets = "net.minecraft.world.item.Item$TooltipContext$2")
+        public abstract static class AnonymousOfLevelInject implements Item.TooltipContext {
+            @Override
+            public Level level() {
+                return null; // Kilt TODO: why is this not auto-targeting.
+            }
         }
     }
 }
