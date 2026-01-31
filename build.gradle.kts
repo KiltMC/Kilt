@@ -610,8 +610,8 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "sodium", "indium")
-            optional("modmenu")
+            requires("fabric-api", "fabric-language-kotlin")
+            optional("modmenu", "sodium", "indium")
             embeds("porting_lib")
             incompatible("async", "embeddium")
         }
@@ -622,8 +622,8 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "sodium", "indium")
-            optional("modmenu")
+            requires("fabric-api", "fabric-language-kotlin")
+            optional("modmenu", "sodium", "indium")
             embeds("porting-lib")
             incompatible("embeddium")
         }

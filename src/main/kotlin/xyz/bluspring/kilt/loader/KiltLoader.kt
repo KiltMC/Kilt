@@ -97,13 +97,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         val loader = FabricLoader.getInstance()
         val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
-        if (loader.environmentType == EnvType.CLIENT) {
-            // Kilt requires a hard dependency on Sodium, so let's just do this
-            if (!loader.isModLoaded("sodium")) {
-                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended."))
-            } else if (!loader.isModLoaded("indium")) {
+        if (loader.environmentType == EnvType.CLIENT && loader.isModLoaded("sodium")) {
+            // Kilt requires Indium to be able to work with Sodium, so...
+            if (!loader.isModLoaded("indium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
             } else if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
+                // If someone wants to fix this, be my guest, drop a PR. Don't send threats of forking Kilt just because you don't like the fact that we don't support Embeddium.
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
             }
         }
