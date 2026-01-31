@@ -23,8 +23,7 @@ object KiltHelper {
     private val cachedForgeClassNodes = Lazy.of { getForgeClassNodesInternal() }
     private var isForgeClassNodesCleared = false
 
-    private val cachedHasMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
-    private val cachedHasNoMethodOverride = Collections.synchronizedSet(CacheSet<OverrideData>())
+    private val cachedClassValues = Collections.synchronizedMap<OverrideData, ClassValue<Boolean>>(mutableMapOf())
 
     private fun checkAllElementsMatch(array: Array<*>, array2: Array<*>): Boolean {
         if (array.size != array2.size)
@@ -38,51 +37,23 @@ object KiltHelper {
         return true
     }
 
-    private fun checkCache(cache: MutableCollection<OverrideData>, topClass: Class<*>, superClass: Class<*>, methodName: String, methodArgs: List<Class<*>>): Boolean {
-        synchronized(cache) {
-            // Don't use any or first, this will result in *heavy* performance loss.
-            val overrideData = OverrideData(topClass, superClass, methodName, methodArgs)
-
-            return cache.contains(overrideData).apply {
-                if (this)
-                    // Force the cache to mark this as accessed
-                    cache.add(overrideData)
-            }
-        }
-    }
-
     // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
     fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
-        if (checkCache(cachedHasMethodOverride, topClass, superClass, methodName, methodArgs.toList()))
-            return true
+        val overrideData = OverrideData(superClass, methodName, methodArgs)
+        return this.cachedClassValues.computeIfAbsent(overrideData) {
+            object : ClassValue<Boolean>() {
+                override fun computeValue(type: Class<*>): Boolean {
+                    try {
+                        val method = type.getMethod(methodName, *methodArgs)
 
-        if (checkCache(cachedHasNoMethodOverride, topClass, superClass, methodName, methodArgs.toList()))
-            return false
-
-        val overrideData = OverrideData(topClass, superClass, methodName, methodArgs.toList())
-
-        var currentClass: Class<*>? = topClass
-        while (currentClass != null && currentClass != superClass && currentClass != Object::class.java && superClass.isAssignableFrom(topClass)) {
-            try {
-                val method = currentClass.getDeclaredMethod(methodName, *methodArgs)
-                // If a Fabric mod has this method signature but is private, it could cause a game crash.
-                if (Modifier.isPrivate(method.modifiers)) {
-                    cachedHasNoMethodOverride.add(overrideData)
-                    return false
+                        // If a Fabric mod has this method signature but is private, it could cause a game crash.
+                        return !Modifier.isPrivate(method.modifiers)
+                    } catch (_: Throwable) {
+                        return false
+                    }
                 }
-
-                cachedHasMethodOverride.add(overrideData)
-                return true
-            } catch (_: NoSuchMethodException) {
-                currentClass = currentClass.superclass
-            } catch (_: Throwable) {
-                cachedHasNoMethodOverride.add(overrideData)
-                return false
             }
-        }
-
-        cachedHasNoMethodOverride.add(overrideData)
-        return false
+        }.get(topClass)
     }
 
     fun getForgeClassNodes(): List<ClassNode> {
@@ -184,11 +155,30 @@ object KiltHelper {
     }
 
     private data class OverrideData(
-        val topClass: Class<*>,
         val superClass: Class<*>,
         val methodName: String,
-        val methodArgs: List<Class<*>>
-    )
+        val methodArgs: Array<out Class<*>>
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as OverrideData
+
+            if (superClass != other.superClass) return false
+            if (methodName != other.methodName) return false
+            if (!methodArgs.contentEquals(other.methodArgs)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = superClass.hashCode()
+            result = 31 * result + methodName.hashCode()
+            result = 31 * result + methodArgs.contentHashCode()
+            return result
+        }
+    }
 
     // Turns out, there are Forge mods that forcibly exit the game if Kilt or Porting Lib are detected, with zero information provided whatsoever.
     // I don't exactly *want* to argue nor combat this, but because of how hostile this act is, the fact that it directly hinders Kilt development,
