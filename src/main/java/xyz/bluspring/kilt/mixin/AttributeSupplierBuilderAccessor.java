@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.mixin;
 
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -12,7 +14,7 @@ import java.util.Map;
 @Mixin(AttributeSupplier.Builder.class)
 public interface AttributeSupplierBuilderAccessor {
     @Accessor
-    Map<Attribute, AttributeInstance> getBuilder();
+    ImmutableMap.Builder<Holder<Attribute>, AttributeInstance> getBuilder();
 
     @Accessor
     boolean isInstanceFrozen();
@@ -21,5 +23,5 @@ public interface AttributeSupplierBuilderAccessor {
     void setInstanceFrozen(boolean instanceFrozen);
 
     @Invoker
-    AttributeInstance callCreate(Attribute attribute);
+    AttributeInstance callCreate(Holder<Attribute> attribute);
 }

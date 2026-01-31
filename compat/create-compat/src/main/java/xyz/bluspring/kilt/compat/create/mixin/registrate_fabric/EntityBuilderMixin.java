@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.PlayMessages;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.compat.create.EntityBuilderAdapter;
 import xyz.bluspring.kilt.compat.create.extensions.EntityBuilderExtension;
-import xyz.bluspring.kilt.injections.entity.EntityTypeInjection;
 
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -36,8 +34,8 @@ public abstract class EntityBuilderMixin<T extends Entity, P> extends AbstractBu
         super(owner, parent, name, callback, registryKey);
     }
 
-    @Unique
-    private BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
+//    @Unique
+//    private BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory;
 
     @Unique
     private Predicate<EntityType<?>> velocityUpdateSupplier;
@@ -73,10 +71,10 @@ public abstract class EntityBuilderMixin<T extends Entity, P> extends AbstractBu
         return after;
     }
 
-    @Override
-    public void kilt$setCustomClientFactory(@NotNull BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory) {
-        this.customClientFactory = customClientFactory;
-    }
+//    @Override
+//    public void kilt$setCustomClientFactory(@NotNull BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory) {
+//        this.customClientFactory = customClientFactory;
+//    }
 
     @Override
     public void kilt$setVelocityUpdateSupplier(@NotNull Predicate<EntityType<?>> velocityUpdateSupplier) {
@@ -93,18 +91,18 @@ public abstract class EntityBuilderMixin<T extends Entity, P> extends AbstractBu
         this.updateIntervalSupplier = updateIntervalSupplier;
     }
 
-    @SuppressWarnings("unchecked")
-    @ModifyReturnValue(
-            method = "createEntry()Lnet/minecraft/world/entity/EntityType;",
-            at = @At("RETURN")
-    )
-    protected EntityType<T> createEntry(EntityType<T> original) {
-        var entityType = (EntityTypeInjection<T>) original;
-        entityType.setCustomClientFactory(customClientFactory);
-        entityType.setTrackingRangeSupplier(trackingRangeSupplier);
-        entityType.setUpdateIntervalSupplier(updateIntervalSupplier);
-        entityType.setVelocityUpdateSupplier(velocityUpdateSupplier);
-        return original;
-    }
+//    @SuppressWarnings("unchecked")
+//    @ModifyReturnValue(
+//            method = "createEntry()Lnet/minecraft/world/entity/EntityType;",
+//            at = @At("RETURN")
+//    )
+//    protected EntityType<T> createEntry(EntityType<T> original) {
+//        var entityType = (EntityTypeInjection<T>) original;
+//        entityType.setCustomClientFactory(customClientFactory);
+//        entityType.setTrackingRangeSupplier(trackingRangeSupplier);
+//        entityType.setUpdateIntervalSupplier(updateIntervalSupplier);
+//        entityType.setVelocityUpdateSupplier(velocityUpdateSupplier);
+//        return original;
+//    }
 
 }

@@ -5,8 +5,7 @@ import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,8 +29,8 @@ public abstract class RegistryEntryMixin<T> implements RegistryEntryForgeExtensi
         ((RegistryObjectForgeExtension) Objects.requireNonNull(delegate)).updateReference(event);
     }
 
-    @Override
-    public @NotNull <R, E extends R> RegistryEntry<E> getSibling(@NotNull IForgeRegistry<R> registry) {
-        return this.getSibling(registry.getRegistryKey());
-    }
+//    @Override
+//    public @NotNull <R, E extends R> RegistryEntry<E> getSibling(@NotNull IForgeRegistry<R> registry) {
+//        return this.getSibling(registry.getRegistryKey());
+//    }
 }

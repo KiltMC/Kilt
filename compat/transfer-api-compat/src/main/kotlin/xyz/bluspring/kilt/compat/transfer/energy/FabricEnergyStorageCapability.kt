@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.transfer.energy
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil
-import net.minecraftforge.energy.IEnergyStorage
+import net.neoforged.neoforge.energy.IEnergyStorage
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.compat.transfer.TransferInterop
 

@@ -376,13 +376,10 @@
       "net/minecraft/class_325": [
         "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection"
       ],
-      "net/minecraft/client/gui/AbstractSelectionList": [
+      "net/minecraft/class_350": [
         "xyz/bluspring/kilt/injections/client/gui/AbstractSelectionListInjection"
       ],
-      "net/minecraft/client/gui/AbstractWidget": [
-        "xyz/bluspring/kilt/injections/client/gui/AbstractWidgetInjection"
-      ],
-      "net/minecraft/client/gui/components/ButtonBuilder": [
+      "net/minecraft/class_4185$class_7840": [
         "xyz/bluspring/kilt/injections/client/gui/components/ButtonBuilderInjection"
       ],
       "net/minecraft/class_4185": [
@@ -409,14 +406,11 @@
       "net/minecraft/class_3929": [
         "xyz/bluspring/kilt/injections/client/gui/screens/MenuScreensInjection"
       ],
-      "net/minecraft/client/gui/screens/packs/PackSelectionModelEntry": [
+      "net/minecraft/class_5369$class_5372": [
         "xyz/bluspring/kilt/injections/client/gui/screens/packs/PackSelectionModelEntryInjection"
       ],
       "net/minecraft/class_7193": [
         "xyz/bluspring/kilt/injections/client/gui/screens/worldselection/WorldCreationContextInjection"
-      ],
-      "net/minecraft/client/model/HumanoidModelArmPose": [
-        "xyz/bluspring/kilt/injections/client/model/HumanoidModelArmPoseInjection"
       ],
       "net/minecraft/class_312": [
         "xyz/bluspring/kilt/injections/client/MouseHandlerInjection"
@@ -484,8 +478,8 @@
       "net/minecraft/class_916": [
         "xyz/bluspring/kilt/injections/client/renderer/entity/ItemEntityRendererInjection"
       ],
-      "net/minecraft/client/renderer/entity/layer/ElytraLayer": [
-        "xyz/bluspring/kilt/injections/client/renderer/entity/layer/ElytraLayerInjection"
+      "net/minecraft/class_979": [
+        "xyz/bluspring/kilt/injections/client/renderer/entity/layers/ElytraLayerInjection"
       ],
       "net/minecraft/class_5272": [
         "xyz/bluspring/kilt/injections/client/renderer/item/ItemPropertiesInjection"
@@ -495,9 +489,6 @@
       ],
       "net/minecraft/class_761": [
         "xyz/bluspring/kilt/injections/client/renderer/LevelRendererInjection"
-      ],
-      "net/minecraft/client/renderer/RenderProperties": [
-        "xyz/bluspring/kilt/injections/client/renderer/RenderPropertiesInjection"
       ],
       "net/minecraft/class_1921": [
         "xyz/bluspring/kilt/injections/client/renderer/RenderTypeInjection"
@@ -535,7 +526,7 @@
       "net/minecraft/class_1091": [
         "xyz/bluspring/kilt/injections/client/resources/model/ModelResourceLocationInjection"
       ],
-      "net/minecraft/client/resources/model/SimpleBakedModelBuilder": [
+      "net/minecraft/class_1093$class_1094": [
         "xyz/bluspring/kilt/injections/client/resources/model/SimpleBakedModelBuilderInjection"
       ],
       "net/minecraft/class_1093": [
@@ -544,7 +535,7 @@
       "net/minecraft/class_1113": [
         "xyz/bluspring/kilt/injections/client/resources/sounds/SoundInstanceInjection"
       ],
-      "net/minecraft/client/sounds/ChannelAccessHandle": [
+      "net/minecraft/class_4235$class_4236": [
         "xyz/bluspring/kilt/injections/client/sounds/ChannelAccessHandleInjection"
       ],
       "net/minecraft/class_2316": [
@@ -629,7 +620,10 @@
         "xyz/bluspring/kilt/injections/network/RegistryFriendlyByteBufInjection"
       ],
       "net/minecraft/class_7655\u0024class_7657": [
-        "xyz/bluspring/kilt/injections/resources/RegistryDataLoader\u0024RegistryDataInjection"
+        "xyz/bluspring/kilt/injections/resources/RegistryDataLoaderInjection\u0024RegistryDataInjection"
+      ],
+      "net/minecraft/class_7655": [
+        "xyz/bluspring/kilt/injections/resources/RegistryDataLoaderInjection"
       ],
       "net/minecraft/class_6903": [
         "xyz/bluspring/kilt/injections/resources/RegistryOpsInjection"
@@ -661,8 +655,8 @@
       "net/minecraft/class_3251": [
         "xyz/bluspring/kilt/injections/server/network/ServerStatusPacketListenerImplInjection"
       ],
-      "net/minecraft/server/PackRepository": [
-        "xyz/bluspring/kilt/injections/server/PackRepositoryInjection"
+      "net/minecraft/class_3283": [
+        "xyz/bluspring/kilt/injections/server/packs/repository/PackRepositoryInjection"
       ],
       "net/minecraft/class_3272": [
         "xyz/bluspring/kilt/injections/server/packs/metadata/pack/PackMetadataSectionInjection"
@@ -673,7 +667,7 @@
       "net/minecraft/class_3288": [
         "xyz/bluspring/kilt/injections/server/packs/repository/PackInjection"
       ],
-      "net/minecraft/server/packs/repository/PackMetadata": [
+      "net/minecraft/class_3288$class_7679": [
         "xyz/bluspring/kilt/injections/server/packs/repository/PackMetadataInjection"
       ],
       "net/minecraft/class_4309": [
@@ -706,11 +700,8 @@
       "net/minecraft/class_1293": [
         "xyz/bluspring/kilt/injections/world/effect/MobEffectInstanceInjection"
       ],
-      "net/minecraft/world/entity/AbstractMinecart": [
-        "xyz/bluspring/kilt/injections/world/entity/AbstractMinecartInjection"
-      ],
-      "net/minecraft/world/entity/AttributeSupplierBuilder": [
-        "xyz/bluspring/kilt/injections/world/entity/AttributeSupplierBuilderInjection"
+      "net/minecraft/class_5132$class_5133": [
+        "xyz/bluspring/kilt/injections/world/entity/ai/attributes/AttributeSupplierBuilderInjection"
       ],
       "net/minecraft/class_1299": [
         "xyz/bluspring/kilt/injections/world/entity/EntityTypeInjection"
@@ -727,14 +718,8 @@
       "net/minecraft/class_1621": [
         "xyz/bluspring/kilt/injections/world/entity/monster/SlimeInjection"
       ],
-      "net/minecraft/world/entity/Player": [
-        "xyz/bluspring/kilt/injections/world/entity/PlayerInjection"
-      ],
-      "net/minecraft/world/entity/ProjectileUtil": [
-        "xyz/bluspring/kilt/injections/world/entity/ProjectileUtilInjection"
-      ],
-      "net/minecraft/world/entity/RaidRaiderType": [
-        "xyz/bluspring/kilt/injections/world/entity/RaidRaiderTypeInjection"
+      "net/minecraft/class_1675": [
+        "xyz/bluspring/kilt/injections/world/entity/projectile/ProjectileUtilInjection"
       ],
       "net/minecraft/class_1317": [
         "xyz/bluspring/kilt/injections/world/entity/SpawnPlacementsInjection"
@@ -742,7 +727,7 @@
       "net/minecraft/class_1702": [
         "xyz/bluspring/kilt/injections/world/food/FoodDataInjection"
       ],
-      "net/minecraft/world/food/FoodPropertiesBuilder": [
+      "net/minecraft/class_4174$class_4175": [
         "xyz/bluspring/kilt/injections/world/food/FoodPropertiesBuilderInjection"
       ],
       "net/minecraft/class_4174": [
@@ -804,9 +789,6 @@
       ],
       "net/minecraft/class_1890": [
         "xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentHelperInjection"
-      ],
-      "net/minecraft/world/item/ItemProperties": [
-        "xyz/bluspring/kilt/injections/world/item/ItemPropertiesInjection"
       ],
       "net/minecraft/class_1806": [
         "xyz/bluspring/kilt/injections/world/item/MapItemInjection"
@@ -889,13 +871,13 @@
       "net/minecraft/class_9316": [
         "xyz/bluspring/kilt/injections/world/level/pathfinder/PathfindingContextInjection"
       ],
-      "net/minecraft/world/level/storage/LevelStorageAccess": [
+      "net/minecraft/class_32$class_5143": [
         "xyz/bluspring/kilt/injections/world/level/storage/LevelStorageAccessInjection"
       ],
       "net/minecraft/class_34": [
         "xyz/bluspring/kilt/injections/world/level/storage/LevelSummaryInjection"
       ],
-      "net/minecraft/world/level/storage/loot/EntityTarget": [
+      "net/minecraft/class_47$class_50": [
         "xyz/bluspring/kilt/injections/world/level/storage/loot/EntityTargetInjection"
       ],
       "net/minecraft/class_8490": [
@@ -930,6 +912,30 @@
       ],
       "net/minecraft/class_7654": [
         "xyz/bluspring/kilt/injections/resources/FileToIdConverterInjection"
+      ],
+      "net/minecraft/class_315": [
+        "xyz/bluspring/kilt/injections/client/OptionsInjection"
+      ],
+      "net/minecraft/class_7697": [
+        "xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection"
+      ],
+      "net/minecraft/class_7697$class_7698": [
+        "xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection$BuilderInjection"
+      ],
+      "net/minecraft/class_7696": [
+        "xyz/bluspring/kilt/injections/world/flag/FeatureFlagInjection"
+      ],
+      "net/minecraft/class_2794": [
+        "xyz/bluspring/kilt/injections/world/level/chunk/ChunkGeneratorInjection"
+      ],
+      "net/minecraft/class_2591": [
+        "xyz/bluspring/kilt/injections/world/level/block/entity/BlockEntityTypeInjection<TT;>"
+      ],
+      "net/minecraft/class_2545": [
+        "xyz/bluspring/kilt/injections/network/PacketEncoderInjection<TT;>"
+      ],
+      "net/minecraft/class_9288": [
+        "xyz/bluspring/kilt/injections/world/item/component/ItemContainerContentsInjection"
       ]
     },
     "lithium:options": {

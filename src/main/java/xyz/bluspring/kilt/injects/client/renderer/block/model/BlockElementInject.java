@@ -49,7 +49,7 @@ public abstract class BlockElementInject implements BlockElementInjection {
 
     @Override
     public void kilt$setFaces() {
-        this.faces.values().forEach(face -> ((BlockElementFaceInjection) face).kilt$setParent((BlockElement) (Object) this));
+        this.faces.values().forEach(face -> face.parent().setValue((BlockElement) (Object) this));
     }
 
     @Override

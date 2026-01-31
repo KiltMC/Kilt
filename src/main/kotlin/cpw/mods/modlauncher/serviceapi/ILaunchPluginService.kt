@@ -24,7 +24,9 @@ interface ILaunchPluginService {
     }
 
     fun handlesClass(classType: Type, isEmpty: Boolean): EnumSet<Phase>
-    fun handlesClass(classType: Type, isEmpty: Boolean, reason: String): EnumSet<Phase>
+    fun handlesClass(classType: Type, isEmpty: Boolean, reason: String): EnumSet<Phase> {
+        return handlesClass(classType, isEmpty, reason)
+    }
 
     fun processClass(phase: Phase, classNode: ClassNode, classType: Type): Boolean {
         return false

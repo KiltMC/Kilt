@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.world.entity.AbstractMinecartInjection;
+import xyz.bluspring.kilt.injections.world.entity.vehicle.AbstractMinecartInjection;
 
 @Mixin(AbstractMinecart.class)
 public abstract class AbstractMinecartInject extends Entity implements AbstractMinecartInjection, IAbstractMinecartExtension {

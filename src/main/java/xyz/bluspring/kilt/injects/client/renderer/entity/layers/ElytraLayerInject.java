@@ -9,7 +9,7 @@ import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.bluspring.kilt.injections.client.renderer.entity.layer.ElytraLayerInjection;
+import xyz.bluspring.kilt.injections.client.renderer.entity.layers.ElytraLayerInjection;
 
 @Mixin(ElytraLayer.class)
 public abstract class ElytraLayerInject<T extends LivingEntity> implements ElytraLayerInjection<T> {

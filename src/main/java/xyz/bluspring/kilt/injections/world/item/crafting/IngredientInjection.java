@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.injections.world.item.crafting;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -16,6 +17,7 @@ import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
+import java.util.function.Function;
 
 @FabricInjectedInterface(Ingredient.class)
 public interface IngredientInjection {
@@ -56,6 +58,15 @@ public interface IngredientInjection {
 
     interface ValueInjection {
         // Kilt: Assuming and hoping mods aren't changing this out of being a map for some weird reason.
-        MapCodec<Ingredient.Value> MAP_CODEC = NeoForgeExtraCodecs.xor(MapCodec.assumeMapUnsafe(Ingredient.ItemValue.CODEC), MapCodec.assumeMapUnsafe(Ingredient.TagValue.CODEC));
+        MapCodec<Ingredient.Value> MAP_CODEC = NeoForgeExtraCodecs.xor(MapCodec.assumeMapUnsafe(Ingredient.ItemValue.CODEC), MapCodec.assumeMapUnsafe(Ingredient.TagValue.CODEC))
+            .xmap((either) -> either.map(Function.identity(), Function.identity()), value -> {
+                if (value instanceof Ingredient.TagValue tagValue) {
+                    return Either.right(tagValue);
+                } else if (value instanceof Ingredient.ItemValue itemValue) {
+                    return Either.left(itemValue);
+                } else {
+                    throw new UnsupportedOperationException("This is neither an item value nor a tag value.");
+                }
+            });
     }
 }

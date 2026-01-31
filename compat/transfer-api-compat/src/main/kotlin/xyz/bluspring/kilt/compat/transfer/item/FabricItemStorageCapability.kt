@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil
 import net.minecraft.world.item.ItemStack
-import net.minecraftforge.items.IItemHandler
+import net.neoforged.neoforge.items.IItemHandler
 
 class FabricItemStorageCapability(val storage: SlottedStorage<ItemVariant>) : IItemHandler {
     override fun getSlots(): Int {

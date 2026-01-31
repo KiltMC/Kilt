@@ -1,12 +1,16 @@
 // TRACKED HASH: 9eea5d52613b4f5dd7ab28464cb20635fe94ca6d
 package xyz.bluspring.kilt.injects.world.item;
 
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
+import net.neoforged.neoforge.internal.RegistrationEvents;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -14,9 +18,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
 import xyz.bluspring.kilt.injections.world.item.ItemInjection;
 import xyz.bluspring.kilt.injections.world.item.ItemPropertiesInjection;
+import xyz.bluspring.kilt.mixin.ItemPropertiesAccessor;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -25,11 +31,23 @@ import java.util.function.Consumer;
 public abstract class ItemInject implements IItemExtension, ItemInjection, RenderPropertiesInjection<IClientItemExtensions> {
     @Shadow @Final @Mutable
     public static Map<Block, Item> BY_BLOCK;
+    @Shadow @Final @Mutable private DataComponentMap components;
+
     private boolean canRepair;
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void kilt$setRepairability(Item.Properties properties, CallbackInfo ci) {
         canRepair = ((ItemPropertiesInjection) properties).getCanRepair();
+    }
+
+    @Override
+    public void modifyDefaultComponentsFrom(DataComponentPatch patch) {
+        if (!RegistrationEvents.canModifyComponents())
+            throw new IllegalStateException("Default components can't be modified now!");
+
+        var builder = DataComponentMap.builder().addAll(this.components);
+        patch.entrySet().forEach(entry -> builder.set((DataComponentType) entry.getKey(), entry.getValue().orElse(null)));
+        this.components = ItemPropertiesAccessor.getComponentInterner().intern(ItemPropertiesInjection.validateComponents(builder.build()));
     }
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
@@ -59,6 +77,11 @@ public abstract class ItemInject implements IItemExtension, ItemInjection, Rende
         @Override
         public boolean getCanRepair() {
             return canRepair;
+        }
+
+        @CreateStatic
+        private static DataComponentMap validateComponents(DataComponentMap map) {
+            return ItemPropertiesInjection.validateComponents(map);
         }
     }
 

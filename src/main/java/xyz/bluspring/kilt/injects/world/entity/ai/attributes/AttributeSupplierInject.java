@@ -1,6 +1,7 @@
 // TRACKED HASH: 39b2eb34331b57077e911b6c5e5ab0553ca207cf
 package xyz.bluspring.kilt.injects.world.entity.ai.attributes;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.world.entity.AttributeSupplierBuilderInjection;
+import xyz.bluspring.kilt.injections.world.entity.ai.attributes.AttributeSupplierBuilderInjection;
 import xyz.bluspring.kilt.mixin.AttributeSupplierAccessor;
 import xyz.bluspring.kilt.mixin.AttributeSupplierBuilderAccessor;
 
@@ -26,16 +27,16 @@ public class AttributeSupplierInject {
 
         @Shadow
         @Final
-        private Map<Attribute, AttributeInstance> builder;
+        private Map<Holder<Attribute>, AttributeInstance> builder;
 
         @Override
         public void combine(AttributeSupplier.Builder other) {
-            this.builder.putAll(((AttributeSupplierBuilderAccessor) other).getBuilder());
+            this.builder.putAll(((AttributeSupplierBuilderAccessor) other).getBuilder().build());
             others.add(other);
         }
 
         @Override
-        public boolean hasAttribute(Attribute attribute) {
+        public boolean hasAttribute(Holder<Attribute> attribute) {
             return this.builder.containsKey(attribute);
         }
 

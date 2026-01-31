@@ -5,8 +5,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
-import net.minecraftforge.fluids.FluidStack
-import net.minecraftforge.fluids.capability.IFluidHandler
+import net.neoforged.neoforge.fluids.FluidStack
+import net.neoforged.neoforge.fluids.capability.IFluidHandler
 import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toDroplets
 import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibuckets
 
@@ -31,7 +31,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     }
 
     override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-        val fluidStack = FluidStack(resource.fluid, maxAmount.toMillibuckets(), resource.nbt)
+        val fluidStack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets(), resource.components)
 
         val snapshot = ForgeFluidStackSnapshot(fluidStack, false)
         snapshot.updateSnapshots(transaction)
@@ -41,7 +41,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     }
 
     override fun insert(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-        val fluidStack = FluidStack(resource.fluid, maxAmount.toMillibuckets(), resource.nbt)
+        val fluidStack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets(), resource.components)
 
         val snapshot = ForgeFluidStackSnapshot(fluidStack, true)
         snapshot.updateSnapshots(transaction)
@@ -71,7 +71,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
     private inner class ForgeFluidTankStorage(val tank: Int) : StorageView<FluidVariant> {
         override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
-            val stack = FluidStack(resource.fluid, maxAmount.toMillibuckets().coerceAtMost(this.amount.toMillibuckets()), resource.nbt)
+            val stack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets().coerceAtMost(this.amount.toMillibuckets()), resource.components)
 
             if (!handler.isFluidValid(tank, stack))
                 return 0L
@@ -90,7 +90,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
         override fun getResource(): FluidVariant {
             val stack = handler.getFluidInTank(tank)
-            return FluidVariant.of(stack.fluid, stack.tag)
+            return FluidVariant.of(stack.fluid, stack.componentsPatch)
         }
 
         override fun getAmount(): Long {

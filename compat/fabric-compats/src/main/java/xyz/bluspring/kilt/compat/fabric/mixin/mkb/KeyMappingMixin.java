@@ -10,7 +10,7 @@ import committee.nova.mkb.api.IKeyBinding;
 import committee.nova.mkb.api.IKeyConflictContext;
 import committee.nova.mkb.keybinding.KeyBindingMap;
 import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.client.extensions.IForgeKeyMapping;
+import net.neoforged.neoforge.client.extensions.IKeyMappingExtension;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,7 +35,7 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     // Kilt: bridge MKB and Forge contexts
     @Override
     public IKeyConflictContext getKeyConflictContext() {
-        var originalContext = ((IForgeKeyMapping) this).getKeyConflictContext();
+        var originalContext = ((IKeyMappingExtension) this).getKeyConflictContext();
 
         if (originalContext instanceof IKeyConflictContext keyConflictContext)
             return keyConflictContext;
@@ -45,22 +45,22 @@ public abstract class KeyMappingMixin implements IKeyBinding {
 
     @Override
     public void setKeyConflictContext(IKeyConflictContext iKeyConflictContext) {
-        ((IForgeKeyMapping) this).setKeyConflictContext((net.neoforged.neoforge.client.settings.IKeyConflictContext) iKeyConflictContext);
+        ((IKeyMappingExtension) this).setKeyConflictContext((net.neoforged.neoforge.client.settings.IKeyConflictContext) iKeyConflictContext);
     }
 
     @Override
     public committee.nova.mkb.keybinding.KeyModifier getKeyModifier() {
-        return committee.nova.mkb.keybinding.KeyModifier.valueFromString(((IForgeKeyMapping) this).getKeyModifier().name());
+        return committee.nova.mkb.keybinding.KeyModifier.valueFromString(((IKeyMappingExtension) this).getKeyModifier().name());
     }
 
     @Override
     public committee.nova.mkb.keybinding.KeyModifier getKeyModifierDefault() {
-        return committee.nova.mkb.keybinding.KeyModifier.valueFromString(((IForgeKeyMapping) this).getDefaultKeyModifier().name());
+        return committee.nova.mkb.keybinding.KeyModifier.valueFromString(((IKeyMappingExtension) this).getDefaultKeyModifier().name());
     }
 
     @Override
     public void setKeyModifierAndCode(committee.nova.mkb.keybinding.KeyModifier keyModifier, InputConstants.Key key) {
-        ((IForgeKeyMapping) this).setKeyModifierAndCode(KeyModifier.valueFromString(keyModifier.name()), key);
+        ((IKeyMappingExtension) this).setKeyModifierAndCode(KeyModifier.valueFromString(keyModifier.name()), key);
     }
 
     @Override
@@ -74,14 +74,14 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     }
 
     // Kilt: Reimplement everything MKB was doing, but with improved compatibility.
-    @TargetHandler(mixin = "xyz.bluspring.kilt.forgeinjects.client.KeyMappingInject", name = "setKeyModifierAndCode")
-    @Inject(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;remove(Lnet/minecraft/client/KeyMapping;)V"))
+    @TargetHandler(mixin = "xyz.bluspring.kilt.injects.client.KeyMappingInject", name = "setKeyModifierAndCode")
+    @Inject(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/settings/KeyMappingLookup;remove(Lnet/minecraft/client/KeyMapping;)V"))
     private void kilt$mkb$removeFromMkbMap(KeyModifier keyModifier, InputConstants.Key keyCode, CallbackInfo ci) {
         kilt$keybindingMap.removeKey((KeyMapping) (Object) this);
     }
 
-    @TargetHandler(mixin = "xyz.bluspring.kilt.forgeinjects.client.KeyMappingInject", name = "setKeyModifierAndCode")
-    @Inject(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;put(Lcom/mojang/blaze3d/platform/InputConstants$Key;Lnet/minecraft/client/KeyMapping;)V"))
+    @TargetHandler(mixin = "xyz.bluspring.kilt.injects.client.KeyMappingInject", name = "setKeyModifierAndCode")
+    @Inject(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/settings/KeyMappingLookup;put(Lcom/mojang/blaze3d/platform/InputConstants$Key;Lnet/minecraft/client/KeyMapping;)V"))
     private void kilt$mkb$addToMkbMap(KeyModifier keyModifier, InputConstants.Key keyCode, CallbackInfo ci) {
         kilt$keybindingMap.addKey(keyCode, (KeyMapping) (Object) this);
     }
@@ -101,8 +101,8 @@ public abstract class KeyMappingMixin implements IKeyBinding {
         kilt$keybindingMap.addKey(((IKeyBinding) mapping).getKey(), mapping);
     }
 
-    @TargetHandler(mixin = "xyz.bluspring.kilt.forgeinjects.client.KeyMappingInject", name = "kilt$wrapKeyClick")
-    @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
+    @TargetHandler(mixin = "xyz.bluspring.kilt.injects.client.KeyMappingInject", name = "kilt$wrapKeyClick")
+    @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
     private static List<KeyMapping> kilt$mkb$addMkbKeys(List<KeyMapping> original, @Local(argsOnly = true) InputConstants.Key key) {
         if (ModernKeyBinding.nonConflictKeys()) {
             var existing = kilt$keybindingMap.lookupActives(key);
@@ -117,8 +117,8 @@ public abstract class KeyMappingMixin implements IKeyBinding {
         return original;
     }
 
-    @TargetHandler(mixin = "xyz.bluspring.kilt.forgeinjects.client.KeyMappingInject", name = "kilt$wrapKeySet")
-    @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
+    @TargetHandler(mixin = "xyz.bluspring.kilt.injects.client.KeyMappingInject", name = "kilt$wrapKeySet")
+    @ModifyExpressionValue(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/settings/KeyMappingLookup;getAll(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Ljava/util/List;"))
     private static List<KeyMapping> kilt$mkb$addMkbKeysToSet(List<KeyMapping> original, @Local(argsOnly = true) InputConstants.Key key) {
         if (ModernKeyBinding.nonConflictKeys()) {
             var existing = kilt$keybindingMap.lookupActives(key);

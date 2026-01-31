@@ -5,7 +5,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.fabric.startup.FabricPluginFinder;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
-import net.minecraftforge.forgespi.language.ModFileScanData;
+import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.objectweb.asm.Type;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.loader.KiltLoader;
-import xyz.bluspring.kilt.loader.mod.ForgeMod;
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod;
 
 import java.util.*;
 
@@ -27,7 +27,7 @@ public abstract class FabricPluginFinderMixin {
     private static List<IModPlugin> kilt$jei$appendForgeJEIPlugins(List<IModPlugin> original) {
         var launcher = FabricLauncherBase.getLauncher();
 
-        for (ForgeMod mod : KiltLoader.Companion.getInstance().getMods()) {
+        for (NeoForgeMod mod : KiltLoader.Companion.getInstance().getMods()) {
             for (ModFileScanData.AnnotationData annotation : mod.getScanData().getAnnotations()) {
                 if (annotation.annotationType().equals(kilt$entrypointType)) {
                     try {

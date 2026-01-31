@@ -5,13 +5,10 @@ import dev.engine_room.flywheel.api.event.EndClientResourceReloadEvent
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererCallback
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererEvent
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.loader.DependencyException
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
-import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.fml.ModLoader
-import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.knit.loader.KnitLoader
+import net.neoforged.neoforge.common.NeoForge
 
 class KiltCreateCompat : ClientModInitializer {
     override fun onInitializeClient() {
@@ -26,7 +23,7 @@ class KiltCreateCompat : ClientModInitializer {
         }
 
         ReloadLevelRendererCallback.EVENT.register { level ->
-            ModLoader.get().kiltPostEventWrappingMods(ReloadLevelRendererEvent(level))
+            ModLoader.postEventWrapContainerInModOrder(ReloadLevelRendererEvent(level))
         }
     }
 }

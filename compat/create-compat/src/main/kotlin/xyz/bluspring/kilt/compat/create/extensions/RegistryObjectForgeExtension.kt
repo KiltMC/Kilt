@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.compat.create.extensions
 
-import net.minecraftforge.registries.RegisterEvent
+import net.neoforged.neoforge.registries.RegisterEvent
 
 interface RegistryObjectForgeExtension {
     fun updateReference(event: RegisterEvent)

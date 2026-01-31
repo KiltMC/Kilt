@@ -79,7 +79,7 @@ public abstract class PackInject implements PackInjection {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$setHidden(PackLocationInfo location, Pack.ResourcesSupplier resources, Pack.Metadata metadata, PackSelectionConfig selectionConfig, CallbackInfo ci) {
-        this.hidden = ((PackMetadataInjection) (Object) metadata).hidden();
+        this.hidden = metadata.hidden();
     }
 
     @WrapOperation(method = "readPackMetadata", at = @At(value = "NEW", target = "(Lnet/minecraft/network/chat/Component;Lnet/minecraft/server/packs/repository/PackCompatibility;Lnet/minecraft/world/flag/FeatureFlagSet;Ljava/util/List;)Lnet/minecraft/server/packs/repository/Pack$Metadata;"))
@@ -91,10 +91,21 @@ public abstract class PackInject implements PackInjection {
             list = List.copyOf(list);
         }
         var info = original.call(component, packCompatibility, featureFlagSet, list);
-        ((PackMetadataInjection) (Object) info).kilt$markForge();
-        ((PackMetadataInjection) (Object) info).kilt$setHidden(resources.isHidden());
+        info.kilt$markForge();
+        info.kilt$setHidden(resources.isHidden());
 
         return info;
+    }
+
+    @Override
+    public Pack hidden() {
+        return PackInjection.create(
+            new PackLocationInfo(this.location.id(), this.location.title(), this.location.source(), this.location.knownPackInfo()),
+            this.resources,
+            PackMetadataInjection.create(this.metadata.description(), this.metadata.compatibility(), this.metadata.requestedFeatures(), this.metadata.overlays(), true),
+            new PackSelectionConfig(this.selectionConfig.required(), this.selectionConfig.defaultPosition(), this.selectionConfig.fixedPosition()),
+            this.children
+        );
     }
 
     @Override

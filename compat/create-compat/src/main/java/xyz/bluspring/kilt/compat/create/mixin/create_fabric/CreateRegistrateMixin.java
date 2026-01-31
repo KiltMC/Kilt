@@ -5,7 +5,6 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
-import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,8 +21,8 @@ public abstract class CreateRegistrateMixin extends AbstractRegistrateMixin<Crea
         return super.registerEventListeners(bus);
     }
 
-    public CreateRegistrate setCreativeTab(RegistryObject<CreativeModeTab> tab) {
-        this.currentTab = tab.getKey();
-        return (CreateRegistrate) (Object) this;
-    }
+//    public CreateRegistrate setCreativeTab(RegistryObject<CreativeModeTab> tab) {
+//        this.currentTab = tab.getKey();
+//        return (CreateRegistrate) (Object) this;
+//    }
 }

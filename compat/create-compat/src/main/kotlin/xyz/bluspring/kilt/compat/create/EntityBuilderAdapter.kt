@@ -5,11 +5,8 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityDimensions
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.flag.FeatureFlag
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
-import net.minecraftforge.network.PlayMessages.SpawnEntity
 import xyz.bluspring.kilt.compat.create.extensions.EntityBuilderExtension
-import java.util.function.BiFunction
 
 
 class EntityBuilderAdapter<T : Entity>(
@@ -77,9 +74,9 @@ class EntityBuilderAdapter<T : Entity>(
         return this
     }
 
-    fun setCustomClientFactory(factory: BiFunction<SpawnEntity, Level, T>): EntityType.Builder<T> {
+    /*fun setCustomClientFactory(factory: BiFunction<SpawnEntity, Level, T>): EntityType.Builder<T> {
         registrateBuilder.`kilt$setCustomClientFactory`(factory)
         return this
-    }
+    }*/
 
 }

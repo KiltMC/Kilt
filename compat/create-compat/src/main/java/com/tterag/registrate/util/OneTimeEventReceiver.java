@@ -5,7 +5,6 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.EventBus;
 import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.EventListenerHelper;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.IModBusEvent;
@@ -109,7 +108,8 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
                 try {
                     final MethodHandle mh = getBusId;
                     if (mh != null) {
-                        EventListenerHelper.getListenerList(t.getRight()).getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
+                        // Kilt TODO: fix
+//                        EventListenerHelper.getListenerList(t.getRight()).getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
                     }
                 } catch (Throwable ex) {
                     log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", ex);

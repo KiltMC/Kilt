@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.fabric.RegistryObject;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,10 +19,6 @@ public abstract class RegistryObjectMixin<T> implements RegistryObjectForgeExten
 
     @Override
     public void updateReference(@NotNull RegisterEvent event) {
-        if (event.getForgeRegistry() != null) {
-            this.object = (T) event.getForgeRegistry().getValue(this.getId());
-        } else {
-            this.object = (T) event.getVanillaRegistry().get(this.getId());
-        }
+        this.object = (T) event.getRegistry().get(this.getId());
     }
 }

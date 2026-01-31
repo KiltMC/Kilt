@@ -59,7 +59,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
-import xyz.bluspring.kilt.injections.world.entity.PlayerInjection;
+import xyz.bluspring.kilt.injections.world.entity.player.PlayerInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Objects;

@@ -6,7 +6,7 @@ import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import de.siphalor.amecs.api.KeyModifiers;
 import de.siphalor.amecs.impl.duck.IKeyBinding;
 import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.client.extensions.IForgeKeyMapping;
+import net.neoforged.neoforge.client.extensions.IKeyMappingExtension;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +22,7 @@ public abstract class KeyMappingMixin implements IKeyBinding {
     private void kilt$amecsapi$handleForgeModifiers(CallbackInfoReturnable<KeyModifiers> cir) {
         var keyModifiers = cir.getReturnValue();
 
-        var forgeModifier = ((IForgeKeyMapping) this).getKeyModifier();
+        var forgeModifier = ((IKeyMappingExtension) this).getKeyModifier();
         if (forgeModifier != KeyModifier.NONE) {
             keyModifiers.unset();
 

@@ -1,9 +1,9 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.snowrealmagic;
 
-import net.minecraftforge.common.extensions.IForgeBlock;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import snownee.snow.block.SnowVariant;
 
 @Mixin(SnowVariant.class)
-public interface SnowVariantMixin extends IForgeBlock {
+public interface SnowVariantMixin extends IBlockExtension {
 }

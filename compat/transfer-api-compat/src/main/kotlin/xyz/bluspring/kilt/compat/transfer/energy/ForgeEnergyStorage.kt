@@ -2,7 +2,7 @@ package xyz.bluspring.kilt.compat.transfer.energy
 
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
-import net.minecraftforge.energy.IEnergyStorage
+import net.neoforged.neoforge.energy.IEnergyStorage
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.compat.transfer.TransferInterop
 

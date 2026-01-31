@@ -1,9 +1,9 @@
 package xyz.bluspring.kilt.compat.forge.immersiveengineering
 
 import com.mojang.blaze3d.vertex.VertexConsumer
-import me.jellysquid.mods.sodium.client.render.chunk.terrain.material.Material
-import me.jellysquid.mods.sodium.client.render.chunk.vertex.builder.ChunkMeshBufferBuilder
-import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder
+import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material
+import net.caffeinemc.mods.sodium.client.render.chunk.vertex.builder.ChunkMeshBufferBuilder
+import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder
 import net.minecraft.util.FastColor
 
 class SodiumIEVertexConsumer private constructor() : VertexConsumer {
@@ -32,62 +32,42 @@ class SodiumIEVertexConsumer private constructor() : VertexConsumer {
         this.material = null
     }
 
-    override fun vertex(x: Double, y: Double, z: Double): VertexConsumer {
-        this.x = x.toFloat()
-        this.y = y.toFloat()
-        this.z = z.toFloat()
+    override fun addVertex(x: Float, y: Float, z: Float): VertexConsumer {
+        this.x = x
+        this.y = y
+        this.z = z
 
         return this
     }
 
-    override fun color(red: Int, green: Int, blue: Int, alpha: Int): VertexConsumer {
+    override fun setColor(red: Int, green: Int, blue: Int, alpha: Int): VertexConsumer {
         this.color = FastColor.ABGR32.color(alpha, blue, green, red)
-
         return this
     }
 
-    override fun uv(u: Float, v: Float): VertexConsumer {
+    override fun setUv(u: Float, v: Float): VertexConsumer {
         this.u = u
         this.v = v
 
         return this
     }
 
-    override fun overlayCoords(u: Int, v: Int): VertexConsumer {
-        overlay = u or (v shl 16)
+    override fun setUv1(u: Int, v: Int): VertexConsumer? {
         return this
     }
 
-    override fun uv2(u: Int, v: Int): VertexConsumer {
-        light = u or (v shl 16)
+    override fun setOverlay(overlay: Int): VertexConsumer {
+        this.overlay = overlay
         return this
     }
 
-    override fun normal(x: Float, y: Float, z: Float): VertexConsumer {
+    override fun setUv2(u: Int, v: Int): VertexConsumer {
+        this.light = u or (v shl 16)
         return this
     }
 
-    override fun endVertex() {
-        val vertex = ChunkVertexEncoder.Vertex()
-        vertex.x = x
-        vertex.y = y
-        vertex.z = z
-        vertex.color = color
-        vertex.u = u
-        vertex.v = v
-        vertex.light = light
-
-        vertexArray[currentIndex++] = vertex
-
-        if (currentIndex >= 4) {
-            pushVertexData()
-        }
-    }
-
-    override fun defaultColor(defaultR: Int, defaultG: Int, defaultB: Int, defaultA: Int) {
-    }
-
-    override fun unsetDefaultColor() {
+    override fun setNormal(x: Float, y: Float, z: Float): VertexConsumer {
+        return this
     }
 
     private fun pushVertexData() {

@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraft.world.item.ItemStack
-import net.minecraftforge.items.IItemHandler
+import net.neoforged.neoforge.items.IItemHandler
 
 class ForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVariant> {
     override fun iterator(): MutableIterator<StorageView<ItemVariant>> {

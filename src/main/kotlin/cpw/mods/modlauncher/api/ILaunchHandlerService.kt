@@ -6,9 +6,6 @@ package cpw.mods.modlauncher.api
 interface ILaunchHandlerService {
     fun name(): String
 
-    @Deprecated("")
-    fun configureTransformationClassLoader(builder: ITransformingClassLoaderBuilder)
-
     fun launchService(arguments: Array<String>, gameLayer: ModuleLayer): ServiceRunner
 
     fun getPaths(): Array<NamedPath> {

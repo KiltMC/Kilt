@@ -14,13 +14,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraftforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegisterEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +56,8 @@ public abstract class AbstractRegistrateMixin<S extends AbstractRegistrate<S>> i
     @Shadow @Final private Set<ResourceKey<? extends Registry<?>>> completedRegistrations;
 
     public IEventBus getModEventBus() {
-        return FMLJavaModLoadingContext.get().getModEventBus();
+//        return FMLJavaModLoadingContext.get().getModEventBus();
+        throw new RuntimeException("Kilt: unimplemented");
     }
 
     protected void onData(GatherDataEvent event) {

@@ -3,6 +3,7 @@ package dev.engine_room.flywheel.lib.model.baked;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,7 +17,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.client.model.data.ModelData;
 import xyz.bluspring.kilt.compat.create.flywheel.BakedModelBuffererHelper;
 
 // From Flywheel 1.20.1 Forge, licensed under MIT - https://github.com/Engine-Room/Flywheel/blob/1.20.1/dev/LICENSE.md
@@ -67,13 +67,14 @@ public final class ForgeBlockModelBuilder extends BlockModelBuilder {
         var builder = ChunkLayerSortedListBuilder.<Model.ConfiguredMesh>getThreadLocal();
 
         BakedModelBuffererHelper.getModelDataLookup().set(modelDataLookup);
-        BakedModelBufferer.bufferBlocks(positions.iterator(), level, poseStack, renderFluids, (renderType, shaded, data) -> {
-            Material material = materialFunc.apply(renderType, shaded);
-            if (material != null) {
-                Mesh mesh = MeshHelper.blockVerticesToMesh(data, "source=BlockModelBuilder," + "renderType=" + renderType + ",shaded=" + shaded);
-                builder.add(renderType, new Model.ConfiguredMesh(material, mesh));
-            }
-        });
+        // Kilt TODO: fix
+//        BakedModelBufferer.bufferBlocks(positions.iterator(), level, poseStack, renderFluids, (renderType, shaded, data) -> {
+//            Material material = materialFunc.apply(renderType, shaded);
+//            if (material != null) {
+//                Mesh mesh = MeshHelper.blockVerticesToMesh(data, "source=BlockModelBuilder," + "renderType=" + renderType + ",shaded=" + shaded);
+//                builder.add(renderType, new Model.ConfiguredMesh(material, mesh));
+//            }
+//        });
         BakedModelBuffererHelper.getModelDataLookup().remove();
 
         return new SimpleModel(builder.build());

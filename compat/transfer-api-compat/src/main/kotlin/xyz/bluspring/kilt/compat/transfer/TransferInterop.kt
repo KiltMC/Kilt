@@ -4,24 +4,15 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.block.entity.BlockEntity
+import net.neoforged.neoforge.capabilities.Capabilities
 import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent
-import net.neoforged.bus.api.SubscribeEvent
 import team.reborn.energy.api.EnergyStorage
-import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyItemStorageCapabilityProvider
 import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyStorageCapability
-import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyStorageCapabilityProvider
 import xyz.bluspring.kilt.compat.transfer.energy.ForgeEnergyStorage
-import xyz.bluspring.kilt.compat.transfer.fluid.*
-import xyz.bluspring.kilt.compat.transfer.item.FabricItemItemStorageCapabilityProvider
+import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidItemStorageCapability
+import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidStorageCapability
+import xyz.bluspring.kilt.compat.transfer.fluid.ForgeFluidStorage
 import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapability
-import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapabilityProvider
 import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
 
 class TransferInterop : ModInitializer {
@@ -32,13 +23,10 @@ class TransferInterop : ModInitializer {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val itemHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.ITEM_HANDLER, direction)
+            val handler = Capabilities.ItemHandler.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
-            if (itemHandlerCapability.isPresent) {
-                val handler = itemHandlerCapability.resolve().get()
-                if (handler !is FabricItemStorageCapability) {
-                    return@registerFallback ForgeSlottedStorage(handler)
-                }
+            if (handler != null && handler !is FabricItemStorageCapability) {
+                return@registerFallback ForgeSlottedStorage(handler)
             }
 
             null
@@ -48,14 +36,10 @@ class TransferInterop : ModInitializer {
             if (stack == null)
                 return@registerFallback null
 
-            val itemHandlerCapability = stack.getCapability(ForgeCapabilities.ITEM_HANDLER)
+            val handler = Capabilities.ItemHandler.ITEM.getCapability(stack, null)
 
-            if (itemHandlerCapability.isPresent) {
-                val handler = itemHandlerCapability.resolve().get()
-
-                if (handler !is FabricItemStorageCapability) {
-                    return@registerFallback ForgeSlottedStorage(handler)
-                }
+            if (handler != null && handler !is FabricItemStorageCapability) {
+                return@registerFallback ForgeSlottedStorage(handler)
             }
 
             null
@@ -65,13 +49,10 @@ class TransferInterop : ModInitializer {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val fluidHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.FLUID_HANDLER, direction)
+            val handler = Capabilities.FluidHandler.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
-            if (fluidHandlerCapability.isPresent) {
-                val handler = fluidHandlerCapability.resolve().get()
-                if (handler !is FabricFluidStorageCapability) {
-                    return@registerFallback ForgeFluidStorage(handler)
-                }
+            if (handler != null && handler !is FabricFluidStorageCapability) {
+                return@registerFallback ForgeFluidStorage(handler)
             }
 
             null
@@ -81,13 +62,10 @@ class TransferInterop : ModInitializer {
             if (itemStack == null || itemStack.isEmpty)
                 return@registerFallback null
 
-            val fluidHandlerCapability = (itemStack as ICapabilityProvider).getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
+            val handler = Capabilities.FluidHandler.ITEM.getCapability(itemStack, null)
 
-            if (fluidHandlerCapability.isPresent) {
-                val handler = fluidHandlerCapability.resolve().get()
-                if (handler !is FabricFluidItemStorageCapability) {
-                    return@registerFallback ForgeFluidStorage(handler)
-                }
+            if (handler != null && handler !is FabricFluidItemStorageCapability) {
+                return@registerFallback ForgeFluidStorage(handler)
             }
 
             null
@@ -97,13 +75,10 @@ class TransferInterop : ModInitializer {
             if (blockEntity == null)
                 return@registerFallback null
 
-            val energyHandlerCapability = (blockEntity as ICapabilityProvider).getCapability(ForgeCapabilities.ENERGY, direction)
+            val handler = Capabilities.EnergyStorage.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
-            if (energyHandlerCapability.isPresent) {
-                val handler = energyHandlerCapability.resolve().get()
-                if (handler !is FabricEnergyStorageCapability) {
-                    return@registerFallback ForgeEnergyStorage(handler)
-                }
+            if (handler != null && handler !is FabricEnergyStorageCapability) {
+                return@registerFallback ForgeEnergyStorage(handler)
             }
 
             null
@@ -113,20 +88,17 @@ class TransferInterop : ModInitializer {
             if (itemStack == null || itemStack.isEmpty)
                 return@registerFallback null
 
-            val energyHandlerCapability = (itemStack as ICapabilityProvider).getCapability(ForgeCapabilities.ENERGY)
+            val handler = Capabilities.EnergyStorage.ITEM.getCapability(itemStack, null)
 
-            if (energyHandlerCapability.isPresent) {
-                val handler = energyHandlerCapability.resolve().get()
-                if (handler !is FabricEnergyStorageCapability) {
-                    return@registerFallback ForgeEnergyStorage(handler)
-                }
+            if (handler != null && handler !is FabricEnergyStorageCapability) {
+                return@registerFallback ForgeEnergyStorage(handler)
             }
 
             null
         }
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     fun onAttachBlockEntityCapabilities(event: AttachCapabilitiesEvent<BlockEntity>) {
         val blockEntity = event.`object`
         if (ItemStorage.SIDED.getProvider(blockEntity.blockState.block) != null)
@@ -162,9 +134,9 @@ class TransferInterop : ModInitializer {
             event.addCapability(ResourceLocation(Kilt.MOD_ID, "fabric_energy_item_storage"),
                 FabricEnergyItemStorageCapabilityProvider(stack)
             )
-    }
+    }*/
 
     companion object {
-        val REBORN_ENERGY_TO_FORGE_ENERGY = 10 // 1 E -> 10 FE, matching Connector Extras
+        const val REBORN_ENERGY_TO_FORGE_ENERGY = 10 // 1 E -> 10 FE, matching Connector Extras
     }
 }

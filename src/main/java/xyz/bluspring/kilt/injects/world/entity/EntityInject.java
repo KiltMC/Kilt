@@ -41,6 +41,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.capabilities.EntityCapability;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -72,5 +73,13 @@ import java.util.function.Predicate;
 @Mixin(value = Entity.class, priority = 1100)
 @Extends(AttachmentHolder.class)
 public abstract class EntityInject implements IEntityExtension, EntityInjection {
+    @Override
+    public <T, C> T getCapability(EntityCapability<T, C> capability, C context) {
+        return capability.getCapability((Entity) (Object) this, context);
+    }
 
+    @Override
+    public <T> T getCapability(EntityCapability<T, @Nullable Void> capability) {
+        return capability.getCapability((Entity) (Object) this, null);
+    }
 }

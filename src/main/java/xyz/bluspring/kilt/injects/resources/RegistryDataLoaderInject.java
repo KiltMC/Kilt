@@ -24,13 +24,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.resources.RegistryDataLoader$RegistryDataInjection;
+import xyz.bluspring.kilt.injections.resources.RegistryDataLoaderInjection;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 @Mixin(RegistryDataLoader.class)
-public abstract class RegistryDataLoaderInject {
+public abstract class RegistryDataLoaderInject implements RegistryDataLoaderInjection {
     /*@ModifyReturnValue(method = "registryDirPath", at = @At("RETURN")) // Kilt: Fabric handles this for us
     private static String kilt$prefixNamespaceIfForge(String original, @Local(argsOnly = true) ResourceLocation location) {
         if (DataPackRegistriesHooks.kilt$forgeDatapackRegistryKeys.contains(location)) {
@@ -70,7 +70,7 @@ public abstract class RegistryDataLoaderInject {
     }
 
     @Mixin(RegistryDataLoader.RegistryData.class)
-    public abstract static class RegistryDataInject<T> implements RegistryDataLoader$RegistryDataInjection<T> {
+    public abstract static class RegistryDataInject<T> implements RegistryDataLoaderInjection.RegistryDataInjection<T> {
         @Unique private Consumer<RegistryBuilder<T>> registryBuilderConsumer = registryBuilder -> {};
 
         public RegistryDataInject(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {

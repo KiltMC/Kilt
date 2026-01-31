@@ -49,6 +49,10 @@ public interface PackInjection {
         return pack;
     }
 
+    default Pack hidden() {
+        throw KiltHelper.createMixinException(PackInjection.class, "hidden");
+    }
+
     default boolean isHidden() {
         throw KiltHelper.createMixinException(PackInjection.class, "isHidden");
     }

@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.compat.create.flywheel
 
 import net.minecraft.core.BlockPos
-import net.minecraftforge.client.model.data.ModelData
+import net.neoforged.neoforge.client.model.data.ModelData
 import java.util.function.Function
 
 object BakedModelBuffererHelper {

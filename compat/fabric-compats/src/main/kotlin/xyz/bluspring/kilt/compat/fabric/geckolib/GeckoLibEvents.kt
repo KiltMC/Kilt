@@ -1,7 +1,8 @@
 package xyz.bluspring.kilt.compat.fabric.geckolib
 
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.eventbus.api.Event
+import net.neoforged.bus.api.Event
+import net.neoforged.bus.api.ICancellableEvent
+import net.neoforged.neoforge.common.NeoForge
 import software.bernie.geckolib.event.GeoRenderEvent
 
 // Kilt: this is a mess, I hate everything about this.
@@ -33,6 +34,6 @@ object GeckoLibEvents {
     }
 
     private fun <T : GeoRenderEvent> callForgeEventOnFabric(event: T): Boolean {
-        return !MinecraftForge.EVENT_BUS.post(event as Event)
+        return (NeoForge.EVENT_BUS.post(event as Event) as? ICancellableEvent)?.isCanceled != true
     }
 }

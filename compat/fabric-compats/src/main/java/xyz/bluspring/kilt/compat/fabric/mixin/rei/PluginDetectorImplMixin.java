@@ -5,7 +5,7 @@ import me.shedaniel.rei.api.common.plugins.REIPluginProvider;
 import me.shedaniel.rei.api.common.plugins.REIServerPlugin;
 import me.shedaniel.rei.fabric.PluginDetectorImpl;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
-import net.minecraftforge.forgespi.language.ModFileScanData;
+import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.objectweb.asm.Type;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.compat.fabric.rei.KiltREIPluginProvider;
 import xyz.bluspring.kilt.loader.KiltLoader;
-import xyz.bluspring.kilt.loader.mod.ForgeMod;
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public abstract class PluginDetectorImplMixin {
 
         var launcher = FabricLauncherBase.getLauncher();
 
-        for (ForgeMod mod : KiltLoader.Companion.getInstance().getMods()) {
+        for (NeoForgeMod mod : KiltLoader.Companion.getInstance().getMods()) {
             for (ModFileScanData.AnnotationData annotation : mod.getScanData().getAnnotations()) {
                 if (annotation.annotationType().equals(entrypointType)) {
                     try {

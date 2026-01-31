@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.mixin;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -11,5 +12,5 @@ import java.util.Map;
 @Mixin(AttributeSupplier.class)
 public interface AttributeSupplierAccessor {
     @Accessor
-    Map<Attribute, AttributeInstance> getInstances();
+    Map<Holder<Attribute>, AttributeInstance> getInstances();
 }
