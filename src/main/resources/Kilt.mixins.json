@@ -78,7 +78,6 @@
         "compat.forgeconfigapiport.ForgeConfigSpecMixin$ConfigValueMixin",
         "compat.forgeconfigapiport.ModConfigMixin",
         "compat.modmenu.ModMenuMixin",
-        "compat.porting_lib.ForcedChunkManagerAccessor",
         "compat.sodium.AuxiliaryLightManagerMixin",
         "compat.sodium.FabricLevelRenderHooksMixin",
         "compat.sodium.LevelSliceMixin",

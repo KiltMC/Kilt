@@ -1,8 +1,8 @@
-import java.util.Properties
+import java.util.*
 
 plugins {
     `kotlin-dsl`
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm") version "2.3.0"
 }
 
 repositories {

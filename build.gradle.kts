@@ -244,10 +244,6 @@ dependencies {
         exclude("org.spongepowered", "mixin")
     }
 
-    //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
-    //modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
-
     // Forge stuff
     api(include("net.neoforged:bus:${property("eventbus_version")}") {
         exclude("org.ow2.asm")
@@ -334,9 +330,6 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
-
-    // Workarounds
-    include(modImplementation("maven.modrinth:feature-recycler:${rootProject.property("feature_recycler_version")}")!!) // Required for features - see #376, #391, #361, #352
 }
 
 // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
