@@ -4,8 +4,7 @@ import net.fabricmc.loom.task.RemapJarTask
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
-import xyz.bluspring.kilt.gradle.AppendInjectedInterfaces
+import xyz.bluspring.kilt.gradle.ClassTweakerUpdater
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
 import java.security.MessageDigest
 
@@ -54,7 +53,7 @@ sourceSets {
 }
 
 loom {
-    accessWidenerPath.set(file("src/main/resources/kilt.accesswidener"))
+    accessWidenerPath.set(file("src/main/resources/kilt.classtweaker"))
     mixin {
         showMessageTypes.set(true)
 
@@ -432,7 +431,7 @@ tasks {
 
     register("tagPatches") {
         group = "kilt"
-        description = "Tags the Kilt ForgeInjects with their currently tracked patch hash to ensure they are all up to date."
+        description = "Tags the Kilt Injects with their currently tracked patch hash to ensure they are all up to date."
 
         doFirst {
             fun readDir(file: File) {
@@ -443,11 +442,11 @@ tasks {
                     if (it.isDirectory) {
                         readDir(it)
                     } else {
-                        val startDir = it.absolutePath.replace("\\", "/").replaceBefore("forgeinjects/", "").replace("forgeinjects/", "")
+                        val startDir = it.absolutePath.replace("\\", "/").replaceBefore("injects/", "").replace("injects/", "")
                         val patchDir = if (startDir.startsWith("blaze3d") || startDir.startsWith("math")) "com/mojang/${startDir.replace("Inject.java", ".java.patch")}"
                             else "net/minecraft/${startDir.replace("Inject.java", ".java.patch")}"
 
-                        val patchFile = File("$projectDir/forge/patches/minecraft/$patchDir")
+                        val patchFile = File("$projectDir/forge/patches/$patchDir")
                         if (!patchFile.exists()) {
                             println("!! WARNING !! Inject $startDir no longer has an associated patch file!")
                             return@forEach
@@ -472,7 +471,7 @@ tasks {
                 }
             }
 
-            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/forgeinjects"))
+            readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/injects"))
         }
     }
 
@@ -509,8 +508,6 @@ tasks {
                 it
             }
         }
-
-        filesMatching("fabric.mod.json", AppendInjectedInterfaces.Applicator(project))
 
         // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
         filesMatching("META-INF/mods.toml") {
@@ -581,20 +578,11 @@ tasks {
         }
     }
 
-    register("transformerToWidener") {
+    register("updateTweakers") {
         group = "kilt"
 
         doLast {
-            val remapper = AccessTransformerRemapper()
-            val transformerFile = File("$projectDir/forge/src/main/resources/META-INF/accesstransformer.cfg")
-            val widenerFile = File("$projectDir/src/main/resources/kilt.accesswidener")
-
-            remapper.convertTransformerToWidener(
-                transformerFile.readText(),
-                widenerFile,
-                project.property("minecraft_version") as String,
-                layout.buildDirectory.get().asFile
-            )
+            ClassTweakerUpdater.updateTweakers(rootProject)
         }
     }
 

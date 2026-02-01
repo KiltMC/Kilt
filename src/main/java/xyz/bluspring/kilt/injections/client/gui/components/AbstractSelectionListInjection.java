@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.client.gui;
+package xyz.bluspring.kilt.injections.client.gui.components;
 
 public interface AbstractSelectionListInjection {
     default int getWidth() {

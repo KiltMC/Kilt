@@ -6,7 +6,7 @@ import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.Pack;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.server.packs.resources.BuiltInPackSourceInjection;
+import xyz.bluspring.kilt.injections.server.packs.repository.BuiltInPackSourceInjection;
 
 import java.util.function.Function;
 

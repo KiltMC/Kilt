@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 open class AccessTransformerProcessor : MinecraftJarProcessor<AccessTransformerProcessor.Spec> {
     override fun buildSpec(context: SpecContext): Spec? {
@@ -47,19 +46,19 @@ open class AccessTransformerProcessor : MinecraftJarProcessor<AccessTransformerP
         }
     }
 
-    private fun getTransformers(classes: List<String?>): MutableList<Pair<String?, UnsafeUnaryOperator<ByteArray?>?>?> {
-        return classes.stream()
-            .map<Pair<String?, UnsafeUnaryOperator<ByteArray?>?>?> { string: String? ->
-                Pair<String?, UnsafeUnaryOperator<ByteArray?>?>(
+    private fun getTransformers(classes: List<String>): MutableList<Pair<String, UnsafeUnaryOperator<ByteArray>>> {
+        return classes
+            .map { string ->
+                Pair(
                     string!!.replace("\\.".toRegex(), "/") + ".class",
                     getTransformer(string)
                 )
             }
-            .collect(Collectors.toList())
+            .toMutableList()
     }
 
-    private fun getTransformer(className: String): UnsafeUnaryOperator<ByteArray?> {
-        return UnsafeUnaryOperator { input: ByteArray? ->
+    private fun getTransformer(className: String): UnsafeUnaryOperator<ByteArray> {
+        return UnsafeUnaryOperator { input ->
             val reader = ClassReader(input)
             val writer = ClassWriter(0)
             val cn = ClassNode()

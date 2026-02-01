@@ -1,0 +1,17 @@
+classTweaker v1 named
+
+# Kilt's own injected interfaces, these ones are manually inserted for interfaces
+# that can't be automatically generated, such as inner injections.
+transitive-inject-interface net/minecraft/client/gui/components/Button$Builder xyz/bluspring/kilt/injections/client/gui/components/ButtonBuilderInjection
+transitive-inject-interface net/minecraft/client/gui/screens/packs/PackSelectionModel$Entry xyz/bluspring/kilt/injections/client/gui/screens/packs/PackSelectionModelEntryInjection
+transitive-inject-interface net/minecraft/client/model/HumanoidModel$ArmPose xyz/bluspring/kilt/injections/client/model/HumanoidModelArmPoseInjection
+transitive-inject-interface net/minecraft/client/resources/model/SimpleBakedModel$Builder xyz/bluspring/kilt/injections/client/resources/model/SimpleBakedModelBuilderInjection
+transitive-inject-interface net/minecraft/client/sounds/ChannelAccess$ChannelHandle xyz/bluspring/kilt/injections/client/sounds/ChannelAccessHandleInjection
+transitive-inject-interface net/minecraft/server/packs/repository/Pack$Metadata xyz/bluspring/kilt/injections/server/packs/repository/PackMetadataInjection
+transitive-inject-interface net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder xyz/bluspring/kilt/injections/world/entity/ai/attributes/AttributeSupplierBuilderInjection
+transitive-inject-interface net/minecraft/world/entity/raid/Raid$RaiderType xyz/bluspring/kilt/injections/world/entity/raid/RaidRaiderTypeInjection
+transitive-inject-interface net/minecraft/world/food/FoodProperties$Builder xyz/bluspring/kilt/injections/world/food/FoodPropertiesBuilderInjection
+transitive-inject-interface net/minecraft/world/food/FoodProperties$PossibleEffect xyz/bluspring/kilt/injections/world/food/FoodPropertiesPossibleEffectInjection
+transitive-inject-interface net/minecraft/world/item/Item$Properties xyz/bluspring/kilt/injections/world/item/ItemPropertiesInjection
+transitive-inject-interface net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess xyz/bluspring/kilt/injections/world/level/storage/LevelStorageAccessInjection
+transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$EntityTarget xyz/bluspring/kilt/injections/world/level/storage/loot/EntityTargetInjection

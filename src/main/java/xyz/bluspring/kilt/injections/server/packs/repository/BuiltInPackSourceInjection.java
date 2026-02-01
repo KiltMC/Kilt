@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.injections.server.packs.resources;
+package xyz.bluspring.kilt.injections.server.packs.repository;
 
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;

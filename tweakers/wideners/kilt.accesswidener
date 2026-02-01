@@ -1,0 +1,52 @@
+accessWidener v2 named
+
+# Kilt's own access wideners
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
+transitive-accessible method net/minecraft/world/entity/Entity setRemoved (Lnet/minecraft/world/entity/Entity$RemovalReason;)V
+transitive-extendable method net/minecraft/world/entity/Entity setRemoved (Lnet/minecraft/world/entity/Entity$RemovalReason;)V
+transitive-accessible method net/minecraft/world/item/CreativeModeTab <init> (Lnet/minecraft/world/item/CreativeModeTab$Row;ILnet/minecraft/world/item/CreativeModeTab$Type;Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;)V
+transitive-accessible class net/minecraft/server/advancements/AdvancementVisibilityEvaluator$VisibilityRule
+transitive-accessible class net/minecraft/data/HashCache$ProviderCache
+transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
+transitive-extendable method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
+
+accessible class net/minecraft/world/effect/MobEffectInstance$Details
+accessible method net/minecraft/world/effect/MobEffectInstance$Details <init> (IIZZZLjava/util/Optional;)V
+accessible class net/minecraft/world/inventory/BrewingStandMenu$PotionSlot
+
+accessible class net/minecraft/server/ReloadableServerResources$ConfigurableRegistryLookup
+accessible field net/minecraft/server/packs/repository/Pack resources Lnet/minecraft/server/packs/repository/Pack$ResourcesSupplier;
+accessible field net/minecraft/server/packs/repository/Pack metadata Lnet/minecraft/server/packs/repository/Pack$Metadata;
+accessible field net/minecraft/server/packs/OverlayMetadataSection CODEC Lcom/mojang/serialization/Codec;
+
+accessible field com/mojang/blaze3d/platform/GlStateManager BLEND Lcom/mojang/blaze3d/platform/GlStateManager$BlendState;
+accessible field com/mojang/blaze3d/platform/GlStateManager DEPTH Lcom/mojang/blaze3d/platform/GlStateManager$DepthState;
+accessible field com/mojang/blaze3d/platform/GlStateManager CULL Lcom/mojang/blaze3d/platform/GlStateManager$CullState;
+accessible field com/mojang/blaze3d/platform/GlStateManager POLY_OFFSET Lcom/mojang/blaze3d/platform/GlStateManager$PolygonOffsetState;
+accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_LOGIC Lcom/mojang/blaze3d/platform/GlStateManager$ColorLogicState;
+accessible field com/mojang/blaze3d/platform/GlStateManager STENCIL Lcom/mojang/blaze3d/platform/GlStateManager$StencilState;
+accessible field com/mojang/blaze3d/platform/GlStateManager SCISSOR Lcom/mojang/blaze3d/platform/GlStateManager$ScissorState;
+accessible field com/mojang/blaze3d/platform/GlStateManager COLOR_MASK Lcom/mojang/blaze3d/platform/GlStateManager$ColorMask;
+
+accessible class com/mojang/blaze3d/platform/GlStateManager$BlendState
+accessible class com/mojang/blaze3d/platform/GlStateManager$BooleanState
+accessible class com/mojang/blaze3d/platform/GlStateManager$CullState
+accessible class com/mojang/blaze3d/platform/GlStateManager$DepthState
+accessible class com/mojang/blaze3d/platform/GlStateManager$PolygonOffsetState
+accessible class com/mojang/blaze3d/platform/GlStateManager$ColorLogicState
+accessible class com/mojang/blaze3d/platform/GlStateManager$StencilState
+accessible class com/mojang/blaze3d/platform/GlStateManager$StencilFunc
+accessible class com/mojang/blaze3d/platform/GlStateManager$ScissorState
+accessible class com/mojang/blaze3d/platform/GlStateManager$TextureState
+accessible class com/mojang/blaze3d/platform/GlStateManager$ColorMask
+accessible field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
+mutable field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
+
+accessible method net/minecraft/core/Holder$Reference bindValue (Ljava/lang/Object;)V
+accessible method net/minecraft/world/item/crafting/Ingredient <init> ([Lnet/minecraft/world/item/crafting/Ingredient$Value;)V
+
+accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojang/blaze3d/vertex/VertexFormatElement;
+
+accessible field net/minecraft/world/item/crafting/Ingredient$ItemValue CODEC Lcom/mojang/serialization/Codec;
+accessible field net/minecraft/world/item/crafting/Ingredient$TagValue CODEC Lcom/mojang/serialization/Codec;

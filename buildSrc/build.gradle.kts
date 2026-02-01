@@ -9,6 +9,7 @@ repositories {
     mavenCentral()
     maven("https://maven.fabricmc.net")
     maven("https://maven.neoforged.net/releases")
+    maven("https://mvn.devos.one/releases")
 }
 
 dependencies {
