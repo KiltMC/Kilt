@@ -46,6 +46,12 @@ object KiltHelper {
                     try {
                         val method = type.getMethod(methodName, *methodArgs)
 
+                        // If the method is declared in the superClass itself (e.g., default interface method),
+                        // it's not an override - return false
+                        if (method.declaringClass == superClass) {
+                            return false
+                        }
+
                         // If a Fabric mod has this method signature but is private, it could cause a game crash.
                         return !Modifier.isPrivate(method.modifiers)
                     } catch (_: Throwable) {
