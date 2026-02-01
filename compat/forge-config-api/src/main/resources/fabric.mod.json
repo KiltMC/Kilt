@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_neoforge_config",
+    "version": "${version}",
+    "name": "Kilt: NeoForge Config API",
+    "description": "Reimplements the NeoForge Config API while also adding support for Fabric mods that rely on Forge Config API Port.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+    },
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "kilt": "*"
+    },
+    "custom": {
+        "modmenu": {
+            "parent": "kilt"
+        }
+    },
+    "mixins": [
+    ]
+}

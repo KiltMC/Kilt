@@ -482,8 +482,7 @@ tasks {
             "fabric_version" to project.property("fabric_version"),
             "minecraft_version" to project.property("minecraft_version"),
             "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
-            "fabric_asm_version" to project.property("fabric_asm_version"),
-            "forge_config_version" to project.property("forgeconfigapiport_version"),
+            "fabric_asm_version" to project.property("fabric_asm_version")
         )
 
         for ((key, value) in properties) {
@@ -602,10 +601,10 @@ tasks {
             accessToken = providers.environmentVariable("MODRINTH_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting_lib", "feature-recycler")
-            incompatible("async", "embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
+            embeds("porting_lib")
+            incompatible("async", "embeddium")
         }
 
         curseforge {
@@ -614,10 +613,10 @@ tasks {
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
-            requires("fabric-api", "fabric-language-kotlin", "forge-config-api-port-fabric", "sodium", "indium")
+            requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting-lib", "feature-recycler")
-            incompatible("embeddium", "the-twilight-forest-unofficial", "iceandfire-ce")
+            embeds("porting-lib")
+            incompatible("embeddium")
         }
     }
 }
