@@ -7,12 +7,15 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,13 +33,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.scores.Team;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.extensions.IForgePlayer;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.*;
 import org.jetbrains.annotations.NotNull;
@@ -47,11 +53,15 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.entity.PlayerInjection;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -61,18 +71,18 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
     private static final String PERSISTED_NBT_TAG = PlayerInjection.PERSISTED_NBT_TAG;
 
     @Shadow public abstract float getDestroySpeed(BlockState state);
-
     @Shadow @Final private Inventory inventory;
-
     @Shadow @Final private Abilities abilities;
-
     @Shadow public abstract void resetAttackStrengthTicker();
+
+    @Unique private final Collection<MutableComponent> prefixes = new LinkedList<>();
+    @Unique private final Collection<MutableComponent> suffixes = new LinkedList<>();
 
     protected PlayerInject(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
     }
 
-    // Kilt: handled via Architectury
+    // Kilt: handled via Porting Lib
     /*@Inject(method = "tick", at = @At("HEAD"))
     public void kilt$playerTickStart(CallbackInfo ci) {
         ForgeEventFactory.onPlayerPreTick((Player) (Object) this);
@@ -217,6 +227,58 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
         ForgeEventFactory.onPlayerFall((Player) (Object) this, fallDistance, fallDistance);
     }
 
+    @WrapOperation(method = "tryToStartFallFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 0))
+    private boolean kilt$checkCanElytraFly(ItemStack instance, Item item, Operation<Boolean> original) {
+        return original.call(instance, item) || instance.canElytraFly(this);
+    }
+
+    @WrapOperation(method = "tryToStartFallFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ElytraItem;isFlyEnabled(Lnet/minecraft/world/item/ItemStack;)Z", ordinal = 0))
+    private boolean kilt$checkCanElytraFly(ItemStack itemStack, Operation<Boolean> original) {
+        return original.call(itemStack) || itemStack.canElytraFly(this);
+    }
+
+    @ModifyVariable(method = "giveExperiencePoints", at = @At("HEAD"), argsOnly = true)
+    private int kilt$callExperienceChangeEvent(int value, @Cancellable CallbackInfo ci) {
+        var event = new PlayerXpEvent.XpChange((Player) (Object) this, value);
+
+        if (MinecraftForge.EVENT_BUS.post(event)) {
+            ci.cancel();
+        }
+
+        return event.getAmount();
+    }
+
+    // Kilt TODO: figure out how to handle the onEnchantmentPerformed patch
+
+    @ModifyVariable(method = "giveExperienceLevels", at = @At("HEAD"), argsOnly = true)
+    private int kilt$callExperienceLevelChangeEvent(int value, @Cancellable CallbackInfo ci) {
+        var event = new PlayerXpEvent.LevelChange((Player) (Object) this, value);
+
+        if (MinecraftForge.EVENT_BUS.post(event)) {
+            ci.cancel();
+        }
+
+        return event.getLevels();
+    }
+
+    @WrapOperation(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/PlayerTeam;formatNameForTeam(Lnet/minecraft/world/scores/Team;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;"))
+    private MutableComponent kilt$useCustomDisplayName(Team team, Component component, Operation<MutableComponent> original) {
+        if (this.displayname == null)
+            this.displayname = ForgeEventFactory.getPlayerDisplayName((Player) (Object) this, component);
+
+        var displayName = Component.empty();
+        displayName = this.prefixes.stream().reduce(displayName, MutableComponent::append);
+        displayName = displayName.append(original.call(team, this.displayname));
+        displayName = this.suffixes.stream().reduce(displayName, MutableComponent::append);
+
+        return displayName;
+    }
+
+    @ModifyReturnValue(method = "getProjectile", at = @At("RETURN"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getSupportedHeldProjectiles()Ljava/util/function/Predicate;")))
+    private ItemStack kilt$checkForgeGetProjectile(ItemStack original, @Local(argsOnly = true) ItemStack weaponStack) {
+        return ForgeHooks.getProjectile(this, weaponStack, original);
+    }
+
     /*@ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
     private static AttributeSupplier.Builder kilt$addForgeAttributes(AttributeSupplier.Builder original) {
         return original
@@ -226,6 +288,23 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
     }*/
 
     @Unique private Pose forcedPose = null;
+
+    @Override
+    public Collection<MutableComponent> getPrefixes() {
+        return this.prefixes;
+    }
+
+    @Override
+    public Collection<MutableComponent> getSuffixes() {
+        return this.suffixes;
+    }
+
+    @Unique private Component displayname = null;
+
+    @Override
+    public void refreshDisplayName() {
+        this.displayname = ForgeEventFactory.getPlayerDisplayName((Player) (Object) this, this.getName());
+    }
 
     @Unique private final LazyOptional<IItemHandler> playerMainHandler = LazyOptional.of(() -> new PlayerMainInvWrapper(inventory));
     @Unique private final LazyOptional<IItemHandler> playerEquipmentHandler = LazyOptional.of(() -> new CombinedInvWrapper(new PlayerArmorInvWrapper(inventory), new PlayerOffhandInvWrapper(inventory)));

@@ -288,6 +288,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         val definitions = mutableListOf<ModDefinition>()
         val mainConfig = NightConfigWrapper(toml)
 
+        var hasAlreadyLoadedFirstMod = false
+
         // Load all mod metadata in the TOML, since Forge allows mods to specify multiple mods in the TOML.
         for (metadata in mainConfig.getConfigList("mods")) {
             val modId = metadata.getConfigElement<String>("modId").orElseThrow {
@@ -382,6 +384,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 // If this mod is built-in, make sure to specify it.
                 isBuiltin = isBuiltIn,
 
+                // Workaround for mods like Vampirism.
+                shouldRegister = !hasAlreadyLoadedFirstMod,
+
                 additionalData = mapOf(
                     "manifest" to manifest,
                     "config" to mainConfig,
@@ -395,6 +400,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             )
 
             definitions.add(definition)
+            hasAlreadyLoadedFirstMod = true
         }
 
         return definitions

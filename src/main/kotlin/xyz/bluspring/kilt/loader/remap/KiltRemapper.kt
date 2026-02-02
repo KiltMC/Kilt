@@ -178,13 +178,16 @@ object KiltRemapper {
     fun init() {}
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
+    suspend fun remapMods(definitions: Collection<ModDefinition>, remappedModsDir: Path) {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
             logger.warn("Only have this enabled if you know what you're doing!")
 
             return
         }
+
+        val modLoadingQueue = definitions.distinctBy { it.originalPath }
+        val unmapped = definitions.filter { !modLoadingQueue.contains(it) }
 
         this.remappedModsDir = remappedModsDir
 
@@ -574,6 +577,12 @@ object KiltRemapper {
                         }
                     }
                 }.launchIn(this).join()
+        }
+
+        // Assign paths to unmapped mods
+        for (definition in unmapped) {
+            val existing = modLoadingQueue.first { it.originalPath == definition.path }
+            definition.path = existing.path
         }
 
         logger.info("Finished remapping mods!")
