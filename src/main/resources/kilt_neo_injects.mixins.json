@@ -415,6 +415,7 @@
         "world.level.block.TurtleEggBlockInject",
         "world.level.block.VineBlockInject",
         "world.level.block.entity.AbstractFurnaceBlockEntityInject",
+        "world.level.block.entity.BlockEntityInject",
         "world.level.block.entity.BlockEntityTypeInject",
         "world.level.block.entity.ConduitBlockEntityInject",
         "world.level.block.entity.HopperBlockEntityInject",

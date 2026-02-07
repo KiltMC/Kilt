@@ -1197,6 +1197,10 @@ transitive-inject-interface net/minecraft/world/food/FoodProperties$PossibleEffe
 transitive-inject-interface net/minecraft/world/item/Item$Properties xyz/bluspring/kilt/injections/world/item/ItemPropertiesInjection
 transitive-inject-interface net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess xyz/bluspring/kilt/injections/world/level/storage/LevelStorageAccessInjection
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$EntityTarget xyz/bluspring/kilt/injections/world/level/storage/loot/EntityTargetInjection
+transitive-inject-interface net/minecraft/resources/RegistryDataLoader$RegistryData xyz/bluspring/kilt/injections/resources/RegistryDataLoaderInjection$RegistryDataInjection<TT;>
+transitive-inject-interface net/minecraft/world/item/Item$TooltipContext xyz/bluspring/kilt/injections/world/item/ItemInjection$TooltipContextInjection
+transitive-inject-interface net/minecraft/client/renderer/block/model/BlockModel$GuiLight xyz/bluspring/kilt/injections/client/renderer/block/model/BlockModelInjection$GuiLightInjection
+transitive-inject-interface net/minecraft/world/flag/FeatureFlagRegistry$Builder xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection$BuilderInjection
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
 transitive-inject-interface com/mojang/blaze3d/platform/GlStateManager xyz/bluspring/kilt/injections/blaze3d/platform/GlStateManagerInjection
 transitive-inject-interface com/mojang/blaze3d/systems/RenderSystem xyz/bluspring/kilt/injections/blaze3d/systems/RenderSystemInjection

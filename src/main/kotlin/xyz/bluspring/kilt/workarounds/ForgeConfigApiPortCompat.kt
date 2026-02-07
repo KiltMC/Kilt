@@ -13,7 +13,7 @@ interface ForgeConfigApiPortCompat {
         val instance: ForgeConfigApiPortCompat? by lazy {
             if (FabricLoader.getInstance().isModLoaded("forgeconfigapiport")) {
                 try {
-                    Class.forName("xyz.bluspring.kilt.compat.forgeconfig.KiltForgeConfigAPIPortCompat").getDeclaredConstructor().newInstance() as? ForgeConfigApiPortCompat
+                    Class.forName("xyz.bluspring.kilt.compat.neoconfig.KiltForgeConfigApiPortCompat").getDeclaredConstructor().newInstance() as? ForgeConfigApiPortCompat
                 } catch (_: Throwable) { null }
             } else null
         }
