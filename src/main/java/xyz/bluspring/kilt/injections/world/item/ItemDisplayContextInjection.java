@@ -5,11 +5,22 @@ import net.minecraft.world.item.ItemDisplayContext;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.mixin.ItemDisplayContextAccessor;
 import xyz.bluspring.kilt.util.EnumUtils;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 public interface ItemDisplayContextInjection {
-    boolean isModded();
-    @Nullable ItemDisplayContext fallback();
+    default boolean isModded() {
+        return false;
+    }
 
-    void kilt$markModded();
-    void kilt$setFallback(ItemDisplayContext fallback);
+    default @Nullable ItemDisplayContext fallback() {
+        throw KiltHelper.createMixinException(ItemDisplayContextInjection.class, "fallback");
+    }
+
+    default void kilt$markModded() {
+        throw KiltHelper.createMixinException(ItemDisplayContextInjection.class, "kilt$markModded");
+    }
+
+    default void kilt$setFallback(ItemDisplayContext fallback) {
+        throw KiltHelper.createMixinException(ItemDisplayContextInjection.class, "kilt$setFallback");
+    }
 }

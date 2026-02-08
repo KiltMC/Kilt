@@ -18,7 +18,8 @@ public abstract class ItemEntityRendererInject implements ItemEntityRendererInje
             return 0f;
     }
 
-    @ModifyArgs(method = "render(Lnet/minecraft/world/entity/item/ItemEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 2))
+    // Kilt TODO: fix
+    /*@ModifyArgs(method = "render(Lnet/minecraft/world/entity/item/ItemEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 2))
     private void kilt$onlyTranslateIfSpread(Args args) {
         if (!shouldSpreadItems()) {
             args.set(0, 0f);
@@ -33,7 +34,7 @@ public abstract class ItemEntityRendererInject implements ItemEntityRendererInje
             args.set(0, 0f);
             args.set(1, 0f);
         }
-    }
+    }*/
 
     // TODO: Forge removes the transform scales, do we need to handle that?
 

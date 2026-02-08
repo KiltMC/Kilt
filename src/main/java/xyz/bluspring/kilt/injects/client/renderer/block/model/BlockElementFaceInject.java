@@ -38,6 +38,11 @@ public abstract class BlockElementFaceInject implements BlockElementFaceInjectio
     }
 
     @Override
+    public MutableObject<BlockElement> parent() {
+        return this.parent;
+    }
+
+    @Override
     public void kilt$setParent(MutableObject<BlockElement> parent) {
         this.parent = parent;
     }

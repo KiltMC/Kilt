@@ -22,7 +22,7 @@ public interface BlockElementFaceInjection {
     }
 
     default MutableObject<BlockElement> parent() {
-        throw KiltHelper.createMixinException(BlockElementInjection.class, "parent");
+        throw KiltHelper.createMixinException(BlockElementFaceInjection.class, "parent");
     }
 
     default void kilt$setParent(MutableObject<BlockElement> parent) {

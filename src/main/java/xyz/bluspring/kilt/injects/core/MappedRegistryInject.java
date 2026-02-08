@@ -40,6 +40,8 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
 
     @Shadow protected abstract void validateWrite(ResourceKey<T> resourceKey);
 
+    @Shadow
+    private boolean frozen;
     @Unique private final ThreadLocal<Integer> kilt$id = new ThreadLocal<>();
 
     @Override
@@ -151,5 +153,10 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Override
     public boolean containsValue(T value) {
         return this.byValue.containsKey(value);
+    }
+
+    @Override
+    public void unfreeze() {
+        this.frozen = false;
     }
 }
