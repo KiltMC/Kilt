@@ -51,7 +51,7 @@ class NeoForgeMod(
     else
         KiltModContainer(this)
 
-    lateinit var scanData: ModFileScanData
+    val scanData = ModFileScanData()
     lateinit var modObject: Any
 
     var parent: NeoForgeMod? = null

@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
+import cpw.mods.niofs.union.KiltUnionFileSystemHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
@@ -62,7 +63,7 @@ import java.util.jar.JarFile
 import java.util.jar.Manifest
 import kotlin.io.path.*
 
-class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
+class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     private val tomlParser = TomlParser()
 
     // I have no fucking clue why this is needed, but for whatever fucking reason,
@@ -398,14 +399,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
         return if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             val modsList = mutableListOf<ModDefinition>()
 
-            for (url in this::class.java.classLoader.getResources("META-INF/forge.mods.toml")) {
+            for (url in this::class.java.classLoader.getResources("META-INF/kilt_neoforge.mods.toml")) {
                 val toml = tomlParser.parse(url)
                 modsList.addAll(parseModsToml(KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(), toml, null, isBuiltIn = true))
             }
 
             // Loads gametests
-            for (url in this::class.java.classLoader.getResources("META-INF/mods.toml")) {
-                if (url.file.contains(".jar") && url.file.contains("!/META-INF/mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
+            for (url in this::class.java.classLoader.getResources("META-INF/neoforge.mods.toml")) {
+                if (url.file.contains(".jar") && url.file.contains("!/META-INF/neoforge.mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
                     continue
 
                 val path = Path(url.path.removePrefix("file:/"))
@@ -449,6 +450,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<NeoForgeMod> {
+        // First we want to set up Union.
+        try {
+            KiltUnionFileSystemHelper.directlyLoadIntoClassLoader(FabricLauncherBase.getLauncher().targetClassLoader)
+        } catch (e: Throwable) {
+            throw RuntimeException(e)
+        }
+
         val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
             runCatching { createDirectories() }
         }
@@ -524,7 +532,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                 sortedModOrder.asFlow().concurrent()
                     .collect { mod ->
                         if (!mod.shouldScan) {
-                            mod.scanData = ModFileScanData()
                             return@collect
                         }
 
@@ -532,16 +539,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                             // If it is in fact a built-in, let's assign the scan data.
                             if (mod.definition.isBuiltin) {
                                 forgeScanData.addModFileInfo(ModFileInfo(mod))
-                                mod.scanData = forgeScanData
+                                mod.scanData.`kilt$copyFrom`(forgeScanData)
                             }
 
                             return@collect
                         }
 
-                        val scanData = ModFileScanData()
-                        scanData.addModFileInfo(ModFileInfo(mod))
-
-                        mod.scanData = scanData
+                        mod.scanData.addModFileInfo(ModFileInfo(mod))
 
                         val classes = ConcurrentHashMap.newKeySet<ModFileScanData.ClassData>()
                         val annotations = ConcurrentHashMap.newKeySet<ModFileScanData.AnnotationData>()
@@ -559,8 +563,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
 
                         // This needs to be sorted, otherwise there is a very high possibility of packet desync between client-server,
                         // because for whatever reason Forge uses int packet IDs and MCreator mods don't register packets in one place.
-                        scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
-                        scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
+                        mod.scanData.classes.addAll(classes.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
+                        mod.scanData.annotations.addAll(annotations.sortedWith { a, b -> a.clazz.className.compareTo(b.clazz.className) })
                     }
             }.join()
         }
@@ -769,8 +773,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
                         // Otherwise, initialize under the regular Java process
                         val constructors = clazz.constructors
 
-                        if (constructors.size != 1)
-                            return@collect
+//                        if (constructors.size != 1) // I forgot we literally add empty constructors.
+//                            return@collect
 
                         val constructor = constructors.first()
                         val parameterTypes = constructor.parameterTypes

@@ -123,13 +123,14 @@ object KiltHelper {
             // Main environment
             run {
                 filesToScan.add(getPath("xyz/bluspring/kilt/loader/KiltLoader.class") ?: return@run)
-                filesToScan.add(getPath("net/minecraftforge/common/ForgeMod.class") ?: return@run)
+                filesToScan.add(getPath("net/neoforged/neoforge/common/NeoForgeMod.class") ?: return@run)
             }
 
             // Test environment
             run {
                 filesToScan.add(getPath("xyz/bluspring/kilt/test/KiltTesting.class") ?: return@run)
-                filesToScan.add(getPath("net/minecraftforge/test/LazyOptionalTest.class") ?: return@run)
+                // Kilt TODO: fix
+//                filesToScan.add(getPath("net/minecraftforge/test/LazyOptionalTest.class") ?: return@run)
             }
 
             filesToScan

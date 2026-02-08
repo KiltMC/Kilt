@@ -29,12 +29,6 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     public void onLoad(String mixinPackage) {
         this.mixinPackage = mixinPackage;
 
-        try {
-            KiltUnionFileSystemHelper.directlyLoadIntoClassLoader(FabricLauncherBase.getLauncher().getTargetClassLoader());
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-
         MixinExtrasBootstrap.init();
         MixinConstraintsBootstrap.init(mixinPackage);
 
