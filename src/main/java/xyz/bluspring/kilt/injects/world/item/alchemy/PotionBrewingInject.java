@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injects.world.item.alchemy;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import io.github.fabricators_of_create.porting_lib.brewing.ext.PotionBrewingBuilderExt;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
@@ -21,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewing$BuilderInjection;
 import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingInjection;
 
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public abstract class PotionBrewingInject implements PotionBrewingInjection {
     }
 
     @Mixin(PotionBrewing.Builder.class)
-    public static abstract class BuilderInject implements PotionBrewing$BuilderInjection {
+    public static abstract class BuilderInject implements PotionBrewingInjection.BuilderInjection {
         private final List<IBrewingRecipe> recipes = new ArrayList<>();
 
         // Porting Lib already does this

@@ -82,11 +82,12 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
         super(entityType, level);
     }
 
-    @ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
-    private static AttributeSupplier.Builder kilt$appendNeoCreativeFlightAttribute(AttributeSupplier.Builder original) {
-        return original
-            .add(NeoForgeMod.CREATIVE_FLIGHT);
-    }
+    // Kilt TODO: fix
+//    @ModifyReturnValue(method = "createAttributes", at = @At("RETURN"))
+//    private static AttributeSupplier.Builder kilt$appendNeoCreativeFlightAttribute(AttributeSupplier.Builder original) {
+//        return original
+//            .add(NeoForgeMod.CREATIVE_FLIGHT);
+//    }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void kilt$playerTickStart(CallbackInfo ci) {

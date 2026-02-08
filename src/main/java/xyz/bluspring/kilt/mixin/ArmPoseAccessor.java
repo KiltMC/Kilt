@@ -13,13 +13,11 @@ public interface ArmPoseAccessor {
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings({"MixinAnnotationTarget"})
     @Accessor("$VALUES")
     static HumanoidModel.ArmPose[] getValues() {
         throw new IllegalStateException();
     }
 
-    @SuppressWarnings("MixinAnnotationTarget")
     @Accessor("$VALUES")
     @Mutable
     static void setValues(HumanoidModel.ArmPose[] values) {

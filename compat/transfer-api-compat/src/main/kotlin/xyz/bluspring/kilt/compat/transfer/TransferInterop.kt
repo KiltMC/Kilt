@@ -5,7 +5,6 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
 import net.neoforged.neoforge.capabilities.Capabilities
-import net.neoforged.neoforge.common.NeoForge
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyStorageCapability
 import xyz.bluspring.kilt.compat.transfer.energy.ForgeEnergyStorage
@@ -17,7 +16,7 @@ import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
 
 class TransferInterop : ModInitializer {
     override fun onInitialize() {
-        NeoForge.EVENT_BUS.register(this)
+//        NeoForge.EVENT_BUS.register(this)
 
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)

@@ -17,22 +17,5 @@ import java.io.IOException;
 public abstract class CompoundTagInject {
     @Mixin(targets = "net.minecraft.nbt.CompoundTag$1")
     public abstract static class CompoundTagAnonymous1Inject {
-        private static byte readNamedTagType(DataInput input, NbtAccounter accounter) throws IOException {
-            accounter.accountBytes(2);
-            return input.readByte();
-        }
-
-        // Kilt TODO: are these needed?
-//        @WrapOperation(method = "loadCompound", at = @At(value = "INVOKE", target = "Ljava/io/DataInput;readByte()B"))
-//        private static byte kilt$accountReadByte(DataInput instance, Operation<Byte> original, @Local(argsOnly = true) NbtAccounter accounter) {
-//            accounter.accountBytes(2);
-//            return original.call(instance);
-//        }
-
-//        @Inject(method = "loadCompound", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag$1;readString(Ljava/io/DataInput;Lnet/minecraft/nbt/NbtAccounter;)Ljava/lang/String;"))
-//        private static void kilt$accountReadString(DataInput dataInput, NbtAccounter nbtAccounter, CallbackInfoReturnable<CompoundTag> cir) {
-//            nbtAccounter.accountBytes(4);
-//            nbtAccounter.readUTF()
-//        }
     }
 }

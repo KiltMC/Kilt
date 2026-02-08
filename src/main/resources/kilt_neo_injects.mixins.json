@@ -80,7 +80,6 @@
         "data.tags.TagsProviderInject$TagAppenderInject",
         "data.tags.WorldPresetTagsProviderInject",
         "data.worldgen.BootstrapContextInject",
-        "gametest.framework.GameTestInject",
         "gametest.framework.GameTestRegistryInject",
         "gametest.framework.GameTestServerInject",
         "locale.LanguageInject",

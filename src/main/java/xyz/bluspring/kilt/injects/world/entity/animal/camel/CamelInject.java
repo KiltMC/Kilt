@@ -13,8 +13,12 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(Camel.class)
@@ -23,12 +27,8 @@ public abstract class CamelInject extends AbstractHorse {
         super(entityType, level);
     }
 
-    @WrapOperation(method = "playStepSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
-    private SoundType kilt$tryUseForgeSoundType(BlockState instance, Operation<SoundType> original, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
-            return instance.getSoundType(this.level(), pos, this);
-        }
-
-        return original.call(instance);
+    @Inject(method = "executeRidersJump", at = @At("TAIL"))
+    private void kilt$handleLivingJumpEvent(float playerJumpPendingScale, Vec3 travelVector, CallbackInfo ci) {
+        CommonHooks.onLivingJump(this);
     }
 }

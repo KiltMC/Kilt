@@ -290,7 +290,7 @@ dependencies {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
-    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.0-fabric") {
+    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.2-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
@@ -355,10 +355,10 @@ configurations.all {
 sourceSets.getByName("gametest").compileClasspath += sourceSets.getByName("test").compileClasspath
 sourceSets.getByName("gametest").runtimeClasspath += sourceSets.getByName("test").runtimeClasspath
 
-val targetJavaVersion = "21"
+val targetJavaVersion = 21
 
 kotlin {
-    jvmToolchain(targetJavaVersion.toInt())
+    jvmToolchain(targetJavaVersion)
 }
 
 java {
@@ -508,24 +508,26 @@ tasks {
             }
         }
 
-        // Rename Forge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
-        filesMatching("META-INF/mods.toml") {
-            this.name = "forge.mods.toml"
+        // Rename NeoForge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
+        filesMatching("META-INF/neoforge.mods.toml") {
+            this.name = "kilt_neoforge.mods.toml"
         }
+
+        exclude("log4j2.xml")
     }
 
     processTestResources {
-        filesMatching("META-INF/mods.toml") {
-            this.name = "forge.mods.toml"
+        filesMatching("META-INF/neoforge.mods.toml") {
+            this.name = "kilt_neoforge.mods.toml"
         }
     }
 
     compileKotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
     }
 
     compileTestKotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
     }
 
     jar {

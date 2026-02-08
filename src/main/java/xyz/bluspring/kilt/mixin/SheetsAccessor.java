@@ -22,34 +22,4 @@ public interface SheetsAccessor {
     static Material callCreateHangingSignMaterial(WoodType woodType) {
         throw new UnsupportedOperationException();
     }
-
-    @Invoker
-    static Material callCreateBannerMaterial(ResourceKey<BannerPattern> key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Invoker
-    static Material callCreateShieldMaterial(ResourceKey<BannerPattern> key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Invoker
-    static Material callCreateDecoratedPotMaterial(ResourceKey<String> key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Accessor("DECORATED_POT_MATERIALS")
-    static void setDecoratedPotMaterials(Map<ResourceKey<String>, Material> value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Accessor("SHIELD_MATERIALS")
-    static void setShieldMaterials(Map<ResourceKey<BannerPattern>, Material> value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Accessor("BANNER_MATERIALS")
-    static void setBannerMaterials(Map<ResourceKey<BannerPattern>, Material> value) {
-        throw new UnsupportedOperationException();
-    }
 }

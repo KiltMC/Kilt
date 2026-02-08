@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(EntityArgument.class)
 public abstract class EntityArgumentInject {
-    @WrapOperation(method = "listSuggestions", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/SharedSuggestionProvider;hasPermission(I)Z"))
-    private boolean kilt$checkIfCanUseSelectors(SharedSuggestionProvider instance, int i, Operation<Boolean> original) {
-        return original.call(instance, i) || CommonHooks.canUseEntitySelectors(instance);
+    @WrapOperation(method = "listSuggestions", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelectorParser;allowSelectors(Ljava/lang/Object;)Z"))
+    private <S> boolean kilt$checkIfCanUseSelectors(S object, Operation<Boolean> original) {
+        return original.call(object) || CommonHooks.canUseEntitySelectors((SharedSuggestionProvider) object);
     }
 }

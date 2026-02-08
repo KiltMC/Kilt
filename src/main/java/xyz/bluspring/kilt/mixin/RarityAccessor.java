@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Rarity.class)
 public interface RarityAccessor {
     @Invoker("<init>")
-    static Rarity createRarity(String name, int id, ChatFormatting chatFormatting) {
+    static Rarity createRarity(String name, int id, int idx, String formattedName, ChatFormatting chatFormatting) {
         throw new UnsupportedOperationException();
     }
 

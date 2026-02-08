@@ -8,21 +8,21 @@ import xyz.bluspring.kilt.injections.world.item.crafting.ShapedRecipePatternInje
 
 @Mixin(ShapedRecipePattern.class)
 public class ShapedRecipePatternInject implements ShapedRecipePatternInjection {
-    static int maxWidth = 3;
-    static int maxHeight = 3;
+    private static int maxWidth = 3;
+    private static int maxHeight = 3;
 
     @CreateStatic
-    public static int getMaxWidth() {
+    private static int getMaxWidth() {
         return ShapedRecipePatternStorage.getMaxWidth();
     }
 
     @CreateStatic
-    public static int getMaxHeight() {
+    private static int getMaxHeight() {
         return ShapedRecipePatternStorage.getMaxHeight();
     }
 
     @CreateStatic
-    public static void setCraftingSize(int width, int height) {
+    private static void setCraftingSize(int width, int height) {
         ShapedRecipePatternStorage.setCraftingSize(width, height);
         if (maxWidth < width) maxWidth = width;
         if (maxHeight < height) maxHeight = height;

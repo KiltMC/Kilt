@@ -24,14 +24,14 @@ public abstract class VillagerTradesInject {
             return false;
         }
 
-        @WrapOperation(method = "getOffer", at = @At(value = "NEW", target = "(Lnet/minecraft/world/level/ItemLike;I)Lnet/minecraft/world/item/ItemStack;"))
-        private ItemStack kilt$checkIfTradeEmpty(ItemLike item, int count, Operation<ItemStack> original, @Cancellable CallbackInfoReturnable<MerchantOffer> cir) {
+        @WrapOperation(method = "getOffer", at = @At(value = "NEW", target = "(Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/ItemStack;"))
+        private ItemStack kilt$checkIfTradeEmpty(ItemLike item, Operation<ItemStack> original, @Cancellable CallbackInfoReturnable<MerchantOffer> cir) {
             if (item == null) {
                 cir.setReturnValue(null);
                 return ItemStack.EMPTY;
             }
 
-            return original.call(item, count);
+            return original.call(item);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.MinecartItem;
 import net.minecraft.world.level.BlockGetter;
@@ -20,7 +21,7 @@ public abstract class MinecartItemInject {
     @Mixin(targets = "net.minecraft.world.item.MinecartItem$1")
     public abstract static class AnonymousDispenseBehaviorInject {
         @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 1))
-        private Comparable kilt$tryUseRailDirection(BlockState instance, Property property, Operation<Comparable> original, @Local Level level, @Local BlockPos pos) {
+        private Comparable kilt$tryUseRailDirection(BlockState instance, Property property, Operation<Comparable> original, @Local ServerLevel level, @Local BlockPos pos) {
             var block = (BaseRailBlock) instance.getBlock();
 
             if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, BlockGetter.class, BlockPos.class, AbstractMinecart.class)) {

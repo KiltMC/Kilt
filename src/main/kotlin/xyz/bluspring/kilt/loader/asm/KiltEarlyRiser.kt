@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
-import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -10,7 +9,6 @@ import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
@@ -19,7 +17,6 @@ import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
-import java.net.URL
 
 class KiltEarlyRiser : Runnable {
     override fun run() {
@@ -263,7 +260,7 @@ class KiltEarlyRiser : Runnable {
             val grassColorModifierMapped =
                 KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
             val biomeInjectionName =
-                "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffectsGrassColorModifierInjection"
+                "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffectsInjection\$GrassColorModifierInjection"
             val colorModifierName = "$grassColorModifierMapped\$ColorModifier"
             val modifyColor = mappingResolver.mapMethodName(
                 "intermediary",
@@ -429,7 +426,8 @@ class KiltEarlyRiser : Runnable {
                 "BusBuilderImpl"
             )
 
-            val helperUrl = Kilt::class.java.classLoader.getResource("$eventBusSlashed/KiltHelper.class")!!
+            // Kilt TODO: bring this back
+            /*val helperUrl = Kilt::class.java.classLoader.getResource("$eventBusSlashed/KiltHelper.class")!!
 
             for (className in modifiedEventBusClasses) {
                 ClassTinkerers.addReplacement("$eventBusPackage.$className") { classNode ->
@@ -448,7 +446,7 @@ class KiltEarlyRiser : Runnable {
                     val classReader = ClassReader(url.readBytes())
                     classReader.accept(classNode, 0)
                 }
-            }
+            }*/
         }
     }
 

@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
-import xyz.bluspring.kilt.injections.data.tags.TagsProvider$TagAppenderInjection;
 import xyz.bluspring.kilt.injections.data.tags.TagsProviderInjection;
 
 import java.nio.file.Path;
@@ -63,7 +62,7 @@ public abstract class TagsProviderInject<T> implements TagsProviderInjection {
     }
 
     @Mixin(TagsProvider.TagAppender.class)
-    public static class TagAppenderInject<T> implements ITagAppenderExtension<T>, TagsProvider$TagAppenderInjection {
+    public static class TagAppenderInject<T> implements ITagAppenderExtension<T>, TagAppenderInjection {
         @Shadow @Final private TagBuilder builder;
         @Unique
         private String modId;

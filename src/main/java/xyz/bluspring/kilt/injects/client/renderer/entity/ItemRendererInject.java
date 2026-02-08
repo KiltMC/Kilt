@@ -34,7 +34,6 @@ public abstract class ItemRendererInject {
     @Shadow @Final private BlockEntityWithoutLevelRenderer blockEntityRenderer;
 
     @Shadow public static VertexConsumer getCompassFoilBuffer(MultiBufferSource buffer, RenderType renderType, PoseStack.Pose matrixEntry) { throw new IllegalStateException(); };
-    @Shadow public static VertexConsumer getCompassFoilBufferDirect(MultiBufferSource buffer, RenderType renderType, PoseStack.Pose matrixEntry) { throw new IllegalStateException(); };
     @Shadow public static VertexConsumer getFoilBuffer(MultiBufferSource buffer, RenderType renderType, boolean isItem, boolean glint) { throw new IllegalStateException(); };
     @Shadow public static VertexConsumer getFoilBufferDirect(MultiBufferSource buffer, RenderType renderType, boolean noEntity, boolean withGlint) { throw new IllegalStateException(); };
     @Shadow private static boolean hasAnimatedTexture(ItemStack stack) { throw new IllegalStateException(); };
@@ -88,21 +87,14 @@ public abstract class ItemRendererInject {
                 // TODO: can we avoid copy pasting this entire thing for improved mod compat?
                 VertexConsumer vertexConsumer;
                 if (hasAnimatedTexture(stack) && stack.hasFoil()) {
-                    poseStack.pushPose();
-                    PoseStack.Pose pose = poseStack.last();
+                    PoseStack.Pose pose = poseStack.last().copy();
                     if (displayContext == ItemDisplayContext.GUI) {
                         MatrixUtil.mulComponentWise(pose.pose(), 0.5F);
                     } else if (displayContext.firstPerson()) {
                         MatrixUtil.mulComponentWise(pose.pose(), 0.75F);
                     }
 
-                    if (isFabulous) {
-                        vertexConsumer = getCompassFoilBufferDirect(bufferSource, renderType, pose);
-                    } else {
-                        vertexConsumer = getCompassFoilBuffer(bufferSource, renderType, pose);
-                    }
-
-                    poseStack.popPose();
+                    vertexConsumer = getCompassFoilBuffer(bufferSource, renderType, pose);
                 } else if (isFabulous) {
                     vertexConsumer = getFoilBufferDirect(bufferSource, renderType, true, stack.hasFoil());
                 } else {

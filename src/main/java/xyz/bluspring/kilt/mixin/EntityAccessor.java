@@ -8,6 +8,4 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(Entity.class)
 public interface EntityAccessor {
-    @Invoker
-    float callGetEyeHeight(Pose pose, EntityDimensions entityDimensions);
 }

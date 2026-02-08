@@ -13,13 +13,11 @@ public interface GrassColorModifierAccessor {
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("MixinAnnotationTarget")
     @Accessor("$VALUES")
     static BiomeSpecialEffects.GrassColorModifier[] getValues() {
         throw new IllegalStateException();
     }
 
-    @SuppressWarnings("MixinAnnotationTarget")
     @Accessor("$VALUES")
     @Mutable
     static void setValues(BiomeSpecialEffects.GrassColorModifier[] values) {

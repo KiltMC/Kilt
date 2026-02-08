@@ -38,7 +38,7 @@ public abstract class MobEffectInstanceInject implements MobEffectInstanceInject
 
     @Inject(method = "<init>(Lnet/minecraft/core/Holder;IIZZZLnet/minecraft/world/effect/MobEffectInstance;)V", at = @At("TAIL"))
     private void kilt$storeEffectCures(Holder effect, int duration, int amplifier, boolean ambient, boolean visible, boolean showIcon, MobEffectInstance hiddenEffect, CallbackInfo ci) {
-        this.effect.value().fillEffectCures(this.cures, (MobEffectInstance) (Object) this);
+        this.effect.value().neo$fillEffectCures(this.cures, (MobEffectInstance) (Object) this);
     }
 
     @Inject(method = "<init>(Lnet/minecraft/core/Holder;Lnet/minecraft/world/effect/MobEffectInstance$Details;)V", at = @At("TAIL"))

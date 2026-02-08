@@ -12,7 +12,7 @@ public interface RarityInjection {
     static Rarity create(String name, ChatFormatting formatting) {
         var value = EnumUtils.addEnumToClass(
                 Rarity.class, RarityAccessor.getValues(),
-                name, (size) -> RarityAccessor.createRarity(name, size, formatting),
+                name, (size) -> RarityAccessor.createRarity(name, size, size, name, formatting),
                 (values) -> RarityAccessor.setValues(values.toArray(new Rarity[0]))
         );
         ((RarityInjection) (Object) value).setStyleModifier((style) -> style.applyFormat(formatting));

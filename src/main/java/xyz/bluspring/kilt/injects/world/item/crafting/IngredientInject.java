@@ -132,7 +132,7 @@ public abstract class IngredientInject implements IngredientInjection {
     }
 
     @Mixin(Ingredient.Value.class)
-    public abstract static class ValueInject {
+    public interface ValueInject {
 
     }
 }

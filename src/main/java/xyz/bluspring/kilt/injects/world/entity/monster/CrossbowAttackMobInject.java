@@ -20,9 +20,4 @@ public interface CrossbowAttackMobInject {
 
         return ProjectileUtilInjection.getWeaponHoldingHand(shooter, item -> item instanceof CrossbowItem);
     }
-
-    @WrapOperation(method = "performCrossbowAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isHolding(Lnet/minecraft/world/item/Item;)Z"))
-    private boolean kilt$checkIsHoldingCrossbow(LivingEntity instance, Item item, Operation<Boolean> original) {
-        return original.call(instance, item) || instance.isHolding(is -> is.getItem() instanceof CrossbowItem);
-    }
 }

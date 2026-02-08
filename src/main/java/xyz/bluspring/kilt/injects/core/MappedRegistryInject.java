@@ -42,7 +42,6 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
 
     @Unique private final ThreadLocal<Integer> kilt$id = new ThreadLocal<>();
 
-    @Intrinsic
     @Override
     public Holder.Reference<T> register(int id, ResourceKey<T> key, T value, RegistrationInfo info) {
         if (id > this.getMaxId()) {
@@ -103,8 +102,7 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         this.unregisteredIntrusiveHolders = unregistered.get();
     }
 
-    @Intrinsic
-    protected void clear(boolean full) {
+    public void clear(boolean full) {
         this.validateWrite();
         ((BaseMappedRegistry<T>) (Object) this).clearCallbacks.forEach(callback -> callback.onClear(this, full));
         this.kilt$clear(full);
@@ -123,8 +121,7 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
         }
     }
 
-    @Intrinsic
-    protected void registerIdMapping(ResourceKey<T> key, int id) {
+    public void registerIdMapping(ResourceKey<T> key, int id) {
         this.validateWrite(key);
 
         if (id > this.getMaxId())

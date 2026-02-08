@@ -203,20 +203,31 @@ public final class MixinExtensionHelper {
                     var instructions = methodNode.instructions;
                     var insnList = new InsnList();
 
-                    insnList.add(instructions);
+                    var visitor = new AnnotationValueVisitor();
+                    extend.accept(visitor);
+                    var className = ((Type) visitor.values.get("value")).getClassName();
+                    targetClass.superName = className.replace(".", "/");
+                    if (targetClass.signature != null)
+                        targetClass.signature = targetClass.signature.replaceFirst("java/lang/Object", targetClass.superName);
 
-                    MethodInsnNode insnToRemove = null;
-                    for (AbstractInsnNode insn : insnList) {
-                        if (insn instanceof MethodInsnNode methodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL && methodInsnNode.owner.equals("java/lang/Object")) {
-                            insnList.insert(insn, new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "()V"));
-                            insnToRemove = methodInsnNode;
+                    boolean alreadyChanged = false;
+
+                    for (AbstractInsnNode insn : instructions) {
+                        if (!alreadyChanged && insn instanceof MethodInsnNode methodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL && methodInsnNode.owner.equals("java/lang/Object")) {
+                            insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetClass.superName, "<init>", "()V"));
+                            alreadyChanged = true;
+                        } else {
+                            insnList.add(insn);
                         }
                     }
 
-                    insnList.remove(insnToRemove);
+                    var oldThis = methodNode.localVariables.get(0);
+                    var newLocals = new ArrayList<>(methodNode.localVariables);
+                    newLocals.set(0, new LocalVariableNode(oldThis.name, "L" + targetClass.superName + ";", null, oldThis.start, oldThis.end, oldThis.index));
 
                     var newNode = new MethodNode(Opcodes.ASM9, methodNode.access, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(new String[0]));
                     newNode.instructions = insnList;
+                    newNode.localVariables = newLocals;
                     replacementNodes.add(newNode);
                 }
             }

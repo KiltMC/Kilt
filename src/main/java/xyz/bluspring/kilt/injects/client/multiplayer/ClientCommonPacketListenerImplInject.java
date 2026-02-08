@@ -7,6 +7,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.neoforged.neoforge.common.extensions.IClientCommonPacketListenerExtension;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.payload.CommonRegisterPayload;
 import net.neoforged.neoforge.network.payload.CommonVersionPayload;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientCommonPacketListenerImpl.class)
-public abstract class ClientCommonPacketListenerImplInject implements ClientCommonPacketListener {
+public abstract class ClientCommonPacketListenerImplInject implements ClientCommonPacketListener, IClientCommonPacketListenerExtension {
     @Shadow
     @Final
     protected Connection connection;

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.bluspring.kilt.injections.core.HolderLookup$RegistryLookupInjection;
+import xyz.bluspring.kilt.injections.core.HolderLookupInjection;
 
 import java.util.stream.Stream;
 
@@ -33,7 +33,7 @@ public interface HolderInject<T> extends IHolderExtension<T> {
         @Override
         public <T1> @Nullable T1 getData(DataMapType<T, T1> type) {
             if (owner instanceof HolderLookup.RegistryLookup<T> lookup)
-                return ((HolderLookup$RegistryLookupInjection<T>) lookup).getData(type, this.key());
+                return ((HolderLookupInjection.RegistryLookupInjection<T>) lookup).getData(type, this.key());
 
             return null;
         }

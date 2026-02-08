@@ -1,8 +1,10 @@
 package xyz.bluspring.kilt.injects.world.item;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,11 +17,9 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(MapItem.class)
 public abstract class MapItemInject implements MapItemInjection {
-    @Shadow public static @Nullable Integer getMapId(ItemStack stack) {
-        throw new IllegalStateException();
-    }
-
-    @Shadow public static @Nullable MapItemSavedData getSavedData(@Nullable Integer mapId, Level level) {
+    @Shadow
+    @Nullable
+    public static MapItemSavedData getSavedData(@Nullable MapId mapId, Level level) {
         throw new IllegalStateException();
     }
 
@@ -31,13 +31,13 @@ public abstract class MapItemInject implements MapItemInjection {
             return;
 
         if (KiltHelper.INSTANCE.hasMethodOverride(mapItem.getClass(), MapItem.class, "getCustomMapData", ItemStack.class, Level.class)) {
-            cir.setReturnValue(((MapItemInjection) mapItem).getCustomMapData(stack, level));
+            cir.setReturnValue(mapItem.getCustomMapData(stack, level));
         }
     }
 
     @Override
     public MapItemSavedData getCustomMapData(ItemStack stack, Level level) {
-        var id = getMapId(stack);
+        var id = stack.get(DataComponents.MAP_ID);
         return getSavedData(id, level);
     }
 }

@@ -6,9 +6,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
 @Mixin(ConfigurationTask.class)
-public abstract class ConfigurationTaskInject {
+public interface ConfigurationTaskInject {
     @Mixin(ConfigurationTask.Type.class)
-    public abstract static class TypeInject {
+    abstract class TypeInject {
         public TypeInject(String id) {}
 
         @CreateInitializer

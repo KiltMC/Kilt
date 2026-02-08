@@ -1,9 +1,12 @@
 package xyz.bluspring.kilt.injects.world.entity.projectile;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.event.EventHooks;
@@ -16,8 +19,12 @@ public abstract class LlamaSpitInject extends Projectile {
         super(entityType, level);
     }
 
-    @WrapWithCondition(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/LlamaSpit;onHit(Lnet/minecraft/world/phys/HitResult;)V"))
-    private boolean kilt$checkForgeImpactEvent(LlamaSpit instance, HitResult hitResult) {
-        return hitResult.getType() != HitResult.Type.MISS && !EventHooks.onProjectileImpact(this, hitResult);
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/LlamaSpit;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
+    private ProjectileDeflection kilt$checkForgeImpactEvent(LlamaSpit instance, HitResult hitResult, Operation<ProjectileDeflection> original) {
+        if (hitResult.getType() != HitResult.Type.MISS && !EventHooks.onProjectileImpact(this, hitResult)) {
+            return original.call(instance, hitResult);
+        } else {
+            return null;
+        }
     }
 }

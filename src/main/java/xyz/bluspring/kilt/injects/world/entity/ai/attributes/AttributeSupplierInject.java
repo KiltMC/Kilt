@@ -1,6 +1,7 @@
 // TRACKED HASH: 39b2eb34331b57077e911b6c5e5ab0553ca207cf
 package xyz.bluspring.kilt.injects.world.entity.ai.attributes;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -23,11 +24,11 @@ import java.util.Map;
 public class AttributeSupplierInject {
     @Mixin(AttributeSupplier.Builder.class)
     public static abstract class BuilderInject implements AttributeSupplierBuilderInjection {
-        private List<AttributeSupplier.Builder> others = new ArrayList<>();
-
         @Shadow
         @Final
-        private Map<Holder<Attribute>, AttributeInstance> builder;
+        private ImmutableMap.Builder<Holder<Attribute>, AttributeInstance> builder;
+
+        private List<AttributeSupplier.Builder> others = new ArrayList<>();
 
         @Override
         public void combine(AttributeSupplier.Builder other) {
@@ -37,7 +38,7 @@ public class AttributeSupplierInject {
 
         @Override
         public boolean hasAttribute(Holder<Attribute> attribute) {
-            return this.builder.containsKey(attribute);
+            return this.builder.build().containsKey(attribute);
         }
 
         @Inject(at = @At("TAIL"), method = "build")

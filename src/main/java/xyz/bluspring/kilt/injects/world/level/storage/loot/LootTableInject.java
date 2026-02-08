@@ -24,16 +24,17 @@ import xyz.bluspring.kilt.injections.world.level.storage.loot.LootPoolInjection;
 import xyz.bluspring.kilt.injections.world.level.storage.loot.LootTableInjection;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(LootTable.class)
 public abstract class LootTableInject implements LootTableInjection, LootTableExtensions {
-    @Shadow @Final @Mutable public LootPool[] pools;
-    @Unique private List<LootPool> kilt$pools;
+    @Shadow @Final @Mutable
+    private List<LootPool> pools;
     @Unique private boolean isFrozen = false;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void kilt$createPoolsList(LootContextParamSet paramSet, ResourceLocation randomSequence, LootPool[] pools, LootItemFunction[] functions, CallbackInfo ci) {
-        this.kilt$pools = Lists.newArrayList(this.pools);
+    private void kilt$createPoolsList(LootContextParamSet paramSet, Optional<ResourceLocation> randomSequence, List<LootPool> pools, List<LootItemFunction> functions, CallbackInfo ci) {
+        this.pools = Lists.newArrayList(this.pools);
     }
 
     @ModifyReturnValue(method = "getRandomItems(Lnet/minecraft/world/level/storage/loot/LootContext;)Lit/unimi/dsi/fastutil/objects/ObjectArrayList;", at = @At("RETURN"))
@@ -41,26 +42,10 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
         return CommonHooks.modifyLoot(this.getLootTableId(), original, context);
     }
 
-    @WrapOperation(method = "validate", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/storage/loot/LootTable;pools:[Lnet/minecraft/world/level/storage/loot/LootPool;"))
-    private LootPool[] kilt$useListSize(LootTable instance, Operation<LootPool[]> original) {
-        this.kilt$setPoolsArray();
-        return original.call(instance);
-    }
-
-    @WrapOperation(method = "validate", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootPool;validate(Lnet/minecraft/world/level/storage/loot/ValidationContext;)V"))
-    private void kilt$useListValidation(LootPool instance, ValidationContext context, Operation<Void> original, @Local int i) {
-        original.call(this.kilt$pools.get(i), context);
-    }
-
     @Override
     public void freeze() {
         this.isFrozen = true;
-        this.kilt$pools.forEach(pool -> ((LootPoolInjection) pool).freeze());
-    }
-
-    @Override
-    public List<LootPool> kilt$getPools() {
-        return this.kilt$pools;
+        this.pools.forEach(LootPoolInjection::freeze);
     }
 
     @Override
@@ -73,22 +58,17 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
             throw new RuntimeException("Attempted to modify LootTable after being finalized!");
     }
 
-    private void kilt$setPoolsArray() {
-        this.pools = this.kilt$pools.toArray(new LootPool[0]);
-    }
-
     @Override
     public LootPool getPool(String name) {
-        return this.kilt$pools.stream().filter(e -> name.equals(e.getName())).findFirst().orElse(null);
+        return this.pools.stream().filter(e -> name.equals(e.getName())).findFirst().orElse(null);
     }
 
     @Override
     public LootPool removePool(String name) {
         checkFrozen();
-        for (LootPool pool : this.kilt$pools) {
+        for (LootPool pool : this.pools) {
             if (name.equals(pool.getName())) {
-                this.kilt$pools.remove(pool);
-                this.kilt$setPoolsArray();
+                this.pools.remove(pool);
                 return pool;
             }
         }
@@ -98,10 +78,9 @@ public abstract class LootTableInject implements LootTableInjection, LootTableEx
     @Override
     public void addPool(LootPool pool) {
         checkFrozen();
-        if (kilt$pools.stream().anyMatch(e -> e == pool || e.getName() != null && e.getName().equals(pool.getName())))
+        if (this.pools.stream().anyMatch(e -> e == pool || e.getName() != null && e.getName().equals(pool.getName())))
             throw new RuntimeException("Attempted to add a duplicate pool to loot table: " + pool.getName());
 
-        this.kilt$pools.add(pool);
-        this.kilt$setPoolsArray();
+        this.pools.add(pool);
     }
 }

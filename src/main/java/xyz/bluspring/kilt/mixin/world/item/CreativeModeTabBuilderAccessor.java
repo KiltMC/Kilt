@@ -36,7 +36,4 @@ public interface CreativeModeTabBuilderAccessor {
 
     @Accessor
     CreativeModeTab.Type getType();
-
-    @Accessor
-    String getBackgroundSuffix();
 }

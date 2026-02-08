@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.injects.world.entity.animal;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +25,9 @@ public abstract class AnimalInject extends AgeableMob {
         super(entityType, level);
     }
 
-    @Inject(method = "spawnChildFromBreeding", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/animal/Animal;getBreedOffspring(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/AgeableMob;)Lnet/minecraft/world/entity/AgeableMob;", shift = At.Shift.AFTER), cancellable = true)
+    @Definition(id = "getBreedOffspring", method = "Lnet/minecraft/world/entity/animal/Animal;getBreedOffspring(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/AgeableMob;)Lnet/minecraft/world/entity/AgeableMob;")
+    @Expression("? = ?.getBreedOffspring(?, ?)")
+    @Inject(method = "spawnChildFromBreeding", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER), cancellable = true)
     private void kilt$handleBabySpawnEvent(ServerLevel level, Animal mate, CallbackInfo ci, @Local LocalRef<AgeableMob> child) {
         var event = new BabyEntitySpawnEvent(this, mate, child.get());
         var cancelled = NeoForge.EVENT_BUS.post(event).isCanceled();

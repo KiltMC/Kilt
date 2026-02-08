@@ -6,14 +6,10 @@ import net.neoforged.bus.api.BusBuilder
 import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.EventListener
 import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.loading.moddiscovery.ModFileInfo
-import net.neoforged.neoforgespi.language.IConfigurable
-import net.neoforged.neoforgespi.language.IModFileInfo
-import net.neoforged.neoforgespi.language.IModInfo
-import net.neoforged.neoforgespi.language.ModFileScanData
-import net.neoforged.neoforgespi.locating.ForgeFeature
 import net.neoforged.fml.event.IModBusEvent
-import net.neoforged.neoforgespi.language.IModLanguageLoader
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo
+import net.neoforged.neoforgespi.language.*
+import net.neoforged.neoforgespi.locating.ForgeFeature
 import org.apache.logging.log4j.LogManager
 import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
@@ -146,12 +142,12 @@ class NeoForgeMod(
         return forgeDependencies
     }
 
-    override fun getForgeFeatures(): MutableList<out ForgeFeature.Bound> {
+    override fun getForgeFeatures(): MutableList<ForgeFeature.Bound> {
         return mutableListOf()
     }
 
     override fun getNamespace(): String {
-        return "kilt"
+        return this.modConfig.getConfigElement<String>("namespace").orElse(this.modId)
     }
 
     override fun getModProperties(): MutableMap<String, Any> {

@@ -16,14 +16,5 @@ import java.io.IOException;
 
 @Mixin(NbtIo.class)
 public abstract class NbtIoInject {
-    @Inject(method = "readUnnamedTag", at = @At(value = "INVOKE", target = "Ljava/io/DataInput;readByte()B", ordinal = 0, shift = At.Shift.AFTER))
-    private static void kilt$accountByteTag(DataInput input, int depth, NbtAccounter accounter, CallbackInfoReturnable<Tag> cir) {
-        accounter.accountBytes(1);
-    }
 
-    @Redirect(method = "readUnnamedTag", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/StringTag;skipString(Ljava/io/DataInput;)V"))
-    private static void kilt$useImprovedStringAccounter(DataInput input, @Local(argsOnly = true) NbtAccounter accounter) throws IOException {
-        ((NbtAccounterInjection) accounter).readUTF(input.readUTF()); // Forge: Count this string.
-        accounter.accountBytes(4); // Forge: 4 extra bytes for the object allocation.
-    }
 }

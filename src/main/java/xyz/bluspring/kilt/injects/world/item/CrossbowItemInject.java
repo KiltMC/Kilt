@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(CrossbowItem.class)
 public abstract class CrossbowItemInject {
     @Inject(method = "performShooting", at = @At("HEAD"), cancellable = true)
-    private static void kilt$checkForgeArrowLooseEvent(Level level, LivingEntity shooter, InteractionHand usedHand, ItemStack crossbowStack, float velocity, float inaccuracy, CallbackInfo ci) {
-        if (shooter instanceof Player player && EventHooks.onArrowLoose(crossbowStack, level, player, 1, true) < 0)
+    private static void kilt$checkForgeArrowLooseEvent(Level level, LivingEntity shooter, InteractionHand hand, ItemStack weapon, float velocity, float inaccuracy, LivingEntity target, CallbackInfo ci) {
+        if (shooter instanceof Player player && EventHooks.onArrowLoose(weapon, level, player, 1, true) < 0)
             ci.cancel();
     }
 }

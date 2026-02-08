@@ -19,13 +19,12 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.*
+import net.neoforged.fml.ModContainer
+import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.common.Mod
-import net.neoforged.fml.event.lifecycle.*
 import net.neoforged.fml.javafmlmod.FMLModContainer
 import net.neoforged.fml.loading.FMLLoader
-import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
 import net.neoforged.fml.loading.modscan.ModAnnotation
@@ -42,7 +41,10 @@ import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
-import xyz.bluspring.kilt.loader.mod.*
+import xyz.bluspring.kilt.loader.mod.KiltEnvironment
+import xyz.bluspring.kilt.loader.mod.NeoForgeMod
+import xyz.bluspring.kilt.loader.mod.NeoForgeModVersion
+import xyz.bluspring.kilt.loader.mod.NeoForgeVersionConstraint
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
@@ -54,7 +56,6 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -417,7 +418,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "Forge") {
             val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
             val kiltJar = JarFile(kiltFile.toFile())
 
-            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/forge.mods.toml")))
+            val toml = tomlParser.parse(kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/kilt_neoforge.mods.toml")))
 
             parseModsToml(kiltFile, toml, null, isBuiltIn = true)
         }

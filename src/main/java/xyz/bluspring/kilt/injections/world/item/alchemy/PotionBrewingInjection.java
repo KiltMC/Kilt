@@ -4,6 +4,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
 import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -29,5 +30,15 @@ public interface PotionBrewingInjection {
 
     default void kilt$setBrewingRegistry(BrewingRecipeRegistry registry) {
         throw KiltHelper.createMixinException(PotionBrewingInjection.class, "kilt$setBrewingRegistry");
+    }
+
+    interface BuilderInjection {
+        default void addRecipe(Ingredient input, Ingredient ingredient, ItemStack output) {
+            throw KiltHelper.createMixinException(BuilderInjection.class, "addRecipe");
+        }
+
+        default void addRecipe(IBrewingRecipe recipe) {
+            throw KiltHelper.createMixinException(BuilderInjection.class, "addRecipe");
+        }
     }
 }

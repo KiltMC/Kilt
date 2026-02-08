@@ -44,7 +44,7 @@ public abstract class ShulkerBoxColoringInject {
         return original;
     }
 
-    @ModifyArg(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/ShulkerBoxBlock;getColoredItemStack(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/item/ItemStack;"))
+    @ModifyArg(method = "assemble(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/ShulkerBoxBlock;getBlockByColor(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/level/block/Block;"))
     private @Nullable DyeColor kilt$trySetCustomDyeColor(@Nullable DyeColor color, @Share("dyeColor") LocalRef<DyeColor> dyeColor) {
         if (dyeColor.get() != null)
             return dyeColor.get();

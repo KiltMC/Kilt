@@ -71,5 +71,5 @@
     "creativecore": "<2.12.33",
     "embeddium": "*"
   },
-  "classTweaker": "kilt.classtweaker"
+  "accessWidener": "kilt.classtweaker"
 }

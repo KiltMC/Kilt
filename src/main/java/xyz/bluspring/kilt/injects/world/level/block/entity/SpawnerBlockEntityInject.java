@@ -12,11 +12,10 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class SpawnerBlockEntityInject {
     @Mixin(targets = "net.minecraft.world.level.block.entity.SpawnerBlockEntity$1")
     public static abstract class BaseSpawnerInject {
-        @Shadow @Final SpawnerBlockEntity field_27219;
 
-        @Nullable
+        /*@Nullable
         public BlockEntity getSpawnerBlockEntity() {
             return this.field_27219;
-        }
+        }*/
     }
 }
