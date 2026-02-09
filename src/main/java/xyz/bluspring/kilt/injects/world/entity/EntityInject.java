@@ -73,6 +73,33 @@ import java.util.function.Predicate;
 @Mixin(value = Entity.class, priority = 1100)
 @Extends(AttachmentHolder.class)
 public abstract class EntityInject implements IEntityExtension, EntityInjection {
+    // Kilt TODO: hell
+
+    @Shadow
+    protected abstract void unsetRemoved();
+
+    @Unique private boolean isAddedToLevel;
+
+    @Override
+    public final boolean isAddedToLevel() {
+        return this.isAddedToLevel;
+    }
+
+    @Override
+    public void onAddedToLevel() {
+        this.isAddedToLevel = true;
+    }
+
+    @Override
+    public void onRemovedFromLevel() {
+        this.isAddedToLevel = false;
+    }
+
+    @Override
+    public void revive() {
+        this.unsetRemoved();
+    }
+
     @Override
     public <T, C> T getCapability(EntityCapability<T, C> capability, C context) {
         return capability.getCapability((Entity) (Object) this, context);

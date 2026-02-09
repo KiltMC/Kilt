@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injections.world.level.block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.function.Supplier;
 
@@ -12,6 +13,6 @@ public interface LiquidBlockInjection {
     }
 
     default FlowingFluid getFluid() {
-        throw new IllegalStateException();
+        throw KiltHelper.createMixinException(LiquidBlockInjection.class, "getFluid");
     }
 }

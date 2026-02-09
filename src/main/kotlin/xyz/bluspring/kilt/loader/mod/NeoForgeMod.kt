@@ -183,6 +183,12 @@ class NeoForgeMod(
                 lateEventBus = BusBuilder.builder().apply {
                     setExceptionHandler(::onEventFailed)
                     markerType(IModBusEvent::class.java)
+                    allowPerPhasePost()
+                    classChecker { eventType ->
+                        if (!IModBusEvent::class.java.isAssignableFrom(eventType)) {
+                            throw IllegalArgumentException("Invalid bus event type for $eventType on the mod bus!");
+                        }
+                    }
                 }.build()
             }
 

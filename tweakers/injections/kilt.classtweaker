@@ -25,3 +25,4 @@ transitive-inject-interface net/minecraft/world/level/biome/BiomeSpecialEffects$
 transitive-inject-interface net/minecraft/data/tags/TagsProvider$TagAppender xyz/bluspring/kilt/injections/data/tags/TagsProviderInjection$TagAppenderInjection
 transitive-inject-interface net/minecraft/world/item/alchemy/PotionBrewing$Builder xyz/bluspring/kilt/injections/world/item/alchemy/PotionBrewingInjection$BuilderInjection
 transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour$Properties xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection$PropertiesInjection
+transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection

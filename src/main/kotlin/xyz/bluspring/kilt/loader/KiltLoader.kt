@@ -90,7 +90,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
     init {
         val loader = FabricLoader.getInstance()
-        val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
         if (loader.environmentType == EnvType.CLIENT) {
             // Kilt requires a hard dependency on Sodium, so let's just do this
@@ -303,7 +302,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                     .run {
                         if (this == "\${file.jarVersion}")
                             manifest?.mainAttributes?.getValue("Implementation-Version") ?: "0.0NONE"
-                        else if (this == "\${global.forgeVersion}")
+                        else if (this == "\${global.neoForgeVersion}")
                             SUPPORTED_NEO_API_VERSION.toString()
                         else if (this == "\${global.mcVersion}")
                             MC_VERSION.friendlyString
@@ -587,7 +586,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                sortedModOrder.asFlow().concurrent()
+                sortedModOrder.asFlow()
                     .collect { mod ->
                         try {
                             registerAnnotations(mod, mod.scanData)
@@ -863,6 +862,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     companion object {
         val instance: KiltLoader
             get() = KnitLoader.instance.getLoaderById("kilt") as KiltLoader
+
+        const val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
         // These constants are to be updated each time we change versions
         val SUPPORTED_FML_VERSION = Constants.NEOFORGE_LOADER_VERSION

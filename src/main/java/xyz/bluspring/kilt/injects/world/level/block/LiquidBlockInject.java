@@ -43,4 +43,9 @@ public abstract class LiquidBlockInject extends Block {
     public boolean kilt$useForgeOnPlace(LiquidBlock instance, Level level, BlockPos blockPos, BlockState blockState) {
         return !FluidInteractionRegistry.canInteract(level, blockPos);
     }
+
+    @Intrinsic
+    public FlowingFluid kilt$i$getFluid() {
+        return fluid;
+    }
 }

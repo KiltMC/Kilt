@@ -31,15 +31,6 @@ import java.util.function.Consumer;
 
 @Mixin(RegistryDataLoader.class)
 public abstract class RegistryDataLoaderInject implements RegistryDataLoaderInjection {
-    /*@ModifyReturnValue(method = "registryDirPath", at = @At("RETURN")) // Kilt: Fabric handles this for us
-    private static String kilt$prefixNamespaceIfForge(String original, @Local(argsOnly = true) ResourceLocation location) {
-        if (DataPackRegistriesHooks.kilt$forgeDatapackRegistryKeys.contains(location)) {
-            return CommonHooks.prefixNamespace(location);
-        }
-
-        return original;
-    }*/
-
     @Shadow @Final @Mutable public static List<RegistryDataLoader.RegistryData<?>> SYNCHRONIZED_REGISTRIES;
     @Shadow @Final private static Logger LOGGER;
 
