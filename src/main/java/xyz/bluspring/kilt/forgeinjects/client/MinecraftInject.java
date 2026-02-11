@@ -318,7 +318,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     }
 
     @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0), cancellable = true)
-    private void kilt$callForgeUseInputEvent(CallbackInfo ci, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local InteractionHand hand) {
+    private void kilt$callForgeUseInputEvent(CallbackInfo ci, @Share(value = "inputEvent", namespace = "kilt") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local InteractionHand hand) {
         inputEvent.set(ForgeHooksClient.onClickInput(1, this.options.keyUse, hand));
 
         if (inputEvent.get().isCanceled()) {

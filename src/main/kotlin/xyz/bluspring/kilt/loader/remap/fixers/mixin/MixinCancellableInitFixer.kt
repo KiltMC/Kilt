@@ -3,9 +3,8 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.injection.Inject
-import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.util.KiltHelper
-import java.lang.reflect.Modifier
 import kotlin.collections.contains
 
 // Some Forge mods have an @Inject into <init> and <clinit> calls while also having cancellable = true.

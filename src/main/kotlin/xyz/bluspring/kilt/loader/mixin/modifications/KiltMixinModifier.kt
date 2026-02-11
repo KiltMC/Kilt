@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.mixin.modifier
+package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.reflection.MixinInfoExtension
 import com.bawnorton.mixinsquared.reflection.StateExtension
@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
 
 class KiltMixinModifier : IExtension {
     override fun checkActive(environment: MixinEnvironment): Boolean {
@@ -51,7 +51,7 @@ class KiltMixinModifier : IExtension {
                             val modifier = KiltMixinModifications.findMatchingAccessor(context.classInfo, annotation, methodNode)
 
                             if (modifier != null) {
-                                val replacedMethod = modifier.replacedMethod.apply(mixinClassNode.name)
+                                val replacedMethod = modifier.remapAccessor(mixinClassNode.name)
 
                                 val newMethod = MethodNode()
                                 newMethod.name = methodNode.name
@@ -73,48 +73,25 @@ class KiltMixinModifier : IExtension {
                             }
                         }
 
-                        val modifier = KiltMixinModifications.findMatchingModifier(context.classInfo, annotation)
+                        val modifier = KiltMixinModifications.findMatchingModifier(context.classInfo.name, annotation, methodNode.desc)
 
                         if (modifier == null) {
                             newAnnotations.add(annotation)
                             continue
                         }
 
-                        if (modifier.remapMethodsTo != null) {
-                            newAnnotations.add(
-                                KiltMixinModifications.createAnnotation(annotation.desc,
-                                KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
-                                    this["method"] = listOf(
-                                        MixinRemapper.remapTargetString(modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(context.classInfo.name)), KiltRemapper.enhancedRemapper)
-                                    )
-                                })
-                            )
-                        } else {
-                            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
-                                val list = modifier.replaceWith
+                        when (modifier) {
+                            is AnnotationBasedModifier -> {
+                                modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
+                            }
 
-                                if (list.size == 1) {
-                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
-                                    map["original"] = list[0]
-                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
-                                    newAnnotations.add(annotation)
-                                } else {
-                                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
-
-                                    for (node in list) {
-                                        if (node.desc.contains("mixinsquared"))
-                                            newAnnotations.add(node)
-                                        else
-                                            map["original"] = node
-                                    }
-
-                                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
-                                    newAnnotations.add(annotation)
-                                }
-                            } else {
-                                newAnnotations.addAll(modifier.replaceWith)
+                            is InjectedShareAccessModifier -> {
+                                // This modifier does nothing here, it's in the fixers instead.
+                                newAnnotations.add(annotation)
+                                continue
                             }
                         }
+
                         wasModified = true
                     }
 
@@ -153,5 +130,81 @@ class KiltMixinModifier : IExtension {
 
     companion object {
         val ACCESSOR = Type.getDescriptor(Accessor::class.java)
+
+//        fun splitDescriptor(descriptor: String): List<String> {
+//            val split = mutableListOf<String>()
+//
+//            var incompleteString = ""
+//            var isInArray = false
+//            var isInClass = false
+//
+//            for (ch in descriptor) {
+//                incompleteString += ch
+//
+//                if (ch == '[') {
+//                    isInArray = true
+//                } else if (ch == 'L') {
+//                    isInClass = true
+//                } else if (ch == ';' && isInClass) {
+//                    isInClass = false
+//                    isInArray = false
+//                    split.add(incompleteString)
+//                    incompleteString = ""
+//                } else if (!isInClass) {
+//                    if (isInArray)
+//                        isInArray = false
+//
+//                    split.add(incompleteString)
+//                    incompleteString = ""
+//                }
+//            }
+//
+//            return split
+//        }
+//
+        fun splitSignature(descriptor: String): List<String> {
+            val split = mutableListOf<String>()
+            val current = mutableListOf<String>()
+
+            var incompleteString = ""
+            var isInArray = false
+            var isInClass = false
+            var genericLayer = 0
+
+            for (ch in descriptor) {
+                incompleteString += ch
+
+                if (ch == '<') {
+                    genericLayer++
+                } else if (ch == '>') {
+                    if (--genericLayer <= 0) {
+                        current.add(incompleteString)
+                        incompleteString = ""
+                        genericLayer = 0
+                    }
+                } else if (ch == '[') {
+                    isInArray = true
+                } else if (ch == 'L') {
+                    isInClass = true
+                } else if (ch == ';' && isInClass && genericLayer <= 0) {
+                    isInClass = false
+                    isInArray = false
+                    current.add(incompleteString)
+                    split.add(current.joinToString(""))
+                    current.clear()
+                    incompleteString = ""
+                } else if (!isInClass && genericLayer <= 0) {
+                    if (isInArray)
+                        isInArray = false
+
+                    split.add(incompleteString)
+                    incompleteString = ""
+                }
+            }
+
+            if (current.isNotEmpty())
+                split.add(current.joinToString(""))
+            return split
+        }
     }
 }
