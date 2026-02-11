@@ -341,7 +341,14 @@ object KiltMixinModifications {
     )
 
     val REDIRECT = register(
-        Redirect::class.java
+        Redirect::class.java,
+
+        // Fixes Forbidden and Arcanus' PlayerMixin
+        MixinModifier(
+            "net/minecraft/world/entity/player/Player",
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
+            remapMethodsTo = "getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"
+        )
     )
 
     fun findMatchingModifier(classInfo: ClassInfo, annotation: AnnotationNode): MixinModifier? {
