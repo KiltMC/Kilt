@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.gen.Invoker
-import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.MixinRefmap

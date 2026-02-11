@@ -32,10 +32,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.fixers.*
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinShadowRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinStaticMethodFixer
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.*
 import xyz.bluspring.kilt.loader.remap.resource.IgnoreSignatureResourceRemapper
 import xyz.bluspring.kilt.loader.remap.resource.ManifestResourceRemapper
 import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
@@ -59,7 +56,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 209
+    const val REMAPPER_VERSION = 210
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -480,6 +477,8 @@ object KiltRemapper {
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
                             MixinStaticMethodFixer.fixClass(originalNode)
+                            MixinCancellableInitFixer.fixClass(originalNode)
+                            MixinShareAccessFixer.fixClass(originalNode)
                         }
                     }
 

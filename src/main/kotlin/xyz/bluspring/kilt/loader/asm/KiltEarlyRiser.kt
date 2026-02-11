@@ -415,6 +415,13 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
+        // Turns out some mods extend some final classes in Sodium, which are apparently not final in Rubidium/Embeddium.
+        if (FabricLoader.getInstance().isModLoaded("sodium")) {
+            ClassTinkerers.addTransformation("me.jellysquid.mods.sodium.client.world.WorldSlice") { classNode ->
+                classNode.access = classNode.access and Opcodes.ACC_FINAL.inv()
+            }
+        }
+
         // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
         // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
         run {

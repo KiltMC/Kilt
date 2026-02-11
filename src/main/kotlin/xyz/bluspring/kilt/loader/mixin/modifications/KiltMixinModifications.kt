@@ -1,10 +1,9 @@
-package xyz.bluspring.kilt.loader.mixin.modifier
+package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
-import org.objectweb.asm.Label
-import org.objectweb.asm.Opcodes
+import com.llamalad7.mixinextras.sugar.Share
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
@@ -14,6 +13,12 @@ import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.injection.Redirect
 import org.spongepowered.asm.mixin.transformer.ClassInfo
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AccessorModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object KiltMixinModifications {
@@ -27,7 +32,7 @@ object KiltMixinModifications {
         Inject::class.java,
 
         // Fixes Blueprint's ReloadableServerResources
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/server/ReloadableServerResources",
             methods = listOf("loadResources"),
             variables = mapOf(
@@ -54,7 +59,7 @@ object KiltMixinModifications {
         ),
 
         // Fixes Rediscovered's Sodium compat
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/client/renderer/LevelRenderer",
             methods = listOf("renderClouds(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FDDD)V"),
             variables = mapOf(
@@ -84,7 +89,7 @@ object KiltMixinModifications {
 
         // Disables Structure Gel API's placeInWorld_loadBlockEntity inject,
         // because the locals are all wrong.
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate",
             methods = listOf("placeInWorld"),
             variables = mapOf(
@@ -99,7 +104,7 @@ object KiltMixinModifications {
         ),
 
         // Fixes GTCEu's LevelChunkMixin inject
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/level/chunk/LevelChunk",
             methods = listOf("setBlockState"),
             variables = mapOf(
@@ -124,7 +129,7 @@ object KiltMixinModifications {
         ),
 
         // Fixes GTCEu's RepairItemRecipeMixin inject
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/item/crafting/RepairItemRecipe",
             methods = listOf("assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;"),
             variables = mapOf(
@@ -147,21 +152,38 @@ object KiltMixinModifications {
                     )
                 )
             ),
-            isSugar = true
         ),
 
         // Fixes Bedrock Particles mod, but.. because it's an inject, it has an extra param....
-        MixinModifier(
+        NameRemappingAnnotationModifier(
             owner = "net/minecraft/client/particle/ParticleEngine",
             methods = listOf($$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"),
             remapMethodsTo = $$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V"
         ),
 
         // Fixes Iron's Spells & Spellbooks' ItemStackMixin
-        MixinModifier(
+        NameRemappingAnnotationModifier(
             owner = "net/minecraft/world/item/ItemStack",
             methods = listOf("<init>(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/nbt/CompoundTag;)V"),
             remapMethodsTo = $$"kilt$initItemStackWithTagWorkaround"
+        ),
+
+        // Fixes Little Tiles' MinecraftMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/Minecraft",
+            methods = listOf("startUseItem", "startUseItem()V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraftforge/client/event/InputEvent\$InteractionKeyMappingTriggered;", 0) to Share("inputEvent", namespace = "kilt")
+            )
+        ),
+
+        // Fixes Forbidden & Arcanus' ScreenMixin (which should really be renamed to GuiGraphicsMixin tbh)
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/gui/GuiGraphics",
+            methods = listOf("renderTooltipInternal", "Lnet/minecraft/client/gui/GuiGraphics;renderTooltipInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraftforge/client/event/RenderTooltipEvent\$Pre;", 0) to Share("preEvent", namespace = "kilt")
+            )
         )
     )
 
@@ -169,7 +191,7 @@ object KiltMixinModifications {
         ModifyVariable::class.java,
 
         // Fixes the Aether's BossHealthOverlay
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/client/gui/components/BossHealthOverlay",
             methods = listOf("render(Lnet/minecraft/client/gui/GuiGraphics;)V"),
             variables = mapOf(
@@ -190,7 +212,7 @@ object KiltMixinModifications {
         ),
 
         // Fixes Blueprint's StructureTemplate
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate",
             methods = listOf("placeInWorld(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Lnet/minecraft/util/RandomSource;I)Z"),
             variables = mapOf(
@@ -221,106 +243,34 @@ object KiltMixinModifications {
         AccessorModifier(
             "net/minecraft/client/color/block/BlockColors",
             listOf("getBlockColors", "blockColors"),
-            "()Ljava/util/Map;"
-        ) { owner ->
-            MethodNode().apply {
-                visitCode()
+            "()Ljava/util/Map;",
 
-                val label0 = Label()
-                val label1 = Label()
-
-                visitLabel(label0)
-
-                visitVarInsn(Opcodes.ALOAD, 0)
-                visitTypeInsn(
-                    Opcodes.CHECKCAST,
-                    "xyz/bluspring/kilt/injections/client/color/block/BlockColorsInjection"
-                )
-                visitMethodInsn(
-                    Opcodes.INVOKEINTERFACE,
-                    "xyz/bluspring/kilt/injections/client/color/block/BlockColorsInjection",
-                    "kilt\$getBlockColors", "()Ljava/util/Map;", true
-                )
-                visitInsn(Opcodes.ARETURN)
-
-                visitLabel(label1)
-                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
-                visitMaxs(1, 1)
-
-                visitEnd()
-            }
-        },
+            "xyz/bluspring/kilt/injections/client/color/block/BlockColorsInjection",
+            "kilt\$getBlockColors"
+        ),
         AccessorModifier(
             "net/minecraft/client/color/item/ItemColors",
             listOf("getItemColors", "itemColors"),
-            "()Ljava/util/Map;"
-        ) { owner ->
-            MethodNode().apply {
-                visitCode()
+            "()Ljava/util/Map;",
 
-                val label0 = Label()
-                val label1 = Label()
-
-                visitLabel(label0)
-
-                visitVarInsn(Opcodes.ALOAD, 0)
-                visitTypeInsn(
-                    Opcodes.CHECKCAST,
-                    "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection"
-                )
-                visitMethodInsn(
-                    Opcodes.INVOKEINTERFACE,
-                    "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection",
-                    "kilt\$getItemColors", "()Ljava/util/Map;", true
-                )
-                visitInsn(Opcodes.ARETURN)
-
-                visitLabel(label1)
-                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
-                visitMaxs(1, 1)
-
-                visitEnd()
-            }
-        },
+            "xyz/bluspring/kilt/injections/client/color/item/ItemColorsInjection",
+            "kilt\$getItemColors"
+        ),
         AccessorModifier(
             "net/minecraft/world/level/storage/loot/LootTable",
             listOf("getPools", "pools"),
-            "()Ljava/util/List;"
-        ) { owner ->
-            MethodNode().apply {
-                visitCode()
+            "()Ljava/util/List;",
 
-                val label0 = Label()
-                val label1 = Label()
-
-                visitLabel(label0)
-
-                visitVarInsn(Opcodes.ALOAD, 0)
-                visitTypeInsn(
-                    Opcodes.CHECKCAST,
-                    "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection"
-                )
-                visitMethodInsn(
-                    Opcodes.INVOKEINTERFACE,
-                    "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection",
-                    "kilt\$getPools", "()Ljava/util/List;", true
-                )
-                visitInsn(Opcodes.ARETURN)
-
-                visitLabel(label1)
-                visitLocalVariable("this", "L${owner};", null, label0, label1, 0)
-                visitMaxs(1, 1)
-
-                visitEnd()
-            }
-        }
+            "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection",
+            "kilt\$getPools"
+        )
     )
 
     val WRAP_OPERATION = register(
         WrapOperation::class.java,
 
         // Fixes Create's ProjectileUtilMixin
-        MixinModifier(
+        ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/entity/projectile/ProjectileUtil",
             methods = listOf("getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"),
             variables = mapOf(
@@ -344,14 +294,14 @@ object KiltMixinModifications {
         Redirect::class.java,
 
         // Fixes Forbidden and Arcanus' PlayerMixin
-        MixinModifier(
+        NameRemappingAnnotationModifier(
             "net/minecraft/world/entity/player/Player",
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
             remapMethodsTo = "getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"
         )
     )
 
-    fun findMatchingModifier(classInfo: ClassInfo, annotation: AnnotationNode): MixinModifier? {
+    fun findMatchingModifier(className: String, annotation: AnnotationNode, descriptor: String): MixinModifier? {
         var annotation = annotation
         if (annotation.desc == SUGAR_WRAPPER.descriptor) {
             val map = annotationValuesToMap(annotation.values)
@@ -363,17 +313,40 @@ object KiltMixinModifications {
 
         val modifiers = MODIFIERS[annotation.desc] ?: return null
 
-        for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
-            val map = annotationValuesToMap(annotation.values)
+        for (modifier in modifiers.filter { it.mappedOwner == className }) {
+            when (modifier) {
+                is AnnotationBasedModifier -> {
+                    val map = annotationValuesToMap(annotation.values)
 
-            if (modifier.methods != null && modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
-                continue
+                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
+                        continue
 
-            // check if all conditions match
-            if (!checkAllConditionsMatch(modifier.variables, map))
-                continue
+                    // check if all conditions match
+                    if (!checkAllConditionsMatch(modifier.variables, map))
+                        continue
 
-            return modifier
+                    return modifier
+                }
+
+                is InjectedShareAccessModifier -> {
+                    val map = annotationValuesToMap(annotation.values)
+
+                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
+                        continue
+
+                    val descriptor = Type.getArgumentTypes(descriptor)
+
+                    for ((paramPair, _) in modifier.paramToShareMapping) {
+                        val (param, ordinal) = paramPair
+
+                        if (descriptor.count { it.descriptor == param } < ordinal) {
+                            return null
+                        }
+                    }
+
+                    return modifier
+                }
+            }
         }
 
         return null

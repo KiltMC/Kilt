@@ -6,7 +6,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
-import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.util.KiltHelper
 
 object MixinAdditionalRemapper {

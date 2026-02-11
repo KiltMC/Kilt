@@ -11,7 +11,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
-import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.util.DistUtil
 import java.util.function.Consumer
 
