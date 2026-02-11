@@ -122,8 +122,9 @@ class KiltClient : ClientModInitializer {
             ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
         }
 
-        ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
-            ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
+        ScreenEvents.AFTER_INIT.register { client, screen, width, height ->
+            // Handled in MouseHandlerInject
+            /*ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
                 !ForgeHooksClient.onScreenMouseClickedPre(screen, mouseX, mouseY, button)
             }
 
@@ -145,14 +146,14 @@ class KiltClient : ClientModInitializer {
 
             ScreenMouseEvents.afterMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
                 ForgeHooksClient.onScreenMouseScrollPost(Minecraft.getInstance().mouseHandler, screen, scrollY)
-            }
+            }*/
 
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, key, scanCode, modifiers ->
                 !ForgeHooksClient.onScreenKeyPressedPre(screen, key, scanCode, modifiers)
             }
 
             ScreenKeyboardEvents.afterKeyPress(screen).register { _, key, scanCode, modifiers ->
-                ForgeHooksClient.onScreenKeyPressedPost(screen, key, scanCode, modifiers)
+                ForgeHooksClient.onScreenKeyPressedPost(screen, key, scanCode, modifiers) // TODO: set handled
             }
 
             ScreenKeyboardEvents.allowKeyRelease(screen).register { _, key, scanCode, modifiers ->
@@ -160,7 +161,7 @@ class KiltClient : ClientModInitializer {
             }
 
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
-                ForgeHooksClient.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
+                ForgeHooksClient.onScreenKeyReleasedPost(screen, key, scanCode, modifiers) // TODO: set handled
             }
         }
 

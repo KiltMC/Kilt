@@ -23,21 +23,21 @@ public abstract class CompoundTagInject {
             //throw new IllegalArgumentException("Invalid null NBT value with key " + key);
     }
 
-    @Inject(method = "readNamedTagType", at = @At("HEAD"))
-    private static void kilt$accountNamedTypeTag(DataInput input, NbtAccounter accounter, CallbackInfoReturnable<Byte> cir) {
-        accounter.accountBytes(2);
-    }
+//    @Inject(method = "readNamedTagType", at = @At("HEAD"))
+//    private static void kilt$accountNamedTypeTag(DataInput input, NbtAccounter accounter, CallbackInfoReturnable<Byte> cir) {
+//        accounter.accountBytes(2);
+//    }
 
-    @WrapOperation(method = "readNamedTagName", at = @At(value = "INVOKE", target = "Ljava/io/DataInput;readUTF()Ljava/lang/String;"))
-    private static String kilt$accountTagNameUTF(DataInput instance, Operation<String> original, @Local(argsOnly = true) NbtAccounter accounter) {
-        return ((NbtAccounterInjection) accounter).readUTF(original.call(instance));
-    }
+//    @WrapOperation(method = "readNamedTagName", at = @At(value = "INVOKE", target = "Ljava/io/DataInput;readUTF()Ljava/lang/String;"))
+//    private static String kilt$accountTagNameUTF(DataInput instance, Operation<String> original, @Local(argsOnly = true) NbtAccounter accounter) {
+//        return ((NbtAccounterInjection) accounter).readUTF(original.call(instance));
+//    }
 
     @Mixin(targets = "net/minecraft/nbt/CompoundTag$1")
     public static abstract class Inner1Inject {
-        @Inject(method = "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtAccounter;accountBytes(J)V", ordinal = 1, shift = At.Shift.AFTER))
-        private void kilt$accountBytesForObjAlloc(DataInput dataInput, int i, NbtAccounter nbtAccounter, CallbackInfoReturnable<CompoundTag> cir) {
-            nbtAccounter.accountBytes(4);
-        }
+//        @Inject(method = "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtAccounter;accountBytes(J)V", ordinal = 1, shift = At.Shift.AFTER))
+//        private void kilt$accountBytesForObjAlloc(DataInput dataInput, int i, NbtAccounter nbtAccounter, CallbackInfoReturnable<CompoundTag> cir) {
+//            nbtAccounter.accountBytes(4);
+//        }
     }
 }

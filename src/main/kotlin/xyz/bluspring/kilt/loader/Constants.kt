@@ -7,5 +7,5 @@ object Constants {
     @JvmField val FORGE_API_VERSION = DefaultArtifactVersion("47.4.5")
 
     // Kotlin for Forge version. We're trying to emulate KFF.
-    @JvmField val KFF_VERSION = DefaultArtifactVersion("4.10.0")
+    @JvmField val KFF_VERSION = DefaultArtifactVersion("4.12.0")
 }

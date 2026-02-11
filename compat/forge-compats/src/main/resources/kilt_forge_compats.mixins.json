@@ -6,6 +6,7 @@
     "mixins": [
         "cyclopscore.MinecraftHelpersMixin",
         "cyclopscore.ModBaseMixin",
+        "littletiles.EntityMixin",
         "quark.ConcretePowderBlockMixin",
         "structure_gel.StructureTemplateMixin",
         "thirst.PotionItemMixin"

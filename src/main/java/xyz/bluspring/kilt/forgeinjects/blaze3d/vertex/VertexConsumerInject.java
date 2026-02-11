@@ -18,7 +18,7 @@ import xyz.bluspring.kilt.injections.blaze3d.vertex.VertexConsumerInjection;
 
 import java.nio.ByteBuffer;
 
-@Mixin(VertexConsumer.class)
+@Mixin(value = VertexConsumer.class, priority = 1050)
 public interface VertexConsumerInject extends VertexConsumerInjection, IForgeVertexConsumer {
     @Shadow void putBulkData(PoseStack.Pose pose, BakedQuad bakedQuad, float[] fs, float f, float g, float h, int[] is, int i, boolean bl);
 

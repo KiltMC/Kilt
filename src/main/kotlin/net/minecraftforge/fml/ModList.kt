@@ -39,6 +39,10 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     }
 
     fun isLoaded(modTarget: String): Boolean {
+        if (Kilt.loader.FORGE_TO_FABRIC_MODS.contains(modTarget)) {
+            return FabricLoader.getInstance().isModLoaded(Kilt.loader.FORGE_TO_FABRIC_MODS[modTarget]!!)
+        }
+
         return Kilt.loader.hasMod(modTarget) || FabricLoader.getInstance().isModLoaded(modTarget)
                 || FabricLoader.getInstance().isModLoaded(modTarget.replace("_", "-")) // Cloth Config detection. probably.
     }

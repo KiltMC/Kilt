@@ -6,7 +6,7 @@ import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.concurrent.ConcurrentHashMap
 
 class KotlinModLoadingContext(private val mod: ForgeMod) : ModLoadingContext() {
-    fun getEventBus(): IEventBus {
+    fun getKEventBus(): IEventBus {
         return mod.eventBus
     }
 

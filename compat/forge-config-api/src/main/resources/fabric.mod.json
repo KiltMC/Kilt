@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "kilt_forge_config",
+    "version": "${version}",
+    "name": "Kilt: Forge Config API",
+    "description": "Reimplements the Forge Config API while also adding support for Fabric mods that rely on Forge Config API Port.",
+    "authors": [
+        "BluSpring"
+    ],
+    "contact": {
+        "sources": "https://github.com/KiltMC/Kilt",
+        "issues": "https://github.com/KiltMC/Kilt/issues"
+    },
+    "license": "MIT",
+    "icon": "icon.png",
+    "environment": "*",
+    "entrypoints": {
+    },
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "${minecraft_version}",
+        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+        "kilt": "*"
+    },
+    "custom": {
+        "modmenu": {
+            "parent": "kilt"
+        }
+    },
+    "mixins": [
+    ]
+}

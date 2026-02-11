@@ -13,3 +13,4 @@ the user's instance.**
 | [Sodium](https://modrinth.com/mod/sodium), [Immersive Engineering](https://modrinth.com/mod/immersiveengineering), other Forge mods | Kilt: Forge Mods Compat        |
 | [Create Fabric](https://modrinth.com/mod/create-fabric), any Create Forge addons                                                    | Kilt: Create Compat            |
 | [ModernFix](https://modrinth.com/mod/modernfix), [GeckoLib](https://modrinth.com/mod/geckolib), any other Fabric mods               | Kilt: Fabric Mod Compat        |
+| Forge Config API                                                                                                                    | Kilt: Forge Config API         |

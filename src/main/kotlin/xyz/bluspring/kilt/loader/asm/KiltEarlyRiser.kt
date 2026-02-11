@@ -419,6 +419,13 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
+        // Turns out some mods extend some final classes in Sodium, which are apparently not final in Rubidium/Embeddium.
+        if (FabricLoader.getInstance().isModLoaded("sodium")) {
+            ClassTinkerers.addTransformation("me.jellysquid.mods.sodium.client.world.WorldSlice") { classNode ->
+                classNode.access = classNode.access and Opcodes.ACC_FINAL.inv()
+            }
+        }
+
         // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
         // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
         run {
@@ -444,6 +451,39 @@ class KiltEarlyRiser : Runnable {
                     val url = URL(
                         helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
                             .replace("$eventBusSlashed/KiltHelper", "$eventBusSlashed/${className.replace(".", "/")}")
+                    )
+                    val classReader = ClassReader(url.readBytes())
+                    classReader.accept(classNode, 0)
+                }
+            }
+        }
+
+        // Forcefully load the Forge config classes to override Forge Config API Port.
+        run {
+            val modifiedConfigClasses = listOf(
+                "net.minecraftforge.fml.config.ConfigFileTypeHandler",
+                "net.minecraftforge.fml.config.ConfigTracker",
+                "net.minecraftforge.fml.config.IConfigSpec",
+                "net.minecraftforge.fml.config.ModConfig",
+                "net.minecraftforge.common.ForgeConfigSpec",
+                $$"net.minecraftforge.common.ForgeConfigSpec$Builder"
+            )
+
+            val helperUrl = Kilt::class.java.classLoader.getResource("net/minecraftforge/common/MinecraftForge.class")!!
+
+            for (className in modifiedConfigClasses) {
+                ClassTinkerers.addReplacement(className) { classNode ->
+                    // Reset everything to a blank state, because fuck that
+                    classNode.fields?.clear()
+                    classNode.methods?.clear()
+                    classNode.visibleAnnotations?.clear()
+                    classNode.invisibleAnnotations?.clear()
+                    classNode.visibleTypeAnnotations?.clear()
+                    classNode.invisibleTypeAnnotations?.clear()
+
+                    val url = URL(
+                        helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
+                            .replace("net/minecraftforge/common/MinecraftForge", className.replace(".", "/"))
                     )
                     val classReader = ClassReader(url.readBytes())
                     classReader.accept(classNode, 0)

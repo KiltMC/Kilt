@@ -16,14 +16,11 @@ class FMLPaths private constructor(private val path: Path) {
     companion object {
         private val gameDir = FabricLoader.getInstance().gameDir.toAbsolutePath()
 
-        @JvmField
-        val GAMEDIR = FMLPaths(FabricLoader.getInstance().gameDir)
-
-        @JvmField
-        val MODSDIR = FMLPaths(Path.of(gameDir.toString(), "mods"))
-
-        @JvmField
-        val CONFIGDIR = FMLPaths(FabricLoader.getInstance().configDir)
+        @JvmField val GAMEDIR = FMLPaths(FabricLoader.getInstance().gameDir)
+        @JvmField val MODSDIR = FMLPaths(Path.of(gameDir.toString(), "mods"))
+        @JvmField val CONFIGDIR = FMLPaths(FabricLoader.getInstance().configDir)
+        @JvmField val FMLCONFIG = FMLPaths(CONFIGDIR.get().resolve("fml.toml"))
+        @JvmField val KILT_FORGE_CONFIG_PORT_CONFIG = FMLPaths(CONFIGDIR.get().resolve("forgeconfigapiport.toml"))
 
         @JvmStatic
         fun getOrCreateGameRelativePath(path: Path, name: String): Path {

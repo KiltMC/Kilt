@@ -1,6 +1,5 @@
 package net.minecraftforge.fml
 
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
@@ -71,29 +70,6 @@ class ModLoader {
         // Needs to follow this order specifically, otherwise mods crash.
         Kilt.loader.loadMods()
         Kilt.load(FabricLoader.getInstance().environmentType == EnvType.SERVER)
-
-        for (mod in Kilt.loader.mods) {
-            ModConfigEvents.loading(mod.modId).register {
-                val prevId = ModLoadingContext.kiltActiveModId
-                ModLoadingContext.kiltActiveModId = mod.modId
-                mod.eventBus.post(ModConfigEvent.Loading(it))
-                ModLoadingContext.kiltActiveModId = prevId
-            }
-
-            ModConfigEvents.reloading(mod.modId).register {
-                val prevId = ModLoadingContext.kiltActiveModId
-                ModLoadingContext.kiltActiveModId = mod.modId
-                mod.eventBus.post(ModConfigEvent.Reloading(it))
-                ModLoadingContext.kiltActiveModId = prevId
-            }
-
-            ModConfigEvents.unloading(mod.modId).register {
-                val prevId = ModLoadingContext.kiltActiveModId
-                ModLoadingContext.kiltActiveModId = mod.modId
-                mod.eventBus.post(ModConfigEvent.Unloading(it))
-                ModLoadingContext.kiltActiveModId = prevId
-            }
-        }
 
         Kilt.loader.runPhaseExecutors(ModLoadingPhase.GATHER)
     }

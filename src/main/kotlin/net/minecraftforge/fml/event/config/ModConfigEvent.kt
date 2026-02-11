@@ -5,8 +5,12 @@ import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.event.IModBusEvent
 
-open class ModConfigEvent(override val config: ModConfig?) : Event(), IModBusEvent, IConfigEvent {
+open class ModConfigEvent(private val config: ModConfig?) : Event(), IModBusEvent, IConfigEvent {
     constructor() : this(null)
+
+    override fun getConfig(): ModConfig? {
+        return config
+    }
 
     class Loading(config: ModConfig?) : ModConfigEvent(config) {
         constructor() : this(null)
