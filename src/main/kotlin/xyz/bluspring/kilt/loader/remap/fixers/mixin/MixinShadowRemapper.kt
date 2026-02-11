@@ -1,12 +1,17 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
+import org.objectweb.asm.Handle
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_CLASS_NAME
+import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_METHOD_DESCRIPTOR
 import xyz.bluspring.kilt.util.KiltHelper
+import kotlin.collections.set
 
 // Remap shadow and overwrite
 object MixinShadowRemapper {
@@ -78,6 +83,29 @@ object MixinShadowRemapper {
                 } else if (insnNode is MethodInsnNode) {
                     val remapped = remappedMethods[insnNode.name] ?: continue
                     insnNode.name = remapped
+                } else if (insnNode is InvokeDynamicInsnNode) {
+                    if ("metafactory" != insnNode.bsm.name)
+                        continue
+
+                    if (LAMBDA_CLASS_NAME != insnNode.bsm.owner)
+                        continue
+
+                    if (LAMBDA_METHOD_DESCRIPTOR != insnNode.bsm.desc)
+                        continue
+
+                    if (insnNode.bsmArgs?.size == 3) {
+                        if (insnNode.bsmArgs[1] is Handle) {
+                            val lambdaTarget = insnNode.bsmArgs[1] as Handle
+                            if (lambdaTarget.owner == classNode.name) {
+                                val handle = Handle(lambdaTarget.tag, lambdaTarget.owner,
+                                    remappedMethods[lambdaTarget.name] ?: continue,
+                                    lambdaTarget.desc, lambdaTarget.isInterface
+                                )
+
+                                insnNode.bsmArgs[1] = handle
+                            }
+                        }
+                    }
                 }
             }
         }
