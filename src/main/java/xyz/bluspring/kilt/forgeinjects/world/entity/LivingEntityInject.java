@@ -188,6 +188,9 @@ public abstract class LivingEntityInject extends Entity implements EntityExtensi
 
     @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurtCurrentlyUsedShield(F)V"))
     private boolean kilt$checkShieldTakesDamage(LivingEntity instance, float damageAmount, @Share("event") LocalRef<ShieldBlockEvent> eventRef) {
+        if (eventRef.get() == null) // Kilt: Make sure we don't encounter an NPE, just let it go through.
+            return true;
+
         return eventRef.get().shieldTakesDamage();
     }
 
