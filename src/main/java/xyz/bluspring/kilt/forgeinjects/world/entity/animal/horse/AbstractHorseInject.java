@@ -41,7 +41,7 @@ public abstract class AbstractHorseInject extends Animal {
         super(entityType, level);
     }
 
-    @Inject(method = "updateContainerEquipment", at = @At("TAIL"))
+    @Inject(method = "createInventory", at = @At("TAIL"))
     private void kilt$initItemHandler(CallbackInfo ci) {
         var inventory = this.inventory;
         this.itemHandler = LazyOptional.of(() -> new InvWrapper(inventory));
