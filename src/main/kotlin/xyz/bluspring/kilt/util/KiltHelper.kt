@@ -86,7 +86,7 @@ object KiltHelper {
 
     fun getForgeClassNodes(): List<ClassNode> {
         if (isForgeClassNodesCleared) {
-            throw IllegalStateException("Forge class nodes have already been cleared!")
+            throw IllegalStateException("NeoForge class nodes have already been cleared!")
         }
 
         return cachedForgeClassNodes.get()

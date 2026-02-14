@@ -262,20 +262,20 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
         if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
-            throw IncompatibleModException("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
+            throw IncompatibleModException("NeoForge mod file $fileName is not a supported FML mod! (got: $modLoader)")
         }
 
         val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion"))
         when (modLoader) {
             "kotlinforforge" -> {
                 if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
-                    throw IncompatibleModException("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("NeoForge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
 
             "javafml", "lowcodefml" -> {
                 if (!loaderVersionRange.containsVersion(SUPPORTED_FML_VERSION)) {
-                    throw IncompatibleModException("Forge mod file $fileName does not support Forge loader version ${SUPPORTED_FML_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("NeoForge mod file $fileName does not support Forge loader version ${SUPPORTED_FML_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
         }
@@ -286,7 +286,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Load all mod metadata in the TOML, since Forge allows mods to specify multiple mods in the TOML.
         for (metadata in mainConfig.getConfigList("mods")) {
             val modId = metadata.getConfigElement<String>("modId").orElseThrow {
-                Exception("Forge mod file $fileName does not contain a mod ID!")
+                Exception("NeoForge mod file $fileName does not contain a mod ID!")
             }
 
             // ffs, why do we have to do this?
@@ -316,12 +316,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             for (forgeDep in mainConfig.getConfigList("dependencies", modId)) {
                 val versionRange = MavenVersionAdapter.createFromVersionSpec(
                     forgeDep.getConfigElement<String>("versionRange")
-                        .orElseThrow { Exception("Forge mod file $fileName's dependencies contain a dependency without a version range!") }
+                        .orElse("[0,)") // sure
                 )
 
                 dependencies.add(ModDependency(
                     id = forgeDep.getConfigElement<String>("modId").orElseThrow {
-                        Exception("Forge mod file $fileName's dependencies contain a dependency without a mod ID!")
+                        Exception("NeoForge mod file $fileName's dependencies contain a dependency without a mod ID!")
                     },
                     type = if (forgeDep.getConfigElement<Boolean>("mandatory").orElse(false))
                         ModDependency.Type.REQUIRED
