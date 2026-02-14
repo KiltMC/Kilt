@@ -488,7 +488,6 @@ object KiltRemapper {
                     if (!KiltFlags.DISABLE_FIXERS) {
                         ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                         EventClassVisibilityFixer.fixClass(remappedNode)
-                        EventEmptyInitializerFixer.fixClass(remappedNode, classesToProcess)
                         InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
                         ObjectHolderDefinalizer.processClass(remappedNode)
                         WorkaroundFixer.fixClass(remappedNode)

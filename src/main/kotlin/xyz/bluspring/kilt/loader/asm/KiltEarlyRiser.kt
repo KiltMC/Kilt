@@ -14,7 +14,6 @@ import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
-import xyz.bluspring.kilt.loader.remap.fixers.EventEmptyInitializerFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
@@ -466,7 +465,6 @@ class KiltEarlyRiser : Runnable {
 
             ClassTinkerers.addTransformation(classNode.name) {
                 EventClassVisibilityFixer.fixClass(it)
-                EventEmptyInitializerFixer.fixClass(it, classes)
                 ObjectHolderDefinalizer.processClass(it)
                 AnnotationWorkaroundFixer.fixClass(it)
                 EnvironmentRemapper.remapClass(it)
