@@ -130,7 +130,7 @@ public abstract class ServerGamePacketListenerImplInject extends ServerCommonPac
 
     @Inject(method = "handleCustomPayload", at = @At("HEAD"))
     private void kilt$handleSuperCustomPayload(ServerboundCustomPayloadPacket packet, CallbackInfo ci) {
-        // Kilt TODO: does this interfere with anything?
-        super.handleCustomPayload(packet);
+        // Kilt: yes it does, don't do that
+        //super.handleCustomPayload(packet);
     }
 }

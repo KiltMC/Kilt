@@ -3,10 +3,12 @@ package xyz.bluspring.kilt.injects.client.multiplayer;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
@@ -16,9 +18,11 @@ import net.minecraft.network.protocol.configuration.ClientConfigurationPacketLis
 import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.gui.ModMismatchDisconnectedScreen;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.payload.ModdedNetworkPayload;
 import net.neoforged.neoforge.network.payload.ModdedNetworkQueryPayload;
+import net.neoforged.neoforge.network.payload.ModdedNetworkSetupFailedPayload;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -85,9 +89,16 @@ public abstract class ClientConfigurationPacketListenerImplInject extends Client
         if (packet.payload() instanceof ModdedNetworkPayload payload) {
             this.initializedConnection = true;
             NetworkRegistry.initializeNeoForgeConnection(this, payload.setup());
+            return;
         }
 
         // Receiving a setup failed payload will be followed by a disconnect from the server, so we don't need to disconnect manually here.
+        if (packet.payload() instanceof ModdedNetworkSetupFailedPayload payload) {
+            this.failureReasons = payload.failureReasons();
+            return;
+        }
+
+        // Receiving a brand payload without having transitioned to a Neo connection implies a non-modded connection has begun.
         if (this.connectionType.isOther() && packet.payload() instanceof BrandPayload) {
             this.initializedConnection = true;
             NetworkRegistry.initializeOtherConnection(this);
@@ -97,7 +108,15 @@ public abstract class ClientConfigurationPacketListenerImplInject extends Client
         super.handleCustomPayload(packet);
     }
 
-    // Kilt: we're not implementing the mod mismatch screen, too much effort.
+    // Kilt: fine i'll do it
+    @Override
+    protected Screen createDisconnectScreen(DisconnectionDetails details) {
+        var screen = super.createDisconnectScreen(details);
+        if (this.failureReasons.isEmpty())
+            return screen;
+
+        return new ModMismatchDisconnectedScreen(screen, Component.translatable("disconnect.lost"), this.failureReasons);
+    }
 
     @Override
     public ConnectionType getConnectionType() {

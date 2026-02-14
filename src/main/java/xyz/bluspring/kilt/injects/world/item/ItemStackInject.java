@@ -22,10 +22,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IItemStackExtension;
 import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 import org.spongepowered.asm.mixin.Final;
@@ -48,6 +50,9 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
     @Shadow public abstract InteractionResult useOn(UseOnContext context);
     @Shadow public abstract boolean isEmpty();
     @Shadow @Final private PatchedDataComponentMap components;
+
+    @Shadow
+    public abstract ItemEnchantments getEnchantments();
 
     public ItemStackInject(ItemLike item, int count) {}
 
@@ -106,13 +111,19 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
 //        return original;
 //    }
 
+    // Kilt: okay seriously what's the point of this?
+    @Override
+    public ItemEnchantments getTagEnchantments() {
+        return this.getEnchantments();
+    }
+
     @Unique
     private Function<UseOnContext, InteractionResult> kilt$callback;
 
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void kilt$tryPlaceItemInWorld(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
         if (!context.getLevel().isClientSide() && this.kilt$callback == null) {
-            var e = net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_AFTER_BLOCK));
+            var e = NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_AFTER_BLOCK));
             if (e.isCanceled()) {
                 cir.setReturnValue(e.getCancellationResult().result());
             } else {
@@ -124,7 +135,7 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
     @Override
     public InteractionResult onItemUseFirst(UseOnContext context) {
         this.kilt$callback = c -> this.getItem().onItemUseFirst((ItemStack) (Object) this, c);
-        var e = net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_BEFORE_BLOCK));
+        var e = NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_BEFORE_BLOCK));
         if (e.isCanceled()) return e.getCancellationResult().result();
         var result = this.useOn(context);
         this.kilt$callback = null;

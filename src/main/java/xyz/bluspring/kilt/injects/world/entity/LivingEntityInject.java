@@ -268,7 +268,7 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         damageContainers.peek().setNewDamage(amount); //update container with vanilla changes
     }
 
-    @Inject(method = "hurt", at = {@At(value = "RETURN", ordinal = 4), @At(value = "RETURN", ordinal = 5)})
+    @Inject(method = "hurt", at = @At(value = "RETURN", ordinal = 4))
     private void kilt$popContainerFromStack(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         damageContainers.pop();
     }

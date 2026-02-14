@@ -109,6 +109,7 @@ transitive-inject-interface net/minecraft/server/level/ServerLevel xyz/bluspring
 transitive-inject-interface net/minecraft/server/level/ServerPlayer xyz/bluspring/kilt/injections/server/level/ServerPlayerInjection
 transitive-inject-interface net/minecraft/server/level/Ticket xyz/bluspring/kilt/injections/server/level/TicketInjection
 transitive-inject-interface net/minecraft/server/MinecraftServer xyz/bluspring/kilt/injections/server/MinecraftServerInjection
+transitive-inject-interface net/minecraft/server/network/CommonListenerCookie xyz/bluspring/kilt/injections/server/network/CommonListenerCookieInjection
 transitive-inject-interface net/minecraft/server/network/ServerStatusPacketListenerImpl xyz/bluspring/kilt/injections/server/network/ServerStatusPacketListenerImplInjection
 transitive-inject-interface net/minecraft/server/packs/metadata/pack/PackMetadataSection xyz/bluspring/kilt/injections/server/packs/metadata/pack/PackMetadataSectionInjection
 transitive-inject-interface net/minecraft/server/packs/OverlayMetadataSection xyz/bluspring/kilt/injections/server/packs/OverlayMetadataSectionInjection

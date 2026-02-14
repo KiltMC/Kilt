@@ -57,6 +57,7 @@
         "compat.fabric_api.FuelRegistryImplAccessor",
         "compat.fabric_api.Int2ObjectMapTrackerMixin",
         "compat.fabric_api.PackRepositoryMixin",
+        "compat.fabric_api.network.ServerConfigurationNetworkAddonMixin",
         "compat.fabric_api.recipe.CustomIngredientPacketCodecMixin",
         "compat.forge.blueprint.RemoldedResourceManagerMixin",
         "compat.forge.decocraft.JsonParserMixin",

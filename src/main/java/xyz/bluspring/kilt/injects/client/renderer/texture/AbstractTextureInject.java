@@ -8,6 +8,17 @@ import xyz.bluspring.kilt.injections.client.renderer.texture.AbstractTextureInje
 @Mixin(AbstractTexture.class)
 public abstract class AbstractTextureInject implements AbstractTextureInjection {
     // implemented by Porting Lib
+
+    @Override
+    public void setBlurMipmap(boolean blur, boolean mipmap) {
+        this.port_lib$setBlurMipmap(blur, mipmap);
+    }
+
+    @Override
+    public void restoreLastBlurMipmap() {
+        this.port_lib$restoreLastBlurMipmap();
+    }
+
     /*@Shadow protected boolean blur;
     @Shadow protected boolean mipmap;
 

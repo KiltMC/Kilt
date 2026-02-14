@@ -21,7 +21,7 @@ import java.util.Map;
 
 @Mixin(CommonListenerCookie.class)
 public abstract class CommonListenerCookieInject implements CommonListenerCookieInjection {
-    private ConnectionType connectionType;
+    private ConnectionType connectionType = ConnectionType.OTHER;
 
     @Override
     public ConnectionType connectionType() {

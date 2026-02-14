@@ -100,6 +100,41 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection 
         this.unsetRemoved();
     }
 
+    // Kilt TODO: all of fluid type is unimplemented
+
+    protected Object2DoubleMap<FluidType> forgeFluidTypeHeight = new Object2DoubleArrayMap<>(FluidType.SIZE.get());
+    private FluidType forgeFluidTypeOnEyes = NeoForgeMod.EMPTY_TYPE.value();
+
+    protected final void setFluidTypeHeight(FluidType type, double height) {
+    }
+
+    @Override
+    public double getFluidTypeHeight(FluidType type) {
+        return 0;
+    }
+
+    @Override
+    public boolean isInFluidType(BiPredicate<FluidType, Double> predicate, boolean forAllTypes) {
+        return false;
+    }
+
+    @Override
+    public boolean isInFluidType() {
+        return false;
+    }
+
+    @Override
+    public FluidType getEyeInFluidType() {
+        return NeoForgeMod.EMPTY_TYPE.value();
+    }
+
+    @Override
+    public FluidType getMaxHeightFluidType() {
+        return NeoForgeMod.EMPTY_TYPE.value();
+    }
+
+    // Kilt TODO: Do we need to implement setData?
+
     @Override
     public <T, C> T getCapability(EntityCapability<T, C> capability, C context) {
         return capability.getCapability((Entity) (Object) this, context);

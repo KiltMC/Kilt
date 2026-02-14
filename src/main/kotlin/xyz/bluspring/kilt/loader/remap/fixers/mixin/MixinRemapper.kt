@@ -1,23 +1,22 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import kotlinx.atomicfu.locks.synchronized
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.gen.Invoker
 import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.MixinRefmap
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper.MIXIN_TYPE
 import xyz.bluspring.kilt.util.KiltHelper
-import java.util.Collections
+import java.util.*
 
 // Remaps all mixins and their associated refmaps
 object MixinRemapper {
+    @JvmField val MIXIN_TYPE: Type = Type.getType(Mixin::class.java)
     private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
     private val INVOKER_TYPE = Type.getType(Invoker::class.java)
 

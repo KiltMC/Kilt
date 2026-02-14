@@ -35,7 +35,8 @@ public abstract class ClientCommonPacketListenerImplInject implements ClientComm
 
     @Inject(method = "handleCustomPayload(Lnet/minecraft/network/protocol/common/ClientboundCustomPayloadPacket;)V", at = @At("HEAD"), cancellable = true)
     private void kilt$handleNeoPayloads(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
-        if (packet.payload() instanceof MinecraftRegisterPayload payload) {
+        // Kilt: Fabric handles this
+        /*if (packet.payload() instanceof MinecraftRegisterPayload payload) {
             NetworkRegistry.onMinecraftRegister(this.getConnection(), payload.newChannels());
             ci.cancel();
             return;
@@ -57,12 +58,16 @@ public abstract class ClientCommonPacketListenerImplInject implements ClientComm
             NetworkRegistry.onCommonRegister(this, payload);
             ci.cancel();
             return;
-        }
+        }*/
 
-        if (NetworkRegistry.isModdedPayload(packet.payload())) {
+        // Kilt: We handle this via Fabric API
+        /*if (NetworkRegistry.isModdedPayload(packet.payload())) {
             NetworkRegistry.handleModdedPayload(this, packet);
-            ci.cancel();
-        }
+            if (NetworkRegistry.kilt$wasHandled.get()) {
+                ci.cancel();
+                NetworkRegistry.kilt$wasHandled.remove();
+            }
+        }*/
     }
 
     /*@Inject(method = "send", at = @At("HEAD")) // Kilt: no.
