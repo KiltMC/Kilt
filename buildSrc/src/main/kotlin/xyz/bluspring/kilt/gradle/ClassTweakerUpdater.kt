@@ -173,8 +173,9 @@ object ClassTweakerUpdater {
                     val fieldName = split[2]
                     val descriptor = fieldDescriptors[className]?.get(fieldName) ?: "# TODO: ADD DESC"
 
-                    widener += "transitive-accessible field $className $fieldName $descriptor"
-                    widener += "transitive-mutable field $className $fieldName $descriptor"
+                    val prefix = if (descriptor.contains("# TODO: ")) "# " else ""
+                    widener += "${prefix}transitive-accessible field $className $fieldName $descriptor"
+                    widener += "${prefix}transitive-mutable field $className $fieldName $descriptor"
                 }
             }
         }

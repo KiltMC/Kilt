@@ -83,8 +83,8 @@ transitive-accessible method net/minecraft/client/renderer/GameRenderer loadEffe
 transitive-extendable method net/minecraft/client/renderer/GameRenderer loadEffect (Lnet/minecraft/resources/ResourceLocation;)V
 transitive-accessible method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z
 transitive-extendable method net/minecraft/client/renderer/LevelRenderer shouldShowEntityOutlines ()Z
-transitive-accessible field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
-transitive-mutable field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
+#transitive-accessible field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
+#transitive-mutable field net/minecraft/client/renderer/RenderType * # TODO: ADD DESC
 transitive-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 transitive-extendable method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 transitive-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
@@ -93,8 +93,8 @@ transitive-accessible class net/minecraft/client/renderer/RenderType$OutlineProp
 transitive-extendable class net/minecraft/client/renderer/RenderType$OutlineProperty
 transitive-accessible class net/minecraft/client/renderer/RenderType$CompositeState
 transitive-extendable class net/minecraft/client/renderer/RenderType$CompositeState
-transitive-accessible field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
-transitive-mutable field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
+#transitive-accessible field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
+#transitive-mutable field net/minecraft/client/renderer/RenderStateShard * # TODO: ADD DESC
 transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
 transitive-mutable field net/minecraft/client/renderer/RenderStateShard$TextureStateShard blur Z
 transitive-accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
