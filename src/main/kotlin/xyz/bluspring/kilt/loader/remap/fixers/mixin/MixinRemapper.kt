@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
 import kotlinx.atomicfu.locks.synchronized
+import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
@@ -255,6 +256,9 @@ object MixinRemapper {
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
     fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap)
+            return value
+
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()

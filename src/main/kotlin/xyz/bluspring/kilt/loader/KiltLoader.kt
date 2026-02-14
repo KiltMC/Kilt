@@ -24,15 +24,14 @@ import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.javafmlmod.AutomaticEventSubscriber
 import net.neoforged.fml.javafmlmod.FMLModContainer
 import net.neoforged.fml.loading.FMLLoader
 import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
-import net.neoforged.fml.loading.modscan.ModAnnotation
 import net.neoforged.fml.loading.modscan.ModClassVisitor
 import net.neoforged.fml.loading.toposort.TopologicalSort
-import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforgespi.Environment
 import net.neoforged.neoforgespi.language.IModInfo
 import net.neoforged.neoforgespi.language.MavenVersionAdapter
@@ -613,61 +612,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
 
         // Automatically subscribe events
-        scanData.annotations.asFlow()
-            .filter { it.annotationType == AUTO_SUBSCRIBE_ANNOTATION }
-            .collect { annotation ->
-                // it.annotationData["modid"] as String
-                // it.annotationData["bus"] as Mod.EventBusSubscriber.Bus
-
-                try {
-                    val modId = annotation.annotationData["modid"] as String?
-                        // Use the mod ID of the mod in the class instead
-                        ?: scanData.annotations.firstOrNull { a -> checkTypeOrParentsAreType(a.clazz, annotation.clazz) && a.annotationType == MOD_ANNOTATION }?.annotationData?.get("value") as? String?
-                        ?: mod.modId
-
-                    if (modId != mod.modId)
-                        return@collect
-
-                    val busType = EventBusSubscriber.Bus.valueOf(
-                        if (annotation.annotationData.contains("bus"))
-                            (annotation.annotationData["bus"] as ModAnnotation.EnumHolder).value!!
-                        else "GAME"
-                    )
-
-                    val dists = if (annotation.annotationData.contains("value"))
-                        (annotation.annotationData["value"] as List<ModAnnotation.EnumHolder>).map { Dist.valueOf(it.value!!) }
-                    else
-                        listOf()
-
-                    if (dists.isNotEmpty() && dists.none { DistUtil.distToEnvType(it) == FabricLoader.getInstance().environmentType }) {
-                        return@collect
-                    }
-
-                    ModLoadingContext.get().activeContainer = mod.container
-
-                    val bus = if (busType == EventBusSubscriber.Bus.GAME)
-                        NeoForge.EVENT_BUS
-                    else
-                        this.getMod(modId)?.eventBus
-
-                    val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
-                    val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
-
-                    if (obj != null)
-                        bus?.register(obj)
-                    else
-                        bus?.register(clazz)
-
-                    ModLoadingContext.get().activeContainer = null
-
-                    Kilt.logger.debug("Automatically registered event ${annotation.clazz.className} from mod ID $modId under bus ${busType.name}")
-                } catch (e: Throwable) {
-                    Kilt.logger.error("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!")
-                    val ex = RuntimeException("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!", e)
-                    ex.printStackTrace()
-                    exception.addSuppressed(ex)
-                }
-            }
+        try {
+            AutomaticEventSubscriber.inject(mod.container, mod.scanData, null)
+        } catch (e: Throwable) {
+            Kilt.logger.error("Failed to register events for mod ${mod.modId}!")
+            val ex = RuntimeException("Failed to register events for mod ${mod.modId}!", e)
+            e.printStackTrace()
+            exception.addSuppressed(ex)
+        }
 
         if (exception.suppressed.isNotEmpty())
             throw exception

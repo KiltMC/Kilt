@@ -44,6 +44,10 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun map(name: String): String {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap) {
+            return name
+        }
+
         val intermediary = super.map(name)
 
         if (shouldTryRemap) {
@@ -55,6 +59,10 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun mapFieldName(owner: String, name: String, descriptor: String): String {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap) {
+            return name
+        }
+
         val intermediary = super.mapFieldName(owner, name, descriptor)
 
         if (shouldTryRemap && (intermediary.startsWith("field_") || intermediary.startsWith("comp_"))) {
@@ -93,6 +101,10 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap) {
+            return name
+        }
+
         val intermediary = super.mapMethodName(owner, name, descriptor)
 
         // Special handling for dev environments
