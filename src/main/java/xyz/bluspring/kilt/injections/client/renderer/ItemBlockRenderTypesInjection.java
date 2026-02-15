@@ -29,13 +29,6 @@ public interface ItemBlockRenderTypesInjection {
                 it.put(key, ChunkRenderTypeSet.of(value));
         });
     });
-    // why does this feel utterly pointless
-    Map<Fluid, RenderType> FLUID_RENDER_TYPES = Util.make(new DefaultedHashMap<>(ItemBlockRenderTypes.TYPE_BY_FLUID.size(), .5F), (it) -> {
-        it.setDefaultValue(RenderType.solid());
-        ItemBlockRenderTypes.TYPE_BY_FLUID.forEach((key, value) -> {
-                it.put(key, value);
-        });
-    });
 
     static ChunkRenderTypeSet getRenderLayers(BlockState state) {
         if (state.getBlock() instanceof LeavesBlock) {
@@ -67,7 +60,6 @@ public interface ItemBlockRenderTypesInjection {
     static void setRenderLayer(Fluid fluid, RenderType type) {
         checkClientLoading();
         BlockRenderLayerMap.INSTANCE.putFluid(fluid, type);
-        FLUID_RENDER_TYPES.put(fluid, type);
     }
 
     static void checkClientLoading() {

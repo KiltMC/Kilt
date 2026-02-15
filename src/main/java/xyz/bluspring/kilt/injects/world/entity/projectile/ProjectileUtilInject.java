@@ -18,7 +18,7 @@ import xyz.bluspring.kilt.injections.world.entity.projectile.ProjectileUtilInjec
 import java.util.function.Predicate;
 
 @Mixin(ProjectileUtil.class)
-public class ProjectileUtilInject implements ProjectileUtilInjection {
+public abstract class ProjectileUtilInject implements ProjectileUtilInjection {
     @Definition(id = "entity", local = @Local(type = Entity.class, ordinal = 0))
     @Definition(id = "entity2", local = @Local(type = Entity.class, ordinal = 2))
     @Definition(id = "getRootVehicle", method = "Lnet/minecraft/world/entity/Entity;getRootVehicle()Lnet/minecraft/world/entity/Entity;")

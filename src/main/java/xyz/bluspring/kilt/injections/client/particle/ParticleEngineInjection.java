@@ -4,15 +4,18 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 public interface ParticleEngineInjection {
@@ -23,5 +26,9 @@ public interface ParticleEngineInjection {
 
     default void iterateParticles(Consumer<Particle> consumer) {
         throw KiltHelper.createMixinException(ParticleEngineInjection.class, "iterateParticles");
+    }
+
+    default Map<ResourceLocation, ParticleProvider<?>> kilt$getProviders() {
+        throw KiltHelper.createMixinException(ParticleEngineInjection.class, "kilt$getProviders");
     }
 }

@@ -44,6 +44,10 @@ public interface IngredientInjection {
         throw KiltHelper.createMixinException(IngredientInjection.class, "isSimple");
     }
 
+    default ICustomIngredient getCustomIngredient() {
+        throw KiltHelper.createMixinException(IngredientInjection.class, "getCustomIngredient");
+    }
+
     default ICustomIngredient neoforge$getCustomIngredient() {
         throw KiltHelper.createMixinException(IngredientInjection.class, "neoforge$getCustomIngredient");
     }

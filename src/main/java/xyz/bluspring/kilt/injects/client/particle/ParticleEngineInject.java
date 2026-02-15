@@ -139,4 +139,9 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         if (!IClientBlockExtensions.of(state).addHitEffects(state, this.level, target, (ParticleEngine) (Object) this))
             original.call(this, pos, direction);
     }
+
+    @Override
+    public Map<ResourceLocation, ParticleProvider<?>> kilt$getProviders() {
+        return this.kilt$providers;
+    }
 }

@@ -49,7 +49,7 @@ object KiltMixinModifications {
             replaceWith = listOf(
                 createAnnotation(
                     TargetHandler::class.java, mapOf(
-                        "mixin" to "xyz.bluspring.kilt.forgeinjects.server.ReloadableServerResourcesInject",
+                        "mixin" to "xyz.bluspring.kilt.injects.server.ReloadableServerResourcesInject",
                         "name" to "kilt\$blueprintWorkaround"
                     )
                 ),
@@ -226,7 +226,7 @@ object KiltMixinModifications {
             ),
             replaceWith = listOf(
                 createAnnotation(TargetHandler::class.java, mapOf(
-                    "mixin" to "xyz.bluspring.kilt.forgeinjects.client.gui.components.BossHealthOverlayInject",
+                    "mixin" to "xyz.bluspring.kilt.injects.client.gui.components.BossHealthOverlayInject",
                     "name" to "kilt\$customizeBossEventProgress",
                     "prefix" to "wrapWithCondition"
                 )),
@@ -289,6 +289,14 @@ object KiltMixinModifications {
 
             "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection",
             "kilt\$getPools"
+        ),
+        AccessorModifier(
+            "net/minecraft/client/particle/ParticleEngine",
+            listOf("getProviders", "providers"),
+            "()Ljava/util/Map;",
+
+            "xyz/bluspring/kilt/injections/client/particle/ParticleEngineInjection",
+            "kilt\$getProviders"
         )
     )
 
@@ -304,7 +312,7 @@ object KiltMixinModifications {
             ),
             replaceWith = listOf(
                 createAnnotation(TargetHandler::class.java, mapOf(
-                    "mixin" to "xyz.bluspring.kilt.forgeinjects.world.entity.projectile.ProjectileUtilInject",
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.projectile.ProjectileUtilInject",
                     "name" to $$"kilt$checkCanRiderInteract",
                     "prefix" to "modifyExpressionValue"
                 )),

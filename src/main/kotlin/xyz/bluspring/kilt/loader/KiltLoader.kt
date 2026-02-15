@@ -346,6 +346,17 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 ))
             }
 
+            val mixinConfigs = (manifest?.mainAttributes?.getValue("MixinConfigs")?.split(",")
+                ?.filter { !it.trim().isBlank() } // why the FUCK is this a possibility.
+                ?.map { ModDefinition.MixinConfig(it) }
+                ?: emptyList()).toMutableSet()
+
+            for (mixinConfig in mainConfig.getConfigList("mixins")) {
+                mixinConfigs.add(ModDefinition.MixinConfig(
+                    mixinConfig.getConfigElement<String>("config").orElse(null) ?: continue
+                ))
+            }
+
             val definition = ModDefinition(
                 id = modId,
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
@@ -361,10 +372,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 license = toml.get("license"),
 
                 dependencies = dependencies,
-                mixinConfigs = manifest?.mainAttributes?.getValue("MixinConfigs")?.split(",")
-                    ?.filter { !it.trim().isBlank() } // why the FUCK is this a possibility.
-                    ?.map { ModDefinition.MixinConfig(it) }
-                    ?: emptyList(),
+                mixinConfigs = mixinConfigs.toList(),
                 path = path,
 
                 // Sets the parent ID of the mod definition

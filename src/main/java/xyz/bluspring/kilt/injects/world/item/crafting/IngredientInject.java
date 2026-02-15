@@ -18,11 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.crafting.IngredientInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Implements(@Interface(iface = IngredientInjection.class, prefix = "kilt$i$"))
 @Mixin(Ingredient.class)
 public abstract class IngredientInject implements IngredientInjection {
     // Kilt: StreamCodec handling in CustomIngredientPacketCodecMixin
@@ -113,7 +115,20 @@ public abstract class IngredientInject implements IngredientInjection {
 
     @Override
     public ICustomIngredient neoforge$getCustomIngredient() {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), Ingredient.class, "getCustomIngredient", ICustomIngredient.class)) {
+            return this.getCustomIngredient();
+        }
+
         return this.customIngredient;
+    }
+
+    public ICustomIngredient kilt$i$getCustomIngredient() {
+        return this.neoforge$getCustomIngredient();
+    }
+
+    @Override
+    public void kilt$setCustomIngredient(ICustomIngredient customIngredient) {
+        this.customIngredient = customIngredient;
     }
 
     @Override
