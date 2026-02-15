@@ -186,7 +186,7 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IGuiGra
 
     @WrapOperation(method = "method_51743", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/TooltipRenderUtil;renderTooltipBackground(Lnet/minecraft/client/gui/GuiGraphics;IIIII)V"))
     private void kilt$useForgeColorBackgroundModifyIfApplicable(GuiGraphics guiGraphics, int x, int y, int width, int height, int z, Operation<Void> original) {
-        var colorEvent = ClientHooks.onRenderTooltipColor(this.tooltipStack, guiGraphics, x, y, preEvent.getFont(), this.kilt$components);
+        var colorEvent = ClientHooks.onRenderTooltipColor(this.tooltipStack, guiGraphics, x, y, this.kilt$preEvent.getFont(), this.kilt$components);
 
         // prioritize rendering the original instead
         if (colorEvent.getBackgroundStart() == colorEvent.getOriginalBackgroundStart() &&

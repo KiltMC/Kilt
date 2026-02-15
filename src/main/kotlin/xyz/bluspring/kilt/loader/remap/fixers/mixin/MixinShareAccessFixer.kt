@@ -17,7 +17,8 @@ object MixinShareAccessFixer {
             for (methodNode in classNode.methods) {
                 val annotations = KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
                 for (annotation in annotations) {
-                    val modifier = KiltMixinModifications.findMatchingModifier(targetClass, annotation, methodNode.desc)
+                    val modifier = KiltMixinModifications.findMatchingModifiers(targetClass, annotation, methodNode.desc)
+                        .firstOrNull { it is InjectedShareAccessModifier }
 
                     if (modifier !is InjectedShareAccessModifier)
                         continue

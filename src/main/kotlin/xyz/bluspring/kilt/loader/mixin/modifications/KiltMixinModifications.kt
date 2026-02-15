@@ -12,7 +12,10 @@ import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.injection.Redirect
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 import org.spongepowered.asm.mixin.transformer.ClassInfo
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AccessorModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
@@ -27,6 +30,8 @@ object KiltMixinModifications {
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
 
     val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
+    val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
+    val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
 
     val INJECT = register(
         Inject::class.java,
@@ -184,6 +189,27 @@ object KiltMixinModifications {
             paramToShareMapping = mapOf(
                 ParamPair("Lnet/minecraftforge/client/event/RenderTooltipEvent\$Pre;", 0) to Share("preEvent", namespace = "kilt")
             )
+        ),
+
+        // Fixes Create's HumanoidArmorLayerMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("F", 0) to Share("limbSwing", namespace = Kilt.MOD_ID),
+                ParamPair("F", 1) to Share("limbSwingAmount", namespace = Kilt.MOD_ID),
+                ParamPair("F", 2) to Share("partialTick", namespace = Kilt.MOD_ID),
+                ParamPair("F", 3) to Share("ageInTicks", namespace = Kilt.MOD_ID),
+                ParamPair("F", 4) to Share("netHeadYaw", namespace = Kilt.MOD_ID),
+                ParamPair("F", 5) to Share("headPitch", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Goes along with the above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            remapMethodsTo = "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V"
         )
     )
 
@@ -301,7 +327,7 @@ object KiltMixinModifications {
         )
     )
 
-    fun findMatchingModifier(className: String, annotation: AnnotationNode, descriptor: String): MixinModifier? {
+    fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
         var annotation = annotation
         if (annotation.desc == SUGAR_WRAPPER.descriptor) {
             val map = annotationValuesToMap(annotation.values)
@@ -311,9 +337,10 @@ object KiltMixinModifications {
             }
         }
 
-        val modifiers = MODIFIERS[annotation.desc] ?: return null
+        val modifiers = MODIFIERS[annotation.desc] ?: return emptyList()
+        val foundModifiers = mutableListOf<MixinModifier>()
 
-        for (modifier in modifiers.filter { it.mappedOwner == className }) {
+        modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className }) {
             when (modifier) {
                 is AnnotationBasedModifier -> {
                     val map = annotationValuesToMap(annotation.values)
@@ -325,7 +352,7 @@ object KiltMixinModifications {
                     if (!checkAllConditionsMatch(modifier.variables, map))
                         continue
 
-                    return modifier
+                    foundModifiers.add(modifier)
                 }
 
                 is InjectedShareAccessModifier -> {
@@ -339,17 +366,17 @@ object KiltMixinModifications {
                     for ((paramPair, _) in modifier.paramToShareMapping) {
                         val (param, ordinal) = paramPair
 
-                        if (descriptor.count { it.descriptor == param } < ordinal) {
-                            return null
+                        if (descriptor.count { it.descriptor == param } < ordinal + 1) {
+                            continue@modifierSearch
                         }
                     }
 
-                    return modifier
+                    foundModifiers.add(modifier)
                 }
             }
         }
 
-        return null
+        return foundModifiers
     }
 
     fun findMatchingAccessor(classInfo: ClassInfo, annotation: AnnotationNode, methodNode: MethodNode): AccessorModifier? {

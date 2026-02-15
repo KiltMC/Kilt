@@ -615,6 +615,7 @@
         "client.renderer.entity.ItemRendererInject",
         "client.renderer.entity.LivingEntityRendererInject",
         "client.renderer.entity.layers.ElytraLayerInject",
+        "client.renderer.entity.layers.HumanoidArmorLayerInject",
         "client.renderer.entity.player.PlayerRendererInject",
         "client.renderer.item.ItemPropertiesInject",
         "client.renderer.texture.AbstractTextureInject",
