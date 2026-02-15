@@ -21,16 +21,16 @@ public class FoodPropertiesInject implements FoodPropertiesInjection {
     // TODO: patch in equals method?
 
     @Mixin(FoodProperties.PossibleEffect.class)
-    public static abstract class PossibleEffect$Inject implements FoodPropertiesPossibleEffectInjection {
+    public static abstract class PossibleEffectInject implements FoodPropertiesPossibleEffectInjection {
         @Shadow
         @Final
         private MobEffectInstance effect;
         private Supplier<MobEffectInstance> kilt$effectSupplier;
 
-        public PossibleEffect$Inject(MobEffectInstance effect, float probability) {}
+        public PossibleEffectInject(MobEffectInstance effect, float probability) {}
 
         @CreateInitializer
-        public PossibleEffect$Inject(Supplier<MobEffectInstance> effectSupplier, float probability) {
+        public PossibleEffectInject(Supplier<MobEffectInstance> effectSupplier, float probability) {
             this((MobEffectInstance) null, probability);
             this.kilt$effectSupplier = effectSupplier;
         }

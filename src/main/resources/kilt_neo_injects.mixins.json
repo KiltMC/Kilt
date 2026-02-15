@@ -295,6 +295,7 @@
         "world.flag.FeatureFlagRegistryInject$BuilderInject",
         "world.food.FoodPropertiesInject",
         "world.food.FoodPropertiesInject$BuilderInject",
+        "world.food.FoodPropertiesInject$PossibleEffectInject",
         "world.inventory.AbstractContainerMenuInject",
         "world.inventory.AbstractFurnaceMenuInject",
         "world.inventory.AnvilMenuInject",

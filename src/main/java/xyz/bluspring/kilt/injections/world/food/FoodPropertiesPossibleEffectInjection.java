@@ -12,7 +12,7 @@ public interface FoodPropertiesPossibleEffectInjection {
 
     static FoodProperties.PossibleEffect create(Supplier<MobEffectInstance> effectSupplier, float probability) {
         var possibleEffect = new FoodProperties.PossibleEffect(null, probability);
-        ((FoodPropertiesPossibleEffectInjection) (Object) possibleEffect).kilt$setEffectSupplier(effectSupplier);
+        possibleEffect.kilt$setEffectSupplier(effectSupplier);
         return possibleEffect;
     }
 
