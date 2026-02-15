@@ -322,10 +322,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                     id = forgeDep.getConfigElement<String>("modId").orElseThrow {
                         Exception("NeoForge mod file $fileName's dependencies contain a dependency without a mod ID!")
                     },
-                    type = if (forgeDep.getConfigElement<Boolean>("mandatory").orElse(false))
-                        ModDependency.Type.REQUIRED
-                    else
-                        ModDependency.Type.OPTIONAL,
+                    type = when (forgeDep.getConfigElement<String>("type").orElse("optional")) {
+                        "required" -> ModDependency.Type.REQUIRED
+                        "optional" -> ModDependency.Type.OPTIONAL
+                        "discouraged" -> ModDependency.Type.DISCOURAGED
+                        "incompatible" -> ModDependency.Type.INCOMPATIBLE
+
+                        else -> ModDependency.Type.OPTIONAL
+                    },
                     constraint = NeoForgeVersionConstraint(versionRange),
 
                     // Forge has sided dependencies. How did we get sided dependencies before sided mods?
