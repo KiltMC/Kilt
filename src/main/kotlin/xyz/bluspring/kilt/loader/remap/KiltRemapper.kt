@@ -477,7 +477,6 @@ object KiltRemapper {
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
                             MixinStaticMethodFixer.fixClass(originalNode)
-                            MixinCancellableInitFixer.fixClass(originalNode)
                             MixinShareAccessFixer.fixClass(originalNode)
                         }
                     }
