@@ -36,7 +36,6 @@ object KiltHelper {
         return true
     }
 
-    // Modified from Lithium: https://github.com/CaffeineMC/lithium/blob/develop/common/src/main/java/net/caffeinemc/mods/lithium/common/reflection/ReflectionUtil.java#L20
     fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {
         val overrideData = OverrideData(superClass, methodName, methodArgs)
         return this.cachedClassValues.computeIfAbsent(overrideData) {
@@ -44,6 +43,35 @@ object KiltHelper {
                 override fun computeValue(type: Class<*>): Boolean {
                     try {
                         val method = type.getMethod(methodName, *methodArgs)
+
+                        // If the method is declared in the superClass itself (e.g., default interface method),
+                        // it's not an override - return false
+                        if (method.declaringClass == superClass) {
+                            return false
+                        }
+
+                        // If a Fabric mod has this method signature but is private, it could cause a game crash.
+                        return !Modifier.isPrivate(method.modifiers)
+                    } catch (_: Throwable) {
+                        return false
+                    }
+                }
+            }
+        }.get(topClass)
+    }
+
+    fun hasMethodOverrideWithReturnType(topClass: Class<*>, superClass: Class<*>, methodName: String, returnType: Class<*>, vararg methodArgs: Class<*>): Boolean {
+        val overrideData = OverrideData(superClass, methodName, methodArgs, returnType)
+        return this.cachedClassValues.computeIfAbsent(overrideData) {
+            object : ClassValue<Boolean>() {
+                override fun computeValue(type: Class<*>): Boolean {
+                    try {
+                        val methods = type.methods.filter { it.name == methodName && it.parameterTypes.contentEquals(methodArgs) && it.returnType == returnType }
+
+                        if (methods.isEmpty())
+                            return false
+
+                        val method = methods.first()
 
                         // If the method is declared in the superClass itself (e.g., default interface method),
                         // it's not an override - return false
@@ -160,10 +188,12 @@ object KiltHelper {
         return list
     }
 
+    @JvmRecord
     private data class OverrideData(
         val superClass: Class<*>,
         val methodName: String,
-        val methodArgs: Array<out Class<*>>
+        val methodArgs: Array<out Class<*>>,
+        val returnType: Class<*>? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
