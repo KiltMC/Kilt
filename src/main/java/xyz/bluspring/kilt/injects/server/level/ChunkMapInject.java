@@ -6,8 +6,10 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.*;
+import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.thread.ProcessorHandle;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -29,6 +31,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.level.ChunkMapInjection;
+import xyz.bluspring.kilt.mixin.TrackedEntityAccessor;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapInject implements ChunkMapInjection {
@@ -41,6 +48,10 @@ public abstract class ChunkMapInject implements ChunkMapInjection {
     @Shadow
     @Final
     private ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> mainThreadMailbox;
+
+    @Shadow
+    @Final
+    private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
 
     @Inject(method = "updateChunkScheduling", at = @At(value = "RETURN", ordinal = 1))
     private void kilt$fireTicketUpdatedEvent(long chunkPos, int newLevel, ChunkHolder holder, int oldLevel, CallbackInfoReturnable<ChunkHolder> cir) {
@@ -83,6 +94,22 @@ public abstract class ChunkMapInject implements ChunkMapInjection {
     @WrapOperation(method = "addEntity", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkIfEntityMultipart(Object object, Operation<Boolean> original) {
         return original.call(object) || object instanceof PartEntity<?>;
+    }
+
+    @Override
+    public List<ServerPlayer> getPlayersWatching(Entity entity) {
+        var trackedEntity = this.entityMap.get(entity.getId());
+
+        if (trackedEntity != null) {
+            var ret = new ArrayList<ServerPlayer>(((TrackedEntityAccessor) trackedEntity).getSeenBy().size());
+            for (ServerPlayerConnection connection : ((TrackedEntityAccessor) trackedEntity).getSeenBy()) {
+                ret.add(connection.getPlayer());
+            }
+
+            return Collections.unmodifiableList(ret);
+        }
+
+        return List.of();
     }
 
     public void scheduleOnMainThreadMailbox(ChunkTaskPriorityQueueSorter.Message<Runnable> msg) {

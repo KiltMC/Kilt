@@ -87,6 +87,8 @@ transitive-inject-interface net/minecraft/data/worldgen/BootstrapContext xyz/blu
 transitive-inject-interface net/minecraft/gametest/framework/GameTestRegistry xyz/bluspring/kilt/injections/gametest/framework/GameTestRegistryInjection
 transitive-inject-interface net/minecraft/locale/Language xyz/bluspring/kilt/injections/locale/LanguageInjection
 transitive-inject-interface com/mojang/math/Transformation xyz/bluspring/kilt/injections/math/TransformationInjection
+transitive-inject-interface net/minecraft/nbt/CompoundTag xyz/bluspring/kilt/injections/nbt/CompoundTagInjection
+transitive-inject-interface net/minecraft/nbt/ListTag xyz/bluspring/kilt/injections/nbt/ListTagInjection
 transitive-inject-interface net/minecraft/nbt/NbtAccounter xyz/bluspring/kilt/injections/nbt/NbtAccounterInjection
 transitive-inject-interface net/minecraft/network/Connection xyz/bluspring/kilt/injections/network/ConnectionInjection
 transitive-inject-interface net/minecraft/network/FriendlyByteBuf xyz/bluspring/kilt/injections/network/FriendlyByteBufInjection

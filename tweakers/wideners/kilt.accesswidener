@@ -50,3 +50,5 @@ accessible field com/mojang/blaze3d/vertex/VertexFormatElement BY_ID [Lcom/mojan
 
 accessible field net/minecraft/world/item/crafting/Ingredient$ItemValue CODEC Lcom/mojang/serialization/Codec;
 accessible field net/minecraft/world/item/crafting/Ingredient$TagValue CODEC Lcom/mojang/serialization/Codec;
+
+accessible class net/minecraft/server/level/ChunkMap$TrackedEntity

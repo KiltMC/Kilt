@@ -87,6 +87,7 @@
         "math.TransformationInject",
         "nbt.CompoundTagInject",
         "nbt.CompoundTagInject$CompoundTagAnonymous1Inject",
+        "nbt.ListTagInject",
         "nbt.NbtAccounterInject",
         "nbt.NbtIoInject",
         "nbt.StringTagInject",
