@@ -333,7 +333,7 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
 
         // Kilt: Mod compatibility :D
         for (MobEffectInstance effect : effects) {
-            if (!effect.getCures().contains(EffectCures.PROTECTED_BY_TOTEM)) {
+            if (!effect.neoforge$getCures().contains(EffectCures.PROTECTED_BY_TOTEM)) {
                 shouldUseCures = true;
                 break;
             }

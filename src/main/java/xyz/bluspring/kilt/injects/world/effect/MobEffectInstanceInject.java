@@ -16,22 +16,21 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.effect.MobEffectInstanceInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+@Implements(@Interface(iface = MobEffectInstanceInjection.class, prefix = "kilt$i$"))
 @Mixin(value = MobEffectInstance.class, priority = 1010)
 public abstract class MobEffectInstanceInject implements MobEffectInstanceInjection {
     @Shadow @Final private Holder<MobEffect> effect;
@@ -56,7 +55,7 @@ public abstract class MobEffectInstanceInject implements MobEffectInstanceInject
     @Inject(method = "setDetailsFrom", at = @At("TAIL"))
     private void kilt$copyCuresFromOther(MobEffectInstance effectInstance, CallbackInfo ci) {
         this.cures.clear();
-        this.cures.addAll(((MobEffectInstanceInjection) effectInstance).getCures());
+        this.cures.addAll(effectInstance.neoforge$getCures());
     }
 
     // TODO: impl sort order
@@ -64,8 +63,12 @@ public abstract class MobEffectInstanceInject implements MobEffectInstanceInject
     @Unique private final Set<EffectCure> cures = Sets.newIdentityHashSet();
 
     @Override
-    public Set<EffectCure> getCures() {
+    public Set<EffectCure> neoforge$getCures() {
         return cures;
+    }
+
+    public Set<EffectCure> kilt$i$getCures() {
+        return this.neoforge$getCures();
     }
 
     @Mixin(MobEffectInstance.Details.class)

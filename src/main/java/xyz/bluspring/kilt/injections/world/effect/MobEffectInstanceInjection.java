@@ -2,13 +2,20 @@ package xyz.bluspring.kilt.injections.world.effect;
 
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.EffectCure;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface MobEffectInstanceInjection {
-    Set<EffectCure> getCures();
+    default Set<EffectCure> neoforge$getCures() {
+        throw KiltHelper.createMixinException(MobEffectInstanceInjection.class, "neoforge$getCures");
+    }
+
+    default Set<EffectCure> getCures() {
+        throw KiltHelper.createMixinException(MobEffectInstanceInjection.class, "getCures");
+    }
 
     interface DetailsInjection {
         Optional<Set<EffectCure>> cures();
