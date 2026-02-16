@@ -420,7 +420,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 if (url.file.contains(".jar") && url.file.contains("!/META-INF/mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
                     continue
 
-                val path = Path(url.path.removePrefix("file:/"))
+                val path = url.toURI().toPath()
 
                 val toml = tomlParser.parse(url)
                 modsList.addAll(parseModsToml(path, toml, null, isBuiltIn = true))
@@ -524,6 +524,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             launch(Dispatchers.Default) {
                 // Load Forge scan data immediately, then we can assign it when we need to.
                 val forgeScanData = ModFileScanData()
+                val forgeScanDataLock = Any()
 
                 KiltHelper.getForgeClassNodes().asFlow().collect {
                     val visitor = ModClassVisitor()
@@ -543,7 +544,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         if (mod.modFile == null) { // This is usually a Forge built-in, we don't have to worry about scanning this.
                             // If it is in fact a built-in, let's assign the scan data.
                             if (mod.definition.isBuiltin) {
-                                forgeScanData.addModFileInfo(ModFileInfo(mod))
+                                synchronized(forgeScanDataLock) {
+                                    forgeScanData.addModFileInfo(ModFileInfo(mod))
+                                }
                                 mod.scanData = forgeScanData
                             }
 
@@ -670,6 +673,13 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                     Kilt.logger.debug("Automatically registered event ${annotation.clazz.className} from mod ID $modId under bus ${busType.name}")
                 } catch (e: Throwable) {
+                    ModLoadingContext.kiltActiveModId = null
+
+                    if (isEnvironmentClassLoadingIssue(e)) {
+                        Kilt.logger.debug("Skipping automatic event registration for ${annotation.clazz.className} due to environment mismatch.")
+                        return@collect
+                    }
+
                     Kilt.logger.error("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!")
                     val ex = RuntimeException("Failed to register event ${annotation.clazz.className} from mod ${mod.modId}!", e)
                     ex.printStackTrace()
@@ -785,6 +795,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
                     ModLoadingContext.kiltActiveModId = null
                 } catch (e: Throwable) {
+                    ModLoadingContext.kiltActiveModId = null
+
+                    val envMismatch = isEnvironmentClassLoadingIssue(e) || isEnvironmentClassLoadingIssue(extraThrowable)
+                    if (envMismatch) {
+                        Kilt.logger.debug("Skipping mod class ${it.clazz.className} for ${mod.modId} due to environment mismatch.")
+                        hasErrored = true
+                        return@collect
+                    }
+
                     e.printStackTrace()
                     if (extraThrowable != null)
                         exception.addSuppressed(extraThrowable)
@@ -800,6 +819,23 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         if (exception.suppressed.isNotEmpty()) {
             throw exception
         }
+    }
+
+    private fun isEnvironmentClassLoadingIssue(throwable: Throwable?): Boolean {
+        var current = throwable
+        while (current != null) {
+            val message = current.message
+            if (message != null &&
+                message.startsWith("Cannot load class ") &&
+                (message.contains("in environment type SERVER") || message.contains("in environment type CLIENT"))
+            ) {
+                return true
+            }
+
+            current = current.cause
+        }
+
+        return false
     }
 
     private fun loadTransformers(mod: ForgeMod) {

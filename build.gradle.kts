@@ -78,6 +78,12 @@ loom {
             "MISSING_INJECTOR_DESC_SINGLETARGET" to "error"
         ))
     }
+
+    runs {
+        configureEach {
+            vmArg("--add-modules=jdk.zipfs")
+        }
+    }
 }
 
 allprojects {
