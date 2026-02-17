@@ -73,6 +73,11 @@ public abstract class RegistryDataLoaderInject implements RegistryDataLoaderInje
             this.registryBuilderConsumer = registryBuilderConsumer;
         }
 
+        @Override
+        public void kilt$setRegistryBuilderConsumer(Consumer<RegistryBuilder<T>> builderConsumer) {
+            this.registryBuilderConsumer = builderConsumer;
+        }
+
         @Redirect(method = "create", at = @At(value = "NEW", target = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Lifecycle;)Lnet/minecraft/core/MappedRegistry;"))
         private MappedRegistry<T> kilt$createRegistry(ResourceKey<? extends Registry<T>> resourceKey, Lifecycle lifecycle) {
             var registryBuilder = new RegistryBuilder<>(resourceKey);
