@@ -55,6 +55,7 @@ sourceSets {
 loom {
     accessWidenerPath.set(file("src/main/resources/kilt.classtweaker"))
     mixin {
+        useLegacyMixinAp = false
         showMessageTypes.set(true)
 
         messages.set(mutableMapOf(
