@@ -11,7 +11,7 @@ public abstract class ServerCommmonPacketListenerImplMixin {
     @Shadow
     public abstract void send(Packet<?> packet);
 
-    @Unique(silent = true)
+    @Intrinsic
     public void kilt$i$send(Packet<?> packet) {
         this.send(packet);
     }
