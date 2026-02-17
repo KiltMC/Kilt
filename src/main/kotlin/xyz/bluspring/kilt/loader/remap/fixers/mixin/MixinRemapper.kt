@@ -48,10 +48,18 @@ object MixinRemapper {
 
                     // Remap accessor/invoker
                     if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
-                        if (!values.contains("value"))
-                            continue
-
-                        val value = values["value"] as String
+                        val value = values["value"] as? String ?: method.name.run {
+                            (if (this.startsWith("get"))
+                                this.removePrefix("get")
+                            else if (this.startsWith("set"))
+                                this.removePrefix("set")
+                            else if (this.startsWith("invoke"))
+                                this.removePrefix("invoke")
+                            else if (this.startsWith("call"))
+                                this.removePrefix("call")
+                            else
+                                this).replaceFirstChar { it.lowercaseChar() }
+                        }
 
                         if (mixinMapping.contains(value)) {
                             if (!alreadyRefmapped.add(value))
