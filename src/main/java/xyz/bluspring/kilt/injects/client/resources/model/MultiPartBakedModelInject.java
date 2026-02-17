@@ -126,9 +126,13 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
         mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultiPartBakedModelMixin",
         name = "getQuads"
     )
-    @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
-    private boolean kilt$useQuadDataIfAvailableSodium06(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
-        return kilt$renderType.get() == null || model.getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get());
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    private boolean kilt$useQuadDataIfAvailableSodium06(List<BakedQuad> instance, Collection<BakedQuad> es, Operation<Boolean> original, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+        if (kilt$renderType.get() == null || model.getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get())) {
+            return original.call(instance, es);
+        } else {
+            return false;
+        }
     }
 
     @IfModLoaded(value = "sodium", minVersion = "0.6.0")
