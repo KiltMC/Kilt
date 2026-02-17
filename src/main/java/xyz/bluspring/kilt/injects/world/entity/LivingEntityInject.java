@@ -551,7 +551,7 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         while (itr.hasNext()) {
             MobEffectInstance effect = itr.next();
 
-            if (effect.getCures().contains(cure) && !EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, cure)) {
+            if (effect.neoforge$getCures().contains(cure) && !EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, cure)) {
                 this.onEffectRemoved(effect);
                 itr.remove();
                 ret = true;

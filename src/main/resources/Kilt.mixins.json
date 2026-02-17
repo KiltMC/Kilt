@@ -81,6 +81,8 @@
         "dev.MappedRegistryMixin",
         "resources.RegistryOpsAccessor",
         "server.level.TicketAccessor",
+        "workarounds.ICommonPacketListenerMixin",
+        "workarounds.ServerCommmonPacketListenerImplMixin",
         "world.inventory.GrindstoneMenuAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.UseAnimAccessor",
@@ -99,7 +101,8 @@
         "compat.owo.ShaderInstanceMixin",
         "compat.ratatouille.ShaderInstanceMixin",
         "compat.sodium.ItemRendererMixin",
-        "debug.PoseStackMixin"
+        "debug.PoseStackMixin",
+        "workarounds.ClientCommonPacketListenerImplMixin"
     ],
     "injectors": {
         "defaultRequire": 1
