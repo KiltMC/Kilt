@@ -14,6 +14,7 @@ import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
@@ -117,7 +118,7 @@ public abstract class ClientPacketListenerInject extends ClientCommonPacketListe
 
     @Inject(method = "method_38542", at = @At("HEAD"), cancellable = true)
     public void kilt$onDataPacket(ClientboundBlockEntityDataPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class, HolderLookup.Provider.class)) {
             blockEntity.onDataPacket(this.connection, packet, this.registryAccess);
             ci.cancel();
         }
