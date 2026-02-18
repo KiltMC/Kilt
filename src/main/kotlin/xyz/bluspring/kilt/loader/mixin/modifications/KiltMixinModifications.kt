@@ -313,7 +313,7 @@ object KiltMixinModifications {
 
         val modifiers = MODIFIERS[annotation.desc] ?: return null
 
-        for (modifier in modifiers.filter { it.mappedOwner == className }) {
+        for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
             when (modifier) {
                 is AnnotationBasedModifier -> {
                     val map = annotationValuesToMap(annotation.values)

@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.client.particle;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -33,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
+import xyz.bluspring.kilt.injections.client.particle.TerrainParticleInjection;
 
 import java.util.*;
 
@@ -106,9 +108,12 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         return original || !IClientBlockExtensions.of(state).addDestroyEffects(state, this.level, pos, (ParticleEngine) (Object) this);
     }
 
-    @ModifyExpressionValue(method = {"method_34020", "crack"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDDLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/client/particle/TerrainParticle;"))
-    private TerrainParticle kilt$handleUpdateSprite(TerrainParticle original, @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
-        return original.updateSprite(state, pos);
+    @ModifyReceiver(method = {"method_34020", "crack"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/TerrainParticle;setPower(F)Lnet/minecraft/client/particle/Particle;"))
+    private Particle kilt$handleUpdateSprite(Particle original, @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
+        if (original instanceof TerrainParticleInjection injection)
+            return injection.updateSprite(state, pos);
+        else
+            return original;
     }
 
     @Override
