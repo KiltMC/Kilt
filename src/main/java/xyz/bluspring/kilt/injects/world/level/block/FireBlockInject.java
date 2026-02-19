@@ -42,12 +42,12 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
 
     @WrapOperation(method = "getStateForPlacement(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;canBurn(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 0))
     private boolean kilt$checkCanCatchFire(FireBlock instance, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) BlockGetter level, @Local(argsOnly = true) BlockPos pos) {
-        return original.call(instance, state) || ((FireBlockInjection) instance).canCatchFire(level, pos, Direction.UP);
+        return original.call(instance, state) || instance.canCatchFire(level, pos, Direction.UP);
     }
 
     @WrapOperation(method = "getStateForPlacement(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;canBurn(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 1))
     private boolean kilt$checkCanCatchFire(FireBlock instance, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) BlockGetter level, @Local(argsOnly = true) BlockPos pos, @Local Direction direction) {
-        return original.call(instance, state) || ((FireBlockInjection) instance).canCatchFire(level, pos.relative(direction), direction.getOpposite());
+        return original.call(instance, state) || instance.canCatchFire(level, pos.relative(direction), direction.getOpposite());
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0))
@@ -57,7 +57,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;canBurn(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 0))
     private boolean kilt$checkCanCatchFireTick(FireBlock instance, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) BlockPos pos) {
-        return original.call(instance, state) || ((FireBlockInjection) instance).canCatchFire(level, pos.below(), Direction.UP);
+        return original.call(instance, state) || instance.canCatchFire(level, pos.below(), Direction.UP);
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;checkBurnOut(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;ILnet/minecraft/util/RandomSource;I)V"))
