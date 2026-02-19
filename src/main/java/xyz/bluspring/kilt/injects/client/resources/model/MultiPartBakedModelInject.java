@@ -100,14 +100,18 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
     }
 
     @IfModAbsent("sodium")
-    @WrapWithCondition(method = "getQuads", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
-    private boolean kilt$useQuadDataIfAvailable(List<BakedQuad> instance, Collection<BakedQuad> es, @Local int j, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource, @Share("model") LocalRef<BakedModel> model) {
+    @WrapOperation(method = "getQuads", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"), require = 0)
+    private boolean kilt$useQuadDataIfAvailable(List<BakedQuad> instance, Collection<BakedQuad> es, Operation<Boolean> original, @Local int j, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource, @Share("model") LocalRef<BakedModel> model) {
         model.set(this.selectors.get(j).getRight());
-        return kilt$renderType.get() == null || model.get().getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get());
+        if (kilt$renderType.get() == null || model.get().getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get())) {
+            return original.call(instance, es);
+        } else {
+            return false;
+        }
     }
 
     @IfModAbsent("sodium")
-    @WrapOperation(method = "getQuads", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    @WrapOperation(method = "getQuads", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"), require = 0)
     private List<BakedQuad> kilt$useForgeQuadGetterIfAvailable(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local long l) {
         var renderType = kilt$renderType.get();
         var modelData = kilt$modelData.get();
@@ -126,7 +130,7 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
         mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultiPartBakedModelMixin",
         name = "getQuads"
     )
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"), require = 0)
     private boolean kilt$useQuadDataIfAvailableSodium06(List<BakedQuad> instance, Collection<BakedQuad> es, Operation<Boolean> original, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
         if (kilt$renderType.get() == null || model.getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get())) {
             return original.call(instance, es);
@@ -140,7 +144,7 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
         mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultiPartBakedModelMixin",
         name = "getQuads"
     )
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"), require = 0)
     private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium06(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
         var renderType = kilt$renderType.get();
         var modelData = kilt$modelData.get();
