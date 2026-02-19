@@ -13,6 +13,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.neoforged.fml.ModLoader;
+import net.neoforged.neoforge.common.extensions.IServerConfigurationPacketListenerExtension;
 import net.neoforged.neoforge.network.ConfigurationInitialization;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
@@ -29,12 +30,14 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.function.Function;
 
-@Implements(@Interface(iface = ServerConfigurationPacketListener.class, prefix = "kilt$i$"))
+@Implements({
+    @Interface(iface = ServerConfigurationPacketListener.class, prefix = "kilt$i$"),
+    @Interface(iface = IServerConfigurationPacketListenerExtension.class, prefix = "kilt$j$")
+})
 @Mixin(ServerConfigurationPacketListenerImpl.class)
 public abstract class ServerConfigurationPacketListenerImplInject extends ServerCommonPacketListenerImplInject implements ServerConfigurationPacketListener {
-    @Shadow
-    @Final
-    private Queue<ConfigurationTask> configurationTasks;
+    @Shadow @Final private Queue<ConfigurationTask> configurationTasks;
+    @Shadow public abstract void finishCurrentTask(ConfigurationTask.Type taskType);
 
     @Inject(method = "startConfiguration", at = @At("HEAD"))
     private void kilt$setupNeoConfiguration(CallbackInfo ci) {
@@ -99,5 +102,10 @@ public abstract class ServerConfigurationPacketListenerImplInject extends Server
     private CommonListenerCookie kilt$attachConnectionTypeToCookie(CommonListenerCookie original) {
         original.kilt$setConnectionType(this.connectionType);
         return original;
+    }
+
+    @Intrinsic
+    public void kilt$j$finishCurrentTask(ConfigurationTask.Type task) {
+        this.finishCurrentTask(task);
     }
 }
