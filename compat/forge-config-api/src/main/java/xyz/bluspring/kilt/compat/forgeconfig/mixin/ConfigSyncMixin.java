@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 @IfModLoaded("forgeconfigapiport")
-@Mixin(ConfigSync.class)
+@Mixin(value = ConfigSync.class, remap = false)
 public abstract class ConfigSyncMixin {
     /**
      * @author BluSpring
