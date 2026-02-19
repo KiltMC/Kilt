@@ -15,6 +15,12 @@ import kotlin.collections.set
 
 // Remap shadow and overwrite
 object MixinShadowRemapper {
+    private val SPECIAL_REMAPS = mapOf(
+        // why
+        "f_92674_" to $$"kilt$itemColors",
+        "f_92571_" to $$"kilt$blockColors"
+    )
+
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
         val remappedFields = mutableMapOf<String, String>()
         val remappedMethods = mutableMapOf<String, String>()
@@ -30,6 +36,11 @@ object MixinShadowRemapper {
             var remapped = ""
 
             for (className in targetClassNames) {
+                if (SPECIAL_REMAPS.contains(field.name)) {
+                    remapped = SPECIAL_REMAPS[field.name]!!
+                    break
+                }
+
                 // First pass, try to remap with current names
                 remapped = remapper.mapFieldName(className, field.name, field.desc)
 

@@ -188,6 +188,73 @@ object KiltMixinModifications {
             paramToShareMapping = mapOf(
                 ParamPair("Lnet/minecraftforge/client/event/RenderTooltipEvent\$Pre;", 0) to Share("preEvent", namespace = "kilt")
             )
+        ),
+
+        // Fixes TerraFirmaCraft's MinecraftMixin, and probably some others too.
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/Minecraft",
+            methods = listOf("*(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig;)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lcom/mojang/realmsclient/client/RealmsClient;", 0) to Share("realmsClient", namespace = "kilt"),
+                ParamPair("Lnet/minecraft/server/packs/resources/ReloadInstance;", 0) to Share("reloadInstance", namespace = "kilt"),
+                ParamPair("Lnet/minecraft/client/main/GameConfig;", 0) to Share("gameConfig", namespace = "kilt")
+            )
+        ),
+
+        // Same as above
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/Minecraft",
+            methods = listOf("*(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraftforge/client/loading/ClientModLoader;completeModLoading()Z",
+                    remap = false
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    TargetHandler::class.java, mapOf(
+                        "mixin" to "xyz.bluspring.kilt.forgeinjects.client.MinecraftInject",
+                        "name" to $$"kilt$finishModLoading",
+                        "prefix" to "handler"
+                    )
+                ),
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("@MixinSquared:Handler"),
+                        "at" to at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraftforge/client/loading/ClientModLoader;completeModLoading()Z",
+                            remap = false
+                        )
+                    )
+                )
+            )
+        ),
+
+        // Fixes TerraFirmaCraft's ServerPlayerGameModeMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerPlayerGameMode",
+            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
+                    remap = false
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"
+                        ))
+                    )
+                )
+            )
         )
     )
 
@@ -302,6 +369,65 @@ object KiltMixinModifications {
             "net/minecraft/world/entity/player/Player",
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
             remapMethodsTo = "getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"
+        ),
+
+        // Fixes TerraFirmaCraft's FriendlyByteBufMixin
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/network/FriendlyByteBuf",
+            methods = listOf("writeItemStack", "writeItemStack(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/network/FriendlyByteBuf;"),
+            remapMethodsTo = "writeItem(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/FriendlyByteBuf;"
+        ),
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/network/FriendlyByteBuf",
+            methods = listOf("readItem", "readItem()Lnet/minecraft/world/item/ItemStack;"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/ItemStack;readShareTag(Lnet/minecraft/nbt/CompoundTag;)V",
+                    remap = false
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.forgeinjects.network.FriendlyByteBufInject",
+                    "name" to $$"kilt$readShareTagForStack",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(Redirect::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/world/item/ItemStack;readShareTag(Lnet/minecraft/nbt/CompoundTag;)V"
+                    ))
+                ))
+            )
+        ),
+
+        // Fixes TerraFirmaCraft's AbstractContainerMenuMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/inventory/AbstractContainerMenu",
+            methods = listOf("synchronizeSlotToRemote", "synchronizeSlotToRemote(ILnet/minecraft/world/item/ItemStack;Ljava/util/function/Supplier;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/ItemStack;equals(Lnet/minecraft/world/item/ItemStack;Z)Z",
+                    remap = false
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.forgeinjects.world.inventory.AbstractContainerMenuInject",
+                    "name" to $$"kilt$checkStacksShouldSync",
+                    "prefix" to "wrapWithCondition"
+                )),
+                createAnnotation(Redirect::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/world/item/ItemStack;equals(Lnet/minecraft/world/item/ItemStack;Z)Z"
+                    ))
+                ))
+            )
         )
     )
 
