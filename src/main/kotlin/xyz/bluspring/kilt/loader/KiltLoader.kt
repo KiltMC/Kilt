@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import com.mojang.serialization.JsonOps
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,7 @@ import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -73,6 +75,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private lateinit var sortedModOrder: Collection<ForgeMod>
 
     private val environment = KiltEnvironment()
+    var config = KiltLoaderConfig()
 
     // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
     // use the same mod ID.
@@ -121,6 +124,22 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             if (path.isPresent && path.orElseThrow().isDirectory()) {
                 Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging Forge classes! This may lead to a game crash!")
             }
+        }
+
+        this.loadConfig()
+    }
+
+    fun loadConfig() {
+        if (KiltLoaderConfig.PATH.exists()) {
+            KiltLoaderConfig.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(KiltLoaderConfig.PATH.reader(options = arrayOf(StandardOpenOption.READ))))
+                .get()
+                .left()
+                .map { it.first }
+                .ifPresentOrElse({
+                    this.config = it
+                }) {
+                    Kilt.logger.error("Failed to load config!")
+                }
         }
     }
 
@@ -300,6 +319,11 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             // mods should really use the same mod ID between their mods >:(
             if (SKIPPED_FABRIC_MODS.contains(modId)) {
                 Kilt.logger.warn("Mod ID $modId is a combined mod JAR already existing under ID ${SKIPPED_FABRIC_MODS[modId]}, skipping!")
+                continue
+            }
+
+            if (this.config.forceDisabledModIds.contains(modId)) {
+                Kilt.logger.info("Mod ID $modId was detected to be forcefully disabled in the config, skipping.")
                 continue
             }
 
