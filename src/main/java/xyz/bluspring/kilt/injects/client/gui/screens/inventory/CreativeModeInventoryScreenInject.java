@@ -1,22 +1,12 @@
 // TRACKED HASH: 9169c1a016aa79fe41a22e24efb28b87a97545d4
 package xyz.bluspring.kilt.injects.client.gui.screens.inventory;
 
+import java.util.List;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
-import net.minecraft.client.multiplayer.SessionSearchTrees;
-import net.minecraft.client.searchtree.SearchTree;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,9 +14,26 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.gui.screens.inventory.AbstractContainerScreenInjection;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.CreativeModeInventoryScreenInjection;
 import xyz.bluspring.kilt.injections.world.inventory.SlotInjection;
+import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.searchtree.SearchTree;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
 
 @Mixin(value = CreativeModeInventoryScreen.class, priority = 1009)
 public abstract class CreativeModeInventoryScreenInject extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> implements CreativeModeInventoryScreenInjection {
@@ -35,6 +42,15 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
 
     public CreativeModeInventoryScreenInject(CreativeModeInventoryScreen.ItemPickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
+    }
+
+    @Inject(method = "tryRebuildTabContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;updateCreativeTags(Ljava/util/List;)V", shift = At.Shift.AFTER))
+    private void kilt$loadCreativeTabs(SessionSearchTrees searchTrees, FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider registries, CallbackInfoReturnable<Boolean> cir) {
+        CreativeModeTabs.allTabs().stream().filter(CreativeModeTabInjection::hasSearchBar).forEach(tab -> {
+            List<ItemStack> list = List.copyOf(tab.getDisplayItems());
+            searchTrees.updateCreativeTooltips(registries, list, CreativeModeTabSearchRegistry.getNameSearchKey(tab));
+            searchTrees.updateCreativeTags(list, CreativeModeTabSearchRegistry.getTagSearchKey(tab));
+        });
     }
 
     @WrapOperation(method = {"refreshCurrentTabContents", "charTyped", "keyPressed", }, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;getType()Lnet/minecraft/world/item/CreativeModeTab$Type;"))
