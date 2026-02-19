@@ -3,40 +3,59 @@ package xyz.bluspring.kilt.forgeinjects.server.level;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ForgeHooks;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(ServerPlayerGameMode.class)
 public abstract class ServerPlayerGameModeInject {
+	@Shadow private GameType gameModeForPlayer;
+	@Shadow @Final protected ServerPlayer player;
+	@Shadow protected ServerLevel level;
 
-	@Shadow
-	private GameType gameModeForPlayer;
+	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
+	private boolean kilt$tryHandleDestroyedByPlayer(ServerLevel instance, BlockPos blockPos, boolean b, Operation<Boolean> original, @Local BlockState state) {
+		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "onDestroyedByPlayer", BlockState.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
+			return state.onDestroyedByPlayer(instance, blockPos, this.player, b, this.level.getFluidState(blockPos));
+		}
 
-	@Shadow
-	@Final
-	protected ServerPlayer player;
+		return original.call(instance, blockPos, b);
+	}
 
-	@Shadow
-	protected ServerLevel level;
+	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;hasCorrectToolForDrops(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
+	private boolean kilt$checkCanHarvestBlock(ServerPlayer instance, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) BlockPos pos) {
+		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "canHarvestBlock", BlockState.class, BlockGetter.class, BlockPos.class, Player.class)) {
+			return state.canHarvestBlock(this.level, pos, instance);
+		}
+
+		return original.call(instance, state);
+	}
+
+	@Unique
+	private boolean destroyBlock(BlockPos pos, boolean canHarvest) {
+		BlockState state = this.level.getBlockState(pos);
+		boolean removed = state.onDestroyedByPlayer(this.level, pos, this.player, canHarvest, this.level.getFluidState(pos));
+
+		if (removed) {
+			state.getBlock().destroy(this.level, pos, state);
+		}
+
+		return removed;
+	}
 
 	/*@WrapOperation(
 			method = "destroyBlock",
