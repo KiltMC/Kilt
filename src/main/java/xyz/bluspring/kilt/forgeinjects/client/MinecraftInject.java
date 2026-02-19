@@ -66,6 +66,7 @@ import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -194,58 +195,36 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         ClientModLoader.completeModLoading();
     }
 
-    @Unique private Map<CreativeModeTab, SearchRegistry.Key<ItemStack>> kilt$nameSearchKeys;
-    @Unique private Map<CreativeModeTab, SearchRegistry.Key<ItemStack>> kilt$tagSearchKeys;
-    @Unique private SearchRegistry.Key<ItemStack> kilt$nameSearchKey;
-    @Unique private SearchRegistry.Key<ItemStack> kilt$tagSearchKey;
-
     @Inject(method = "createSearchTrees", at = @At("HEAD"))
-    private void kilt$storeNameSearchKeys(CallbackInfo ci) {
-        this.kilt$nameSearchKeys = CreativeModeTabSearchRegistry.getNameSearchKeys();
-        this.kilt$tagSearchKeys = CreativeModeTabSearchRegistry.getTagSearchKeys();
+    private void kilt$storeNameSearchKeys(CallbackInfo ci, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        nameSearchKeys.set(CreativeModeTabSearchRegistry.getNameSearchKeys());
+        tagSearchKeys.set(CreativeModeTabSearchRegistry.getTagSearchKeys());
     }
 
     @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/searchtree/SearchRegistry;register(Lnet/minecraft/client/searchtree/SearchRegistry$Key;Lnet/minecraft/client/searchtree/SearchRegistry$TreeBuilderSupplier;)V", ordinal = 0))
-    private <T> void kilt$searchMultipleNameKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original) {
-        for (SearchRegistry.Key<ItemStack> nameSearchKey : this.kilt$nameSearchKeys.values()) {
+    private <T> void kilt$searchMultipleNameKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys) {
+        for (SearchRegistry.Key<ItemStack> nameSearchKey : nameSearchKeys.get().values()) {
             original.call(instance, nameSearchKey, factory);
         }
     }
 
     @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/searchtree/SearchRegistry;register(Lnet/minecraft/client/searchtree/SearchRegistry$Key;Lnet/minecraft/client/searchtree/SearchRegistry$TreeBuilderSupplier;)V", ordinal = 1))
-    private <T> void kilt$searchMultipleTagKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original) {
-        for (SearchRegistry.Key<ItemStack> tagSearchKey : this.kilt$tagSearchKeys.values()) {
+    private <T> void kilt$searchMultipleTagKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        for (SearchRegistry.Key<ItemStack> tagSearchKey : tagSearchKeys.get().values()) {
             original.call(instance, tagSearchKey, factory);
         }
     }
 
-    @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;setSearchTreeBuilder(Ljava/util/function/Consumer;)V"))
-    private void kilt$setMultipleSearchTreeBuilders(CreativeModeTab instance, Consumer<List<ItemStack>> searchTreeBuilder, Operation<Void> original) {
-        this.kilt$nameSearchKeys.forEach((tab, nameSearchKey) -> {
-            this.kilt$nameSearchKey = nameSearchKey;
-            this.kilt$tagSearchKey = this.kilt$tagSearchKeys.get(tab);
+    @Inject(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;setSearchTreeBuilder(Ljava/util/function/Consumer;)V", shift = At.Shift.AFTER))
+    private void kilt$setMultipleSearchTreeBuilders(CallbackInfo ci, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        var self = (Minecraft) (Object) this;
 
-            original.call(tab, searchTreeBuilder);
-
-            this.kilt$nameSearchKey = null;
-            this.kilt$tagSearchKey = null;
+        nameSearchKeys.get().forEach((tab, nameSearchKey) -> {
+            tab.setSearchTreeBuilder(list -> {
+                self.populateSearchTree(nameSearchKey, list);
+                self.populateSearchTree(tagSearchKeys.get().get(tab), list);
+            });
         });
-    }
-
-    @WrapOperation(method = "method_46740", at = @At(value = "FIELD", target = "Lnet/minecraft/client/searchtree/SearchRegistry;CREATIVE_NAMES:Lnet/minecraft/client/searchtree/SearchRegistry$Key;"))
-    private SearchRegistry.Key<ItemStack> kilt$useNameSearchKey(Operation<SearchRegistry.Key<ItemStack>> original) {
-        if (this.kilt$nameSearchKey == null)
-            return original.call();
-
-        return this.kilt$nameSearchKey;
-    }
-
-    @WrapOperation(method = "method_46740", at = @At(value = "FIELD", target = "Lnet/minecraft/client/searchtree/SearchRegistry;CREATIVE_TAGS:Lnet/minecraft/client/searchtree/SearchRegistry$Key;"))
-    private SearchRegistry.Key<ItemStack> kilt$useTagSearchKey(Operation<SearchRegistry.Key<ItemStack>> original) {
-        if (this.kilt$tagSearchKey == null)
-            return original.call();
-
-        return this.kilt$tagSearchKey;
     }
 
     // We're not using the Forge GUI system properly, but we're gonna make this incredibly mod compatible if we can.
