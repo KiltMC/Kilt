@@ -28,5 +28,6 @@
         }
     },
     "mixins": [
+        "kilt_forge_config_api.mixins.json"
     ]
 }
