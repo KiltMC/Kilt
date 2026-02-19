@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.forgeinjects.client.particle;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -32,6 +31,7 @@ import org.lwjgl.opengl.GL32C;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
 import xyz.bluspring.kilt.injections.client.particle.TerrainParticleInjection;
@@ -108,12 +108,22 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         return original || !IClientBlockExtensions.of(state).addDestroyEffects(state, this.level, pos, (ParticleEngine) (Object) this);
     }
 
-    @ModifyReceiver(method = {"method_34020", "crack"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/TerrainParticle;setPower(F)Lnet/minecraft/client/particle/Particle;"))
-    private Particle kilt$handleUpdateSprite(Particle original, @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
-        if (original instanceof TerrainParticleInjection injection)
+    @ModifyArg(method = "method_34020", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;add(Lnet/minecraft/client/particle/Particle;)V"))
+    private Particle kilt$handleUpdateSprite(Particle particle, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) BlockPos pos) {
+        if (particle instanceof TerrainParticleInjection injection) {
             return injection.updateSprite(state, pos);
+        }
+
+        return particle;
+    }
+
+    @WrapOperation(method = "crack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/TerrainParticle;setPower(F)Lnet/minecraft/client/particle/Particle;"))
+    private Particle kilt$handleUpdateSprite(TerrainParticle instance, float v, Operation<Particle> original, @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
+        var particle = original.call(instance, v);
+        if (particle instanceof TerrainParticleInjection injection)
+            return injection.updateSprite(state, pos).setPower(v);
         else
-            return original;
+            return particle;
     }
 
     @Override
