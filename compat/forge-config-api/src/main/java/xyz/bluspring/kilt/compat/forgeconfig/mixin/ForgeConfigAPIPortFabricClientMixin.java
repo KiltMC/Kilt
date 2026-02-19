@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 @IfModLoaded("forgeconfigapiport")
-@Mixin(ForgeConfigAPIPortFabricClient.class)
+@Mixin(value = ForgeConfigAPIPortFabricClient.class, remap = false)
 public abstract class ForgeConfigAPIPortFabricClientMixin {
     /**
      * @author BluSpring
