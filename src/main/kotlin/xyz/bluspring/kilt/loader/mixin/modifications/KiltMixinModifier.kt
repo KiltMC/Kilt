@@ -46,7 +46,7 @@ class KiltMixinModifier : IExtension {
                     val annotations = methodNode.visibleAnnotations ?: continue
                     val newAnnotations = mutableListOf<AnnotationNode>()
 
-                    for (annotation in annotations) {
+                    modifierApplier@for (annotation in annotations) {
                         if (annotation.desc == ACCESSOR) {
                             val modifier = KiltMixinModifications.findMatchingAccessor(context.classInfo, annotation, methodNode)
 
@@ -73,22 +73,22 @@ class KiltMixinModifier : IExtension {
                             }
                         }
 
-                        val modifier = KiltMixinModifications.findMatchingModifier(context.classInfo.name, annotation, methodNode.desc)
+                        val modifiers = KiltMixinModifications.findMatchingModifiers(context.classInfo.name, annotation, methodNode.desc)
+                            .filter {
+                                // This modifier does nothing here, it's in the fixers instead.
+                                it !is InjectedShareAccessModifier
+                            }
 
-                        if (modifier == null) {
+                        if (modifiers.isEmpty()) {
                             newAnnotations.add(annotation)
                             continue
                         }
 
-                        when (modifier) {
-                            is AnnotationBasedModifier -> {
-                                modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
-                            }
-
-                            is InjectedShareAccessModifier -> {
-                                // This modifier does nothing here, it's in the fixers instead.
-                                newAnnotations.add(annotation)
-                                continue
+                        for (modifier in modifiers) {
+                            when (modifier) {
+                                is AnnotationBasedModifier -> {
+                                    modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
+                                }
                             }
                         }
 

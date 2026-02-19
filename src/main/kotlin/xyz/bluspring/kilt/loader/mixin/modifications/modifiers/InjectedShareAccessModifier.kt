@@ -62,9 +62,25 @@ data class InjectedShareAccessModifier(
         val modifiedSplitDescriptor = splitDescriptor.toMutableList()
         val paramAnnotations = newMethod.invisibleParameterAnnotations ?: Array(splitDescriptor.size) { mutableListOf() }
         val shareIndices = mutableListOf<Int>()
+        val pairToShareIndex = mutableMapOf<ParamPair, Int>()
 
         val splitSignature = KiltMixinModifier.splitSignature((methodNode.signature ?: methodNode.desc).removePrefix("(").replaceAfter(")", "").removeSuffix(")"))
         val modifiedSplitSignature = splitSignature.toMutableList()
+
+        val descriptorOrder = modifiedSplitDescriptor.indices.toMutableList()
+        val callbackInfoIndex = run {
+            val ci = splitDescriptor.indexOf(KiltMixinModifications.CALLBACK_INFO)
+            val cir = splitDescriptor.indexOf(KiltMixinModifications.CALLBACK_INFO_RETURNABLE)
+
+            if (cir != -1 && ci > cir)
+                ci
+            else if (ci != -1 && cir > ci)
+                cir
+            else if (cir != -1)
+                cir
+            else
+                ci
+        }
 
         for ((paramPair, share) in this.paramToShareMapping) {
             val (desc, ordinal) = paramPair
@@ -78,8 +94,58 @@ data class InjectedShareAccessModifier(
                 }
             }
 
-            if (foundIndex == -1)
+            if (foundIndex == -1) {
                 throw IllegalStateException("Failed to locate param pair $paramPair for ${methodNode.name} in ${mixinClassNode.name}!")
+            }
+
+            shareIndices.add(foundIndex)
+            pairToShareIndex[paramPair] = foundIndex
+        }
+
+        // Move share params that sit before the CallbackInfo to after it, otherwise we encounter problems.
+        if (callbackInfoIndex != -1) {
+            val indicesBeforeCallbackInfo = shareIndices.filter { it < callbackInfoIndex }
+            val oldShareIndices = shareIndices.toList()
+
+            // This is just for loop hell, huh.
+            for (i in indicesBeforeCallbackInfo) {
+                descriptorOrder.add(i)
+                descriptorOrder.remove(i)
+            }
+
+            for (i in indicesBeforeCallbackInfo) {
+                val newIndex = descriptorOrder.indexOf(i)
+                shareIndices[shareIndices.indexOf(i)] = newIndex
+            }
+
+            for ((paramPair, _) in this.paramToShareMapping) {
+                val oldIndex = pairToShareIndex[paramPair]!!
+                pairToShareIndex[paramPair] = shareIndices[oldShareIndices.indexOf(oldIndex)]
+            }
+
+            val oldParamAnnotations = paramAnnotations.toList()
+            val oldVisParams = newMethod.visibleParameterAnnotations?.toList()
+
+            for ((newIndex, oldIndex) in descriptorOrder.withIndex()) {
+                val old = splitDescriptor[oldIndex]
+                modifiedSplitDescriptor[newIndex] = old
+
+                val oldSig = splitSignature[oldIndex]
+                modifiedSplitSignature[newIndex] = oldSig
+
+                val oldAnnotations = oldParamAnnotations[oldIndex]
+                paramAnnotations[newIndex] = oldAnnotations
+
+                if (newMethod.visibleParameterAnnotations != null && oldVisParams != null) {
+                    val oldVisAnnotations = oldVisParams[oldIndex]
+                    newMethod.visibleParameterAnnotations[newIndex] = oldVisAnnotations
+                }
+            }
+        }
+
+        for ((paramPair, share) in this.paramToShareMapping) {
+            val (desc, _) = paramPair
+            val foundIndex = pairToShareIndex[paramPair]!!
 
             modifiedSplitDescriptor[foundIndex] = when (desc) {
                 "I" -> LOCAL_INT_REF
@@ -107,8 +173,6 @@ data class InjectedShareAccessModifier(
                 else -> "${LOCAL_REF.descriptor.removeSuffix(";")}<${desc}>;"
             }
 
-            shareIndices.add(foundIndex)
-
             paramAnnotations[foundIndex].add(KiltMixinModifications.createAnnotation(Share::class.java, mutableMapOf<String, Any>(
                 "value" to share.value,
                 "namespace" to share.namespace
@@ -116,21 +180,18 @@ data class InjectedShareAccessModifier(
         }
 
         // Local capture to sugar annotation handling :D
-        if (KiltMixinModifications.annotationValuesToMap(annotation.values).contains("locals")) {
-            val callbackInfoIndex = splitDescriptor.indexOfLast { it == CALLBACK_INFO || it == CALLBACK_INFO_RETURNABLE }
-
-            if (callbackInfoIndex == -1)
-                throw IllegalStateException("How are we at negative index here?")
-
+        if (callbackInfoIndex != -1) {
             val totalOccurrences = mutableMapOf<String, Int>()
 
             for ((index, descPart) in splitDescriptor.withIndex()) {
+                val actualIndex = descriptorOrder.indexOf(index)
+
                 // Skip our shares.
-                if (shareIndices.contains(index))
+                if (shareIndices.contains(actualIndex))
                     continue
 
                 if (index > callbackInfoIndex) {
-                    paramAnnotations[index + callbackInfoIndex].add(KiltMixinModifications.createAnnotation(Local::class.java, mapOf(
+                    paramAnnotations[actualIndex].add(KiltMixinModifications.createAnnotation(Local::class.java, mapOf(
                         "ordinal" to totalOccurrences.getOrDefault(descPart.descriptor, 0)
                     )))
                 }
@@ -158,7 +219,7 @@ data class InjectedShareAccessModifier(
         val indexOffset = if (Modifier.isStatic(newMethod.access)) 0 else 1
 
         for ((index, descPart) in splitDescriptor.withIndex()) {
-            if (!shareIndices.contains(index)) {
+            if (!shareIndices.contains(descriptorOrder.indexOf(index))) {
                 // We can do a regular variable load if this isn't a share.
                 newMethod.visitVarInsn(
                     when (descPart.descriptor) {
@@ -168,13 +229,15 @@ data class InjectedShareAccessModifier(
                         "F" -> Opcodes.FLOAD
 
                         else -> Opcodes.ALOAD
-                    }, index + indexOffset
+                    }, descriptorOrder.indexOf(index) + indexOffset
                 )
             } else {
                 // Otherwise, time to call the getter.
-                newMethod.visitVarInsn(Opcodes.ALOAD, index + indexOffset)
-                newMethod.visitMethodInsn(Opcodes.INVOKEINTERFACE, modifiedSplitDescriptor[index].descriptor.removePrefix("L").removeSuffix(";"), "get", "()Ljava/lang/Object;", true)
-                newMethod.visitTypeInsn(Opcodes.CHECKCAST, descPart.descriptor.removeSurrounding("L", ";"))
+                newMethod.visitVarInsn(Opcodes.ALOAD, descriptorOrder.indexOf(index) + indexOffset)
+                newMethod.visitMethodInsn(Opcodes.INVOKEINTERFACE, modifiedSplitDescriptor[descriptorOrder.indexOf(index)].descriptor.removePrefix("L").removeSuffix(";"), "get", "()${if (descPart.descriptor.endsWith(";")) "Ljava/lang/Object;" else descPart.descriptor}", true)
+
+                if (descPart.descriptor.endsWith(";"))
+                    newMethod.visitTypeInsn(Opcodes.CHECKCAST, descPart.descriptor.removeSurrounding("L", ";"))
             }
         }
 
@@ -200,15 +263,17 @@ data class InjectedShareAccessModifier(
         newMethod.visitLabel(label2)
 
         for ((index, descPart) in splitDescriptor.withIndex()) {
+            val actualIndex = descriptorOrder.indexOf(index)
+
             if (index == 0 && indexOffset == 1) {
                 newMethod.visitLocalVariable("this", Type.getObjectType(mixinClassNode.name).descriptor, null, label0, label2, index)
             }
 
-            if (shareIndices.contains(index)) {
-                val localRefDesc = modifiedSplitDescriptor[index]
-                newMethod.visitLocalVariable("var${index}", localRefDesc.descriptor, modifiedSplitSignature[index], label0, label2, index + indexOffset)
+            if (shareIndices.contains(actualIndex)) {
+                val localRefDesc = modifiedSplitDescriptor[actualIndex]
+                newMethod.visitLocalVariable("var${actualIndex}", localRefDesc.descriptor, modifiedSplitSignature[actualIndex], label0, label2, actualIndex + indexOffset)
             } else {
-                newMethod.visitLocalVariable("var${index}", descPart.descriptor, null, label0, label2, index + indexOffset)
+                newMethod.visitLocalVariable("var${actualIndex}", descPart.descriptor, modifiedSplitSignature[actualIndex], label0, label2, actualIndex + indexOffset)
             }
         }
 
@@ -219,9 +284,6 @@ data class InjectedShareAccessModifier(
     }
 
     companion object {
-        val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
-        val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
-
         val LOCAL_REF = Type.getType(LocalRef::class.java)
         val LOCAL_INT_REF = Type.getType(LocalIntRef::class.java)
         val LOCAL_BYTE_REF = Type.getType(LocalByteRef::class.java)
