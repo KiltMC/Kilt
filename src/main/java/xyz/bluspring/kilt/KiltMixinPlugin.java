@@ -10,6 +10,7 @@ import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import com.moulberry.mixinconstraints.MixinConstraints;
 import com.moulberry.mixinconstraints.mixin.MixinConstraintsBootstrap;
 import cpw.mods.niofs.union.KiltUnionFileSystemHelper;
+import fr.catcore.cursedmixinextensions.CursedMixinExtensions;
 import kotlin.text.StringsKt;
 import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import org.objectweb.asm.tree.ClassNode;
@@ -100,5 +101,6 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo);
+        CursedMixinExtensions.postApply(targetClass);
     }
 }
