@@ -77,9 +77,9 @@ object MixinRemapper {
                                 continue
 
                             val mapped = remapTargetString(mixinMapping[value]!!, classTargets, remapper)
-                            mixinMapping[value] = mapped
+                            mixinMapping[value] = mapped.replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
                         } else {
-                            values["value"] = remapTargetString(value, classTargets, remapper)
+                            values["value"] = remapTargetString(value, classTargets, remapper).replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
                             annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
                         }
 
