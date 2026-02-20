@@ -213,7 +213,7 @@ allprojects {
             modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
 
             // Cursed Fabric/Mixin stuff
-            implementation("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
+            implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
                 exclude("org.ow2.asm")
             }
             modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")
@@ -236,7 +236,7 @@ dependencies {
 
     // JiJ'd into main JAR alone
     //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
-    include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
+    include("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
     include("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
