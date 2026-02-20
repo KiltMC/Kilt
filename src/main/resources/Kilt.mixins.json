@@ -83,6 +83,7 @@
         "server.level.TicketAccessor",
         "workarounds.ICommonPacketListenerMixin",
         "workarounds.ServerCommmonPacketListenerImplMixin",
+        "workarounds.ServerConfigurationPacketListenerMixin",
         "world.inventory.GrindstoneMenuAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.UseAnimAccessor",
