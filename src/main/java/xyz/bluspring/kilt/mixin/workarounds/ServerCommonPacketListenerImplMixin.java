@@ -7,7 +7,7 @@ import xyz.bluspring.kilt.workarounds.ICommonPacketListenerWorkaround;
 
 @Implements(@Interface(iface = ICommonPacketListenerWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(ServerCommonPacketListenerImpl.class)
-public abstract class ServerCommmonPacketListenerImplMixin {
+public abstract class ServerCommonPacketListenerImplMixin {
     @Shadow
     public abstract void send(Packet<?> packet);
 

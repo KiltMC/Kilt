@@ -82,7 +82,7 @@
         "resources.RegistryOpsAccessor",
         "server.level.TicketAccessor",
         "workarounds.ICommonPacketListenerMixin",
-        "workarounds.ServerCommmonPacketListenerImplMixin",
+        "workarounds.ServerCommonPacketListenerImplMixin",
         "workarounds.ServerConfigurationPacketListenerMixin",
         "world.inventory.GrindstoneMenuAccessor",
         "world.item.CreativeModeTabBuilderAccessor",

@@ -7,9 +7,10 @@ import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.bluspring.kilt.workarounds.IServerConfigurationPacketListenerWorkaround;
 
 
-@Implements(@Interface(iface = IServerConfigurationPacketListenerExtension.class, prefix = "kilt$i$"))
+@Implements(@Interface(iface = IServerConfigurationPacketListenerWorkaround.class, prefix = "kilt$i$"))
 @Mixin(ServerConfigurationPacketListener.class)
 public interface ServerConfigurationPacketListenerMixin extends IServerConfigurationPacketListenerExtension {
     @Intrinsic

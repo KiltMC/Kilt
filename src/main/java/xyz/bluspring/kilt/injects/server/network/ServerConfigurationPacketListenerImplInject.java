@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.network.RegistryFriendlyByteBufInjection;
+import xyz.bluspring.kilt.workarounds.IServerConfigurationPacketListenerWorkaround;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -32,7 +33,7 @@ import java.util.function.Function;
 
 @Implements({
     @Interface(iface = ServerConfigurationPacketListener.class, prefix = "kilt$i$"),
-    @Interface(iface = IServerConfigurationPacketListenerExtension.class, prefix = "kilt$j$")
+    @Interface(iface = IServerConfigurationPacketListenerWorkaround.class, prefix = "kilt$j$")
 })
 @Mixin(ServerConfigurationPacketListenerImpl.class)
 public abstract class ServerConfigurationPacketListenerImplInject extends ServerCommonPacketListenerImplInject implements ServerConfigurationPacketListener {
