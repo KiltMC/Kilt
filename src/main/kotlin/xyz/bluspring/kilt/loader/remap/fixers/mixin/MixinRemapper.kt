@@ -41,16 +41,15 @@ object MixinRemapper {
         for (method in classNode.methods) {
             fun remapMixinAnnotations(annotations: MutableList<AnnotationNode>) {
                 for (annotationNode in annotations) {
-                    if (annotationNode.values == null)
-                        continue
-
-                    val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+                    val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values ?: emptyList()).toMutableMap()
 
                     // Remap accessor/invoker
                     if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
                         val value = values["value"] as? String ?: method.name.run {
-                            (if (this.startsWith("get"))
+                            val value = (if (this.startsWith("get"))
                                 this.removePrefix("get")
+                            else if (this.startsWith("is"))
+                                this.removePrefix("is")
                             else if (this.startsWith("set"))
                                 this.removePrefix("set")
                             else if (this.startsWith("invoke"))
@@ -58,7 +57,12 @@ object MixinRemapper {
                             else if (this.startsWith("call"))
                                 this.removePrefix("call")
                             else
-                                this).replaceFirstChar { it.lowercaseChar() }
+                                this)
+
+                            if (value.uppercase() == value) // don't lowercase the first char if it's all uppercase
+                                value
+                            else
+                                value.replaceFirstChar { it.lowercaseChar() }
                         }
 
                         if (mixinMapping.contains(value)) {
