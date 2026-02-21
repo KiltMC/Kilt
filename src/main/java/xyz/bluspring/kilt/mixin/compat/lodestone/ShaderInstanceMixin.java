@@ -23,7 +23,7 @@ public class ShaderInstanceMixin {
         }
     }
 
-    @TargetHandler(
+    /*@TargetHandler(
         mixin = "xyz.bluspring.kilt.forgeinjects.client.renderer.ShaderInstanceInject",
         name = "kilt$addForgeSupportToFabricAPI"
     )
@@ -31,5 +31,5 @@ public class ShaderInstanceMixin {
     private void kilt$checkLodestoneProgram(String id, CallbackInfoReturnable<String> cir, CallbackInfo ci) {
         if (kilt$lodestoneShaderClass.isInstance(this))
             ci.cancel();
-    }
+    }*/
 }

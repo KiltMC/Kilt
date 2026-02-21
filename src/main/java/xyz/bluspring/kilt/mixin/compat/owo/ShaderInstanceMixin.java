@@ -24,13 +24,13 @@ public class ShaderInstanceMixin {
         }
     }
 
-    @TargetHandler(
-            mixin = "xyz.bluspring.kilt.forgeinjects.client.renderer.ShaderInstanceInject",
+    /*@TargetHandler(
+            mixin = "xyz.bluspring.kilt.injects.client.renderer.ShaderInstanceInject",
             name = "kilt$addForgeSupportToFabricAPI"
     )
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
     private void kilt$checkOwoProgram(String id, CallbackInfoReturnable<String> cir, CallbackInfo ci) {
         if (kilt$owoShaderClass.isInstance(this))
             ci.cancel();
-    }
+    }*/
 }
