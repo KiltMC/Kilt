@@ -13,10 +13,6 @@ public interface MobEffectInstanceInjection {
         throw KiltHelper.createMixinException(MobEffectInstanceInjection.class, "neoforge$getCures");
     }
 
-    default Set<EffectCure> getCures() {
-        throw KiltHelper.createMixinException(MobEffectInstanceInjection.class, "getCures");
-    }
-
     interface DetailsInjection {
         Optional<Set<EffectCure>> cures();
         void kilt$setCures(Optional<Set<EffectCure>> cures);

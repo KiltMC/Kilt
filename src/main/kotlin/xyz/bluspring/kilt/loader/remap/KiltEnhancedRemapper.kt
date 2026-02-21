@@ -84,17 +84,6 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 if (mapped != intermediary)
                     return mapped
             }
-
-            if (name.startsWith("f_") && name.endsWith("_")) {
-                // Worst case scenario, we need to ensure that it still gets mapped *somehow*, because in a bunch of cases, this is due to a missing library.
-                val mapped = KiltRemapper.srgMappedFields[name]
-
-                if (mapped != null) {
-                    return mapped.second
-                }
-
-                KiltRemapper.logger.warn("Failed to remap field $name:$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")
-            }
         }
 
         return intermediary
@@ -127,18 +116,6 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
 
                 if (mapped != intermediary)
                     return mapped
-            }
-
-            if (name.startsWith("m_") && name.endsWith("_")) {
-                // Worst case scenario, we need to ensure that it still gets mapped *somehow*, because in a bunch of cases, this is due to a missing library.
-                val mappedList = KiltRemapper.srgMappedMethods[name]
-
-                if (mappedList != null && mappedList.values.isNotEmpty()) {
-                    KiltRemapper.logger.debug("Using fallback method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }}, value: ${mappedList.values.first()})")
-                    return mappedList.values.first()
-                }
-
-                KiltRemapper.logger.warn("Failed to remap method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")
             }
         }
 

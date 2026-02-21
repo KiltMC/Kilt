@@ -1,6 +1,7 @@
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -73,6 +74,8 @@ loom {
 allprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    val prodRuntimeDep by configurations.creating
 
     tasks {
         create("printConfigurations") {
@@ -197,7 +200,7 @@ allprojects {
         modImplementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
         // Just because I like Kotlin more than Java
-        modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+        modImplementation ("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
 
         /*(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
             exclude("org.ow2.asm")
@@ -210,7 +213,7 @@ allprojects {
 
         if (project.parent?.name != "loader") {
             // Fabric API. This is technically optional, but you probably want it anyway.
-            modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
+            modImplementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
 
             // Cursed Fabric/Mixin stuff
             implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
@@ -290,6 +293,7 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:ferrite-core:7.0.2-hotfix-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
+    "prodRuntimeDep"("maven.modrinth:sodium:${property("sodium_version")}")
     modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
     modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.2-fabric") {
         exclude("net.fabricmc", "fabric-loader")
@@ -586,6 +590,17 @@ tasks {
         doLast {
             ClassTweakerUpdater.updateTweakers(rootProject)
         }
+    }
+
+    register("runProdClient", ClientProductionRunTask::class) {
+        mods.from(configurations.getByName("prodRuntimeDep"))
+
+        jvmArgs.add("-Dkilt.forceRemap=true")
+        jvmArgs.add("-Dkilt.forceProductionRemap=true")
+        jvmArgs.add("-XX:+AllowEnhancedClassRedefinition")
+        jvmArgs.add("-Dmixin.debug.export=true")
+
+        runDir = file("run")
     }
 
     project.extensions.configure<ModPublishExtension>("publishMods") {

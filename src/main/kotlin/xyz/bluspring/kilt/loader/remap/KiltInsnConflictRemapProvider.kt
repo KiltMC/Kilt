@@ -17,6 +17,11 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
                     "getAmount" -> return $$"forge$getAmount"
                     "writeToPacket" -> return $$"forge$writeToPacket"
                 }
+
+            "net/minecraft/world/effect/MobEffectInstance", KiltRemapper.remapClass("net/minecraft/world/effect/MobEffectInstance") ->
+                when (name) {
+                    "getCures" -> return $$"neoforge$getCures"
+                }
         }
 
         return super.remapMethod(owner, name, descriptor)

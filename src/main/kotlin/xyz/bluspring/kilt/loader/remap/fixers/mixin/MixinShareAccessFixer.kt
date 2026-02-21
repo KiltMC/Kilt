@@ -17,54 +17,53 @@ object MixinShareAccessFixer {
             for (methodNode in classNode.methods) {
                 val annotations = KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
                 for (annotation in annotations) {
-                    val modifier = KiltMixinModifications.findMatchingModifiers(targetClass, annotation, methodNode.desc)
-                        .firstOrNull { it is InjectedShareAccessModifier }
+                    val modifiers = KiltMixinModifications.findMatchingModifiers(targetClass, annotation, methodNode.desc)
+                        .filterIsInstance<InjectedShareAccessModifier>()
 
-                    if (modifier !is InjectedShareAccessModifier)
-                        continue
+                    for (modifier in modifiers) {
+                        // We want to conflict as little as possible, so we're doing this.
+                        val copiedMethodName = $$"kilt$modified_share_access$$${targetClass.split("/").last()}$$${methodNode.name}$$${annotation.desc.split("/").last().removeSuffix(";")}"
 
-                    // We want to conflict as little as possible, so we're doing this.
-                    val copiedMethodName = $$"kilt$modified_share_access$$${targetClass.split("/").last()}$$${methodNode.name}$$${annotation.desc.split("/").last().removeSuffix(";")}"
+                        // Copy the original method entirely.
+                        run {
+                            val copiedMethod = MethodNode()
+                            copiedMethod.name = copiedMethodName
+                            copiedMethod.desc = methodNode.desc
+                            copiedMethod.access = methodNode.access
 
-                    // Copy the original method entirely.
-                    run {
-                        val copiedMethod = MethodNode()
-                        copiedMethod.name = copiedMethodName
-                        copiedMethod.desc = methodNode.desc
-                        copiedMethod.access = methodNode.access
+                            copiedMethod.signature = methodNode.signature
+                            copiedMethod.visibleAnnotations = methodNode.visibleAnnotations?.toMutableList()?.apply {
+                                remove(annotation)
+                            }
+                            copiedMethod.invisibleAnnotations = methodNode.invisibleAnnotations?.toMutableList()?.apply {
+                                remove(annotation)
+                            }
+                            copiedMethod.visibleTypeAnnotations = methodNode.visibleTypeAnnotations
+                            copiedMethod.invisibleTypeAnnotations = methodNode.invisibleTypeAnnotations
+                            copiedMethod.invisibleParameterAnnotations = methodNode.invisibleParameterAnnotations
+                            copiedMethod.invisibleAnnotableParameterCount = methodNode.invisibleAnnotableParameterCount
+                            copiedMethod.visibleAnnotableParameterCount = methodNode.visibleAnnotableParameterCount
+                            copiedMethod.visibleLocalVariableAnnotations = methodNode.visibleLocalVariableAnnotations
+                            copiedMethod.invisibleLocalVariableAnnotations = methodNode.invisibleLocalVariableAnnotations
+                            copiedMethod.tryCatchBlocks = methodNode.tryCatchBlocks
+                            copiedMethod.attrs = methodNode.attrs
+                            copiedMethod.exceptions = methodNode.exceptions
+                            copiedMethod.localVariables = methodNode.localVariables
+                            copiedMethod.maxStack = methodNode.maxStack
+                            copiedMethod.maxLocals = methodNode.maxLocals
 
-                        copiedMethod.signature = methodNode.signature
-                        copiedMethod.visibleAnnotations = methodNode.visibleAnnotations?.toMutableList()?.apply {
-                            remove(annotation)
+                            copiedMethod.instructions = InsnList()
+                            copiedMethod.instructions.insert(methodNode.instructions)
+
+                            addedMethods.add(copiedMethod)
                         }
-                        copiedMethod.invisibleAnnotations = methodNode.invisibleAnnotations?.toMutableList()?.apply {
-                            remove(annotation)
-                        }
-                        copiedMethod.visibleTypeAnnotations = methodNode.visibleTypeAnnotations
-                        copiedMethod.invisibleTypeAnnotations = methodNode.invisibleTypeAnnotations
-                        copiedMethod.invisibleParameterAnnotations = methodNode.invisibleParameterAnnotations
-                        copiedMethod.invisibleAnnotableParameterCount = methodNode.invisibleAnnotableParameterCount
-                        copiedMethod.visibleAnnotableParameterCount = methodNode.visibleAnnotableParameterCount
-                        copiedMethod.visibleLocalVariableAnnotations = methodNode.visibleLocalVariableAnnotations
-                        copiedMethod.invisibleLocalVariableAnnotations = methodNode.invisibleLocalVariableAnnotations
-                        copiedMethod.tryCatchBlocks = methodNode.tryCatchBlocks
-                        copiedMethod.attrs = methodNode.attrs
-                        copiedMethod.exceptions = methodNode.exceptions
-                        copiedMethod.localVariables = methodNode.localVariables
-                        copiedMethod.maxStack = methodNode.maxStack
-                        copiedMethod.maxLocals = methodNode.maxLocals
 
-                        copiedMethod.instructions = InsnList()
-                        copiedMethod.instructions.insert(methodNode.instructions)
+                        // Throw the handling over to our mixin modifier.
+                        val newMethod = modifier.injectShareAccess(classNode, methodNode, annotation, copiedMethodName)
 
-                        addedMethods.add(copiedMethod)
+                        removedMethods.add(methodNode)
+                        addedMethods.add(newMethod)
                     }
-
-                    // Throw the handling over to our mixin modifier.
-                    val newMethod = modifier.injectShareAccess(classNode, methodNode, annotation, copiedMethodName)
-
-                    removedMethods.add(methodNode)
-                    addedMethods.add(newMethod)
                 }
             }
         }

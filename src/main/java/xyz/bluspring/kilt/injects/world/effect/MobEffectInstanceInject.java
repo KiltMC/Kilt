@@ -48,7 +48,7 @@ public abstract class MobEffectInstanceInject implements MobEffectInstanceInject
 
     @ModifyReturnValue(method = "asDetails", at = @At("RETURN"))
     private MobEffectInstance.Details kilt$attachCuresToDetails(MobEffectInstance.Details original) {
-        ((MobEffectInstanceInjection.DetailsInjection) (Object) original).kilt$setCures(Optional.of(this.getCures()).filter(cures -> !cures.isEmpty()));
+        ((MobEffectInstanceInjection.DetailsInjection) (Object) original).kilt$setCures(Optional.of(this.neoforge$getCures()).filter(cures -> !cures.isEmpty()));
         return original;
     }
 
@@ -65,10 +65,6 @@ public abstract class MobEffectInstanceInject implements MobEffectInstanceInject
     @Override
     public Set<EffectCure> neoforge$getCures() {
         return cures;
-    }
-
-    public Set<EffectCure> kilt$i$getCures() {
-        return this.neoforge$getCures();
     }
 
     @Mixin(MobEffectInstance.Details.class)

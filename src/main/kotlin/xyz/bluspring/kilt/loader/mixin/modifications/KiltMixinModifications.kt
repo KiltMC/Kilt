@@ -16,13 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AccessorModifier
-import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
-import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
-import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
@@ -335,7 +333,7 @@ object KiltMixinModifications {
         )
     )
 
-    fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
+    fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
         if (annotation.desc == SUGAR_WRAPPER.descriptor) {
             val map = annotationValuesToMap(annotation.values)
@@ -345,36 +343,43 @@ object KiltMixinModifications {
             }
         }
 
+        return annotation
+    }
+
+    fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
+        val annotation = getBaseAnnotation(annotation)
+
         val modifiers = MODIFIERS[annotation.desc] ?: return emptyList()
         val foundModifiers = mutableListOf<MixinModifier>()
+        val map = annotationValuesToMap(annotation.values ?: emptyList())
 
-        modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className }) {
+        modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
             when (modifier) {
                 is AnnotationBasedModifier -> {
-                    val map = annotationValuesToMap(annotation.values)
-
-                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
+                    if (!modifier.matches(map["method"] ?: continue)) {
                         continue
+                    }
 
                     // check if all conditions match
-                    if (!checkAllConditionsMatch(modifier.variables, map))
+                    if (!checkAllConditionsMatch(modifier.variables, map)) {
                         continue
+                    }
 
                     foundModifiers.add(modifier)
                 }
 
                 is InjectedShareAccessModifier -> {
-                    val map = annotationValuesToMap(annotation.values)
-
-                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
+                    if (!modifier.matches(map["method"] ?: continue)) {
                         continue
+                    }
 
                     val descriptor = Type.getArgumentTypes(descriptor)
 
                     for ((paramPair, _) in modifier.paramToShareMapping) {
                         val (param, ordinal) = paramPair
+                        val mappedParam = KiltRemapper.remapDescriptor(param)
 
-                        if (descriptor.count { it.descriptor == param } < ordinal + 1) {
+                        if (descriptor.count { it.descriptor == param || it.descriptor == mappedParam || KiltRemapper.remapDescriptor(it.descriptor) == param || KiltRemapper.remapDescriptor(it.descriptor) == mappedParam } < ordinal + 1) {
                             continue@modifierSearch
                         }
                     }
@@ -500,7 +505,9 @@ object KiltMixinModifications {
             "value" to value
         ).apply {
             if (target != null)
-                this["target"] = target
+                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper).apply {
+                    println(this)
+                }
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
@@ -523,7 +530,21 @@ object KiltMixinModifications {
             val owner = KiltRemapper.remapClass(modifier.owner)
             MIXIN_CLASSES.add(owner)
             modifier.mappedOwner = owner
+
+            if (modifier is MethodBasedModifier) {
+                modifier.mappedMethods = modifier.methods.map {
+                    (if (it.contains("(")) {
+                        val name = it.replaceAfter("(", "").removeSuffix("(")
+                        val descriptor = it.removePrefix(name)
+                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+                        "${KiltRemapper.srgMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
+                    } else it)
+                }
+            }
+
             list.add(modifier)
+            println(modifier.asString())
         }
 
         MODIFIERS[typeDesc] = list
