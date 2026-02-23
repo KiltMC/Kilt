@@ -25,6 +25,10 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
             return FabricLoader.getInstance().isModLoaded("create") && !KiltLoader.instance.hasMod("create") && MixinConstraints.shouldApplyMixin(mixinClassName)
         }
 
+        if (packageName == "create_forge") {
+            return KiltLoader.instance.hasMod("create") && MixinConstraints.shouldApplyMixin(mixinClassName)
+        }
+
         return MixinConstraints.shouldApplyMixin(mixinClassName)
     }
 

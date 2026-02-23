@@ -1,22 +1,23 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "xyz.bluspring.kilt.compat.create.mixin",
-    "compatibilityLevel": "JAVA_17",
-    "mixins": [
-        "create_fabric.CreateRegistrateMixin",
-        "flywheel.BakedModelBuffererMixin",
-        "registrate_fabric.AbstractRegistrateMixin",
-        "registrate_fabric.AbstractRegistrateMixin$RegistrationMixin",
-        "registrate_fabric.EntityBuilderMixin",
-        "registrate_fabric.RegistrateMixin",
-        "registrate_fabric.RegistryEntryMixin",
-        "registrate_fabric.RegistryObjectMixin"
-    ],
-    "client": [
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    },
-    "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.bluspring.kilt.compat.create.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "create_fabric.CreateRegistrateMixin",
+    "flywheel.BakedModelBuffererMixin",
+    "registrate_fabric.AbstractRegistrateMixin",
+    "registrate_fabric.AbstractRegistrateMixin$RegistrationMixin",
+    "registrate_fabric.EntityBuilderMixin",
+    "registrate_fabric.RegistrateMixin",
+    "registrate_fabric.RegistryEntryMixin",
+    "registrate_fabric.RegistryObjectMixin"
+  ],
+  "client": [
+    "create_forge.MapRendererMapInstanceMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
 }
