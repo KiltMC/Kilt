@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.client.renderer.RenderPropertiesInjection;
 import xyz.bluspring.kilt.injections.item.ItemInjection;
 import xyz.bluspring.kilt.injections.item.ItemPropertiesInjection;
@@ -54,9 +55,14 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
 
     private void kilt$initClient() {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            this.initializeClient(properties -> {
-                this.renderProperties = properties;
-            });
+            try {
+                this.initializeClient(properties -> {
+                    this.renderProperties = properties;
+                });
+            } catch (Throwable e) {
+                Kilt.Companion.getLogger().error("Failed to initialize client properties for item {}! This may result in a game crash.", this.getClass());
+                e.printStackTrace();
+            }
         }
     }
 
