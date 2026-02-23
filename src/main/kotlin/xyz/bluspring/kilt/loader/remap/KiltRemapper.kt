@@ -46,7 +46,10 @@ import xyz.bluspring.kilt.util.KiltHelper
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.util.*
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.ProviderNotFoundException
 import java.nio.file.StandardOpenOption
 import java.util.*
 import java.util.function.Consumer
@@ -89,6 +92,57 @@ object KiltRemapper {
         NoopMappingResolver()
     else
         FabricLoader.getInstance().mappingResolver
+
+    private fun ClassProvider.Builder.addLibrarySafe(path: Path) {
+        val isDirectory = runCatching { path.isDirectory() }.getOrDefault(false)
+        if (!isDirectory) {
+            val isRegularFile = runCatching { path.isRegularFile() }.getOrDefault(false)
+            if (!isRegularFile) {
+                return
+            }
+
+            val name = path.fileName?.toString()?.lowercase(Locale.ROOT)
+            val isArchive = name?.endsWith(".jar") == true || name?.endsWith(".zip") == true || name?.endsWith(".jmod") == true
+            if (!isArchive) {
+                return
+            }
+        }
+
+        try {
+            addLibrary(path)
+            return
+        } catch (_: ProviderNotFoundException) {
+            // Some classpath entries are backed by non-default file systems in dev runs.
+            // Normalize them to a physical path that AutoRenamingTool can open.
+        }
+
+        val fallbackPath = runCatching {
+            val uri = path.toUri()
+            when (uri.scheme) {
+                "jar" -> {
+                    val nested = uri.toString().removePrefix("jar:").substringBefore("!/")
+                    Paths.get(URI(nested))
+                }
+                "file" -> Paths.get(uri)
+                else -> null
+            }
+        }.getOrNull()
+
+        if (fallbackPath != null) {
+            try {
+                addLibrary(fallbackPath)
+                return
+            } catch (exception: ProviderNotFoundException) {
+                throw RuntimeException(
+                    "Failed to add class library path '$path' (uri=${runCatching { path.toUri() }.getOrNull()}) " +
+                            "using fallback '$fallbackPath' (uri=${runCatching { fallbackPath.toUri() }.getOrNull()})",
+                    exception
+                )
+            }
+        }
+
+        throw RuntimeException("Could not normalize class library path '$path' (uri=${runCatching { path.toUri() }.getOrNull()}).")
+    }
 
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
     // srg -> intermediary
@@ -284,7 +338,7 @@ object KiltRemapper {
                 // in order to use mods lmao
                 *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
             ).forEach {
-                addLibrary(it)
+                addLibrarySafe(it)
             }
         }.build()
 
@@ -298,7 +352,7 @@ object KiltRemapper {
             ClassProvider.builder().apply {
                 // time to add Intermediary mappings to the mix! :,D
                 if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
-                    addLibrary(intermediaryMap)
+                    intermediaryMap?.let { addLibrarySafe(it) }
                 }
 
                 // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
@@ -314,7 +368,7 @@ object KiltRemapper {
                     // in order to use mods lmao
                     *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
                 ).forEach {
-                    addLibrary(it)
+                    addLibrarySafe(it)
                 }
             }.build()
         }
@@ -717,9 +771,9 @@ object KiltRemapper {
         val startTime = System.currentTimeMillis()
 
         val classProvider = ClassProvider.builder().apply {
-            this.addLibrary(gameFile)
+            this.addLibrarySafe(gameFile)
             for (path in getGameClassPath()) {
-                this.addLibrary(path)
+                this.addLibrarySafe(path)
             }
         }.build()
         val srgRemapper = EnhancedRemapper(classProvider, mappingFile, logConsumer)
