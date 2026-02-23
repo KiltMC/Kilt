@@ -2,7 +2,9 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import com.bawnorton.mixinsquared.TargetHandler;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -237,7 +239,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @ModifyReturnValue(method = "getAttributeModifiers", at = @At("RETURN"))
     private Multimap<Attribute, AttributeModifier> kilt$invokeAttributeModifiersEvent(Multimap<Attribute, AttributeModifier> original, EquipmentSlot slot) {
-        return ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original);
+        return HashMultimap.create(ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original)); // Kilt: Make mutable, other mods depend on this.
     }
 
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")
