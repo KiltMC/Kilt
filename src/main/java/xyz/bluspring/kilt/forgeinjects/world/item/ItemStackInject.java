@@ -232,8 +232,9 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @WrapOperation(method = "getAttributeModifiers", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getDefaultAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))
     private Multimap<Attribute, AttributeModifier> kilt$getModdedAttributeModifiers(Item instance, EquipmentSlot slot, Operation<Multimap<Attribute, AttributeModifier>> original) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getAttributeModifiers", EquipmentSlot.class, ItemStack.class)) {
-            return instance.getAttributeModifiers(slot,  (ItemStack) (Object) this);
+            return HashMultimap.create(instance.getAttributeModifiers(slot,  (ItemStack) (Object) this)); // Kilt: Make mutable, other mods depend on this, for some reason.
         }
+
         return original.call(instance, slot);
     }
 
