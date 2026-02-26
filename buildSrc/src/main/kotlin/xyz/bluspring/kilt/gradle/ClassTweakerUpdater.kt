@@ -253,7 +253,10 @@ object ClassTweakerUpdater {
             val mcClass = "$rootPath/${relativePath.joinToString("/").replace("Injection.java", "")}"
             val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "")
 
-            if (mojmap.getClass(mcClass) == null && !existing.contains(injected)) {
+            if (existing.contains(injected))
+                continue
+
+            if (mojmap.getClass(mcClass) == null) {
                 println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
                 continue
             }

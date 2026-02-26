@@ -59,7 +59,6 @@ public class ScreenshotInject {
         return file;
     }
 
-    @SuppressWarnings("MixinExtrasOperationParameters") // shush
     @WrapOperation(method = "method_1661", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"))
     private static <T> void kilt$useForgeEventSuccess(Consumer<T> instance, T t, Operation<Void> original) {
         if (kilt$target.get() != null && kilt$target.get().getResultMessage() != null)
