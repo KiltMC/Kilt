@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
-import xyz.bluspring.kilt.injections.world.level.material.FluidInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.FluidWorkaround;
 
-@Implements(@Interface(iface = FluidInjection.class, prefix = "kilt$i$"))
+@Implements(@Interface(iface = FluidWorkaround.class, prefix = "kilt$i$"))
 @Mixin(Fluid.class)
-public abstract class FluidInject implements IFluidExtension, FluidInjection {
+public abstract class FluidInject implements IFluidExtension, FluidWorkaround {
     private FluidType forgeFluidType;
 
     @NotNull
