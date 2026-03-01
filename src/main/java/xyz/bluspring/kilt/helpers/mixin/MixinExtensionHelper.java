@@ -8,11 +8,15 @@ import org.objectweb.asm.tree.*;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
 
+import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public final class MixinExtensionHelper {
+    public static final String LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory.class);
+    public static final String LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;";
+
     // This should be executed in the mixin plugin with the corresponding method.
     // This is only separated into this class for anyone who wants to use this code.
     private static boolean containsOpcode(InsnList list, int opcode) {
@@ -66,8 +70,8 @@ public final class MixinExtensionHelper {
                              } else { // super()
                                  // Redirect any super call to the target's actual superclass
                                  var superName = methodInsn.owner.equals(oldSuper) || methodInsn.owner.equals("java/lang/Object")
-                                         ? targetClass.superName
-                                         : methodInsn.owner;
+                                     ? targetClass.superName
+                                     : methodInsn.owner;
 
                                  initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", methodInsn.desc, false);
                              }
@@ -75,7 +79,7 @@ public final class MixinExtensionHelper {
                              // Find the existing super call we already added and remove it then swap it for our custom one.
                              AbstractInsnNode superCall = null;
                              for (AbstractInsnNode insn : initializer.instructions) {
-                                 if (insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode)insn).name.equals("<init>")) {
+                                 if (insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode) insn).name.equals("<init>")) {
                                      superCall = insn;
                                      break;
                                  }
@@ -91,6 +95,25 @@ public final class MixinExtensionHelper {
                              }
 
                              initializer.instructions.add(methodInsn);
+                         }
+                     } else if (insnNode instanceof InvokeDynamicInsnNode invokeDynamicInsn) {
+                         // Make lambdas actually remap correctly.
+                         if (Opcodes.H_INVOKESTATIC == invokeDynamicInsn.bsm.getTag()
+                             && "metafactory".equals(invokeDynamicInsn.bsm.getName())
+                             && LAMBDA_CLASS_NAME.equals(invokeDynamicInsn.bsm.getOwner())
+                             && LAMBDA_METHOD_DESCRIPTOR.equals(invokeDynamicInsn.bsm.getDesc())
+                             && invokeDynamicInsn.bsmArgs != null
+                             && invokeDynamicInsn.bsmArgs.length == 3
+                             && invokeDynamicInsn.bsmArgs[1] instanceof Handle target
+                             && target.getOwner().equals(slashedMixinClassName)
+                         ) {
+                             initializer.instructions.add(new InvokeDynamicInsnNode(invokeDynamicInsn.name, invokeDynamicInsn.desc, invokeDynamicInsn.bsm,
+                                 invokeDynamicInsn.bsmArgs[0],
+                                 new Handle(target.getTag(), slashedTargetClassName, target.getName(), target.getDesc().replace(slashedMixinClassName, slashedTargetClassName), target.isInterface()),
+                                 invokeDynamicInsn.bsmArgs[2]
+                             ));
+                         } else {
+                             initializer.instructions.add(invokeDynamicInsn);
                          }
                      } else {
                          if (insnNode instanceof FieldInsnNode fieldInsn) {

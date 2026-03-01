@@ -217,7 +217,7 @@ allprojects {
             modImplementation ("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")
 
             // Cursed Fabric/Mixin stuff
-            implementation("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")
+            implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")
             modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")
             implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)
             modApi("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")

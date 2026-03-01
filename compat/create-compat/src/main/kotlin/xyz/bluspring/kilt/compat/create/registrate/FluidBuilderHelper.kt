@@ -66,11 +66,4 @@ object FluidBuilderHelper {
                 .block { owner.get<Block, LiquidBlock>(name, ForgeRegistries.Keys.BLOCKS).get() }
         }
     }
-
-    @JvmStatic
-    fun createFluidTypeSupplier(typeFactory: FluidTypeFactoryToken, builder: FluidBuilderInjection): NonNullSupplier<FluidType> {
-        return NonNullSupplier.lazy {
-            typeFactory.create(builder.`kilt$makeTypeProperties`(), builder.`kilt$getStillTexture`(), builder.`kilt$getFlowingTexture`())
-        }
-    }
 }

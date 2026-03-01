@@ -89,7 +89,9 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
         this.flowingTexture = flowingTexture;
         this.fluidFactory = fluidFactory;
         var self = (FluidBuilderInjection) (Object) this;
-        this.fluidType = FluidBuilderHelper.createFluidTypeSupplier(typeFactory, self);
+        this.fluidType = NonNullSupplier.lazy(() ->
+            typeFactory.create(self.kilt$makeTypeProperties(), self.kilt$getStillTexture(), self.kilt$getFlowingTexture())
+        );
         this.registerType = true;
         this.tags = new ArrayList<>();
 
