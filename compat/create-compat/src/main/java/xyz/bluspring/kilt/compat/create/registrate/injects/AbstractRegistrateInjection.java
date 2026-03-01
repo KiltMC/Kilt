@@ -1,0 +1,50 @@
+package xyz.bluspring.kilt.compat.create.registrate.injects;
+
+import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.FluidBuilder;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
+import xyz.bluspring.kilt.compat.create.registrate.FluidBuilderHelper;
+import xyz.bluspring.kilt.compat.create.registrate.FluidTypeFactoryToken;
+
+public interface AbstractRegistrateInjection {
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid();
+//    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(FluidTypeFactoryToken typeFactory);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(NonNullSupplier<FluidType> fluidType);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture);
+//    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType);
+    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+//    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name);
+//    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name, FluidTypeFactoryToken typeFactory);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name, NonNullSupplier<FluidType> fluidType);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture);
+//    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory);
+    public FluidBuilder/*<ForgeFlowingFluid.Flowing, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType);
+    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+//    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <T extends ForgeFlowingFluid> FluidBuilder/*<T, S>*/ fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent);
+//    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, FluidTypeFactoryToken typeFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, NonNullSupplier<FluidType> fluidType);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture);
+//    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType);
+    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+//    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name);
+//    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name, FluidTypeFactoryToken typeFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name, NonNullSupplier<FluidType> fluidType);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture);
+//    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory);
+    public <P> FluidBuilder/*<ForgeFlowingFluid.Flowing, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType);
+    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+//    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactoryToken typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+    public <T extends ForgeFlowingFluid, P> FluidBuilder/*<T, P>*/ fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory);
+}

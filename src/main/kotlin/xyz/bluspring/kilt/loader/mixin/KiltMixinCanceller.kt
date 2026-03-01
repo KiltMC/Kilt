@@ -12,7 +12,8 @@ class KiltMixinCanceller : MixinCanceller {
         "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin",
         "dev.ghen.thirst.foundation.mixin.MixinPotionItem",
         "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin",
-        "fuzs.nightconfigfixes.mixin.ConfigParserFabricMixin", // Replaced by ConfigParserTransform in Kilt
+        "fuzs.nightconfigfixes.mixin.ConfigParserFabricMixin", // Replaced by ConfigParserTransform in
+        "com.gregtechceu.gtceu.core.mixins.client.MultiPlayerGameModeMixin" //TODO: REMOVE THIS AND ACTUALLY FIX THE PROBLEM
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {

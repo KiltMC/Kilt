@@ -11,7 +11,7 @@ import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.invoke.LambdaMetafactory
 
 object EnvironmentLambdaFixer {
-    val LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory::class.java)!!
+    val LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory::class.java)
     const val LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
 

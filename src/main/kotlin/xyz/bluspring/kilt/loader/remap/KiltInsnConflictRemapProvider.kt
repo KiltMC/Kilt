@@ -10,12 +10,40 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
     private val pbFromMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8962", "Ljava/lang/Object;")
     private val pbToMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8961", "Ljava/lang/Object;")
 
+    private val fluidMapped = KiltRemapper.remapClass("net/minecraft/world/level/material/Fluid")
+
     override fun remapMethod(owner: String, name: String, descriptor: String): String {
         when (owner) {
             "net/minecraftforge/fluids/FluidStack" ->
                 when (name) {
                     "getAmount" -> return $$"forge$getAmount"
                     "writeToPacket" -> return $$"forge$writeToPacket"
+                }
+        }
+
+        when (owner) {
+            "net/minecraftforge/common/extensions/IForgeFluid" ->
+                when (name) {
+                    "getFluidType" -> return $$"forge$getFluidType"
+                }
+        }
+
+        when (owner) {
+            fluidMapped ->
+                when (name) {
+                    "getFluidType" -> return $$"forge$getFluidType"
+                }
+        }
+
+        when (owner) {
+            "com/tterrag/registrate/builders/FluidBuilder" ->
+                when (name) {
+                    "create" -> return $$"kilt$create"
+                }
+
+            "com/tterrag/registrate/AbstractRegistrate" ->
+                when (name) {
+                    "fluid" -> return $$"kilt$fluid"
                 }
         }
 

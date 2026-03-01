@@ -123,7 +123,8 @@
       "net/minecraft/class_702": ["xyz/bluspring/kilt/injections/client/particle/ParticleEngineInjection"]
     },
     "lithium:options": {
-      "mixin.entity.collisions.fluid": false
+      "mixin.entity.collisions.fluid": false,
+      "mixin.ai.pathing": false
     },
     "potatoptimize:options": {
       "mixin.world.farmland": false

@@ -16,7 +16,7 @@ public class FluidRenderHandlerRegistryImplMixin {
         if (original != null)
             return original;
 
-        var fluidType = fluid.getFluidType();
+        var fluidType = fluid.forge$getFluidType();
         return FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType);
     }
 
@@ -25,7 +25,7 @@ public class FluidRenderHandlerRegistryImplMixin {
         if (original != null)
             return original;
 
-        var fluidType = fluid.getFluidType();
+        var fluidType = fluid.forge$getFluidType();
         return FluidHandlerWorkaround.INSTANCE.getFluidRenderHandler(fluidType);
     }
 }
