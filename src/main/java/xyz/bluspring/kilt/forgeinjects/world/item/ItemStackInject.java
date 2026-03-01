@@ -2,7 +2,9 @@
 package xyz.bluspring.kilt.forgeinjects.world.item;
 
 import com.bawnorton.mixinsquared.TargetHandler;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -230,14 +232,15 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @WrapOperation(method = "getAttributeModifiers", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getDefaultAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))
     private Multimap<Attribute, AttributeModifier> kilt$getModdedAttributeModifiers(Item instance, EquipmentSlot slot, Operation<Multimap<Attribute, AttributeModifier>> original) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getAttributeModifiers", EquipmentSlot.class, ItemStack.class)) {
-            return instance.getAttributeModifiers(slot,  (ItemStack) (Object) this);
+            return HashMultimap.create(instance.getAttributeModifiers(slot,  (ItemStack) (Object) this)); // Kilt: Make mutable, other mods depend on this, for some reason.
         }
+
         return original.call(instance, slot);
     }
 
     @ModifyReturnValue(method = "getAttributeModifiers", at = @At("RETURN"))
     private Multimap<Attribute, AttributeModifier> kilt$invokeAttributeModifiersEvent(Multimap<Attribute, AttributeModifier> original, EquipmentSlot slot) {
-        return ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original);
+        return HashMultimap.create(ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original)); // Kilt: Make mutable, other mods depend on this.
     }
 
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")

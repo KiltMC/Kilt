@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.mixin
 
 import com.bawnorton.mixinsquared.api.MixinCanceller
+import xyz.bluspring.kilt.Kilt
 
 class KiltMixinCanceller : MixinCanceller {
     private val cancelledMixins = listOf(
@@ -16,6 +17,11 @@ class KiltMixinCanceller : MixinCanceller {
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {
+        // special case for Create
+        if (Kilt.loader.hasMod("create") && mixinClassName == "com.simibubi.create.foundation.mixin.client.MapRendererMapInstanceMixin") {
+            return true
+        }
+
         return cancelledMixins.contains(mixinClassName)
     }
 }

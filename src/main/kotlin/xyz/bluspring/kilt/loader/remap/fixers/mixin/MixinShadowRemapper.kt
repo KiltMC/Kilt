@@ -1,15 +1,26 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
+import org.objectweb.asm.Handle
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_CLASS_NAME
+import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_METHOD_DESCRIPTOR
 import xyz.bluspring.kilt.util.KiltHelper
+import kotlin.collections.set
 
 // Remap shadow and overwrite
 object MixinShadowRemapper {
+    private val SPECIAL_REMAPS = mapOf(
+        // why
+        "f_92674_" to $$"kilt$itemColors",
+        "f_92571_" to $$"kilt$blockColors"
+    )
+
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
         val remappedFields = mutableMapOf<String, String>()
         val remappedMethods = mutableMapOf<String, String>()
@@ -25,6 +36,11 @@ object MixinShadowRemapper {
             var remapped = ""
 
             for (className in targetClassNames) {
+                if (SPECIAL_REMAPS.contains(field.name)) {
+                    remapped = SPECIAL_REMAPS[field.name]!!
+                    break
+                }
+
                 // First pass, try to remap with current names
                 remapped = remapper.mapFieldName(className, field.name, field.desc)
 
@@ -78,6 +94,29 @@ object MixinShadowRemapper {
                 } else if (insnNode is MethodInsnNode) {
                     val remapped = remappedMethods[insnNode.name] ?: continue
                     insnNode.name = remapped
+                } else if (insnNode is InvokeDynamicInsnNode) {
+                    if ("metafactory" != insnNode.bsm.name)
+                        continue
+
+                    if (LAMBDA_CLASS_NAME != insnNode.bsm.owner)
+                        continue
+
+                    if (LAMBDA_METHOD_DESCRIPTOR != insnNode.bsm.desc)
+                        continue
+
+                    if (insnNode.bsmArgs?.size == 3) {
+                        if (insnNode.bsmArgs[1] is Handle) {
+                            val lambdaTarget = insnNode.bsmArgs[1] as Handle
+                            if (lambdaTarget.owner == classNode.name) {
+                                val handle = Handle(lambdaTarget.tag, lambdaTarget.owner,
+                                    remappedMethods[lambdaTarget.name] ?: continue,
+                                    lambdaTarget.desc, lambdaTarget.isInterface
+                                )
+
+                                insnNode.bsmArgs[1] = handle
+                            }
+                        }
+                    }
                 }
             }
         }

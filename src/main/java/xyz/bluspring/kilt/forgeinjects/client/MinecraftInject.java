@@ -15,6 +15,7 @@ import net.minecraft.client.Timer;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -41,27 +42,31 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.CreativeModeTabSearchRegistry;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.extensions.IForgeMinecraft;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.loading.ClientModLoader;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeSpawnEggItem;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -86,6 +91,9 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Shadow @Final private BlockColors blockColors;
     @Shadow @Nullable public LocalPlayer player;
     @Shadow @Nullable public HitResult hitResult;
+    @Shadow
+    @Nullable
+    public Screen screen;
     @Unique
     private float realPartialTick;
 
@@ -146,6 +154,31 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         ForgeHooksClient.onRegisterParticleProviders(this.particleEngine);
     }
 
+    @Redirect(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;removed()V"))
+    private void kilt$preventRemovingScreen(Screen instance) {
+    }
+
+    @Inject(method = "setScreen", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.PUTFIELD), cancellable = true)
+    private void kilt$callScreenEventOpenAndClose(Screen screen, CallbackInfo ci, @Local(argsOnly = true) LocalRef<Screen> screenRef) {
+        ForgeHooksClient.clearGuiLayers((Minecraft) (Object) this);
+        Screen old = this.screen;
+
+        if (screen != null) {
+            var event = new ScreenEvent.Opening(old, screen);
+            if (MinecraftForge.EVENT_BUS.post(event)) {
+                ci.cancel();
+                return;
+            }
+
+            screenRef.set(event.getNewScreen());
+        }
+
+        if (old != null && screenRef.get() != old) {
+            MinecraftForge.EVENT_BUS.post(new ScreenEvent.Closing(old));
+            old.removed();
+        }
+    }
+
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.BEFORE), method = "runTick")
     public void kilt$setPartialTicks(boolean bl, CallbackInfo ci) {
         realPartialTick = this.pause ? this.pausePartialTick : this.timer.partialTick;
@@ -162,58 +195,36 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
         ClientModLoader.completeModLoading();
     }
 
-    @Unique private Map<CreativeModeTab, SearchRegistry.Key<ItemStack>> kilt$nameSearchKeys;
-    @Unique private Map<CreativeModeTab, SearchRegistry.Key<ItemStack>> kilt$tagSearchKeys;
-    @Unique private SearchRegistry.Key<ItemStack> kilt$nameSearchKey;
-    @Unique private SearchRegistry.Key<ItemStack> kilt$tagSearchKey;
-
     @Inject(method = "createSearchTrees", at = @At("HEAD"))
-    private void kilt$storeNameSearchKeys(CallbackInfo ci) {
-        this.kilt$nameSearchKeys = CreativeModeTabSearchRegistry.getNameSearchKeys();
-        this.kilt$tagSearchKeys = CreativeModeTabSearchRegistry.getTagSearchKeys();
+    private void kilt$storeNameSearchKeys(CallbackInfo ci, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        nameSearchKeys.set(CreativeModeTabSearchRegistry.getNameSearchKeys());
+        tagSearchKeys.set(CreativeModeTabSearchRegistry.getTagSearchKeys());
     }
 
     @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/searchtree/SearchRegistry;register(Lnet/minecraft/client/searchtree/SearchRegistry$Key;Lnet/minecraft/client/searchtree/SearchRegistry$TreeBuilderSupplier;)V", ordinal = 0))
-    private <T> void kilt$searchMultipleNameKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original) {
-        for (SearchRegistry.Key<ItemStack> nameSearchKey : this.kilt$nameSearchKeys.values()) {
+    private <T> void kilt$searchMultipleNameKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys) {
+        for (SearchRegistry.Key<ItemStack> nameSearchKey : nameSearchKeys.get().values()) {
             original.call(instance, nameSearchKey, factory);
         }
     }
 
     @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/searchtree/SearchRegistry;register(Lnet/minecraft/client/searchtree/SearchRegistry$Key;Lnet/minecraft/client/searchtree/SearchRegistry$TreeBuilderSupplier;)V", ordinal = 1))
-    private <T> void kilt$searchMultipleTagKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original) {
-        for (SearchRegistry.Key<ItemStack> tagSearchKey : this.kilt$tagSearchKeys.values()) {
+    private <T> void kilt$searchMultipleTagKeys(SearchRegistry instance, SearchRegistry.Key<T> key, SearchRegistry.TreeBuilderSupplier<T> factory, Operation<Void> original, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        for (SearchRegistry.Key<ItemStack> tagSearchKey : tagSearchKeys.get().values()) {
             original.call(instance, tagSearchKey, factory);
         }
     }
 
-    @WrapOperation(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;setSearchTreeBuilder(Ljava/util/function/Consumer;)V"))
-    private void kilt$setMultipleSearchTreeBuilders(CreativeModeTab instance, Consumer<List<ItemStack>> searchTreeBuilder, Operation<Void> original) {
-        this.kilt$nameSearchKeys.forEach((tab, nameSearchKey) -> {
-            this.kilt$nameSearchKey = nameSearchKey;
-            this.kilt$tagSearchKey = this.kilt$tagSearchKeys.get(tab);
+    @Inject(method = "createSearchTrees", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;setSearchTreeBuilder(Ljava/util/function/Consumer;)V", shift = At.Shift.AFTER))
+    private void kilt$setMultipleSearchTreeBuilders(CallbackInfo ci, @Share("nameSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> nameSearchKeys, @Share("tagSearchKeys") LocalRef<Map<CreativeModeTab, SearchRegistry.Key<ItemStack>>> tagSearchKeys) {
+        var self = (Minecraft) (Object) this;
 
-            original.call(tab, searchTreeBuilder);
-
-            this.kilt$nameSearchKey = null;
-            this.kilt$tagSearchKey = null;
+        nameSearchKeys.get().forEach((tab, nameSearchKey) -> {
+            tab.setSearchTreeBuilder(list -> {
+                self.populateSearchTree(nameSearchKey, list);
+                self.populateSearchTree(tagSearchKeys.get().get(tab), list);
+            });
         });
-    }
-
-    @WrapOperation(method = "method_46740", at = @At(value = "FIELD", target = "Lnet/minecraft/client/searchtree/SearchRegistry;CREATIVE_NAMES:Lnet/minecraft/client/searchtree/SearchRegistry$Key;"))
-    private SearchRegistry.Key<ItemStack> kilt$useNameSearchKey(Operation<SearchRegistry.Key<ItemStack>> original) {
-        if (this.kilt$nameSearchKey == null)
-            return original.call();
-
-        return this.kilt$nameSearchKey;
-    }
-
-    @WrapOperation(method = "method_46740", at = @At(value = "FIELD", target = "Lnet/minecraft/client/searchtree/SearchRegistry;CREATIVE_TAGS:Lnet/minecraft/client/searchtree/SearchRegistry$Key;"))
-    private SearchRegistry.Key<ItemStack> kilt$useTagSearchKey(Operation<SearchRegistry.Key<ItemStack>> original) {
-        if (this.kilt$tagSearchKey == null)
-            return original.call();
-
-        return this.kilt$tagSearchKey;
     }
 
     // We're not using the Forge GUI system properly, but we're gonna make this incredibly mod compatible if we can.
@@ -286,7 +297,7 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     }
 
     @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0), cancellable = true)
-    private void kilt$callForgeUseInputEvent(CallbackInfo ci, @Share("inputEvent") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local InteractionHand hand) {
+    private void kilt$callForgeUseInputEvent(CallbackInfo ci, @Share(value = "inputEvent", namespace = "kilt") LocalRef<InputEvent.InteractionKeyMappingTriggered> inputEvent, @Local InteractionHand hand) {
         inputEvent.set(ForgeHooksClient.onClickInput(1, this.options.keyUse, hand));
 
         if (inputEvent.get().isCanceled()) {

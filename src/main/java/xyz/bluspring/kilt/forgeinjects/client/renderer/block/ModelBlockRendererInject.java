@@ -31,7 +31,6 @@ import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInj
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 // higher priority to allow Sodium to function
 @Mixin(value = ModelBlockRenderer.class, priority = 1050)
@@ -96,8 +95,8 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
     }
 
     // Because we can't exactly provide new parameters easily, let's just do this.
-    @Unique private final AtomicReference<ModelData> kilt$modelData = new AtomicReference<>(ModelData.EMPTY);
-    @Unique private final AtomicReference<RenderType> kilt$renderType = new AtomicReference<>();
+    @Unique private final ThreadLocal<ModelData> kilt$modelData = ThreadLocal.withInitial(() -> ModelData.EMPTY);
+    @Unique private final ThreadLocal<RenderType> kilt$renderType = new ThreadLocal<>();
 
     @Override
     public void tesselateWithAO(BlockAndTintGetter blockAndTintGetter, BakedModel bakedModel, BlockState blockState, BlockPos blockPos, PoseStack poseStack, VertexConsumer vertexConsumer, boolean bl, RandomSource random, long l, int i, ModelData modelData, RenderType renderType) {

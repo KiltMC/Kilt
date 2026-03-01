@@ -3,7 +3,7 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
-import xyz.bluspring.kilt.loader.mixin.modifier.KiltMixinModifications
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier

@@ -2,11 +2,7 @@ package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.CriticalHitEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.PlayerTickEvents
+import io.github.fabricators_of_create.porting_lib.entity.events.*
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
@@ -16,18 +12,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.EquipmentSlot
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.context.UseOnContext
-import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.Level
-import net.minecraft.world.phys.BlockHitResult
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.ForgeEventFactory
@@ -53,30 +43,6 @@ class Kilt : ModInitializer {
 
     @Suppress("removal")
     private fun registerFabricEvents() {
-        UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
-            val pos = hitResult.blockPos
-            val event = ForgeHooks.onRightClickBlock(player, hand, pos, hitResult)
-            val stack = player.getItemInHand(hand)
-
-            val canUseItem = (player.isSecondaryUseActive && (!player.mainHandItem.isEmpty || !player.offhandItem.isEmpty)) && !(player.mainHandItem.doesSneakBypassUse(player.level(), pos, player) && player.offhandItem.doesSneakBypassUse(player.level(), pos, player))
-
-            if (event.useBlock == Event.Result.ALLOW || (event.useBlock != Event.Result.DENY && !canUseItem))
-                return@register event.useBlock.toVanilla()
-
-            if (event.useItem == Event.Result.ALLOW || (!stack.isEmpty && !player.cooldowns.isOnCooldown(stack.item))) {
-                if (event.useItem == Event.Result.DENY)
-                    return@register InteractionResult.PASS
-
-                val result = stack.onItemUseFirst(UseOnContext(player, hand, hitResult))
-
-                if (result != InteractionResult.PASS && result != InteractionResult.FAIL) {
-                    return@register result
-                }
-            }
-
-            InteractionResult.PASS
-        }
-
         UseItemCallback.EVENT.register { player, world, hand ->
             InteractionResultHolder(ForgeHooks.onItemRightClick(player, hand) ?: InteractionResult.PASS, player.getItemInHand(hand))
         }

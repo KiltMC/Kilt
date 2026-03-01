@@ -33,8 +33,10 @@ import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinCancellableInitFixer
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinShadowRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinShareAccessFixer
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinStaticMethodFixer
 import xyz.bluspring.kilt.loader.remap.resource.IgnoreSignatureResourceRemapper
 import xyz.bluspring.kilt.loader.remap.resource.ManifestResourceRemapper
@@ -59,7 +61,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 209
+    const val REMAPPER_VERSION = 211
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -177,13 +179,16 @@ object KiltRemapper {
     fun init() {}
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
+    suspend fun remapMods(definitions: Collection<ModDefinition>, remappedModsDir: Path) {
         if (disableRemaps) {
             logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
             logger.warn("Only have this enabled if you know what you're doing!")
 
             return
         }
+
+        val modLoadingQueue = definitions.distinctBy { it.originalPath }
+        val unmapped = definitions.filter { !modLoadingQueue.contains(it) }
 
         this.remappedModsDir = remappedModsDir
 
@@ -464,8 +469,6 @@ object KiltRemapper {
 
             val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
                 this.collect { (entry, originalNode) ->
-                    val remappedNode = ClassNode(Opcodes.ASM9)
-
                     // only do this on mixin classes, please
                     // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
                     if (originalNode.name in mixinClasses ||
@@ -480,9 +483,12 @@ object KiltRemapper {
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
                             MixinStaticMethodFixer.fixClass(originalNode)
+                            MixinCancellableInitFixer.fixClass(originalNode)
+                            MixinShareAccessFixer.fixClass(originalNode)
                         }
                     }
 
+                    val remappedNode = ClassNode(Opcodes.ASM9)
                     originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                     if (!KiltFlags.DISABLE_FIXERS) {
@@ -573,6 +579,12 @@ object KiltRemapper {
                         }
                     }
                 }.launchIn(this).join()
+        }
+
+        // Assign paths to unmapped mods
+        for (definition in unmapped) {
+            val existing = modLoadingQueue.first { it.originalPath == definition.path }
+            definition.path = existing.path
         }
 
         logger.info("Finished remapping mods!")

@@ -49,6 +49,11 @@ class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
             }
         }
 
+        // LittleTiles is exploding because of Fabric mixin stuff
+        if (mixinClassName == "team.creative.littletiles.mixin.common.entity.EntityMixin") {
+            return null
+        }
+
         return annotationNode
     }
 }

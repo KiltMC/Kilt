@@ -1,14 +1,18 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.geckolib;
 
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import software.bernie.geckolib.event.GeoRenderEvent;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 
 // Kilt: We have to do this because GeckoLib wasn't built as a multiloader mod until 1.20.6 and later.
 //       This is a mess, I hate everything about this.
+@IfModLoaded("geckolib")
+@Pseudo
 @Mixin(GeoRenderEvent.class)
 public interface GeoRenderEventMixin {
     @Mixin(GeoRenderEvent.Armor.class)

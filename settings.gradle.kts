@@ -26,7 +26,14 @@ pluginManagement {
     }
 }
 
+val disabledModules = listOf(
+    "curios-trinkets-compat" // Overshadowed by Accessories, maybe we can try again sometime else.
+)
+
 file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
+    if (disabledModules.contains(it.name))
+        return@forEach
+
     include(":compat:${it.name}")
     project(":compat:${it.name}").apply {
         this.projectDir = it

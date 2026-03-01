@@ -25,6 +25,7 @@
     "registrate_fabric.SimpleFlowableFluidPropertiesAccessor"
   ],
   "client": [
+    "create_forge.MapRendererMapInstanceMixin"
   ],
   "injectors": {
     "defaultRequire": 1

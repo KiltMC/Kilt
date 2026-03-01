@@ -4,6 +4,8 @@ package xyz.bluspring.kilt.forgeinjects.client.gui;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import net.minecraft.CrashReportCategory;
@@ -172,8 +174,8 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
         this.tooltipStack = ItemStack.EMPTY;
     }
 
-    // Kilt: We're using ThreadLocal rather than @Share here, because we enter a separate method (lambda) within renderTooltipInternal.
-    @Unique private RenderTooltipEvent.Pre preEvent;
+    // Kilt: We're using fields rather than @Share here, because we enter a separate method (lambda) within renderTooltipInternal.
+    @Unique private RenderTooltipEvent.Pre kilt$preEvent;
     @Unique private List<ClientTooltipComponent> kilt$components;
 
     @Inject(method = "renderTooltipInternal", at = @At("HEAD"))
@@ -182,10 +184,11 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
     }
 
     @Inject(method = "renderTooltipInternal", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z", ordinal = 0, shift = At.Shift.AFTER), cancellable = true)
-    private void kilt$callPreTooltipRenderEvent(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
-        preEvent = ForgeHooksClient.onRenderTooltipPre(this.tooltipStack, (GuiGraphics) (Object) this, mouseX, mouseY, guiWidth(), guiHeight(), components, font, tooltipPositioner);
+    private void kilt$callPreTooltipRenderEvent(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci, @Share(value = "preEvent", namespace = "kilt") LocalRef<RenderTooltipEvent.Pre> preEvent) {
+        kilt$preEvent = ForgeHooksClient.onRenderTooltipPre(this.tooltipStack, (GuiGraphics) (Object) this, mouseX, mouseY, guiWidth(), guiHeight(), components, font, tooltipPositioner);
+        preEvent.set(kilt$preEvent); // Kilt: For mixin modifiers
 
-        if (preEvent.isCanceled())
+        if (kilt$preEvent.isCanceled())
             ci.cancel();
     }
 
@@ -195,7 +198,7 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
         if (argFont != font)
             return font;
 
-        return preEvent.getFont();
+        return kilt$preEvent.getFont();
     }
 
     @ModifyArgs(method = "renderTooltipInternal", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;positionTooltip(IIIIII)Lorg/joml/Vector2ic;"))
@@ -205,15 +208,15 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
 
         // prioritize positions replaced in mixin
         if (mouseX == argMouseX)
-            args.set(2, preEvent.getX());
+            args.set(2, kilt$preEvent.getX());
 
         if (mouseY == argMouseY)
-            args.set(3, preEvent.getY());
+            args.set(3, kilt$preEvent.getY());
     }
 
     @WrapOperation(method = "method_51743", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/TooltipRenderUtil;renderTooltipBackground(Lnet/minecraft/client/gui/GuiGraphics;IIIII)V"))
     private void kilt$useForgeColorBackgroundModifyIfApplicable(GuiGraphics guiGraphics, int x, int y, int width, int height, int z, Operation<Void> original) {
-        var colorEvent = ForgeHooksClient.onRenderTooltipColor(this.tooltipStack, guiGraphics, x, y, preEvent.getFont(), this.kilt$components);
+        var colorEvent = ForgeHooksClient.onRenderTooltipColor(this.tooltipStack, guiGraphics, x, y, kilt$preEvent.getFont(), this.kilt$components);
 
         // prioritize rendering the original instead
         if (colorEvent.getBackgroundStart() == colorEvent.getOriginalBackgroundStart() &&
@@ -239,7 +242,7 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
         if (argFont != font)
             return font;
 
-        return preEvent.getFont();
+        return kilt$preEvent.getFont();
     }
 
     @ModifyArg(method = "renderTooltipInternal", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;renderImage(Lnet/minecraft/client/gui/Font;IILnet/minecraft/client/gui/GuiGraphics;)V"))
@@ -248,6 +251,6 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
         if (argFont != font)
             return font;
 
-        return preEvent.getFont();
+        return kilt$preEvent.getFont();
     }
 }

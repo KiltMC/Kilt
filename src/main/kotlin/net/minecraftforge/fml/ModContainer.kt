@@ -6,8 +6,6 @@ import net.minecraftforge.fml.config.IConfigEvent
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.forgespi.language.IModInfo
-import xyz.bluspring.kilt.mixin.compat.forgeconfigapiport.ConfigTrackerAccessor
-import xyz.bluspring.kilt.remaps.fml.config.ModConfigRemap
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -36,17 +34,9 @@ abstract class ModContainer(info: IModInfo) {
 
     fun addConfig(modConfig: ModConfig) {
         configs[modConfig.type] = modConfig
-        (ConfigTracker.INSTANCE as ConfigTrackerAccessor).invokeTrackConfig(modConfig)
     }
 
-    // believe it or not, this is needed.
-    // why? don't know, really.
-    fun addConfig(modConfig: ModConfigRemap) {
-        configs[modConfig.type] = modConfig
-        (ConfigTracker.INSTANCE as ConfigTrackerAccessor).invokeTrackConfig(modConfig)
-    }
-
-    fun dispatchConfigEvent(event: IConfigEvent) {
+    open fun dispatchConfigEvent(event: IConfigEvent) {
         configHandler.ifPresent {
             it.accept(event)
         }

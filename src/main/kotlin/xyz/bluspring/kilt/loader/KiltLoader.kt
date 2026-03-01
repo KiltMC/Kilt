@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import com.mojang.serialization.JsonOps
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ import net.minecraftforge.fml.config.ConfigTracker
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.event.lifecycle.*
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
+import net.minecraftforge.fml.loading.FMLConfig
 import net.minecraftforge.fml.loading.FMLPaths
 import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation
 import net.minecraftforge.fml.loading.moddiscovery.ModClassVisitor
@@ -39,6 +41,8 @@ import net.minecraftforge.forgespi.locating.ModFileFactory
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
+import thedarkcolour.kotlinforforge.KotlinModContainer
+import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
@@ -55,6 +59,7 @@ import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -70,6 +75,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private lateinit var sortedModOrder: Collection<ForgeMod>
 
     private val environment = KiltEnvironment()
+    var config = KiltLoaderConfig()
 
     // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
     // use the same mod ID.
@@ -79,23 +85,27 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     )
 
     // This over here is a wall of shame for mods that use different mod IDs between their Forge and Fabric variants.
-    private val FORGE_TO_FABRIC_MODS = mapOf(
+    val FORGE_TO_FABRIC_MODS = mapOf(
         // Forge ID -> Fabric ID
         "cloth_config" to "cloth-config",
-        "playeranimator" to "player-animator"
+        "playeranimator" to "player-animator",
+
+        // This list isn't a wall of shame though :D
+        "rubidium" to "sodium",
+        "embeddium" to "sodium",
+        "oculus" to "iris",
     )
 
     init {
         val loader = FabricLoader.getInstance()
         val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
-        if (loader.environmentType == EnvType.CLIENT) {
-            // Kilt requires a hard dependency on Sodium, so let's just do this
-            if (!loader.isModLoaded("sodium")) {
-                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Sodium! Please install Sodium and Indium to ensure Kilt is capable of running as intended."))
-            } else if (!loader.isModLoaded("indium")) {
+        if (loader.environmentType == EnvType.CLIENT && loader.isModLoaded("sodium")) {
+            // Kilt requires Indium to be able to work with Sodium, so...
+            if (!loader.isModLoaded("indium")) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
             } else if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
+                // If someone wants to fix this, be my guest, drop a PR. Don't send threats of forking Kilt just because you don't like the fact that we don't support Embeddium.
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
             }
         }
@@ -114,6 +124,22 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             if (path.isPresent && path.orElseThrow().isDirectory()) {
                 Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging Forge classes! This may lead to a game crash!")
             }
+        }
+
+        this.loadConfig()
+    }
+
+    fun loadConfig() {
+        if (KiltLoaderConfig.PATH.exists()) {
+            KiltLoaderConfig.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(KiltLoaderConfig.PATH.reader(options = arrayOf(StandardOpenOption.READ))))
+                .get()
+                .left()
+                .map { it.first }
+                .ifPresentOrElse({
+                    this.config = it
+                }) {
+                    Kilt.logger.error("Failed to load config!")
+                }
         }
     }
 
@@ -281,6 +307,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         val definitions = mutableListOf<ModDefinition>()
         val mainConfig = NightConfigWrapper(toml)
 
+        var hasAlreadyLoadedFirstMod = false
+
         // Load all mod metadata in the TOML, since Forge allows mods to specify multiple mods in the TOML.
         for (metadata in mainConfig.getConfigList("mods")) {
             val modId = metadata.getConfigElement<String>("modId").orElseThrow {
@@ -291,6 +319,11 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             // mods should really use the same mod ID between their mods >:(
             if (SKIPPED_FABRIC_MODS.contains(modId)) {
                 Kilt.logger.warn("Mod ID $modId is a combined mod JAR already existing under ID ${SKIPPED_FABRIC_MODS[modId]}, skipping!")
+                continue
+            }
+
+            if (this.config.forceDisabledModIds.contains(modId)) {
+                Kilt.logger.info("Mod ID $modId was detected to be forcefully disabled in the config, skipping.")
                 continue
             }
 
@@ -375,6 +408,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 // If this mod is built-in, make sure to specify it.
                 isBuiltin = isBuiltIn,
 
+                // Workaround for mods like Vampirism.
+                shouldRegister = !hasAlreadyLoadedFirstMod,
+
                 additionalData = mapOf(
                     "manifest" to manifest,
                     "config" to mainConfig,
@@ -388,6 +424,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             )
 
             definitions.add(definition)
+            hasAlreadyLoadedFirstMod = true
         }
 
         return definitions
@@ -486,6 +523,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     override fun preInitialize() {
         // DON'T TRY TO MAKE THIS USE "Environment.Keys".
         // OTHERWISE THE BUILD WILL FAIL.
+        FMLConfig.load()
         environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
         environment.computePropertyIfAbsent(IEnvironment.buildKey("MODFILEFACTORY", ModFileFactory::class.java).get()) { KiltModFileFactory() }
 
@@ -643,10 +681,14 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
                     val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
 
+                    val bus = if (mod.container is KotlinModContainer && busType == Mod.EventBusSubscriber.Bus.MOD)
+                        KotlinModLoadingContext.get().getKEventBus()
+                    else busType.bus().get()
+
                     if (obj != null)
-                        busType.bus().get().register(obj)
+                        bus.register(obj)
                     else
-                        busType.bus().get().register(clazz)
+                        bus.register(clazz)
 
                     ModLoadingContext.kiltActiveModId = null
 
