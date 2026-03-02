@@ -73,7 +73,7 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
 
         if (packageName == "registrate_fabric") {
             for (method in targetClass.methods) {
-                if (method.desc.contains("L${KiltCreateCompatMixinExtension.TINY_TATER_TOKEN};")) {
+                if (KiltCreateCompatMixinExtension.shouldRemap(mixinInfo, method)) {
                     KiltCreateCompatMixinExtension.modifyMethodDesc(method)
                 }
             }

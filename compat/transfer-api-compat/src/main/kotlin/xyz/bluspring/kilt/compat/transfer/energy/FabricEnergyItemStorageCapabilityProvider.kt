@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.transfer.energy
 
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.minecraft.core.Direction
 import net.minecraft.world.item.ItemStack
 import net.minecraftforge.common.capabilities.Capability
@@ -15,7 +16,7 @@ class FabricEnergyItemStorageCapabilityProvider(val itemStack: ItemStack) : ICap
     override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> {
         if (cap == ForgeCapabilities.ENERGY) {
             val fabricStorage = EnergyStorage.ITEM.getProvider(itemStack.item) ?: return LazyOptional.empty()
-            val storage = fabricStorage.find(itemStack, null) ?: return LazyOptional.empty()
+            val storage = fabricStorage.find(itemStack, ContainerItemContext.withConstant(itemStack)) ?: return LazyOptional.empty()
 
             // Ignore our own storage
             if (storage is ForgeEnergyStorage)

@@ -17,6 +17,7 @@
     "registrate_fabric.ForgeFlowingFluidAccessor",
     "registrate_fabric.ForgeFlowingFluidMixin",
     "registrate_fabric.MappedRegistryMixin",
+    "registrate_fabric.RegistrateBlockstateProviderMixin",
     "registrate_fabric.RegistrateMixin",
     "registrate_fabric.RegistryEntryMixin",
     "registrate_fabric.RegistryObjectMixin",
