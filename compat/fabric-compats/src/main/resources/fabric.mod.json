@@ -20,6 +20,9 @@
         ],
         "main": [
             "xyz.bluspring.kilt.compat.fabric.KiltFabricCompats"
+        ],
+        "preLaunch": [
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsPreLaunch"
         ]
     },
     "mixins": [

@@ -8,4 +8,6 @@ object Constants {
 
     // Kotlin for Forge version. We're trying to emulate KFF.
     @JvmField val KFF_VERSION = DefaultArtifactVersion("4.12.0")
+
+    const val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 }
