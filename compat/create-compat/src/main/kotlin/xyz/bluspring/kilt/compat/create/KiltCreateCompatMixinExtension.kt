@@ -115,7 +115,7 @@ class KiltCreateCompatMixinExtension : IExtension {
                     var wasModified = false
 
                     for (method in mixinClassNode.methods) {
-                        if (!method.desc.contains("L$TINY_TATER_TOKEN;")) continue
+                        if (!shouldRemap(mixinInfo, method)) continue
 
                         modifyMethodDesc(method)
                         wasModified = true
