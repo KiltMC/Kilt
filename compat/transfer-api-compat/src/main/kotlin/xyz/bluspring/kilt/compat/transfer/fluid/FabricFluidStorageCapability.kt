@@ -5,9 +5,9 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.IFluidHandler
-import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toDroplets
-import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibuckets
-import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibucketsLong
+import xyz.bluspring.kilt.util.forge.fluid.FluidTransferUtils.toDroplets
+import xyz.bluspring.kilt.util.forge.fluid.FluidTransferUtils.toMillibuckets
+import xyz.bluspring.kilt.util.forge.fluid.FluidTransferUtils.toMillibucketsLong
 
 open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IFluidHandler {
     override fun getTanks(): Int {
