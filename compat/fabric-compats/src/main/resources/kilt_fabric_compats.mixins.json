@@ -38,6 +38,7 @@
     "invmove.IForgeKeyMappingMixin",
     "jei.FabricPluginFinderMixin",
     "jei.FluidStackMixin",
+    "jei.TypedIngredientMixin",
     "mkb.IKeyBindingMixin",
     "mkb.IKeyConflictContextMixin",
     "mkb.KeyConflictContextMixin",
