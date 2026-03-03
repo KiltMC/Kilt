@@ -10,6 +10,7 @@ import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -211,6 +212,13 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
     private void kilt$tryCreateWrapped(NonNullFunction factory, CallbackInfoReturnable<SimpleFlowableFluid> cir) {
         if (this.kilt$isForge) {
             cir.setReturnValue(new SimpleWrappedForgeFlowingFluid((ForgeFlowingFluid) factory.apply(this.kilt$makeForgeProperties())));
+        }
+    }
+
+    @Inject(method = "register()Lcom/tterrag/registrate/util/entry/FluidEntry;", at = @At("HEAD"), remap = false)
+    private void kilt$registerFluidType(CallbackInfoReturnable<FluidEntry<?>> cir) {
+        if (registerType && kilt$isForge && fluidType != null) {
+            this.getCallback().accept(this.getName(), ForgeRegistries.Keys.FLUID_TYPES, this, fluidType::get, this::createEntryWrapper);
         }
     }
 
