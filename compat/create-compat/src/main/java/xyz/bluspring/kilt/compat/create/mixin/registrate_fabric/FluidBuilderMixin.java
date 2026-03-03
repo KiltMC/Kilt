@@ -11,6 +11,7 @@ import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.Util;
@@ -222,6 +223,13 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
             return original.call(forgeCreator);
         }
         return original.call(creator);
+    }
+
+    @Inject(method = "register()Lcom/tterrag/registrate/util/entry/FluidEntry;", at = @At("HEAD"), remap = false)
+    private void kilt$registerFluidType(CallbackInfoReturnable<FluidEntry<?>> cir) {
+        if (registerType && kilt$isForge && fluidType != null) {
+            this.getCallback().accept(this.getName(), ForgeRegistries.Keys.FLUID_TYPES, this, fluidType::get, this::createEntryWrapper);
+        }
     }
 
     @WrapOperation(method = "register()Lcom/tterrag/registrate/util/entry/FluidEntry;", at = @At(value = "INVOKE", target = "Lcom/tterrag/registrate/builders/FluidBuilder;onRegister(Lcom/tterrag/registrate/util/nullness/NonNullConsumer;)Lcom/tterrag/registrate/builders/Builder;"), remap = false)
