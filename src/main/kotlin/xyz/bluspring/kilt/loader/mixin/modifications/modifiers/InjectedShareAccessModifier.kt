@@ -2,43 +2,27 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 
 import com.llamalad7.mixinextras.sugar.Local
 import com.llamalad7.mixinextras.sugar.Share
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef
-import com.llamalad7.mixinextras.sugar.ref.LocalByteRef
-import com.llamalad7.mixinextras.sugar.ref.LocalCharRef
-import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef
-import com.llamalad7.mixinextras.sugar.ref.LocalIntRef
-import com.llamalad7.mixinextras.sugar.ref.LocalLongRef
-import com.llamalad7.mixinextras.sugar.ref.LocalRef
-import com.llamalad7.mixinextras.sugar.ref.LocalShortRef
+import com.llamalad7.mixinextras.sugar.ref.*
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.LocalVariableNode
 import org.objectweb.asm.tree.MethodNode
-import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
-import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.ParamPair
 import java.lang.reflect.Modifier
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.contains
-import kotlin.collections.getOrNull
-import kotlin.collections.iterator
-import kotlin.collections.set
 
 data class InjectedShareAccessModifier(
     override val owner: String,
-    val methods: List<String>,
+    override val methods: List<String>,
     val paramToShareMapping: Map<ParamPair, Share>
-) : MixinModifier {
+) : MethodBasedModifier {
     override lateinit var mappedOwner: String
+    override lateinit var mappedMethods: List<String>
 
     fun injectShareAccess(mixinClassNode: ClassNode, methodNode: MethodNode, annotation: AnnotationNode, copiedMethodName: String): MethodNode {
         // Now try to create our custom share-based injection.
@@ -284,6 +268,9 @@ data class InjectedShareAccessModifier(
     }
 
     companion object {
+        val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
+        val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
+
         val LOCAL_REF = Type.getType(LocalRef::class.java)
         val LOCAL_INT_REF = Type.getType(LocalIntRef::class.java)
         val LOCAL_BYTE_REF = Type.getType(LocalByteRef::class.java)

@@ -82,7 +82,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 val mapped = KiltRemapper.srgMappedFields[name]
 
                 if (mapped != null) {
-                    return mapped.second
+                    return mapped.values.first()
                 }
 
                 KiltRemapper.logger.warn("Failed to remap field $name:$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")
@@ -123,7 +123,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
 
                 if (mappedList != null && mappedList.values.isNotEmpty()) {
                     KiltRemapper.logger.debug("Using fallback method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }}, value: ${mappedList.values.first()})")
-                    return mappedList.values.first()
+                    return mappedList.values.first().first().first
                 }
 
                 KiltRemapper.logger.warn("Failed to remap method $name$descriptor! (owner: $owner, hierarchy: ${hierarchy.map { it.name }})")

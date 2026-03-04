@@ -27,11 +27,11 @@ object ObfuscationReflectionHelper {
             }
 
             INameMappingService.Domain.FIELD -> {
-                srgMappedFields[name]?.second ?: name
+                srgMappedFields[name]?.values?.firstOrNull() ?: name
             }
 
             INameMappingService.Domain.METHOD -> {
-                srgMappedMethods[name]?.values?.firstOrNull() ?: name
+                srgMappedMethods[name]?.values?.firstOrNull()?.firstOrNull()?.first ?: name
             }
         }
     }
@@ -70,9 +70,9 @@ object ObfuscationReflectionHelper {
 
                 val mapped = KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
 
-                if ((mapped == methodName || mapped == null) && (methodName.startsWith("m_") || methodName.startsWith("f_")) && methodName.endsWith("_"))
-                    KiltRemapper.srgMappedMethods[methodName]!!.values.first()
-                else mapped
+                (if ((mapped == methodName || mapped == null) && (methodName.startsWith("m_") || methodName.startsWith("f_")) && methodName.endsWith("_"))
+                    KiltRemapper.srgMappedMethods[methodName]!!.values.firstOrNull()?.firstOrNull()?.first ?: mapped
+                else mapped) ?: methodName
             } else methodName
 
             val m = clazz.getDeclaredMethod(methodName, *parameterTypes)

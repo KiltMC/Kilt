@@ -79,7 +79,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                 TargetType.FIELD -> {
                     val className = targetData["class"] as String
                     val fieldName = targetData["fieldName"] as String
-                    val mappedFieldName = KiltRemapper.srgMappedFields[fieldName]?.second ?: fieldName
+                    val mappedFieldName = KiltRemapper.srgMappedFields[fieldName]?.values?.firstOrNull() ?: fieldName
 
                     logger.debug("Binding $name: Added field $fieldName / $mappedFieldName from class $className as target")
                     ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->

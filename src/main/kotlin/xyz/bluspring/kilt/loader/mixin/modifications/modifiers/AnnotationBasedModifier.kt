@@ -6,8 +6,7 @@ import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
-sealed interface AnnotationBasedModifier : MixinModifier {
-    val methods: List<String>
+sealed interface AnnotationBasedModifier : MethodBasedModifier {
     val variables: Map<String, Any>
 
     fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>)
@@ -20,6 +19,7 @@ sealed interface AnnotationBasedModifier : MixinModifier {
         val replaceWith: List<AnnotationNode> = listOf()
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
+        override lateinit var mappedMethods: List<String>
 
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
             if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
@@ -57,16 +57,29 @@ sealed interface AnnotationBasedModifier : MixinModifier {
         val remapMethodsTo: String,
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
+        override lateinit var mappedMethods: List<String>
 
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
-            newAnnotations.add(
+            val newAnnotation = run {
+                val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
+
                 KiltMixinModifications.createAnnotation(annotation.desc,
                     KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
                         this["method"] = listOf(
                             MixinRemapper.remapTargetString(remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)), KiltRemapper.enhancedRemapper)
                         )
                     })
-            )
+            }
+
+            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
+                val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+                map["original"] = newAnnotation
+                annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+
+                newAnnotations.add(annotation)
+            } else {
+                newAnnotations.add(newAnnotation)
+            }
         }
     }
 }
