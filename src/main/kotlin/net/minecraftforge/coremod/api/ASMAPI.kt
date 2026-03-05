@@ -51,12 +51,12 @@ object ASMAPI {
 
     @JvmStatic
     fun mapMethod(name: String): String {
-        return KiltRemapper.srgMappedMethods[name]?.values?.firstOrNull()?.firstOrNull()?.first ?: name
+        return KiltRemapper.srgMappedMethods[name]?.values?.firstOrNull() ?: name
     }
 
     @JvmStatic
     fun mapField(name: String): String {
-        return KiltRemapper.srgMappedFields[name]?.values?.firstOrNull() ?: name
+        return KiltRemapper.srgMappedFields[name]?.second ?: name
     }
 
     /**

@@ -98,42 +98,11 @@ object MixinRemapper {
                     if (values.containsKey("method")) {
                         val methodValue = values["method"]!!
 
-                        fun remapMethodTarget(methodValue: String): Collection<String> {
-                            if (methodValue.contains("*")) { // Need to remap wildcards
-                                val split = methodValue.split("*")
-                                if (split.size == 1 && methodValue.startsWith("*")) {
-                                    return listOf(tryRemapMixinRefmap(split[0]))
-                                } else {
-                                    val targets = mutableSetOf<String>()
-
-                                    for (classTarget in classTargets) {
-                                        val possible = KiltRemapper.srgMappedMethods.filter { it.value.contains(classTarget) && it.key.startsWith(split[0]) }
-                                            .mapValues { it.value.getValue(classTarget) }
-                                            .values
-                                            .flatten()
-
-                                        for ((methodName, methodDesc) in possible) {
-                                            targets.add("$methodName$methodDesc")
-                                        }
-                                    }
-
-                                    // Fallback, we probably screwed up.
-                                    if (targets.isEmpty()) {
-                                        return listOf(tryRemapMixinRefmap(methodValue))
-                                    }
-
-                                    return targets.toList()
-                                }
-                            } else {
-                                return listOf(tryRemapMixinRefmap(methodValue))
-                            }
-                        }
-
                         if (methodValue is String) {
-                            values["method"] = remapMethodTarget(methodValue)
+                            values["method"] = tryRemapMixinRefmap(methodValue)
                         } else if (methodValue is List<*>) {
-                            values["method"] = methodValue.flatMap {
-                                remapMethodTarget(it as String)
+                            values["method"] = methodValue.map {
+                                tryRemapMixinRefmap(it as String)
                             }
                         }
                     }
@@ -359,15 +328,10 @@ object MixinRemapper {
             }
 
             if (classDescriptor.isBlank()) {
-                // Guesswork time!
-                if (KiltRemapper.srgMappedFields.contains(member)) {
-                    for ((ownerClass, mappedName) in KiltRemapper.srgMappedFields[member]!!) {
-                        if (classTargets.contains(ownerClass))
-                            return "$mappedName:$mappedDescriptor".breakpoint()
-                    }
-
-                    return "${KiltRemapper.srgMappedFields[member]!!.values.first()}:$mappedDescriptor".breakpoint()
-                }
+                // Guesswork time! Thankfully, with fields it's much safer for SRG.
+                val mapped = KiltRemapper.srgMappedFields[member]?.second
+                if (mapped != null)
+                    return "$mapped:$mappedDescriptor".breakpoint()
             }
 
             // If not, let's return the member but with remapped descriptors
@@ -399,22 +363,17 @@ object MixinRemapper {
         // If the descriptor is blank, we cannot safely determine what it actually is.
         // So, guesswork time. Hopefully this doesn't come up too often, if at all.
         if (descriptor.isBlank()) {
-            if (KiltRemapper.srgMappedMethods.contains(member)) {
-                for ((ownerClass, mappedPair) in KiltRemapper.srgMappedMethods[member]!!) {
-                    if (classTargets.contains(ownerClass))
-                        return "$mappedClassDescriptor${mappedPair.first().first}".breakpoint()
-                }
-
-                return KiltRemapper.srgMappedMethods[member]!!.values.first().first().first
+            if (KiltRemapper.srgMappedFields.contains(member)) {
+                return "$mappedClassDescriptor${KiltRemapper.srgMappedFields[member]!!.second}".breakpoint()
             }
 
-            if (KiltRemapper.srgMappedFields.contains(member)) {
-                for ((ownerClass, mappedName) in KiltRemapper.srgMappedFields[member]!!) {
+            if (KiltRemapper.srgMappedMethods.contains(member)) {
+                for ((ownerClass, mappedName) in KiltRemapper.srgMappedMethods[member]!!) {
                     if (classTargets.contains(ownerClass))
                         return "$mappedClassDescriptor$mappedName".breakpoint()
                 }
 
-                return "$mappedClassDescriptor${KiltRemapper.srgMappedFields[member]!!.values.first()}".breakpoint()
+                return KiltRemapper.srgMappedMethods[member]!!.values.first()
             }
         } else if (classDescriptor.isBlank()) {
             // If the class descriptor is blank, we're going to struggle to find any information we need, but we can still use some information to find stuff.

@@ -61,7 +61,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 212
+    const val REMAPPER_VERSION = 211
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -120,39 +120,41 @@ object KiltRemapper {
     private lateinit var remappedModsDir: Path
 
     // SRG name -> (parent class name, intermediary/mapped name)
-    val srgMappedFields = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
+    val srgMappedFields: Map<String, Pair<String, String>>
 
-    // SRG name -> (parent class name, (intermediary/mapped name, descriptor))
-    val srgMappedMethods = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, MutableSet<Pair<String, String>>>>())
+    // SRG name -> (parent class name, intermediary/mapped name)
+    val srgMappedMethods =
+        Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
 
     init {
         // Magical field references that are required because otherwise the remapper will deadlock
         val srgIntermediaryMapping = devSrgIntermediaryMapping
         val forceProductionRemap = forceProductionRemap
         val mappingResolver = mappingResolver
-        val srgMappedFields = srgMappedFields
         val srgMappedMethods = srgMappedMethods
+
+        srgMappedFields = runBlocking {
+            async(Dispatchers.IO) {
+                srgIntermediaryMapping.classes.asFlow().concurrent().flatMap {
+                    it.fields.asFlow().concurrent().map { f ->
+                        f.original to
+                                if (!forceProductionRemap)
+                                    mappingResolver.mapFieldName(
+                                        "intermediary",
+                                        it.mapped.replace("/", "."),
+                                        f.mapped,
+                                        f.mappedDescriptor
+                                    )
+                                else
+                                    f.mapped
+                    }.merge(false)
+                }.merge(false).toSet().associateBy { it.first }
+            }.await()
+        }
 
         runBlocking {
             launch(Dispatchers.IO) {
                 srgIntermediaryMapping.classes.asFlow().concurrent().collect {
-                    it.fields.asFlow().concurrent().collect { f ->
-                        val map = srgMappedFields.getOrPut(f.original) {
-                            Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
-                        }
-                        val mapped = if (!forceProductionRemap)
-                            mappingResolver.mapFieldName(
-                                "intermediary",
-                                it.mapped.replace("/", "."),
-                                f.mapped,
-                                f.mappedDescriptor
-                            )
-                        else
-                            f.mapped
-
-                        map[f.parent.original] = mapped
-                    }
-
                     it.methods.asFlow().concurrent().collect { f ->
                         val map = srgMappedMethods.getOrPut(f.original) {
                             Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
@@ -167,8 +169,7 @@ object KiltRemapper {
                         else
                             f.mapped
 
-                        map.computeIfAbsent(f.parent.original) { mutableSetOf() }
-                            .add(mapped to f.mappedDescriptor)
+                        map[f.parent.original] = mapped
                     }
                 }
             }.join()

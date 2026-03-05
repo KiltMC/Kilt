@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.MethodNode
+import java.util.function.Function
 
 data class AccessorModifier(
     override val owner: String,

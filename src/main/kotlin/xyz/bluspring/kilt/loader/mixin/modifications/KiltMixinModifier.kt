@@ -34,7 +34,7 @@ class KiltMixinModifier : IExtension {
 
                 // Essential mod causes a null modId to appear
                 if (modId == null || !Kilt.loader.hasMod(modId))
-                // Ignore non-Forge mods
+                    // Ignore non-Forge mods
                     continue
 
                 val mixinClassNode = mixinInfo.getClassNode(0)
@@ -74,6 +74,10 @@ class KiltMixinModifier : IExtension {
                         }
 
                         val modifiers = KiltMixinModifications.findMatchingModifiers(context.classInfo.name, annotation, methodNode.desc)
+                            .filter {
+                                // This modifier does nothing here, it's in the fixers instead.
+                                it !is InjectedShareAccessModifier
+                            }
 
                         if (modifiers.isEmpty()) {
                             newAnnotations.add(annotation)
@@ -84,16 +88,11 @@ class KiltMixinModifier : IExtension {
                             when (modifier) {
                                 is AnnotationBasedModifier -> {
                                     modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
-                                    wasModified = true
-                                }
-
-                                is InjectedShareAccessModifier -> {
-                                    // This modifier does nothing here, it's in the fixers instead.
-                                    //newAnnotations.add(annotation)
-                                    continue
                                 }
                             }
                         }
+
+                        wasModified = true
                     }
 
                     if (wasModified) {
@@ -132,7 +131,7 @@ class KiltMixinModifier : IExtension {
     companion object {
         val ACCESSOR = Type.getDescriptor(Accessor::class.java)
 
-        //        fun splitDescriptor(descriptor: String): List<String> {
+//        fun splitDescriptor(descriptor: String): List<String> {
 //            val split = mutableListOf<String>()
 //
 //            var incompleteString = ""
