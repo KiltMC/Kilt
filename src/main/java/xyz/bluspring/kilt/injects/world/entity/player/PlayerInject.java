@@ -14,6 +14,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,9 +31,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.scores.Team;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
@@ -49,10 +52,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
@@ -62,13 +62,14 @@ import xyz.bluspring.kilt.util.KiltHelper;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 @Mixin(Player.class)
 public abstract class PlayerInject extends LivingEntity implements IPlayerExtension, PlayerInjection {
     @Shadow public abstract float getDestroySpeed(BlockState state);
-    @Shadow @Final private Inventory inventory;
     @Shadow @Final private Abilities abilities;
     @Shadow public abstract void resetAttackStrengthTicker();
+    @Shadow public abstract @Nullable ItemEntity drop(ItemStack itemStack, boolean includeThrowerName);
 
     @CreateStatic
     private static final String PERSISTED_NBT_TAG = PlayerInjection.PERSISTED_NBT_TAG;
@@ -380,7 +381,85 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
         xplevelsRef.set(event.getLevels());
     }
 
-    // TODO: display names, held projectiles and stuff
+    @WrapOperation(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/PlayerTeam;formatNameForTeam(Lnet/minecraft/world/scores/Team;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;"))
+    private MutableComponent kilt$tryUseCustomDisplayName(Team playerTeam, Component playerName, Operation<MutableComponent> original) {
+        if (this.displayname == null)
+            this.displayname = EventHooks.getPlayerDisplayName((Player) (Object) this, playerName);
+
+        MutableComponent component = Component.empty();
+        component = this.prefixes.stream().reduce(component, MutableComponent::append);
+        component = component.append(original.call(playerTeam, this.displayname));
+        component = this.suffixes.stream().reduce(component, MutableComponent::append);
+        return component;
+    }
+
+    @WrapOperation(method = "getProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getSupportedHeldProjectiles()Ljava/util/function/Predicate;"))
+    private Predicate<ItemStack> kilt$tryGetSupportedHeldProjectiles(ProjectileWeaponItem instance, Operation<Predicate<ItemStack>> original, @Local(argsOnly = true) ItemStack weaponStack) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), ProjectileWeaponItem.class, "getSupportedHeldProjectiles", ItemStack.class)) {
+            return instance.getSupportedHeldProjectiles(weaponStack);
+        }
+
+        return original.call(instance);
+    }
+
+    @WrapOperation(method = "getProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getAllSupportedProjectiles()Ljava/util/function/Predicate;"))
+    private Predicate<ItemStack> kilt$tryGetAllSupportedProjectiles(ProjectileWeaponItem instance, Operation<Predicate<ItemStack>> original, @Local(argsOnly = true) ItemStack weaponStack) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), ProjectileWeaponItem.class, "getAllSupportedProjectiles", ItemStack.class)) {
+            return instance.getAllSupportedProjectiles(weaponStack);
+        }
+
+        return original.call(instance);
+    }
+
+    @Definition(id = "ItemStack", type = ItemStack.class)
+    @Definition(id = "ARROW", field = "Lnet/minecraft/world/item/Items;ARROW:Lnet/minecraft/world/item/Item;")
+    @Expression("new ItemStack(ARROW)")
+    @ModifyExpressionValue(method = "getProjectile", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private ItemStack kilt$tryGetDefaultCreativeAmmo(ItemStack original, @Local(argsOnly = true) ItemStack weaponStack) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(weaponStack.getItem().getClass(), ProjectileWeaponItem.class, "getDefaultCreativeAmmo", Player.class, ItemStack.class)) {
+            return ((ProjectileWeaponItem) weaponStack.getItem()).getDefaultCreativeAmmo((Player) (Object) this, weaponStack);
+        }
+
+        return original;
+    }
+
+    @ModifyReturnValue(method = "getProjectile", at = @At("RETURN"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getSupportedHeldProjectiles()Ljava/util/function/Predicate;")))
+    private ItemStack kilt$handleNeoGetProjectileHook(ItemStack original, @Local(argsOnly = true) ItemStack weaponStack) {
+        return CommonHooks.getProjectile((Player) (Object) this, weaponStack, original);
+    }
+
+    @WrapOperation(method = "eat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z"))
+    private boolean kilt$tryDropItemContainer(Inventory instance, ItemStack stack, Operation<Boolean> original) { // Kilt TODO: is this needed?
+        var result = original.call(instance, stack);
+
+        if (!result) {
+            this.drop(stack, false);
+        }
+
+        return result;
+    }
+
+    @WrapOperation(method = "isScoping", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+    private boolean kilt$checkHasSpyglassScopeAbility(ItemStack instance, Item item, Operation<Boolean> original) {
+        return original.call(instance, item) || instance.canPerformAction(ItemAbilities.SPYGLASS_SCOPE);
+    }
+
+    @Override
+    public Collection<MutableComponent> getPrefixes() {
+        return this.prefixes;
+    }
+
+    @Override
+    public Collection<MutableComponent> getSuffixes() {
+        return this.suffixes;
+    }
+
+    @Unique private Component displayname = null;
+
+    @Override
+    public void refreshDisplayName() {
+        this.displayname = EventHooks.getPlayerDisplayName((Player) (Object) this, this.getName());
+    }
 
     @Override
     public @Nullable Pose getForcedPose() {

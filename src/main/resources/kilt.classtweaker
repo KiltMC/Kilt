@@ -1388,6 +1388,7 @@ transitive-inject-interface net/minecraft/world/item/Item xyz/bluspring/kilt/inj
 transitive-inject-interface net/minecraft/world/item/ItemStack xyz/bluspring/kilt/injections/world/item/ItemStackInjection
 transitive-inject-interface net/minecraft/world/item/MapItem xyz/bluspring/kilt/injections/world/item/MapItemInjection
 transitive-inject-interface net/minecraft/world/item/MobBucketItem xyz/bluspring/kilt/injections/world/item/MobBucketItemInjection
+transitive-inject-interface net/minecraft/world/item/ProjectileWeaponItem xyz/bluspring/kilt/injections/world/item/ProjectileWeaponItemInjection
 transitive-inject-interface net/minecraft/world/item/Rarity xyz/bluspring/kilt/injections/world/item/RarityInjection
 transitive-inject-interface net/minecraft/world/item/ShovelItem xyz/bluspring/kilt/injections/world/item/ShovelItemInjection
 transitive-inject-interface net/minecraft/world/item/SpawnEggItem xyz/bluspring/kilt/injections/world/item/SpawnEggItemInjection
