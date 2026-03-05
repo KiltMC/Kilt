@@ -1,8 +1,15 @@
 package xyz.bluspring.kilt.injections.world.level.storage;
 
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import java.nio.file.Path;
 
 public interface LevelStorageAccessInjection {
-    void readAdditionalLevelSaveData();
-    Path getWorldDir();
+    default void readAdditionalLevelSaveData(boolean fallback) {
+        throw KiltHelper.createMixinException(LevelStorageAccessInjection.class, "readAdditionalLevelSaveData");
+    }
+
+    default Path getWorldDir() {
+        throw KiltHelper.createMixinException(LevelStorageAccessInjection.class, "getWorldDir");
+    }
 }
