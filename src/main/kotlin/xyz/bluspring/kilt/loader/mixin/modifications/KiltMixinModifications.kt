@@ -20,8 +20,10 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedMo
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MethodBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
@@ -431,7 +433,7 @@ object KiltMixinModifications {
         )
     )
 
-    fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
+    fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
         if (annotation.desc == SUGAR_WRAPPER.descriptor) {
             val map = annotationValuesToMap(annotation.values)
@@ -441,36 +443,39 @@ object KiltMixinModifications {
             }
         }
 
+        return annotation
+    }
+
+    fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
+        val annotation = getBaseAnnotation(annotation)
+
         val modifiers = MODIFIERS[annotation.desc] ?: return emptyList()
         val foundModifiers = mutableListOf<MixinModifier>()
+        val map = annotationValuesToMap(annotation.values ?: emptyList())
 
         modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
+            if (modifier is MethodBasedModifier && !modifier.matches(map["method"] ?: continue)) {
+                continue
+            }
+
             when (modifier) {
                 is AnnotationBasedModifier -> {
-                    val map = annotationValuesToMap(annotation.values)
-
-                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
-                        continue
-
                     // check if all conditions match
-                    if (!checkAllConditionsMatch(modifier.variables, map))
+                    if (!checkAllConditionsMatch(modifier.variables, map)) {
                         continue
+                    }
 
                     foundModifiers.add(modifier)
                 }
 
                 is InjectedShareAccessModifier -> {
-                    val map = annotationValuesToMap(annotation.values)
-
-                    if (modifier.methods.none { map["method"] == it || (map["method"] as List<String>).any { a -> a == it } })
-                        continue
-
                     val descriptor = Type.getArgumentTypes(descriptor)
 
                     for ((paramPair, _) in modifier.paramToShareMapping) {
                         val (param, ordinal) = paramPair
+                        val mappedParam = KiltRemapper.remapDescriptor(param)
 
-                        if (descriptor.count { it.descriptor == param } < ordinal + 1) {
+                        if (descriptor.count { it.descriptor == param || it.descriptor == mappedParam || KiltRemapper.remapDescriptor(it.descriptor) == param || KiltRemapper.remapDescriptor(it.descriptor) == mappedParam } < ordinal + 1) {
                             continue@modifierSearch
                         }
                     }
@@ -531,8 +536,8 @@ object KiltMixinModifications {
                     checkAllConditionsMatch(annotationValuesToMap((it.value as AnnotationNode).values), value as Map<String, Any>)
                 else false
             else
-                // check if values != equal and value is not list
-                // or if value is list, check if none of the values equal the main value
+            // check if values != equal and value is not list
+            // or if value is list, check if none of the values equal the main value
                 if (value is List<*>)
                     value.any { a -> a == it.value }
                 else if (value is Array<*> && it.value is Array<*>) {
@@ -596,7 +601,7 @@ object KiltMixinModifications {
             "value" to value
         ).apply {
             if (target != null)
-                this["target"] = target
+                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper)
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
@@ -619,6 +624,19 @@ object KiltMixinModifications {
             val owner = KiltRemapper.remapClass(modifier.owner)
             MIXIN_CLASSES.add(owner)
             modifier.mappedOwner = owner
+
+            if (modifier is MethodBasedModifier) {
+                modifier.mappedMethods = modifier.methods.map {
+                    (if (it.contains("(")) {
+                        val name = it.replaceAfter("(", "").removeSuffix("(")
+                        val descriptor = it.removePrefix(name)
+                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+                        "${KiltRemapper.srgMappedMethods[name]?.get(modifier.owner) ?: name}$mappedDesc"
+                    } else it)
+                }
+            }
+
             list.add(modifier)
         }
 
