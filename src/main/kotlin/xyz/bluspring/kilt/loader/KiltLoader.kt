@@ -65,12 +65,6 @@ import kotlin.io.path.*
 class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     private val tomlParser = TomlParser()
 
-    // I have no fucking clue why this is needed, but for whatever fucking reason,
-    // the mods ObjectArrayList is getting resorted *after* it's getting sorted in scanMods,
-    // no matter what the fuck I do.
-    // I don't have time to deal with this, so this works instead.
-    private lateinit var sortedModOrder: Collection<NeoForgeMod>
-
     private val environment = KiltEnvironment()
 
     // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
@@ -439,8 +433,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val graph = this.mods.buildGraph()
         val sorted = TopologicalSort.topologicalSort(graph, null)
 
-        // See comment at the lateinit
-        sortedModOrder = sorted
+        // Sort the mods, otherwise stuff breaks.
+        val modsRef = this.mods as MutableList<ForgeMod>
+        modsRef.clear()
+        modsRef.addAll(sorted)
 
         if (this.hasMod("embeddium")) {
             KnitLoader.instance.displayError("Kilt: You are using Embeddium, which is not supported under Kilt!", IllegalStateException())
@@ -538,7 +534,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 }
 
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                sortedModOrder.asFlow().concurrent()
+                mods.asFlow().concurrent()
                     .collect { mod ->
                         if (!mod.shouldScan) {
                             return@collect
@@ -596,7 +592,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         runBlocking {
             launch(Dispatchers.Default) {
                 // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                sortedModOrder.asFlow()
+                mods.asFlow()
                     .collect { mod ->
                         try {
                             registerAnnotations(mod, mod.scanData)
@@ -664,7 +660,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
     private fun initMods(exception: Exception) {
         runBlocking {
-            sortedModOrder.asFlow()
+            mods.asFlow()
                 .collect { mod ->
                     try {
                         initMod(mod, mod.scanData)
