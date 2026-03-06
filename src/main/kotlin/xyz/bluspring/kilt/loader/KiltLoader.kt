@@ -434,7 +434,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val sorted = TopologicalSort.topologicalSort(graph, null)
 
         // Sort the mods, otherwise stuff breaks.
-        val modsRef = this.mods as MutableList<ForgeMod>
+        val modsRef = this.mods as MutableList<NeoForgeMod>
         modsRef.clear()
         modsRef.addAll(sorted)
 
