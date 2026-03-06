@@ -6,7 +6,12 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public interface EnchantmentHelperInjection {
+    ThreadLocal<Boolean> kilt$shouldUseTagEnchantment = ThreadLocal.withInitial(() -> false);
+
     static int getTagEnchantmentLevel(Holder<Enchantment> enchantment, ItemStack stack) {
-        return EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack);
+        kilt$shouldUseTagEnchantment.set(true);
+        var value = EnchantmentHelper.getItemEnchantmentLevel(enchantment, stack);
+        kilt$shouldUseTagEnchantment.remove();
+        return value;
     }
 }
