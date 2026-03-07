@@ -158,7 +158,7 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
                 return forgeTooltips.stream().noneMatch(e -> e instanceof ClientTextTooltip tooltip && ((ClientTextTooltipAccessor) tooltip).getText().equals(text));
             }
 
-            return true;
+            return forgeTooltips.stream().noneMatch(e -> component == e);
         }).toList();
 
         forgeTooltips.addAll(filtered);
