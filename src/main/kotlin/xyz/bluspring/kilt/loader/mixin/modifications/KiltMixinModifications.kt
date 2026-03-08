@@ -601,7 +601,8 @@ object KiltMixinModifications {
             "value" to value
         ).apply {
             if (target != null)
-                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper)
+                this["target"] = target
+                //this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper)
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
