@@ -2,8 +2,10 @@ import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
 import org.ajoberstar.grgit.Grgit
+import org.gradle.api.plugins.JavaPluginExtension
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import xyz.bluspring.kilt.gradle.AccessTransformerRemapper
 import java.security.MessageDigest
 import kotlin.io.path.name
@@ -11,7 +13,7 @@ import kotlin.io.path.relativeTo
 
 plugins {
     kotlin("jvm")
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("fabric-loom") version "1.14-SNAPSHOT"
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
@@ -178,6 +180,37 @@ allprojects {
         }
     }
 
+    val targetJavaVersion = 17
+
+    project.extensions.configure<KotlinProjectExtension>("kotlin") {
+        jvmToolchain(targetJavaVersion)
+    }
+
+    project.extensions.configure<JavaPluginExtension>("java") {
+        val javaVersion = JavaVersion.toVersion(targetJavaVersion)
+        if (JavaVersion.current() < javaVersion) {
+            toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+        }
+
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
+    }
+
+    tasks {
+        compileKotlin {
+            compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
+        }
+
+        compileTestKotlin {
+            compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
+        }
+    }
+
     // Avoid making the compats submodule use Loom, otherwise we break stuff
     if (project.name == "compat")
         return@allprojects
@@ -323,9 +356,9 @@ dependencies {
     include(project(":loader:fabric")) {
         isTransitive = false
     }
-    /*include(project(":loader:quilt")) {
+    include(project(":loader:quilt")) {
         isTransitive = false
-    }*/
+    }
 
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")
@@ -358,27 +391,6 @@ configurations.all {
 // why isn't this default?
 sourceSets.getByName("gametest").compileClasspath += sourceSets.getByName("test").compileClasspath
 sourceSets.getByName("gametest").runtimeClasspath += sourceSets.getByName("test").runtimeClasspath
-
-val targetJavaVersion = "17"
-
-kotlin {
-    jvmToolchain(targetJavaVersion.toInt())
-}
-
-java {
-    val javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
-    }
-
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
 
 tasks {
     test {
@@ -522,14 +534,6 @@ tasks {
         filesMatching("META-INF/mods.toml") {
             this.name = "forge.mods.toml"
         }
-    }
-
-    compileKotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
-    }
-
-    compileTestKotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion))
     }
 
     jar {

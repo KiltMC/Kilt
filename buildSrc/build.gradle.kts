@@ -11,7 +11,7 @@ repositories {
 dependencies {
     implementation("org.ow2.asm:asm:9.8")
     implementation("org.ow2.asm:asm-tree:9.8")
-    implementation("net.fabricmc:mapping-io:0.7.1")
+    implementation("net.fabricmc:mapping-io:0.8.0")
     implementation("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")
     implementation("com.google.code.gson:gson:2.13.1")
 }
