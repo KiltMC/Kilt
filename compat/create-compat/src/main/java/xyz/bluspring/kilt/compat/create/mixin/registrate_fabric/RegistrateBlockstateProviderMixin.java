@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import net.minecraft.data.PackOutput;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.workarounds.datagen.WorkaroundBlockStateProvider;
 
+@IfModLoaded("registrate-fabric")
 @Mixin(RegistrateBlockstateProvider.class)
 public abstract class RegistrateBlockstateProviderMixin {
     private BlockStateProvider kilt$forgeProvider;
