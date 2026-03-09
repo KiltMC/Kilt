@@ -105,6 +105,10 @@ allprojects {
             name = "devOS Maven"
         }
 
+        maven("https://maven.florianreuth.de/snapshots") {
+            name = "AsmFabricLoader"
+        }
+
         maven("https://mvn.devos.one/snapshots/") {
             name = "devOS Maven (Snapshots)"
         }
@@ -253,7 +257,7 @@ allprojects {
             implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}")
             modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.property("fabric_asm_version")}")
             implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)
-            modApi("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
+            modApi("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}")
         }
     }
 }
@@ -270,7 +274,7 @@ dependencies {
     include("com.github.FabricCompatibilityLayers:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("com.github.Chocohead:Fabric-ASM:v${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
-    include("xyz.bluspring:AsmFabricLoader:${property("asmfabricloader_version")}")
+    include("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}")
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
