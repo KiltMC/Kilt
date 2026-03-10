@@ -1,12 +1,10 @@
-package xyz.bluspring.kilt.compat.fabric.mixin.amecsapi;
+package xyz.bluspring.kilt.compat.fabric.mixin.amecs_key_modifiers;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import de.siphalor.amecs.api.KeyModifiers;
-import de.siphalor.amecs.impl.duck.IKeyBinding;
+import de.siphalor.amecs.key_modifiers.api.AmecsKeyModifierCombination;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.extensions.IForgeKeyMapping;
 import net.minecraftforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,12 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Pseudo
-@IfModLoaded(value = "amecsapi", maxVersion = "1.7.0")
+@IfModLoaded("amecs_key_modifiers")
 @Mixin(value = KeyMapping.class, priority = 1010)
-public abstract class KeyMappingMixin implements IKeyBinding {
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "amecs$getKeyModifiers")
+public abstract class KeyMappingMixin {
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "amecs$getBoundKeyModifiers")
     @Inject(method = "@MixinSquared:Handler", at = @At("RETURN"))
-    private void kilt$amecsapi$handleForgeModifiers(CallbackInfoReturnable<KeyModifiers> cir) {
+    private void kilt$amecs_key_modifiers$handleForgeModifiers(CallbackInfoReturnable<AmecsKeyModifierCombination> cir) {
         var keyModifiers = cir.getReturnValue();
 
         var forgeModifier = ((IForgeKeyMapping) this).getKeyModifier();
@@ -37,39 +35,39 @@ public abstract class KeyMappingMixin implements IKeyBinding {
         }
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "getLocalizedName", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "getLocalizedName", prefix = "handler")
     @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
-    private void kilt$amecsapi$avoidHandlingLocalizedName(CallbackInfo ci) {
+    private void kilt$amecs_key_modifiers$avoidHandlingLocalizedName(CallbackInfo ci) {
         ci.cancel();
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "onKeyPressed", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "onKeyPressed", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
-    private static boolean kilt$amecsapi$avoidCallbackCancel(CallbackInfo instance) {
+    private static boolean kilt$amecs_key_modifiers$avoidCallbackCancel(CallbackInfo instance) {
         return false;
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "setKeyPressed", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "setKeyPressed", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
-    private static boolean kilt$amecsapi$avoidCallbackCancel2(CallbackInfo instance) {
+    private static boolean kilt$amecs_key_modifiers$avoidCallbackCancel2(CallbackInfo instance) {
         return false;
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "updatePressedStates", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "updatePressedStates", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
-    private static boolean kilt$amecsapi$avoidCallbackCancel3(CallbackInfo instance) {
+    private static boolean kilt$amecs_key_modifiers$avoidCallbackCancel3(CallbackInfo instance) {
         return false;
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "updateKeysByCode", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "updateKeysByCode", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
-    private static boolean kilt$amecsapi$avoidCallbackCancel4(CallbackInfo instance) {
+    private static boolean kilt$amecs_key_modifiers$avoidCallbackCancel4(CallbackInfo instance) {
         return false;
     }
 
-    @TargetHandler(mixin = "de.siphalor.amecs.impl.mixin.MixinKeyBinding", name = "unpressAll", prefix = "handler")
+    @TargetHandler(mixin = "de.siphalor.amecs.key_modifiers.impl.mixin.MixinKeyMapping", name = "unpressAll", prefix = "handler")
     @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;cancel()V"))
-    private static boolean kilt$amecsapi$avoidCallbackCancel5(CallbackInfo instance) {
+    private static boolean kilt$amecs_key_modifiers$avoidCallbackCancel5(CallbackInfo instance) {
         return false;
     }
 }
