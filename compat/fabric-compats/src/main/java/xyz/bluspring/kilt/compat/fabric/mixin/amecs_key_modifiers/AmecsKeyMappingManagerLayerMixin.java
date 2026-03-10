@@ -6,10 +6,12 @@ import de.siphalor.amecs.key_modifiers.impl.AmecsKeyMappingManagerLayer;
 import de.siphalor.amecs.key_modifiers.impl.AmecsKeyModifiersModule;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@Pseudo
 @IfModLoaded(value = "amecs_key_modifiers")
 @Mixin(AmecsKeyMappingManagerLayer.class)
 public abstract class AmecsKeyMappingManagerLayerMixin {
