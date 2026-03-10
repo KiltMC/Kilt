@@ -35,16 +35,18 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
                 }
         }
 
-        when (owner) {
-            "com/tterrag/registrate/builders/FluidBuilder" ->
-                when (name) {
-                    "create" -> return $$"kilt$create"
-                }
+        if (FabricLoader.getInstance().isModLoaded("registrate-fabric")) {
+            when (owner) {
+                "com/tterrag/registrate/builders/FluidBuilder" ->
+                    when (name) {
+                        "create" -> return $$"kilt$create"
+                    }
 
-            "com/tterrag/registrate/AbstractRegistrate" ->
-                when (name) {
-                    "fluid" -> return $$"kilt$fluid"
-                }
+                "com/tterrag/registrate/AbstractRegistrate" ->
+                    when (name) {
+                        "fluid" -> return $$"kilt$fluid"
+                    }
+            }
         }
 
         return super.remapMethod(owner, name, descriptor)
