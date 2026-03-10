@@ -4,6 +4,8 @@
   "package": "xyz.bluspring.kilt.compat.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "accessories.DataLoaderBaseMixin",
+    "amecs_key_modifiers.AmecsKeyMappingManagerLayerMixin",
     "architectury.RegistrarManagerImplMixin",
     "emi.EmiAgnosFabricMixin",
     "geckolib.GeoRenderEventMixin",
@@ -38,6 +40,7 @@
     "wthit.WailaMixin"
   ],
   "client": [
+    "amecs_key_modifiers.KeyMappingMixin",
     "amecsapi.KeyBindingManagerMixin",
     "amecsapi.KeyMappingMixin",
     "mkb.KeyMappingMixin"

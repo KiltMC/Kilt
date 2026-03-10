@@ -1,19 +1,22 @@
 package xyz.bluspring.kilt.compat.fabric.mixin.amecsapi;
 
+import java.util.stream.Stream;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import de.siphalor.amecs.api.KeyBindingUtils;
 import de.siphalor.amecs.impl.AmecsAPI;
 import de.siphalor.amecs.impl.KeyBindingManager;
-import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.stream.Stream;
+import net.minecraft.client.KeyMapping;
 
-@IfModLoaded("amecsapi")
+@Pseudo
+@IfModLoaded(value = "amecsapi", maxVersion = "1.7.0")
 @Mixin(KeyBindingManager.class)
 public abstract class KeyBindingManagerMixin {
     @IfModLoaded(value = "amecsapi", minVersion = "1.5.3")
