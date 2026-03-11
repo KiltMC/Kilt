@@ -69,6 +69,7 @@ loom {
     accessWidenerPath.set(file("src/main/resources/kilt.accesswidener"))
     mixin {
         showMessageTypes.set(true)
+        useLegacyMixinAp = true // required for 1.20.1, otherwise things just break for some reason.
 
         messages.set(mutableMapOf(
             "ACCESSOR_TARGET_NOT_FOUND" to "disabled",
