@@ -468,6 +468,7 @@
     "world.level.chunk.ChunkAccessInject",
     "world.level.chunk.ChunkGeneratorInject",
     "world.level.chunk.ImposterProtoChunkInject",
+    "world.level.chunk.LevelChunkInject",
     "world.level.chunk.PalettedContainerInject",
     "world.level.chunk.storage.EntityStorageInject",
     "world.level.chunk.storage.SectionStorageInject",
