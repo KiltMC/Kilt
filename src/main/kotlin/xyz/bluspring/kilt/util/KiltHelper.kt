@@ -13,7 +13,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 
 object KiltHelper {
@@ -22,7 +22,8 @@ object KiltHelper {
     private val cachedForgeClassNodes = Lazy.of { getForgeClassNodesInternal() }
     private var isForgeClassNodesCleared = false
 
-    private val cachedClassValues = Collections.synchronizedMap<OverrideData, ClassValue<Boolean>>(mutableMapOf())
+    // normally I'd expect a synchronized map to be faster, but in our case I guess concurrent hash map is faster?
+    private val cachedClassValues: MutableMap<OverrideData, ClassValue<Boolean>> = ConcurrentHashMap()
 
     private fun checkAllElementsMatch(array: Array<*>, array2: Array<*>): Boolean {
         if (array.size != array2.size)
