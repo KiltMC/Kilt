@@ -341,6 +341,7 @@
     "world.item.CreativeModeTabInject$BuilderInject",
     "world.item.CrossbowItemInject",
     "world.item.DispensibleContainerItemInject",
+    "world.item.DyeColorInject",
     "world.item.FishingRodItemInject",
     "world.item.HoeItemInject",
     "world.item.HoneyBottleItemInject",

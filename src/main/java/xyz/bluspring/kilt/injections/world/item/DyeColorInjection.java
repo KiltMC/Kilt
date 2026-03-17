@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.injections.world.item;
 
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -20,5 +22,11 @@ public interface DyeColorInjection {
         return null;
     }
 
-    TagKey<Item> getTag();
+    default TagKey<Item> getTag() {
+        throw KiltHelper.createMixinException(DyeColorInjection.class, "getTag");
+    }
+
+    default TagKey<Item> getDyedTag() {
+        throw KiltHelper.createMixinException(DyeColorInjection.class, "getDyedTag");
+    }
 }
