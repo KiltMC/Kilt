@@ -11,13 +11,17 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -26,10 +30,16 @@ import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 
 @Mixin(ServerPlayerGameMode.class)
@@ -47,7 +57,57 @@ public abstract class ServerPlayerGameModeInject {
 
 	// Kilt: onLeftClickBlock handled by Porting Lib
 
-	// Kilt TODO: pretty much everything in-between
+	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;canAttackBlock(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z"))
+	private boolean kilt$handleFireBlockBreakEvent(Item instance, BlockState state, Level level, BlockPos pos, Player player, Operation<Boolean> original) {
+		if (player instanceof ServerPlayer serverPlayer) {
+			var event = CommonHooks.kilt$fireBlockBreak(level, this.gameModeForPlayer, serverPlayer, pos, state, stack -> original.call(instance, state, level, pos, player));
+			return !event.isCanceled();
+		}
+
+		return original.call(instance, state, level, pos, player);
+	}
+
+	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
+	private boolean kilt$tryHandleDestroyedByPlayer(ServerLevel instance, BlockPos blockPos, boolean b, Operation<Boolean> original, @Local(ordinal = 1) BlockState state) {
+		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "onDestroyedByPlayer", BlockState.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
+			return state.onDestroyedByPlayer(instance, blockPos, this.player, b, this.level.getFluidState(blockPos));
+		}
+
+		return original.call(instance, blockPos, b);
+	}
+
+	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;hasCorrectToolForDrops(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
+	private boolean kilt$checkCanHarvestBlock(ServerPlayer instance, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) BlockPos pos) {
+		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "canHarvestBlock", BlockState.class, BlockGetter.class, BlockPos.class, Player.class)) {
+			return state.canHarvestBlock(this.level, pos, instance);
+		}
+
+		return original.call(instance, state);
+	}
+
+	@Inject(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;hasCorrectToolForDrops(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
+	private void kilt$storeAvailableStacks(BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack stack, @Local(ordinal = 1) ItemStack copied, @Share("stack") LocalRef<ItemStack> stackRef, @Share("copied") LocalRef<ItemStack> copiedRef) {
+		stackRef.set(stack);
+		copiedRef.set(copied);
+	}
+
+	@Inject(method = "destroyBlock", at = @At("RETURN"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;playerDestroy(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/item/ItemStack;)V")))
+	private void kilt$handlePlayerDestroyItem(BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Share("stack") LocalRef<ItemStack> stackRef, @Share("copied") LocalRef<ItemStack> copiedRef) {
+		if (stackRef.get().isEmpty() && !copiedRef.get().isEmpty()) {
+			EventHooks.onPlayerDestroyItem(this.player, copiedRef.get(), InteractionHand.MAIN_HAND);
+		}
+	}
+
+	@Unique
+	private boolean removeBlock(BlockPos pos, BlockState state, boolean canHarvest) {
+		boolean removed = state.onDestroyedByPlayer(this.level, pos, this.player, canHarvest, this.level.getFluidState(pos));
+
+		if (removed) {
+			state.getBlock().destroy(this.level, pos, state);
+		}
+
+		return removed;
+	}
 
 	// Kilt: onItemRightClick handled by Porting Lib
 
