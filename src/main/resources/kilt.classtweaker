@@ -1219,6 +1219,7 @@ transitive-inject-interface net/minecraft/world/item/alchemy/PotionBrewing$Build
 transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour$Properties xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection$PropertiesInjection
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
 transitive-inject-interface com/mojang/blaze3d/platform/GlStateManager xyz/bluspring/kilt/injections/blaze3d/platform/GlStateManagerInjection
 transitive-inject-interface com/mojang/blaze3d/systems/RenderSystem xyz/bluspring/kilt/injections/blaze3d/systems/RenderSystemInjection
 transitive-inject-interface com/mojang/blaze3d/vertex/VertexFormatElement xyz/bluspring/kilt/injections/blaze3d/vertex/VertexFormatElementInjection
@@ -1317,10 +1318,11 @@ transitive-inject-interface net/minecraft/resources/FileToIdConverter xyz/bluspr
 transitive-inject-interface net/minecraft/resources/RegistryDataLoader xyz/bluspring/kilt/injections/resources/RegistryDataLoaderInjection
 transitive-inject-interface net/minecraft/resources/RegistryOps xyz/bluspring/kilt/injections/resources/RegistryOpsInjection
 transitive-inject-interface net/minecraft/resources/ResourceLocation xyz/bluspring/kilt/injections/resources/ResourceLocationInjection
-transitive-inject-interface net/minecraft/server/level/ChunkHolder xyz/bluspring/kilt/injections/server/level/ChunkHolderInjection
 transitive-inject-interface net/minecraft/server/level/ChunkMap xyz/bluspring/kilt/injections/server/level/ChunkMapInjection
 transitive-inject-interface net/minecraft/server/level/DistanceManager xyz/bluspring/kilt/injections/server/level/DistanceManagerInjection
+transitive-inject-interface net/minecraft/server/level/GenerationChunkHolder xyz/bluspring/kilt/injections/server/level/GenerationChunkHolderInjection
 transitive-inject-interface net/minecraft/server/level/ServerChunkCache xyz/bluspring/kilt/injections/server/level/ServerChunkCacheInjection
+transitive-inject-interface net/minecraft/server/level/ServerEntity xyz/bluspring/kilt/injections/server/level/ServerEntityInjection
 transitive-inject-interface net/minecraft/server/level/ServerLevel xyz/bluspring/kilt/injections/server/level/ServerLevelInjection
 transitive-inject-interface net/minecraft/server/level/ServerPlayer xyz/bluspring/kilt/injections/server/level/ServerPlayerInjection
 transitive-inject-interface net/minecraft/server/level/Ticket xyz/bluspring/kilt/injections/server/level/TicketInjection

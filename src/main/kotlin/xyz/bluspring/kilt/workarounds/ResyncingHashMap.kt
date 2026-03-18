@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.workarounds
 
+/**
+ * If Fabric mods initialize things via [net.minecraft.client.renderer.Sheets], Neo mods get ignored, and Supplementaries panics.
+ * This is intended as a workaround to ensure that the data gets resynced.
+ */
 class ResyncingHashMap<K, V>(
     val original: Map<K, V>,
     val compareAgainst: Collection<K>,
