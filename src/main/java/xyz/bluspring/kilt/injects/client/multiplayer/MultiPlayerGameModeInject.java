@@ -1,30 +1,16 @@
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.EntityHitResult;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.EventHooks;
@@ -38,6 +24,30 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeInject {
@@ -63,27 +73,30 @@ public abstract class MultiPlayerGameModeInject {
         return original.call(instance, pos, newState, flags);
     }
 
-    /*@WrapWithCondition(method = "method_41936", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
-    private boolean kilt$handleLeftClickBlock(MultiPlayerGameMode instance, BlockPos pos, @Local(argsOnly = true) Direction direction) {
-        return !CommonHooks.onLeftClickBlock(minecraft.player, pos, direction, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK).isCanceled();
-    }*/
+    @WrapOperation(method = "method_41936", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
+    private boolean kilt$handleLeftClickBlock(MultiPlayerGameMode instance, BlockPos pos, Operation<Boolean> original, @Local(argsOnly = true) Direction direction) {
+        if (!CommonHooks.onLeftClickBlock(minecraft.player, pos, direction, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK).isCanceled()) {
+            return original.call(instance, pos);
+        } else {
+            return false;
+        }
+    }
 
     @Unique private PlayerInteractEvent.LeftClickBlock kilt$leftClickBlock;
 
-    // Kilt: handled via Architectury
-    /*@Inject(method = "startDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", ordinal = 1))
+    @Inject(method = "startDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", ordinal = 1))
     private void kilt$callForgeLeftClickBlockEvent(BlockPos loc, Direction face, CallbackInfoReturnable<Boolean> cir) {
-        this.kilt$leftClickBlock = CommonHooks.onLeftClickBlock(this.minecraft.player, loc, face);
+        this.kilt$leftClickBlock = CommonHooks.onLeftClickBlock(this.minecraft.player, loc, face, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK);
     }
 
     @WrapWithCondition(method = "method_41930", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;attack(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)V"))
     private boolean kilt$handleUseBlockEvent(BlockState instance, Level level, BlockPos blockPos, Player player) {
-        return this.kilt$leftClickBlock.getUseBlock() != Event.Result.DENY;
+        return this.kilt$leftClickBlock.getUseBlock() != TriState.FALSE;
     }
 
     @Inject(method = "method_41930", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getDestroyProgress(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F"), cancellable = true)
     private void kilt$handleParticleEvent(BlockState blockState, BlockPos blockPos, Direction direction, int i, CallbackInfoReturnable<Packet> cir) {
-        if (kilt$leftClickBlock.getUseItem() == Event.Result.DENY) {
+        if (kilt$leftClickBlock.getUseItem().isFalse()) {
             cir.setReturnValue(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, blockPos, direction));
         }
     }
@@ -93,11 +106,15 @@ public abstract class MultiPlayerGameModeInject {
         var result = original.call(loc, face);
         this.kilt$leftClickBlock = null;
         return result;
-    }*/
+    }
 
-    @WrapWithCondition(method = "method_41935", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
-    private boolean kilt$checkCanDestroyBlock(MultiPlayerGameMode instance, BlockPos pos, @Local(argsOnly = true) Direction direction) {
-        return !CommonHooks.onLeftClickBlock(this.minecraft.player, pos, direction, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK).isCanceled();
+    @WrapOperation(method = "method_41935", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
+    private boolean kilt$checkCanDestroyBlock(MultiPlayerGameMode instance, BlockPos pos, Operation<Boolean> original, @Local(argsOnly = true) Direction direction) {
+        if (!CommonHooks.onLeftClickBlock(this.minecraft.player, pos, direction, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK).isCanceled()) {
+            return original.call(instance, pos);
+        } else {
+            return false;
+        }
     }
 
     @WrapOperation(method = "continueDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
@@ -122,8 +139,7 @@ public abstract class MultiPlayerGameModeInject {
         return original && !this.destroyingItem.shouldCauseBlockBreakReset(this.minecraft.player.getMainHandItem());
     }
 
-    // Kilt: handled via Architectury
-    /*@Inject(method = "performUseItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0, shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "performUseItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0, shift = At.Shift.AFTER), cancellable = true)
     private void kilt$cancelRightClickEvent(LocalPlayer player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir, @Local BlockPos pos, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
         var event = CommonHooks.onRightClickBlock(player, hand, pos, result);
         eventRef.set(event);
@@ -136,14 +152,14 @@ public abstract class MultiPlayerGameModeInject {
     private void kilt$checkCanEventRun(LocalPlayer player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef, @Local ItemStack stack) {
         var context = new UseOnContext(player, hand, result);
 
-        if (eventRef.get().getUseItem() != Event.Result.DENY) {
+        if (eventRef.get().getUseItem() != TriState.FALSE) {
             var useResult = stack.onItemUseFirst(context);
 
             if (useResult != InteractionResult.PASS) {
                 cir.setReturnValue(useResult);
             }
         }
-    }*/
+    }
 
     @WrapOperation(method = "performUseItemOn", at = {
         @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0),
@@ -153,19 +169,16 @@ public abstract class MultiPlayerGameModeInject {
         return original.call(instance) || instance.doesSneakBypassUse(player.level(), pos, player);
     }
 
-    // Kilt: handled via Architectury
-    /*@WrapOperation(method = "performUseItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
-    private InteractionResult kilt$checkCanUse(BlockState instance, Level level, Player player, InteractionHand interactionHand, BlockHitResult hitResult, Operation<InteractionResult> original, @Local(ordinal = 1) boolean flag, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
-        if (eventRef.get().getUseBlock() == Event.Result.ALLOW || (eventRef.get().getUseBlock() != Event.Result.DENY && !flag)) {
-            original.call(instance, level, player, interactionHand, hitResult);
-        }
-
-        return InteractionResult.PASS;
+    @Definition(id = "bl2", local = @Local(type = boolean.class, ordinal = 1))
+    @Expression("bl2 != 0")
+    @ModifyExpressionValue(method = "performUseItemOn", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkCanUse(boolean original, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
+        return eventRef.get().getUseBlock() == TriState.TRUE || (eventRef.get().getUseBlock().isDefault() && original);
     }
 
     @Inject(method = "performUseItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 2), cancellable = true)
     private void kilt$checkShouldDenyEvent(LocalPlayer player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
-        if (eventRef.get().getUseItem() == Event.Result.DENY)
+        if (eventRef.get().getUseItem().isFalse())
             cir.setReturnValue(InteractionResult.PASS);
     }
 
@@ -174,14 +187,14 @@ public abstract class MultiPlayerGameModeInject {
         @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemCooldowns;isOnCooldown(Lnet/minecraft/world/item/Item;)Z")
     })
     private boolean kilt$checkShouldAllowEvent(boolean original, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
-        if (eventRef.get().getUseItem() == Event.Result.ALLOW)
+        if (eventRef.get().getUseItem().isTrue())
             return false;
 
         return original;
-    }*/
+    }
 
     // Kilt: handled via Architectury
-    /*@Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder;"), cancellable = true)
+    @Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder;"), cancellable = true)
     private void kilt$callItemRightClickEvent(InteractionHand interactionHand, Player player, MutableObject<InteractionResult> mutableObject, int i, CallbackInfoReturnable<Packet> cir, @Local ServerboundUseItemPacket packet) {
         var cancelResult = CommonHooks.onItemRightClick(player, interactionHand);
 
@@ -189,7 +202,7 @@ public abstract class MultiPlayerGameModeInject {
             mutableObject.setValue(cancelResult);
             cir.setReturnValue(packet);
         }
-    }*/
+    }
 
     @Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V", shift = At.Shift.AFTER))
     private void kilt$handleForgeDestroyItemEvent(InteractionHand interactionHand, Player player, MutableObject mutableObject, int i, CallbackInfoReturnable<Packet> cir, @Local(ordinal = 0) ItemStack stack, @Local(ordinal = 1) ItemStack stack2) {

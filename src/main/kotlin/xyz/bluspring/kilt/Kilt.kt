@@ -2,13 +2,10 @@ package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
-import io.github.fabricators_of_create.porting_lib.blocks.BlockEvents
-import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
@@ -17,28 +14,13 @@ import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.fabricmc.fabric.api.util.TriState
-import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.EquipmentSlot
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.context.UseOnContext
-import net.minecraft.world.level.ChunkPos
-import net.minecraft.world.level.Level
-import net.minecraft.world.phys.BlockHitResult
-import net.neoforged.bus.api.Event
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.EventHooks
-import net.neoforged.neoforge.event.entity.living.LivingEvent
 import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
@@ -47,7 +29,6 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
-import java.util.*
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
@@ -59,7 +40,8 @@ class Kilt : ModInitializer {
 
     @Suppress("removal")
     private fun registerFabricEvents() {
-        PlayerInteractEvent.RightClickBlock.EVENT.register { event ->
+        // Kilt: We rely on this event so
+        /*PlayerInteractEvent.RightClickBlock.EVENT.register { event ->
             val forgeEvent = CommonHooks.onRightClickBlock(event.entity, event.hand, event.pos, event.hitVec)
 
             event.cancellationResult = forgeEvent.cancellationResult
@@ -69,7 +51,7 @@ class Kilt : ModInitializer {
 
             if (!forgeEvent.useItem.isDefault)
                 event.useItem = TriState.of(forgeEvent.useItem.isTrue)
-        }
+        }*/
 
         PlayerInteractEvent.RightClickItem.EVENT.register { event ->
             event.cancellationResult = CommonHooks.onItemRightClick(event.entity, event.hand)
