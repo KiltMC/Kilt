@@ -5,7 +5,6 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "accessories.DataLoaderBaseMixin",
-    "amecs_key_modifiers.AmecsKeyMappingManagerLayerMixin",
     "architectury.RegistrarManagerImplMixin",
     "creativecore.CreativeNetworkMixin",
     "emi.EmiAgnosFabricMixin",
@@ -55,6 +54,7 @@
   ],
   "client": [
     "amecs_key_modifiers.KeyMappingMixin",
+    "amecs_key_modifiers.AmecsKeyMappingManagerMixin",
     "amecsapi.KeyBindingManagerMixin",
     "amecsapi.KeyMappingMixin",
     "mkb.KeyMappingMixin"
