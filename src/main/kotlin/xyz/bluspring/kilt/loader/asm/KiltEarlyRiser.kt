@@ -462,6 +462,7 @@ class KiltEarlyRiser : Runnable {
         run {
             val modifiedConfigClasses = listOf(
                 "net.minecraftforge.fml.config.ConfigFileTypeHandler",
+                $$"net.minecraftforge.fml.config.ConfigFileTypeHandler$ConfigWatcher",
                 "net.minecraftforge.fml.config.ConfigTracker",
                 "net.minecraftforge.fml.config.IConfigSpec",
                 "net.minecraftforge.fml.config.ModConfig",

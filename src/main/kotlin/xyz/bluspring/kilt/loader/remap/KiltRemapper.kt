@@ -91,8 +91,12 @@ object KiltRemapper {
         FabricLoader.getInstance().mappingResolver
 
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
+    val mappingFile: INamedMappingFile = this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.buffered().use { INamedMappingFile.load(it) }
     // srg -> intermediary
-    val srgIntermediaryMapping: IMappingFile = this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.buffered().use { IMappingFile.load(it) }
+    val srgIntermediaryMapping: IMappingFile = mappingFile.getMap("searge", "intermediary")
+    // mojang -> intermediary
+    val intermediaryMojMapping: IMappingFile = mappingFile.getMap("intermediary", "mojang").reverse()
+
     val fabricMappings: INamedMappingFile = MappingConfiguration::class.java.classLoader.getResourceAsStream("mappings/mappings.tiny")!!.use { INamedMappingFile.load(it) }
 
     private val devSrgIntermediaryMapping = srgIntermediaryMapping.run {
