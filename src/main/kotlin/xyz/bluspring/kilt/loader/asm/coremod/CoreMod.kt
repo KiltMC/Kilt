@@ -97,7 +97,7 @@ class CoreMod(val mod: ForgeMod, val id: String, val file: String) {
                     val methodName = targetData["methodName"] as String
                     val descName = targetData["methodDesc"] as String
 
-                    val mappedMethodName = KiltRemapper.enhancedRemapper.mapMethodName(className, methodName, descName)
+                    val mappedMethodName = KiltRemapper.enhancedSRGRemapper.mapMethodName(className, methodName, descName)
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
                     logger.debug("Binding $name: Added method $methodName$mappedDescName / $mappedMethodName$mappedDescName from class $className as target")

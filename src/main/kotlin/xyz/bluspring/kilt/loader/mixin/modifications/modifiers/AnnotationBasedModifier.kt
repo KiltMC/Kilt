@@ -66,7 +66,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
                 KiltMixinModifications.createAnnotation(annotation.desc,
                     KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
                         this["method"] = listOf(
-                            MixinRemapper.remapTargetString(remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)), KiltRemapper.enhancedRemapper)
+                            MixinRemapper.remapTargetString(remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)), KiltRemapper.enhancedMojangRemapper)
                         )
                     })
             }

@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import it.unimi.dsi.fastutil.objects.Object2ReferenceMap
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap
 import kotlinx.coroutines.*
@@ -106,6 +107,13 @@ object KiltRemapper {
             this
     }
 
+    private val devMojangIntermediaryMapping = intermediaryMojMapping.run {
+        if (!forceProductionRemap)
+            this.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
+        else
+            this
+    }
+
     val intermediarySrgMapping: IMappingFile = srgIntermediaryMapping.reverse()
     private val devIntermediarySrgMapping = devSrgIntermediaryMapping.reverse()
 
@@ -119,7 +127,8 @@ object KiltRemapper {
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
 
-    lateinit var enhancedRemapper: KiltEnhancedRemapper
+    lateinit var enhancedSRGRemapper: KiltEnhancedRemapper
+    lateinit var enhancedMojangRemapper: KiltEnhancedRemapper
 
     private lateinit var remappedModsDir: Path
 
@@ -130,12 +139,45 @@ object KiltRemapper {
     val srgMappedMethods =
         Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
 
+    val mojangMappedMethods =
+        Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
+
+    fun fillMethodMappings(
+        mappings: IMappingFile, methodMappings: Object2ReferenceMap<String, MutableMap<String, String>>,
+        resolver: MappingResolver, forceProductionRemap: Boolean
+    ) {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                mappings.classes.asFlow().concurrent().collect {
+                    it.methods.asFlow().concurrent().collect { f ->
+                        val map = methodMappings.getOrPut(f.original) {
+                            Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
+                        }
+                        val mapped = if (!forceProductionRemap)
+                            resolver.mapMethodName(
+                                "intermediary",
+                                it.mapped.replace("/", "."),
+                                f.mapped,
+                                f.mappedDescriptor
+                            )
+                        else
+                            f.mapped
+
+                        map[f.parent.original] = mapped
+                    }
+                }
+            }.join()
+        }
+    }
+
     init {
         // Magical field references that are required because otherwise the remapper will deadlock
         val srgIntermediaryMapping = devSrgIntermediaryMapping
+        val mojangIntermediaryMapping = devMojangIntermediaryMapping
         val forceProductionRemap = forceProductionRemap
         val mappingResolver = mappingResolver
         val srgMappedMethods = srgMappedMethods
+        val mojangMappedMethods = mojangMappedMethods
 
         srgMappedFields = runBlocking {
             async(Dispatchers.IO) {
@@ -156,31 +198,58 @@ object KiltRemapper {
             }.await()
         }
 
-        runBlocking {
-            launch(Dispatchers.IO) {
-                srgIntermediaryMapping.classes.asFlow().concurrent().collect {
-                    it.methods.asFlow().concurrent().collect { f ->
-                        val map = srgMappedMethods.getOrPut(f.original) {
-                            Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
-                        }
-                        val mapped = if (!forceProductionRemap)
-                            mappingResolver.mapMethodName(
-                                "intermediary",
-                                it.mapped.replace("/", "."),
-                                f.mapped,
-                                f.mappedDescriptor
-                            )
-                        else
-                            f.mapped
-
-                        map[f.parent.original] = mapped
-                    }
-                }
-            }.join()
-        }
+        fillMethodMappings(srgIntermediaryMapping, srgMappedMethods, mappingResolver, forceProductionRemap)
+        fillMethodMappings(mojangIntermediaryMapping, mojangMappedMethods, mappingResolver, forceProductionRemap)
     }
 
     fun init() {}
+
+    private fun initEnhancedRemapper(intermediaryMap: Path?, modLoadingQueue: List<ModDefinition>): ClassProvider {
+        // Initialize this a bit later, cuz we need the same libraries.
+        return ClassProvider.builder().apply {
+            // time to add Intermediary mappings to the mix! :,D
+            if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
+                addLibrary(intermediaryMap)
+            }
+
+            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
+            listOf(
+                // List down Forge paths
+                *KiltHelper.getKiltPaths().toTypedArray(),
+                // Add all Fabric mods
+                *FabricLoader.getInstance().allMods
+                    .flatMap { container -> container.rootPaths }.toTypedArray(),
+                // add mapped path too
+                *runBlocking { getGameClassPath() },
+                // Add all Forge mods to the library path, because dependencies don't have to be specified
+                // in order to use mods lmao
+                *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
+            ).forEach {
+                addLibrary(it)
+            }
+        }.build()
+    }
+
+    private suspend fun createClassProvider(gamePath: Path, modLoadingQueue: List<ModDefinition>): ClassProvider {
+        return ClassProvider.builder().apply {
+            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. gamePath MUST be at the top of the list.
+            listOf(
+                gamePath,
+                // List down Forge paths
+                *KiltHelper.getKiltPaths().toTypedArray(),
+                // Add all Fabric mods
+                *FabricLoader.getInstance().allMods
+                    .flatMap { container -> container.rootPaths }.toTypedArray(),
+                // add mapped path too
+                *getGameClassPath(),
+                // Add all Forge mods to the library path, because dependencies don't have to be specified
+                // in order to use mods lmao
+                *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
+            ).forEach {
+                addLibrary(it)
+            }
+        }.build()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun remapMods(definitions: Collection<ModDefinition>, remappedModsDir: Path) {
@@ -265,6 +334,7 @@ object KiltRemapper {
         }
 
         srgGamePath = remapMinecraft("srg", devIntermediarySrgMapping)
+        mojangGamePath = remapMinecraft("mojang", devMojangIntermediaryMapping.reverse())
 
         val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
@@ -273,54 +343,19 @@ object KiltRemapper {
         val mods = modLoadingQueue.filter { !it.isBuiltin }.toSet()
 
         // Use the regular mod file
-        val classProvider = ClassProvider.builder().apply {
-            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
-            listOf(
-                srgGamePath,
-                // List down Forge paths
-                *KiltHelper.getKiltPaths().toTypedArray(),
-                // Add all Fabric mods
-                *FabricLoader.getInstance().allMods
-                    .flatMap { container -> container.rootPaths }.toTypedArray(),
-                // add mapped path too
-                *getGameClassPath(),
-                // Add all Forge mods to the library path, because dependencies don't have to be specified
-                // in order to use mods lmao
-                *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
-            ).forEach {
-                addLibrary(it)
-            }
-        }.build()
+        val srgClassProvider = createClassProvider(srgGamePath, modLoadingQueue)
+        val mojangClassProvider = createClassProvider(mojangGamePath, modLoadingQueue)
 
         val intermediaryMap = if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap)
             remapMinecraft("intermediary", fabricMappings.getMap("named", "intermediary").rename(DevMojClassMappingRenamer(FabricLoader.getInstance().mappingResolver)))
         else null
 
         // Initialize a global remapper state
-        enhancedRemapper = KiltEnhancedRemapper(classProvider, devSrgIntermediaryMapping, logConsumer) {
-            // Initialize this a bit later, cuz we need the same libraries.
-            ClassProvider.builder().apply {
-                // time to add Intermediary mappings to the mix! :,D
-                if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
-                    addLibrary(intermediaryMap)
-                }
-
-                // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
-                listOf(
-                    // List down Forge paths
-                    *KiltHelper.getKiltPaths().toTypedArray(),
-                    // Add all Fabric mods
-                    *FabricLoader.getInstance().allMods
-                        .flatMap { container -> container.rootPaths }.toTypedArray(),
-                    // add mapped path too
-                    *runBlocking { getGameClassPath() },
-                    // Add all Forge mods to the library path, because dependencies don't have to be specified
-                    // in order to use mods lmao
-                    *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
-                ).forEach {
-                    addLibrary(it)
-                }
-            }.build()
+        enhancedSRGRemapper = KiltEnhancedRemapper(srgClassProvider, devSrgIntermediaryMapping, logConsumer) {
+            initEnhancedRemapper(intermediaryMap, modLoadingQueue)
+        }
+        enhancedMojangRemapper = KiltEnhancedRemapper(mojangClassProvider, devMojangIntermediaryMapping, logConsumer) {
+            initEnhancedRemapper(intermediaryMap, modLoadingQueue)
         }
 
         //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, srgIntermediaryMapping, classProvider)
@@ -330,7 +365,7 @@ object KiltRemapper {
         )
 
         if (FabricLoader.getInstance().isDevelopmentEnvironment)
-            enhancedRemapper.initDevRemapper()
+            enhancedSRGRemapper.initDevRemapper()
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
@@ -481,8 +516,8 @@ object KiltRemapper {
                         KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
                             .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
                     ) {
-                        MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
-                        MixinShadowRemapper.remapClass(originalNode, enhancedRemapper)
+                        MixinRemapper.remapClass(originalNode, enhancedSRGRemapper, mixinRefmaps.values)
+                        MixinShadowRemapper.remapClass(originalNode, enhancedSRGRemapper)
 
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
@@ -493,7 +528,7 @@ object KiltRemapper {
                     }
 
                     val remappedNode = ClassNode(Opcodes.ASM9)
-                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
+                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedSRGRemapper, RenamingTransformer(enhancedSRGRemapper, false)))
 
                     if (!KiltFlags.DISABLE_FIXERS) {
                         ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
@@ -523,7 +558,7 @@ object KiltRemapper {
             }
             
             // If for whatever reason the refmap remapping missed something, we need to remap it immediately.
-            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedRemapper)
+            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedSRGRemapper)
 
             // Now, let's write the refmap JSONs
             for ((entry, refmap) in mixinRefmaps) {
@@ -623,6 +658,7 @@ object KiltRemapper {
 
     val gameFile = getMCGameFile()
     lateinit var srgGamePath: Path
+    lateinit var mojangGamePath: Path
 
     private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
         return GameProviderHelper::class.java

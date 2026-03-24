@@ -617,6 +617,20 @@ object KiltMixinModifications {
         })
     }
 
+    fun remapMethod(method: String, owner: String): String {
+        return if (method.contains("(")) {
+            val name = method.replaceAfter("(", "").removeSuffix("(")
+            val descriptor = method.removePrefix(name)
+            val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+            if (KiltRemapper.srgMappedMethods.contains(name)) {
+                "${KiltRemapper.srgMappedMethods[name]?.get(owner) ?: name}$mappedDesc"
+            } else {
+                "${KiltRemapper.mojangMappedMethods[name]?.get(owner) ?: name}$mappedDesc"
+            }
+        } else method
+    }
+
     fun register(type: Class<*>, vararg mixinModifiers: MixinModifier): List<MixinModifier> {
         val list = mutableListOf<MixinModifier>()
         val typeDesc = Type.getDescriptor(type)
@@ -628,13 +642,7 @@ object KiltMixinModifications {
 
             if (modifier is MethodBasedModifier) {
                 modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
-
-                        "${KiltRemapper.srgMappedMethods[name]?.get(modifier.owner) ?: name}$mappedDesc"
-                    } else it)
+                    remapMethod(it, modifier.owner)
                 }
             }
 

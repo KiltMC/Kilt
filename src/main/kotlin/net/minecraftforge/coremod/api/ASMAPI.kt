@@ -46,7 +46,7 @@ object ASMAPI {
         methodDescriptor: String,
         type: MethodType
     ): MethodInsnNode {
-        return MethodInsnNode(type.toOpcode(), KiltRemapper.remapClass(ownerName), KiltRemapper.enhancedRemapper.mapMethodName(ownerName, methodName, methodDescriptor), KiltRemapper.remapDescriptor(methodDescriptor), type == MethodType.INTERFACE)
+        return MethodInsnNode(type.toOpcode(), KiltRemapper.remapClass(ownerName), KiltRemapper.enhancedSRGRemapper.mapMethodName(ownerName, methodName, methodDescriptor), KiltRemapper.remapDescriptor(methodDescriptor), type == MethodType.INTERFACE)
     }
 
     @JvmStatic
