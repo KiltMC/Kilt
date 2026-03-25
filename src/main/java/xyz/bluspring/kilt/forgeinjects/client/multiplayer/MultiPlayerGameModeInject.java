@@ -126,6 +126,11 @@ public abstract class MultiPlayerGameModeInject {
 
     @ModifyReturnValue(method = "sameDestroyTarget", at = @At("RETURN"))
     private boolean kilt$checkShouldCauseBlockBreakReset(boolean original) {
+        // Kilt: Force Fabric mods' behaviour
+        if (this.destroyingItem.getItem().allowContinuingBlockBreaking(this.minecraft.player, this.destroyingItem, this.minecraft.player.getMainHandItem())) {
+            return original;
+        }
+
         return original && !this.destroyingItem.shouldCauseBlockBreakReset(this.minecraft.player.getMainHandItem());
     }
 
