@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
@@ -47,8 +48,9 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
             } else {
                 annotationsToAdd.addAll(this.replaceWith)
             }
+            if (KiltRemapper.enhancedMojangRemapper == null) throw IllegalStateException("Enhanced Mojang remapper was discarded too soon!")
             MixinRemapper.remapMixinAnnotations(
-                annotationsToAdd, KiltRemapper.enhancedMojangRemapper,
+                annotationsToAdd, KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper,
                 listOf(owner), classInfo.name
             )
             newAnnotations.addAll(annotationsToAdd)
@@ -69,10 +71,14 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
             val newAnnotation = run {
                 val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
 
+                if (KiltRemapper.enhancedMojangRemapper == null) throw IllegalStateException("Enhanced Mojang remapper was discarded too soon!")
                 KiltMixinModifications.createAnnotation(annotation.desc,
                     KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
                         this["method"] = listOf(
-                            MixinRemapper.remapTargetString(remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)), KiltRemapper.enhancedMojangRemapper)
+                            MixinRemapper.remapTargetString(
+                                remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)),
+                                KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper
+                            )
                         )
                     })
             }

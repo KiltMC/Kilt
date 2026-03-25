@@ -96,7 +96,7 @@ object KiltRemapper {
     // srg -> intermediary
     val srgIntermediaryMapping: IMappingFile = mappingFile.getMap("searge", "intermediary")
     // mojang -> intermediary
-    val mojIntermediaryMapping: IMappingFile = mappingFile.getMap("intermediary", "mojang").reverse()
+    private var mojIntermediaryMapping: IMappingFile? = mappingFile.getMap("intermediary", "mojang").reverse()
 
     val fabricMappings: INamedMappingFile = MappingConfiguration::class.java.classLoader.getResourceAsStream("mappings/mappings.tiny")!!.use { INamedMappingFile.load(it) }
 
@@ -107,9 +107,9 @@ object KiltRemapper {
             this
     }
 
-    private val devMojangIntermediaryMapping = mojIntermediaryMapping.run {
+    private var devMojangIntermediaryMapping = mojIntermediaryMapping.run {
         if (!forceProductionRemap)
-            this.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
+            this?.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
         else
             this
     }
@@ -128,7 +128,8 @@ object KiltRemapper {
     )
 
     lateinit var enhancedSrgRemapper: KiltEnhancedRemapper
-    lateinit var enhancedMojangRemapper: KiltEnhancedRemapper
+    var enhancedMojangRemapper: KiltEnhancedRemapper? = null
+        private set
 
     private lateinit var remappedModsDir: Path
 
@@ -139,8 +140,9 @@ object KiltRemapper {
     val srgMappedMethods =
         Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
 
-    val mojangMappedMethods =
+    var mojangMappedMethods =
         Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
+        private set
 
     fun fillMethodMappings(
         mappings: IMappingFile, methodMappings: Object2ReferenceMap<String, MutableMap<String, String>>,
@@ -168,6 +170,14 @@ object KiltRemapper {
                 }
             }.join()
         }
+    }
+
+    fun discardMojangMappings() {
+        enhancedMojangRemapper = null
+        mojangGamePath = null
+        mojangMappedMethods = null
+        mojIntermediaryMapping = null
+        devMojangIntermediaryMapping = null
     }
 
     init {
@@ -199,7 +209,9 @@ object KiltRemapper {
         }
 
         fillMethodMappings(srgIntermediaryMapping, srgMappedMethods, mappingResolver, forceProductionRemap)
-        fillMethodMappings(mojangIntermediaryMapping, mojangMappedMethods, mappingResolver, forceProductionRemap)
+        if (mojangIntermediaryMapping != null) {
+            fillMethodMappings(mojangIntermediaryMapping, mojangMappedMethods, mappingResolver, forceProductionRemap)
+        }
     }
 
     fun init() {}
@@ -334,7 +346,9 @@ object KiltRemapper {
         }
 
         srgGamePath = remapMinecraft("srg", devIntermediarySrgMapping)
-        mojangGamePath = remapMinecraft("mojang", devMojangIntermediaryMapping.reverse())
+        if (devMojangIntermediaryMapping != null) {
+            mojangGamePath = remapMinecraft("mojang", (devMojangIntermediaryMapping as IMappingFile).reverse())
+        }
 
         val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
@@ -344,7 +358,7 @@ object KiltRemapper {
 
         // Use the regular mod file
         val srgClassProvider = createClassProvider(srgGamePath, modLoadingQueue)
-        val mojangClassProvider = createClassProvider(mojangGamePath, modLoadingQueue)
+        val mojangClassProvider = if (mojangGamePath != null) createClassProvider(mojangGamePath as Path, modLoadingQueue) else null
 
         val intermediaryMap = if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap)
             remapMinecraft("intermediary", fabricMappings.getMap("named", "intermediary").rename(DevMojClassMappingRenamer(FabricLoader.getInstance().mappingResolver)))
@@ -354,8 +368,10 @@ object KiltRemapper {
         enhancedSrgRemapper = KiltEnhancedRemapper(srgClassProvider, devSrgIntermediaryMapping, logConsumer) {
             initEnhancedRemapper(intermediaryMap, modLoadingQueue)
         }
-        enhancedMojangRemapper = KiltEnhancedRemapper(mojangClassProvider, devMojangIntermediaryMapping, logConsumer) {
-            initEnhancedRemapper(intermediaryMap, modLoadingQueue)
+        if (devMojangIntermediaryMapping != null && mojangClassProvider != null) {
+            enhancedMojangRemapper = KiltEnhancedRemapper(mojangClassProvider, devMojangIntermediaryMapping as IMappingFile, logConsumer) {
+                initEnhancedRemapper(intermediaryMap, modLoadingQueue)
+            }
         }
 
         //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, srgIntermediaryMapping, classProvider)
@@ -658,7 +674,7 @@ object KiltRemapper {
 
     val gameFile = getMCGameFile()
     lateinit var srgGamePath: Path
-    lateinit var mojangGamePath: Path
+    private var mojangGamePath: Path? = null
 
     private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
         return GameProviderHelper::class.java

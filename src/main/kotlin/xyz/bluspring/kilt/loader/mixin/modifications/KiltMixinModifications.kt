@@ -670,4 +670,8 @@ object KiltMixinModifications {
         ACCESSORS[typeDesc] = list
         return list
     }
+
+    init {
+        KiltRemapper.discardMojangMappings()
+    }
 }
