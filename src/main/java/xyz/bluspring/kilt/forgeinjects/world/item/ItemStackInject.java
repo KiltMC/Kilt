@@ -25,6 +25,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
+import net.minecraftforge.common.extensions.IForgeItem;
 import net.minecraftforge.common.extensions.IForgeItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
@@ -123,7 +124,7 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
 
     @WrapOperation(method = "getMaxStackSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getMaxStackSize()I"))
     private int kilt$tryUseForgeMaxStackSize(Item instance, Operation<Integer> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getMaxStackSize", ItemStack.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "getMaxStackSize", ItemStack.class)) {
             return instance.getMaxStackSize((ItemStack) (Object) this);
         }
 
@@ -224,14 +225,14 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Inject(method = "isCorrectToolForDrops", at = @At("HEAD"), cancellable = true)
     private void kilt$isCorrectToolForDrops(BlockState state, CallbackInfoReturnable<Boolean> cir) {
         Item item = getItem();
-        if (KiltHelper.INSTANCE.hasMethodOverride(item.getClass(), Item.class, "isCorrectToolForDrops", ItemStack.class, BlockState.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(item.getClass(), IForgeItem.class, "isCorrectToolForDrops", ItemStack.class, BlockState.class)) {
             cir.setReturnValue(item.isCorrectToolForDrops((ItemStack) (Object) this, state));
         }
     }
 
     @WrapOperation(method = "getAttributeModifiers", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getDefaultAttributeModifiers(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;"))
     private Multimap<Attribute, AttributeModifier> kilt$getModdedAttributeModifiers(Item instance, EquipmentSlot slot, Operation<Multimap<Attribute, AttributeModifier>> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getAttributeModifiers", EquipmentSlot.class, ItemStack.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "getAttributeModifiers", EquipmentSlot.class, ItemStack.class)) {
             return HashMultimap.create(instance.getAttributeModifiers(slot,  (ItemStack) (Object) this)); // Kilt: Make mutable, other mods depend on this, for some reason.
         }
 

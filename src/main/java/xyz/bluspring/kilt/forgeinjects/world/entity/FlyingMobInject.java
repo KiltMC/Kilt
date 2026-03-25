@@ -13,6 +13,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -34,7 +36,7 @@ public abstract class FlyingMobInject extends Mob {
 
     @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     private float kilt$callForgeFrictionIfPossible(Block instance, Operation<Float> original, @Share("blockState") LocalRef<BlockState> stateRef, @Share("blockPos") LocalRef<BlockPos> posRef) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Block.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlock.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getFriction(stateRef.get(), this.level(), posRef.get(), this);
         }
 

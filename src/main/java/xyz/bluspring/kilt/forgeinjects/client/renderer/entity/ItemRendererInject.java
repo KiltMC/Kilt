@@ -20,6 +20,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,7 +42,7 @@ public abstract class ItemRendererInject {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack;)V"))
     private void kilt$dontApplyTransformTwice(ItemTransform instance, boolean leftHand, PoseStack poseStack, Operation<Void> original, @Local(argsOnly = true) BakedModel model, @Share("transform") LocalBooleanRef shouldTransform) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IForgeBakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
             shouldTransform.set(true);
             return;
         } else {
@@ -54,7 +55,7 @@ public abstract class ItemRendererInject {
                 } else if (wrapped == model) {
                     throw new IllegalArgumentException("Model " + model + " is wrapping itself!");
                 } else {
-                    if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
+                    if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IForgeBakedModel.class, "applyTransform", ItemDisplayContext.class, PoseStack.class, Boolean.TYPE)) {
                         shouldTransform.set(true);
                         return;
                     }

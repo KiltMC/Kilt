@@ -32,6 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -226,7 +227,7 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
 
     @WrapOperation(method = "levelEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType kilt$tryUseForgeSoundType(BlockState instance, Operation<SoundType> original, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getSoundType(this.level, pos, null);
         }
 
@@ -235,7 +236,7 @@ public abstract class LevelRendererInject implements LevelRendererInjection {
 
     @WrapOperation(method = "getLightColor(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
     private static int kilt$tryUseForgeLightEmission(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockAndTintGetter level, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getLightEmission", BlockState.class, BlockAndTintGetter.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getLightEmission", BlockState.class, BlockAndTintGetter.class, BlockPos.class)) {
             return instance.getLightEmission(level, pos);
         }
 

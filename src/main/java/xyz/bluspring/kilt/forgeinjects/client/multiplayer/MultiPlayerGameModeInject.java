@@ -33,6 +33,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -63,7 +64,7 @@ public abstract class MultiPlayerGameModeInject {
 
     @WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", ordinal = 0))
     private boolean kilt$callDestroyedByPlayer(Level instance, BlockPos pos, BlockState newState, int flags, Operation<Boolean> original, @Local BlockState state, @Local FluidState fluidState) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "onDestroyedByPlayer", BlockState.class, Level.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "onDestroyedByPlayer", BlockState.class, Level.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
             return state.onDestroyedByPlayer(instance, pos, minecraft.player, false, fluidState);
         }
 
@@ -109,7 +110,7 @@ public abstract class MultiPlayerGameModeInject {
 
     @WrapOperation(method = "continueDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType kilt$handleGetSoundType(BlockState instance, Operation<SoundType> original, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getSoundType(this.minecraft.level, pos, this.minecraft.player);
         }
 

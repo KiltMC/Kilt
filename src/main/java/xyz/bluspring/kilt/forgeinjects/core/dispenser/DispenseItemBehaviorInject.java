@@ -19,6 +19,8 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+
+import net.minecraftforge.common.extensions.IForgeItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -29,7 +31,7 @@ public interface DispenseItemBehaviorInject {
     public abstract static class DispenseItemBehavior16Inject {
         @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/DispensibleContainerItem;emptyContents(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/BlockHitResult;)Z"))
         private boolean kilt$tryForgeEmptyContents(DispensibleContainerItem instance, Player player, Level level, BlockPos blockPos, BlockHitResult hitResult, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack) {
-            if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "emptyContents", Player.class, Level.class, BlockPos.class, BlockHitResult.class, ItemStack.class)) {
+            if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "emptyContents", Player.class, Level.class, BlockPos.class, BlockHitResult.class, ItemStack.class)) {
                 return instance.emptyContents(player, level, blockPos, hitResult, stack);
             }
 

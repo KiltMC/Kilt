@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.network.NetworkHooks;
 import org.spongepowered.asm.mixin.Final;
@@ -85,7 +86,7 @@ public abstract class ClientPacketListenerInject {
 
     @Inject(method = "method_38542", at = @At("HEAD"), cancellable = true)
     public void kilt$onDataPacket(ClientboundBlockEntityDataPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), IForgeBlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class)) {
             blockEntity.onDataPacket(this.connection, packet);
             ci.cancel();
         }

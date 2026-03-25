@@ -17,6 +17,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,7 +38,7 @@ public abstract class ExperienceOrbInject extends Entity {
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     private float kilt$useForgeGetFriction(Block instance, Operation<Float> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Block.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlock.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             var pos = this.getBlockPosBelowThatAffectsMyMovement();
             return this.level().getBlockState(pos).getFriction(this.level(), pos, this);
         }

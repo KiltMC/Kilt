@@ -15,6 +15,8 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+
+import net.minecraftforge.common.extensions.IForgeItem;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,7 +30,7 @@ public abstract class CatInject extends TamableAnimal {
 
     @WrapOperation(method = "mobInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getFoodProperties()Lnet/minecraft/world/food/FoodProperties;"))
     private FoodProperties kilt$tryFeedFromStack(Item instance, Operation<FoodProperties> original, @Local ItemStack stack) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getFoodProperties", ItemStack.class, LivingEntity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "getFoodProperties", ItemStack.class, LivingEntity.class)) {
             return instance.getFoodProperties(stack, this);
         }
 

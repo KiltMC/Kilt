@@ -13,6 +13,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -25,7 +27,7 @@ public abstract class SnifferInject extends Animal {
 
     @WrapOperation(method = "emitDiggingParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType kilt$tryUseForgeSoundType(BlockState instance, Operation<SoundType> original, @Local BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getSoundType(this.level(), pos.below(), this);
         }
 

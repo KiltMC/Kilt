@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
+
+import net.minecraftforge.common.extensions.IForgeBaseRailBlock;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -82,7 +84,7 @@ public abstract class PoweredRailBlockInject extends BaseRailBlock implements Po
 
     @WrapOperation(method = "isSameRailWithPower", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getValue(Lnet/minecraft/world/level/block/state/properties/Property;)Ljava/lang/Comparable;", ordinal = 0))
     public Comparable kilt$getRailDirectionWithForge(BlockState instance, Property property, Operation<Comparable> original, @Local(argsOnly = true) Level level, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), PoweredRailBlock.class, "getRailDirection", BlockState.class, BlockGetter.class, BlockPos.class, AbstractMinecart.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), BaseRailBlock.class, "getRailDirection", BlockState.class, BlockGetter.class, BlockPos.class, AbstractMinecart.class)) {
             return ((PoweredRailBlock) instance.getBlock()).getRailDirection(instance, level, pos, (AbstractMinecart) null);
         }
 

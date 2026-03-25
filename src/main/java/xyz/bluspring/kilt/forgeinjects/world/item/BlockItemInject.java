@@ -15,6 +15,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +35,7 @@ public abstract class BlockItemInject extends Item implements BlockItemInjection
 
     @WrapOperation(method = "place", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType kilt$tryUseForgeSoundType(BlockState instance, Operation<SoundType> original, @Local Level level, @Local BlockPos pos, @Local Player player) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getSoundType(level, pos, player);
         }
 
@@ -42,7 +44,7 @@ public abstract class BlockItemInject extends Item implements BlockItemInjection
 
     @WrapOperation(method = "place", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BlockItem;getPlaceSound(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/sounds/SoundEvent;"))
     private SoundEvent kilt$tryUseForgePlaceSound(BlockItem instance, BlockState state, Operation<SoundEvent> original, @Local Level level, @Local BlockPos pos, @Local Player player) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)
         || KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockItem.class, "getPlaceSound", BlockState.class, Level.class, BlockPos.class, Player.class)) {
             return this.getPlaceSound(state, level, pos, player);
         }

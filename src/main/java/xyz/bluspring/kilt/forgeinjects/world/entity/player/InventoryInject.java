@@ -14,6 +14,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+
+import net.minecraftforge.common.extensions.IForgeItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -61,7 +63,7 @@ public abstract class InventoryInject {
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;inventoryTick(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;IZ)V"))
     private void kilt$callForgeInventoryTick(ItemStack instance, Level level, Entity entity, int inventorySlot, boolean isCurrentItem, Operation<Void> original, @Share("idx") LocalIntRef idx) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "onInventoryTick", ItemStack.class, Level.class, Player.class, int.class, int.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IForgeItem.class, "onInventoryTick", ItemStack.class, Level.class, Player.class, int.class, int.class)) {
             instance.onInventoryTick(level, (Player) entity, idx.get() - 1, this.selected);
         } else {
             original.call(instance, level, entity, inventorySlot, isCurrentItem);

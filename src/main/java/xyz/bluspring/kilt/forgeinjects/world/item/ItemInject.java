@@ -46,7 +46,7 @@ public abstract class ItemInject implements IForgeItem, ItemInjection, RenderPro
 
     @WrapOperation(method = "isEnchantable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getMaxStackSize()I"))
     private int kilt$tryUseForgeMaxStackSize(Item instance, Operation<Integer> original, @Local(argsOnly = true) ItemStack stack) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "getMaxStackSize", ItemStack.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "getMaxStackSize", ItemStack.class)) {
             return instance.getMaxStackSize(stack);
         }
 

@@ -9,6 +9,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.extensions.IForgeFriendlyByteBuf;
+import net.minecraftforge.common.extensions.IForgeItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,7 +35,7 @@ public abstract class FriendlyByteBufInject implements IForgeFriendlyByteBuf, Fr
 
     @WrapOperation(method = "writeItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;canBeDepleted()Z"))
     private boolean kilt$checkIsDamageable(Item instance, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Item.class, "isDamageable", ItemStack.class))
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeItem.class, "isDamageable", ItemStack.class))
             return instance.isDamageable(stack);
 
         return original.call(instance);
@@ -50,7 +51,7 @@ public abstract class FriendlyByteBufInject implements IForgeFriendlyByteBuf, Fr
 
     @WrapOperation(method = "readItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;setTag(Lnet/minecraft/nbt/CompoundTag;)V"))
     private void kilt$readShareTagForStack(ItemStack instance, CompoundTag compoundTag, Operation<Void> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "readShareTag", ItemStack.class, CompoundTag.class))
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IForgeItem.class, "readShareTag", ItemStack.class, CompoundTag.class))
             instance.readShareTag(compoundTag);
         else
             original.call(instance, compoundTag);

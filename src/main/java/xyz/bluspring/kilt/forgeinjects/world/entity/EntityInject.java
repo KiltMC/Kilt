@@ -46,6 +46,7 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.common.util.ITeleporter;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -195,7 +196,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
 
     @WrapOperation(method = "playStepSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType kilt$useForgeSoundTypeIfPossible(BlockState instance, Operation<SoundType> original, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getSoundType", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getSoundType(this.level(), pos, (Entity) (Object) this);
         }
 

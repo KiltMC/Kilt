@@ -7,6 +7,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RepairItemRecipe;
+
+import net.minecraftforge.common.extensions.IForgeItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -30,7 +32,7 @@ public abstract class RepairItemRecipeInject {
 
     @WrapOperation(method = "assemble(Lnet/minecraft/world/inventory/CraftingContainer;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getMaxDamage()I"))
     private int kilt$tryGetMaxDamage(Item instance, Operation<Integer> original, @Local(ordinal = 0) ItemStack stack) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), Item.class, "getMaxDamage", ItemStack.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), IForgeItem.class, "getMaxDamage", ItemStack.class)) {
             return stack.getMaxDamage();
         }
 

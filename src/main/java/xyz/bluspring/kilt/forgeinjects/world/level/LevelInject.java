@@ -21,6 +21,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilityProviderImpl;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeLevel;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.entity.PartEntity;
@@ -142,7 +143,7 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
 
     @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
     public boolean kilt$checkForNeighbourChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) BlockPos blockPos, @Local(ordinal = 1) BlockPos directionPos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "onNeighborChange", BlockState.class, LevelReader.class, BlockPos.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "onNeighborChange", BlockState.class, LevelReader.class, BlockPos.class, BlockPos.class)) {
             instance.onNeighborChange((Level) (Object) this, directionPos, blockPos);
             // Don't trigger the Vanilla neighbour change.
             return false;
@@ -153,7 +154,7 @@ public abstract class LevelInject implements CapabilityProviderInjection, ICapab
 
     @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 1))
     public boolean kilt$getWeakChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 1) BlockPos directionPos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getWeakChanges", BlockState.class, LevelReader.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getWeakChanges", BlockState.class, LevelReader.class, BlockPos.class)) {
             return instance.getWeakChanges((Level) (Object) this, directionPos);
         }
 

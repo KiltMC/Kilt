@@ -18,7 +18,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -45,7 +48,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
 
     @WrapOperation(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
     public int kilt$useForgeLightEmission(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockAndTintGetter level, @Local(argsOnly = true) BlockPos pos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getLightEmission", BlockState.class, BlockAndTintGetter.class, BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IForgeBlock.class, "getLightEmission", BlockState.class, BlockAndTintGetter.class, BlockPos.class)) {
             return instance.getLightEmission(level, pos);
         }
 
@@ -54,7 +57,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
 
     @WrapOperation(method = "tesselateBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;useAmbientOcclusion()Z"))
     public boolean kilt$useForgeAmbientOcclusion(BakedModel instance, Operation<Boolean> original, @Local(argsOnly = true) BlockState state) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "useAmbientOcclusion", BlockState.class, RenderType.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBakedModel.class, "useAmbientOcclusion", BlockState.class, RenderType.class)) {
             return instance.useAmbientOcclusion(state, kilt$renderType.get());
         }
 
@@ -63,7 +66,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
 
     @WrapOperation(method = {"tesselateWithAO", "tesselateWithoutAO", "renderModel"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
     public List<BakedQuad> kilt$getQuadsWithAOOnForgeAtomics(BakedModel instance, @Nullable BlockState state, @Nullable Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
             return instance.getQuads(state, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
         }
 
@@ -138,7 +141,7 @@ public abstract class ModelBlockRendererInject implements ModelBlockRendererInje
     )
     @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
     private List<BakedQuad> kilt$getForgeQuadsDirectional(BakedModel instance, BlockState state, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
             return instance.getQuads(state, direction, randomSource, kilt$modelData.get(), kilt$renderType.get());
         }
 

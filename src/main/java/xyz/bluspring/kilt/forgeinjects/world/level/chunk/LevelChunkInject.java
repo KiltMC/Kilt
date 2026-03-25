@@ -97,7 +97,7 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
 
     @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;load(Lnet/minecraft/nbt/CompoundTag;)V"))
     public void kilt$handleBlockEntityUpdate(BlockEntity instance, CompoundTag tag, Operation<Void> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlockEntity.class, "handleUpdateTag", CompoundTag.class)) {
             instance.handleUpdateTag(tag);
             return;
         }

@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+
+import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.common.extensions.IForgeBoat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,7 +43,7 @@ public abstract class BoatInject extends Entity implements IForgeBoat {
 
     @WrapOperation(method = {"getWaterLevelAbove", "checkInWater", "isUnderwater"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
     public boolean kilt$checkIfBoatingInFluid(FluidState instance, TagKey<Fluid> tag, Operation<Boolean> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), Boat.class, "canBoatInFluid", FluidState.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), IForgeBoat.class, "canBoatInFluid", FluidState.class)) {
             return this.canBoatInFluid(instance);
         }
 
@@ -50,7 +52,7 @@ public abstract class BoatInject extends Entity implements IForgeBoat {
 
     @WrapOperation(method = "getGroundFriction", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     public float kilt$useForgeFriction(Block instance, Operation<Float> original, @Local BlockState state, @Local BlockPos.MutableBlockPos mutableBlockPos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Block.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlock.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return instance.getFriction(state, this.level(), mutableBlockPos, (Boat) (Object) this);
         }
 
@@ -59,7 +61,7 @@ public abstract class BoatInject extends Entity implements IForgeBoat {
 
     @WrapOperation(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
     public boolean kilt$checkIfBoatIsInFluidBeforeState(FluidState instance, TagKey<Fluid> tag, Operation<Boolean> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), Boat.class, "canBoatInFluid", FluidState.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), IForgeBoat.class, "canBoatInFluid", FluidState.class)) {
             return !this.canBoatInFluid(instance);
         }
 
@@ -68,7 +70,7 @@ public abstract class BoatInject extends Entity implements IForgeBoat {
 
     @WrapOperation(method = "canAddPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"))
     public boolean kilt$checkIfCanBoatBeforePassenger(Boat instance, TagKey tagKey, Operation<Boolean> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), Boat.class, "canBoatInFluid", FluidState.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), IForgeBoat.class, "canBoatInFluid", FluidState.class)) {
             return this.canBoatInFluid(this.getEyeInFluidType());
         }
 

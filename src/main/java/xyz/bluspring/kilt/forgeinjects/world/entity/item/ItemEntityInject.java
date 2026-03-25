@@ -22,6 +22,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
+import net.minecraftforge.common.extensions.IForgeBlock;
+import net.minecraftforge.common.extensions.IForgeItem;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -91,7 +93,7 @@ public abstract class ItemEntityInject extends EntityInject implements ItemEntit
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
     private float kilt$handleWithForgeFriction(Block instance, Operation<Float> original, @Share("groundPos") LocalRef<BlockPos> groundPosRef, @Share("blockState") LocalRef<BlockState> stateRef) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), Block.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeBlock.class, "getFriction", BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
             return stateRef.get().getFriction(this.level(), groundPosRef.get(), (ItemEntity) (Object) this);
         }
 
@@ -133,7 +135,7 @@ public abstract class ItemEntityInject extends EntityInject implements ItemEntit
 
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onDestroyed(Lnet/minecraft/world/entity/item/ItemEntity;)V"))
     private void kilt$callForgeDestroyedIfPossible(ItemStack instance, ItemEntity itemEntity, Operation<Void> original, @Local(argsOnly = true) DamageSource source) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "onDestroyed", ItemEntity.class, DamageSource.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IForgeItem.class, "onDestroyed", ItemEntity.class, DamageSource.class)) {
             instance.onDestroyed(itemEntity, source);
         } else {
             original.call(instance, itemEntity);

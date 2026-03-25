@@ -18,6 +18,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraftforge.common.extensions.IForgeBlock;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -82,7 +84,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
 
     @WrapOperation(method = "checkBurnOut", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;getBurnOdds(Lnet/minecraft/world/level/block/state/BlockState;)I"))
     private int kilt$checkFlammability(FireBlock instance, BlockState state, Operation<Integer> original, @Local(argsOnly = true) Level level, @Local(argsOnly = true) BlockPos pos) {
-        if (kilt$cachedFlammabilityOverride.computeIfAbsent(state.getBlock().getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "getFlammability", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class))) {
+        if (kilt$cachedFlammabilityOverride.computeIfAbsent(state.getBlock().getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "getFlammability", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class))) {
             return state.getFlammability(level, pos, kilt$face.get());
         }
 
@@ -96,7 +98,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
         if (block == null)
             return null;
 
-        if (kilt$cachedFireEventOverride.computeIfAbsent(block.getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), Block.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class))) {
+        if (kilt$cachedFireEventOverride.computeIfAbsent(block.getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), IForgeBlock.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class))) {
             instance.onCaughtFire(level, pos, kilt$face.get(), null);
             return null;
         }
@@ -106,7 +108,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
 
     @WrapOperation(method = "getIgniteOdds(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;getIgniteOdds(Lnet/minecraft/world/level/block/state/BlockState;)I"))
     private int kilt$tryCheckFireSpreadSpeed(FireBlock instance, BlockState state, Operation<Integer> original, @Local(argsOnly = true) LevelReader level, @Local(argsOnly = true) BlockPos pos, @Local Direction direction) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "getFireSpreadSpeed", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "getFireSpreadSpeed", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class)) {
             return state.getFireSpreadSpeed(level, pos.relative(direction), direction.getOpposite());
         }
 
