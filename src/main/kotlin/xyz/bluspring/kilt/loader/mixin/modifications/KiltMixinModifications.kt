@@ -22,6 +22,7 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedMo
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MethodBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
@@ -644,6 +645,20 @@ object KiltMixinModifications {
                 modifier.mappedMethods = modifier.methods.map {
                     remapMethod(it, modifier.owner)
                 }
+            }
+            if (modifier is NameRemappingAnnotationModifier) {
+                modifier.remapMethodsTo = MixinRemapper.remapTargetString(
+                    modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(modifier.owner)),
+                    KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper
+                )
+            }
+            if (modifier is ReplacedAnnotationsModifier) {
+                val mutableList = modifier.replaceWith.toMutableList()
+                MixinRemapper.remapMixinAnnotations(
+                    mutableList, KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper,
+                    listOf(modifier.owner), modifier.owner
+                )
+                modifier.replaceWith = mutableList
             }
 
             list.add(modifier)

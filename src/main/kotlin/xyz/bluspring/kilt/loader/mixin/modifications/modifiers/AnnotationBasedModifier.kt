@@ -3,9 +3,6 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 sealed interface AnnotationBasedModifier : MethodBasedModifier {
     val variables: Map<String, Any>
@@ -17,7 +14,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
 
-        val replaceWith: List<AnnotationNode> = listOf()
+        var replaceWith: List<AnnotationNode> = listOf()
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
         override lateinit var mappedMethods: List<String>
@@ -55,7 +52,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
 
-        val remapMethodsTo: String,
+        var remapMethodsTo: String,
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
         override lateinit var mappedMethods: List<String>
@@ -64,15 +61,9 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
             val newAnnotation = run {
                 val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
 
-                if (KiltRemapper.enhancedMojangRemapper == null) throw IllegalStateException("Enhanced Mojang remapper was discarded too soon!")
                 KiltMixinModifications.createAnnotation(annotation.desc,
                     KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
-                        this["method"] = listOf(
-                            MixinRemapper.remapTargetString(
-                                remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)),
-                                KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper
-                            )
-                        )
+                        this["method"] = listOf(remapMethodsTo)
                     })
             }
 
