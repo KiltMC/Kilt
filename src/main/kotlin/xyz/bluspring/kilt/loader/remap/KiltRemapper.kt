@@ -96,7 +96,7 @@ object KiltRemapper {
     // srg -> intermediary
     val srgIntermediaryMapping: IMappingFile = mappingFile.getMap("searge", "intermediary")
     // mojang -> intermediary
-    val intermediaryMojMapping: IMappingFile = mappingFile.getMap("intermediary", "mojang").reverse()
+    val mojIntermediaryMapping: IMappingFile = mappingFile.getMap("intermediary", "mojang").reverse()
 
     val fabricMappings: INamedMappingFile = MappingConfiguration::class.java.classLoader.getResourceAsStream("mappings/mappings.tiny")!!.use { INamedMappingFile.load(it) }
 
@@ -107,7 +107,7 @@ object KiltRemapper {
             this
     }
 
-    private val devMojangIntermediaryMapping = intermediaryMojMapping.run {
+    private val devMojangIntermediaryMapping = mojIntermediaryMapping.run {
         if (!forceProductionRemap)
             this.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
         else
@@ -127,7 +127,7 @@ object KiltRemapper {
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
     )
 
-    lateinit var enhancedSRGRemapper: KiltEnhancedRemapper
+    lateinit var enhancedSrgRemapper: KiltEnhancedRemapper
     lateinit var enhancedMojangRemapper: KiltEnhancedRemapper
 
     private lateinit var remappedModsDir: Path
@@ -351,7 +351,7 @@ object KiltRemapper {
         else null
 
         // Initialize a global remapper state
-        enhancedSRGRemapper = KiltEnhancedRemapper(srgClassProvider, devSrgIntermediaryMapping, logConsumer) {
+        enhancedSrgRemapper = KiltEnhancedRemapper(srgClassProvider, devSrgIntermediaryMapping, logConsumer) {
             initEnhancedRemapper(intermediaryMap, modLoadingQueue)
         }
         enhancedMojangRemapper = KiltEnhancedRemapper(mojangClassProvider, devMojangIntermediaryMapping, logConsumer) {
@@ -365,7 +365,7 @@ object KiltRemapper {
         )
 
         if (FabricLoader.getInstance().isDevelopmentEnvironment)
-            enhancedSRGRemapper.initDevRemapper()
+            enhancedSrgRemapper.initDevRemapper()
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
@@ -516,8 +516,8 @@ object KiltRemapper {
                         KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
                             .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
                     ) {
-                        MixinRemapper.remapClass(originalNode, enhancedSRGRemapper, mixinRefmaps.values)
-                        MixinShadowRemapper.remapClass(originalNode, enhancedSRGRemapper)
+                        MixinRemapper.remapClass(originalNode, enhancedSrgRemapper, mixinRefmaps.values)
+                        MixinShadowRemapper.remapClass(originalNode, enhancedSrgRemapper)
 
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
@@ -528,7 +528,7 @@ object KiltRemapper {
                     }
 
                     val remappedNode = ClassNode(Opcodes.ASM9)
-                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedSRGRemapper, RenamingTransformer(enhancedSRGRemapper, false)))
+                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedSrgRemapper, RenamingTransformer(enhancedSrgRemapper, false)))
 
                     if (!KiltFlags.DISABLE_FIXERS) {
                         ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
@@ -558,7 +558,7 @@ object KiltRemapper {
             }
             
             // If for whatever reason the refmap remapping missed something, we need to remap it immediately.
-            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedSRGRemapper)
+            MixinRemapper.remapUnmappedRefmaps(mixinRefmaps.values, enhancedSrgRemapper)
 
             // Now, let's write the refmap JSONs
             for ((entry, refmap) in mixinRefmaps) {
