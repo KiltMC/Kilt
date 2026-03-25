@@ -430,6 +430,13 @@ object KiltMixinModifications {
                     ))
                 ))
             )
+        ),
+
+        // Fixes Apotheosis' EnchantmentHelperMixin
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/world/item/enchantment/EnchantmentHelper",
+            methods = listOf("getTagEnchantmentLevel", "getTagEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I"),
+            remapMethodsTo = "getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I"
         )
     )
 

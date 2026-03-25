@@ -8,6 +8,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.util.KiltHelper
+import kotlin.collections.contains
 
 object MixinAdditionalRemapper {
     val MIXIN_TYPE = Type.getType(Mixin::class.java)
@@ -75,16 +76,13 @@ object MixinAdditionalRemapper {
             }
         }
 
-        // Increase priority if LevelRenderer
-        run {
-            val levelRenderer = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_761")
-            val levelRendererMoj = "net.minecraft.client.renderer.LevelRenderer"
+        fun tryIncreasePriority(intermediaryName: String, mojangName: String, newPriority: Int) {
             if (!values.contains("priority") && (
-                 targetClassNames.contains(levelRenderer.replace(".", "/")) || targetClassNames.contains(levelRenderer) ||
-                 targetClassNames.contains(levelRendererMoj.replace(".", "/")) || targetClassNames.contains(levelRendererMoj)
-            )) {
+                        targetClassNames.contains(intermediaryName.replace(".", "/")) || targetClassNames.contains(intermediaryName) ||
+                                targetClassNames.contains(mojangName.replace(".", "/")) || targetClassNames.contains(mojangName)
+                        )) {
                 val modifiedValues = values.toMutableMap()
-                modifiedValues["priority"] = 1050
+                modifiedValues["priority"] = newPriority
 
                 if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
                     classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
@@ -100,29 +98,25 @@ object MixinAdditionalRemapper {
             }
         }
 
+        // Increase priority if LevelRenderer
+        run {
+            val levelRenderer = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_761")
+            val levelRendererMoj = "net.minecraft.client.renderer.LevelRenderer"
+            tryIncreasePriority(levelRenderer, levelRendererMoj, 1050)
+        }
+
         run {
             // GregTech is mixing into a forge added method that porting lib adds with a priority of 1100
             val level = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_1937")
             val levelMoj = "net.minecraft.world.level.Level"
-            if (!values.contains("priority") && (
-                        targetClassNames.contains(level.replace(".", "/")) || targetClassNames.contains(level) ||
-                                targetClassNames.contains(levelMoj.replace(".", "/")) || targetClassNames.contains(levelMoj)
-                        ) && classNode.name == "com/gregtechceu/gtceu/core/mixins/LevelMixin") {
-                val modifiedValues = values.toMutableMap()
-                modifiedValues["priority"] = 1150
+            tryIncreasePriority(level, levelMoj, 1150)
+        }
 
-                if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
-                    classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
-                    classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
-                    })
-                } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
-                    classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
-                    classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
-                    })
-                }
-            }
+        run {
+            // Apotheosis mixin to onSheared
+            val sheep = FabricLoader.getInstance().mappingResolver.mapClassName("intermediary", "net.minecraft.class_1472")
+            val sheepMoj = "net.minecraft.world.entity.animal.Sheep"
+            tryIncreasePriority(sheep, sheepMoj, 1150)
         }
 
         run {
