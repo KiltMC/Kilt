@@ -23,7 +23,6 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override lateinit var mappedMethods: List<String>
 
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
-            val annotationsToAdd: MutableList<AnnotationNode> = mutableListOf()
             if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
                 val list = this.replaceWith
 
@@ -31,29 +30,23 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
                     val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
                     map["original"] = list[0]
                     annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
-                    annotationsToAdd.add(annotation)
+                    newAnnotations.add(annotation)
                 } else {
                     val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
 
                     for (node in list) {
                         if (node.desc.contains("mixinsquared"))
-                            annotationsToAdd.add(node)
+                            newAnnotations.add(node)
                         else
                             map["original"] = node
                     }
 
                     annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
-                    annotationsToAdd.add(annotation)
+                    newAnnotations.add(annotation)
                 }
             } else {
-                annotationsToAdd.addAll(this.replaceWith)
+                newAnnotations.addAll(this.replaceWith)
             }
-            if (KiltRemapper.enhancedMojangRemapper == null) throw IllegalStateException("Enhanced Mojang remapper was discarded too soon!")
-            MixinRemapper.remapMixinAnnotations(
-                annotationsToAdd, KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper,
-                listOf(owner), classInfo.name
-            )
-            newAnnotations.addAll(annotationsToAdd)
         }
     }
 
