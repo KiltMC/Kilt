@@ -19,6 +19,181 @@ object MixinRemapper {
     private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
     private val INVOKER_TYPE = Type.getType(Invoker::class.java)
 
+    fun remapMixinAnnotation(
+        annotationNode: AnnotationNode,
+        remapper: KiltEnhancedRemapper,
+        classTargets: Collection<String>,
+        mixinClassName: String?,
+        mixinMapping: MutableMap<String, String> = mutableMapOf(),
+        alreadyRefmapped: MutableSet<String> = Collections.synchronizedSet(mutableSetOf<String>()),
+        refmap: MixinRefmap? = null
+    ): AnnotationNode {
+        if (annotationNode.values == null)
+            return annotationNode
+
+        val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+
+        // Remap accessor/invoker
+        if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
+            if (!values.contains("value"))
+                return annotationNode
+
+            val value = values["value"] as String
+
+            if (mixinMapping.contains(value)) {
+                if (!alreadyRefmapped.add(value))
+                    return annotationNode
+
+                val mapped = remapTargetString(mixinMapping[value]!!, classTargets, remapper)
+                mixinMapping[value] = mapped
+            } else {
+                values["value"] = remapTargetString(value, classTargets, remapper)
+                annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+            }
+
+            return annotationNode
+        }
+
+        fun tryRemapMixinRefmap(value: String): String {
+            // Do NOT remap this - this typically indicates MixinSquared or other extensions.
+            if (value.startsWith("@"))
+                return value
+
+            return if (mixinMapping.contains(value)) {
+                if (!alreadyRefmapped.add(value))
+                    return value
+
+                val original = mixinMapping[value]!!
+                val mapped = remapTargetString(original, classTargets, remapper)
+
+                mixinMapping[value] = mapped
+
+                value
+            } else {
+                val mapped = remapTargetString(value, classTargets, remapper)
+
+                if (refmap != null) {
+                    mixinMapping[value] = mapped
+                    return value
+                }
+
+                mapped
+            }
+        }
+
+        // We cannot search for mixin annotations specifically, because there's a chance
+        // we might miss custom annotations.
+        // Usually this can be a good indicator of a mixin annotation.
+        if (values.containsKey("method")) {
+            val methodValue = values["method"]!!
+
+            if (methodValue is String) {
+                values["method"] = tryRemapMixinRefmap(methodValue)
+            } else if (methodValue is List<*>) {
+                values["method"] = methodValue.map {
+                    tryRemapMixinRefmap(it as String)
+                }
+            }
+        }
+
+        fun remapAtValue(atValue: AnnotationNode) {
+            if (atValue.values == null)
+                return
+
+            val atValues = KiltMixinModifications.annotationValuesToMap(atValue.values).toMutableMap()
+
+            // Remap targets
+            if (atValues.contains("target")) {
+                val targetValue = atValues["target"]!!
+
+                if (targetValue is String) {
+                    atValues["target"] = tryRemapMixinRefmap(targetValue)
+                }
+            }
+
+            if (atValues.contains("desc")) {
+                // TODO: i'm not even going to try.
+                KiltRemapper.logger.error("!! Tell BluSpring to stop being lazy. $mixinClassName")
+            }
+
+            atValue.values = KiltMixinModifications.mapToAnnotationValues(atValues)
+        }
+
+        // This can also be a very good indicator, but it's a little weird
+        if (values.containsKey("at")) {
+            val atValue = values["at"]!!
+
+            if (atValue is AnnotationNode) {
+                remapAtValue(atValue)
+            } else if (atValue is List<*>) {
+                val newList = mutableListOf<Any?>()
+
+                for (atValueIndiv in atValue) {
+                    if (atValueIndiv is AnnotationNode)
+                        remapAtValue(atValueIndiv)
+
+                    newList.add(atValueIndiv)
+                }
+
+                values["at"] = newList
+            }
+        }
+
+        // This one's also a lot stranger, but needs to be handled
+        if (values.contains("slice")) {
+            fun remapSliceValue(sliceValue: AnnotationNode) {
+                if (sliceValue.values == null)
+                    return
+
+                val sliceValues = KiltMixinModifications.annotationValuesToMap(sliceValue.values).toMutableMap()
+
+                if (sliceValues.contains("from") && sliceValues["from"] is AnnotationNode) {
+                    sliceValues["from"] = remapAtValue(sliceValues["from"] as AnnotationNode)
+                }
+
+                if (sliceValues.contains("to") && sliceValues["to"] is AnnotationNode) {
+                    sliceValues["to"] = remapAtValue(sliceValues["to"] as AnnotationNode)
+                }
+            }
+
+            val sliceValue = values["slice"]!!
+
+            if (sliceValue is AnnotationNode) {
+                remapSliceValue(sliceValue)
+            } else if (sliceValue is List<*>) {
+                val newSliceValues = mutableListOf<Any?>()
+
+                for (sliceValue in sliceValue) {
+                    if (sliceValue is AnnotationNode) {
+                        remapSliceValue(sliceValue)
+                    } else {
+                        newSliceValues.add(sliceValue)
+                    }
+                }
+
+                values["slice"] = newSliceValues
+            }
+        }
+
+        // Now to change the values list
+        annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+        return annotationNode
+    }
+
+    fun remapMixinAnnotations(
+        annotations: MutableList<AnnotationNode>,
+        remapper: KiltEnhancedRemapper,
+        classTargets: Collection<String>,
+        mixinClassName: String?,
+        mixinMapping: MutableMap<String, String> = mutableMapOf(),
+        alreadyRefmapped: MutableSet<String> = Collections.synchronizedSet(mutableSetOf<String>()),
+        refmap: MixinRefmap? = null
+    ) {
+        for (annotationNode in annotations) {
+            remapMixinAnnotation(annotationNode, remapper, classTargets, mixinClassName, mixinMapping, alreadyRefmapped, refmap)
+        }
+    }
+
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmaps: Collection<MixinRefmap>) {
         val alreadyRefmapped = Collections.synchronizedSet(mutableSetOf<String>())
 
@@ -37,166 +212,18 @@ object MixinRemapper {
         // The idea is if we don't have a matching mapping, we need to remap directly on the string instead.
 
         for (method in classNode.methods) {
-            fun remapMixinAnnotations(annotations: MutableList<AnnotationNode>) {
-                for (annotationNode in annotations) {
-                    if (annotationNode.values == null)
-                        continue
-
-                    val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
-
-                    // Remap accessor/invoker
-                    if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
-                        if (!values.contains("value"))
-                            continue
-
-                        val value = values["value"] as String
-
-                        if (mixinMapping.contains(value)) {
-                            if (!alreadyRefmapped.add(value))
-                                continue
-
-                            val mapped = remapTargetString(mixinMapping[value]!!, classTargets, remapper)
-                            mixinMapping[value] = mapped
-                        } else {
-                            values["value"] = remapTargetString(value, classTargets, remapper)
-                            annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
-                        }
-
-                        continue
-                    }
-
-                    fun tryRemapMixinRefmap(value: String): String {
-                        // Do NOT remap this - this typically indicates MixinSquared or other extensions.
-                        if (value.startsWith("@"))
-                            return value
-
-                        return if (mixinMapping.contains(value)) {
-                            if (!alreadyRefmapped.add(value))
-                                return value
-
-                            val original = mixinMapping[value]!!
-                            val mapped = remapTargetString(original, classTargets, remapper)
-
-                            mixinMapping[value] = mapped
-
-                            value
-                        } else {
-                            val mapped = remapTargetString(value, classTargets, remapper)
-
-                            if (refmap != null) {
-                                mixinMapping[value] = mapped
-                                return value
-                            }
-
-                            mapped
-                        }
-                    }
-
-                    // We cannot search for mixin annotations specifically, because there's a chance
-                    // we might miss custom annotations.
-                    // Usually this can be a good indicator of a mixin annotation.
-                    if (values.containsKey("method")) {
-                        val methodValue = values["method"]!!
-
-                        if (methodValue is String) {
-                            values["method"] = tryRemapMixinRefmap(methodValue)
-                        } else if (methodValue is List<*>) {
-                            values["method"] = methodValue.map {
-                                tryRemapMixinRefmap(it as String)
-                            }
-                        }
-                    }
-
-                    fun remapAtValue(atValue: AnnotationNode) {
-                        if (atValue.values == null)
-                            return
-
-                        val atValues = KiltMixinModifications.annotationValuesToMap(atValue.values).toMutableMap()
-
-                        // Remap targets
-                        if (atValues.contains("target")) {
-                            val targetValue = atValues["target"]!!
-
-                            if (targetValue is String) {
-                                atValues["target"] = tryRemapMixinRefmap(targetValue)
-                            }
-                        }
-
-                        if (atValues.contains("desc")) {
-                            // TODO: i'm not even going to try.
-                            KiltRemapper.logger.error("!! Tell BluSpring to stop being lazy. ${classNode.name}")
-                        }
-
-                        atValue.values = KiltMixinModifications.mapToAnnotationValues(atValues)
-                    }
-
-                    // This can also be a very good indicator, but it's a little weird
-                    if (values.containsKey("at")) {
-                        val atValue = values["at"]!!
-
-                        if (atValue is AnnotationNode) {
-                            remapAtValue(atValue)
-                        } else if (atValue is List<*>) {
-                            val newList = mutableListOf<Any?>()
-
-                            for (atValueIndiv in atValue) {
-                                if (atValueIndiv is AnnotationNode)
-                                    remapAtValue(atValueIndiv)
-
-                                newList.add(atValueIndiv)
-                            }
-
-                            values["at"] = newList
-                        }
-                    }
-
-                    // This one's also a lot stranger, but needs to be handled
-                    if (values.contains("slice")) {
-                        fun remapSliceValue(sliceValue: AnnotationNode) {
-                            if (sliceValue.values == null)
-                                return
-
-                            val sliceValues = KiltMixinModifications.annotationValuesToMap(sliceValue.values).toMutableMap()
-
-                            if (sliceValues.contains("from") && sliceValues["from"] is AnnotationNode) {
-                                sliceValues["from"] = remapAtValue(sliceValues["from"] as AnnotationNode)
-                            }
-
-                            if (sliceValues.contains("to") && sliceValues["to"] is AnnotationNode) {
-                                sliceValues["to"] = remapAtValue(sliceValues["to"] as AnnotationNode)
-                            }
-                        }
-
-                        val sliceValue = values["slice"]!!
-
-                        if (sliceValue is AnnotationNode) {
-                            remapSliceValue(sliceValue)
-                        } else if (sliceValue is List<*>) {
-                            val newSliceValues = mutableListOf<Any?>()
-
-                            for (sliceValue in sliceValue) {
-                                if (sliceValue is AnnotationNode) {
-                                    remapSliceValue(sliceValue)
-                                } else {
-                                    newSliceValues.add(sliceValue)
-                                }
-                            }
-
-                            values["slice"] = newSliceValues
-                        }
-                    }
-
-                    // Now to change the values list
-                    annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
-                }
-            }
-
             if (method.visibleAnnotations != null) {
-                remapMixinAnnotations(method.visibleAnnotations!!.toMutableList())
+                remapMixinAnnotations(
+                    method.visibleAnnotations!!.toMutableList(), remapper, classTargets, classNode.name,
+                    mixinMapping, alreadyRefmapped, refmap
+                )
             }
 
             if (method.invisibleAnnotations != null) {
-                remapMixinAnnotations(method.invisibleAnnotations!!.toMutableList())
+                remapMixinAnnotations(
+                    method.invisibleAnnotations!!.toMutableList(), remapper, classTargets, classNode.name,
+                    mixinMapping, alreadyRefmapped, refmap
+                )
             }
         }
 

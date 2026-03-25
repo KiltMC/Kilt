@@ -307,7 +307,7 @@ object AccessTransformerLoader {
 
     private fun widenAccessForVanillaClasses(split: List<String>, srgClassName: String, classTweaker: ClassTweaker): Boolean {
         val intermediaryClassName = KiltRemapper.remapClass(srgClassName)
-        val remapper = KiltRemapper.enhancedRemapper
+        val remapper = KiltRemapper.enhancedSrgRemapper
         val accessWidener = classTweaker.visitAccessWidener(intermediaryClassName)!! // it shouldn't be possible for this to be null.
 
         // field / method
@@ -392,7 +392,7 @@ object AccessTransformerLoader {
                 val name = split[2]
 
                 val fieldInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.fields?.firstOrNull { it.original == name } ?: return false
-                val fieldName = KiltRemapper.enhancedRemapper.mapFieldName(srgClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
+                val fieldName = KiltRemapper.enhancedSrgRemapper.mapFieldName(srgClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
 
                 accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
                 accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.MUTABLE, true)

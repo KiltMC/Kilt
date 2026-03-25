@@ -22,6 +22,7 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedMo
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MethodBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
@@ -624,6 +625,20 @@ object KiltMixinModifications {
         })
     }
 
+    fun remapMethod(method: String, owner: String): String {
+        return if (method.contains("(")) {
+            val name = method.replaceAfter("(", "").removeSuffix("(")
+            val descriptor = method.removePrefix(name)
+            val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+            if (KiltRemapper.srgMappedMethods.contains(name)) {
+                "${KiltRemapper.srgMappedMethods[name]?.get(owner) ?: name}$mappedDesc"
+            } else {
+                "${KiltRemapper.mojangMappedMethods[name]?.get(owner) ?: name}$mappedDesc"
+            }
+        } else method
+    }
+
     fun register(type: Class<*>, vararg mixinModifiers: MixinModifier): List<MixinModifier> {
         val list = mutableListOf<MixinModifier>()
         val typeDesc = Type.getDescriptor(type)
@@ -635,14 +650,22 @@ object KiltMixinModifications {
 
             if (modifier is MethodBasedModifier) {
                 modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
-
-                        "${KiltRemapper.srgMappedMethods[name]?.get(modifier.owner) ?: name}$mappedDesc"
-                    } else it)
+                    remapMethod(it, modifier.owner)
                 }
+            }
+            if (modifier is NameRemappingAnnotationModifier) {
+                modifier.remapMethodsTo = MixinRemapper.remapTargetString(
+                    modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(modifier.owner)),
+                    KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper
+                )
+            }
+            if (modifier is ReplacedAnnotationsModifier) {
+                val mutableList = modifier.replaceWith.toMutableList()
+                MixinRemapper.remapMixinAnnotations(
+                    mutableList, KiltRemapper.enhancedMojangRemapper as KiltEnhancedRemapper,
+                    listOf(modifier.owner), modifier.owner
+                )
+                modifier.replaceWith = mutableList
             }
 
             list.add(modifier)
@@ -668,5 +691,9 @@ object KiltMixinModifications {
 
         ACCESSORS[typeDesc] = list
         return list
+    }
+
+    init {
+        KiltRemapper.discardMojangMappings()
     }
 }

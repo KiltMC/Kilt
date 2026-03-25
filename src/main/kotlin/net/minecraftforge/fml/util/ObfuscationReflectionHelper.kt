@@ -23,7 +23,7 @@ object ObfuscationReflectionHelper {
     fun remapName(domain: INameMappingService.Domain, name: String): String {
         return when (domain) {
             INameMappingService.Domain.CLASS -> {
-                fabricRemapper.mapClassName("intermediary", KiltRemapper.enhancedRemapper.map(name))
+                fabricRemapper.mapClassName("intermediary", KiltRemapper.enhancedSrgRemapper.map(name))
             }
 
             INameMappingService.Domain.FIELD -> {
@@ -68,7 +68,7 @@ object ObfuscationReflectionHelper {
             val methodName = if (KiltRemapper.srgMappedMethods.containsKey(methodName)) {
                 val descriptor = Type.getMethodDescriptor(Type.VOID_TYPE, *parameterTypes.map { Type.getType(it) }.toTypedArray()).removeSuffix("V")
 
-                val mapped = KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
+                val mapped = KiltRemapper.enhancedSrgRemapper.mapMethodNamePrefixDesc(clazz.typeName.replace(".", "/"), methodName, descriptor)
 
                 if ((mapped == methodName || mapped == null) && (methodName.startsWith("m_") || methodName.startsWith("f_")) && methodName.endsWith("_"))
                     KiltRemapper.srgMappedMethods[methodName]!!.values.first()
