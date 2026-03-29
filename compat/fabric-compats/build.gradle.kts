@@ -37,6 +37,8 @@ dependencies {
     modCompileOnly("maven.modrinth:pehkui:${property("pehkui_version")}")
 
     modCompileOnly("dev.architectury:architectury-fabric:${property("architectury_version")}")
+
+    modCompileOnly("maven.modrinth:automodpack:${property("automodpack_version")}")
 }
 
 tasks {
