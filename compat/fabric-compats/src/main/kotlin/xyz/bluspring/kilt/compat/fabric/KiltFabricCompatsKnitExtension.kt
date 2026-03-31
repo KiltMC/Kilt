@@ -9,7 +9,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
 
     override fun setupModScanning(api: KnitModScanSetupApi) {
         if (FabricLoader.getInstance().isModLoaded("automodpack")) {
-            KiltAutoModpackCompat.getModpackDir()?.let { path ->
+            KiltAutoModpackCompat.modpackDir?.let { path ->
                 for (modDir in api.loader.modDirs) {
                     if (modDir.isAbsolute) continue
                     api.addModDirectory(path.resolve(modDir))

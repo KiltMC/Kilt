@@ -5,8 +5,7 @@ import java.nio.file.Path
 
 object KiltAutoModpackCompat {
 
-    fun getModpackDir(): Path? {
-        return GlobalVariables.selectedModpackDir
-    }
+    val modpackDir: Path?
+        get() = GlobalVariables.selectedModpackDir
 
 }
