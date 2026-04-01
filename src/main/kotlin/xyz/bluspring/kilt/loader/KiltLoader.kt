@@ -716,6 +716,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                     if (modId != mod.modId)
                         return@collect
 
+                    val dist = it.annotationData["dist"]
+                    if (dist is Collection<*> && !dist.contains(FMLLoader.getDist())) {
+                        return@collect
+                    }
+
                     ModLoadingContext.get().activeContainer = mod.container
 
                     val clazz = launcher.loadIntoTarget(it.clazz.className)
