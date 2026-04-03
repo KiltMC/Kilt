@@ -694,6 +694,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // I hope.
         var hasInitialized = false
         var hasErrored = false
+        var annotationCount = 0
 
         val constructorArgs = mapOf<Class<*>, Any?>(
             IEventBus::class.java to mod.eventBus,
@@ -715,6 +716,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
                     if (modId != mod.modId)
                         return@collect
+
+                    val dist = it.annotationData["dist"]
+                    if (dist is Collection<*> && !dist.contains(FMLLoader.getDist())) {
+                        return@collect
+                    }
+                    annotationCount++
 
                     ModLoadingContext.get().activeContainer = mod.container
 
@@ -766,7 +773,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 }
             }
 
-        if (!hasInitialized && mod.shouldScan && !mod.modId.startsWith("jij_") && !hasErrored) {
+        if (!hasInitialized && mod.shouldScan && !mod.modId.startsWith("jij_") && !hasErrored && annotationCount != 0) {
             exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
         }
 
