@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ github.token }}
+        token: ${{ secrets.PAT_TOKEN }}
         fetch-depth: 0
         filter: tree:0
     - name: Set up JDK 21
@@ -32,8 +32,7 @@ jobs:
     - name: Build artifacts
       run: ./gradlew remapJar
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v4
       with:
-        archive: false
-        name: Kilt Built Jar
+        name: Kilt Build JARs
         path: build/libs/Kilt-*.jar
