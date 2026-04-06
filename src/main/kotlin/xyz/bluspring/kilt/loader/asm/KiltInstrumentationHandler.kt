@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.loader.asm
 
-import de.florianmichael.asmfabricloader.api.event.InstrumentationEntrypoint
+import de.florianreuth.asmfabricloader.api.event.InstrumentationEntrypoint
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
