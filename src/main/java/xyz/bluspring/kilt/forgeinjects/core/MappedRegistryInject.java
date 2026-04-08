@@ -1,13 +1,13 @@
 // TRACKED HASH: 399562caae5944ef11e0759f3ce9d673134c41a2
 package xyz.bluspring.kilt.forgeinjects.core;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.*;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraftforge.registries.RegistryManager;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -21,9 +21,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
 @Mixin(MappedRegistry.class)
 public abstract class MappedRegistryInject<T> implements MappedRegistryInjection, WritableRegistry<T> {

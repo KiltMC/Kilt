@@ -4,6 +4,7 @@ package xyz.bluspring.kilt.forgeinjects.world.item.alchemy;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
@@ -73,11 +74,15 @@ public abstract class PotionBrewingInject {
         @Inject(method = "<init>", at = @At("TAIL"))
         private void kilt$getHolderValuesFromRegistry(T from, Ingredient ingredient, T to, CallbackInfo ci) {
             if (from instanceof Potion fromPotion && to instanceof Potion toPotion) {
-                ForgeRegistries.POTIONS.getDelegate(fromPotion).ifPresent(potion -> this.kilt$from = (Holder.Reference<T>) potion);
-                ForgeRegistries.POTIONS.getDelegate(toPotion).ifPresent(potion -> this.kilt$to = (Holder.Reference<T>) potion);
+                // if a mod doesn't register ahead of time, yell at them. (glaring at you, Additional Additions)
+                this.kilt$from = (Holder.Reference<T>) ForgeRegistries.POTIONS.getDelegateOrThrow(fromPotion);
+                this.kilt$to = (Holder.Reference<T>) ForgeRegistries.POTIONS.getDelegateOrThrow(toPotion);
             } else if (from instanceof Item fromItem && to instanceof Item toItem) {
-                ForgeRegistries.ITEMS.getDelegate(fromItem).ifPresent(item -> this.kilt$from = (Holder.Reference<T>) item);
-                ForgeRegistries.ITEMS.getDelegate(toItem).ifPresent(item -> this.kilt$to = (Holder.Reference<T>) item);
+                // we can actually do this here, unlike with Potion.
+                this.kilt$from = (Holder.Reference<T>) ForgeRegistries.ITEMS.getDelegate(fromItem).orElseGet(() -> BuiltInRegistries.ITEM.createIntrusiveHolder(fromItem));
+                this.kilt$to = (Holder.Reference<T>) ForgeRegistries.ITEMS.getDelegate(toItem).orElseGet(() -> BuiltInRegistries.ITEM.createIntrusiveHolder(toItem));
+            } else {
+                throw new IllegalStateException("Oh boy!");
             }
         }
 
