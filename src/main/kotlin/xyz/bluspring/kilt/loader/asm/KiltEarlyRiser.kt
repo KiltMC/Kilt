@@ -454,7 +454,7 @@ class KiltEarlyRiser : Runnable {
 
                     val url = URL(
                         helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
-                            .replace("net/minecraftforge/common/MinecraftForge", className.replace(".", "/"))
+                            .replace("net/neoforged/neoforge/common/NeoForge", className.replace(".", "/"))
                     )
                     val classReader = ClassReader(url.readBytes())
                     classReader.accept(classNode, 0)
