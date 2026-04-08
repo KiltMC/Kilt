@@ -436,6 +436,7 @@ class KiltEarlyRiser : Runnable {
                 "net.neoforged.fml.config.ModConfigs",
                 "net.neoforged.neoforge.client.gui.ConfigurationScreen",
                 "net.neoforged.neoforge.common.ModConfigSpec",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$RestartType",
                 "net.neoforged.neoforge.common.TranslatableEnum",
                 $$"net.neoforged.neoforge.common.ModConfigSpec$Builder",
             )
