@@ -68,7 +68,7 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
             oldSectionKey.set(this.currentSectionKey);
         }
 
-        // Kilt: handled via Architectury
+        // Kilt: handled via Porting Lib
         /*@Inject(method = "onMove", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager$Callback;updateStatus(Lnet/minecraft/world/level/entity/Visibility;Lnet/minecraft/world/level/entity/Visibility;)V", shift = At.Shift.AFTER))
         private void kilt$callForgeEntityEnterSection(CallbackInfo ci, @Share("oldSectionKey") LocalLongRef oldSectionKey) {
             if (this.realEntity != null)
