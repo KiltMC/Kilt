@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.asm
 
 import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
@@ -9,6 +10,7 @@ import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
+import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
@@ -16,6 +18,7 @@ import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
+import java.net.URL
 
 class KiltEarlyRiser : Runnable {
     override fun run() {
@@ -422,21 +425,25 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        // Forcefully load all classes under EventBus that have been modified by Kilt's fork.
-        // This is to work around an issue with CreativeCore where their loaded EventBus overrides Kilt's.
+        // Forcefully load the Forge config classes to override Forge Config API Port.
         run {
-            val eventBusPackage = "net.neoforged.bus"
-            val eventBusSlashed = eventBusPackage.replace(".", "/")
-            val modifiedEventBusClasses = listOf(
-                "IEventListenerFactory",
-                "BusBuilderImpl"
+            val modifiedConfigClasses = listOf(
+                "net.neoforged.fml.config.ConfigTracker",
+                "net.neoforged.fml.config.ConfigWatcher",
+                "net.neoforged.fml.config.IConfigSpec",
+                "net.neoforged.fml.config.LoadedConfig",
+                "net.neoforged.fml.config.ModConfig",
+                "net.neoforged.fml.config.ModConfigs",
+                "net.neoforged.neoforge.client.gui.ConfigurationScreen",
+                "net.neoforged.neoforge.common.ModConfigSpec",
+                "net.neoforged.neoforge.common.TranslatableEnum",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$Builder",
             )
 
-            // Kilt TODO: bring this back
-            /*val helperUrl = Kilt::class.java.classLoader.getResource("$eventBusSlashed/KiltHelper.class")!!
+            val helperUrl = Kilt::class.java.classLoader.getResource("net/neoforged/neoforge/common/NeoForge.class")!!
 
-            for (className in modifiedEventBusClasses) {
-                ClassTinkerers.addReplacement("$eventBusPackage.$className") { classNode ->
+            for (className in modifiedConfigClasses) {
+                ClassTinkerers.addReplacement(className) { classNode ->
                     // Reset everything to a blank state, because fuck that
                     classNode.fields?.clear()
                     classNode.methods?.clear()
@@ -447,12 +454,12 @@ class KiltEarlyRiser : Runnable {
 
                     val url = URL(
                         helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
-                            .replace("$eventBusSlashed/KiltHelper", "$eventBusSlashed/${className.replace(".", "/")}")
+                            .replace("net/minecraftforge/common/MinecraftForge", className.replace(".", "/"))
                     )
                     val classReader = ClassReader(url.readBytes())
                     classReader.accept(classNode, 0)
                 }
-            }*/
+            }
         }
     }
 
