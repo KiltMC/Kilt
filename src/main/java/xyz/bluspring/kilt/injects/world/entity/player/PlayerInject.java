@@ -1,6 +1,11 @@
 // TRACKED HASH: da42f0fcd542552388a5aff060abf470c54f9f10
 package xyz.bluspring.kilt.injects.world.entity.player;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -13,29 +18,6 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.boss.EnderDragonPart;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Abilities;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.scores.Team;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
@@ -52,17 +34,44 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.entity.player.PlayerInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.scores.Team;
 
 @Mixin(Player.class)
 public abstract class PlayerInject extends LivingEntity implements IPlayerExtension, PlayerInjection {
@@ -133,13 +142,18 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
         return CommonHooks.kilt$onPlayerTossEvent(instance, () -> original.call(instance, itemStack, dropAround, includeName));
     }
 
-    private final AtomicReference<BlockPos> kilt$dugBlockPos = new AtomicReference<>();
+    @Unique private final AtomicReference<BlockPos> kilt$dugBlockPos = new AtomicReference<>();
 
     @Override
     public float getDigSpeed(BlockState blockState, @Nullable BlockPos blockPos) {
         if (blockPos != null)
             this.kilt$dugBlockPos.set(blockPos);
         return this.getDestroySpeed(blockState);
+    }
+
+    @Override
+    public void kilt$storeDugBlockPos(BlockPos pos) {
+        this.kilt$dugBlockPos.set(pos);
     }
 
     @ModifyReturnValue(at = @At("RETURN"), method = "getDestroySpeed")

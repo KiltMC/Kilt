@@ -11,6 +11,7 @@
     "AttributeSupplierAccessor",
     "AttributeSupplierBuilderAccessor",
     "BiomeGenerationSettingsAccessor",
+    "BlockBehaviourPropertiesAccessor",
     "ClientPacketListenerAccessor",
     "ClientTextTooltipAccessor",
     "CompoundTagAccessor",
