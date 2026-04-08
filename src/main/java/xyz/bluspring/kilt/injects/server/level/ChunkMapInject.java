@@ -43,7 +43,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-@Mixin(ChunkMap.class)
+@Mixin(value = ChunkMap.class, priority = 1050)
 public abstract class ChunkMapInject implements ChunkMapInjection {
     @Shadow @Final private ServerLevel level;
 
