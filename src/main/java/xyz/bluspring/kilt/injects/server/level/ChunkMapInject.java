@@ -1,22 +1,16 @@
 // TRACKED HASH: cebcc0747792b8bfe53d24573c9609f5c22b61d1
 package xyz.bluspring.kilt.injects.server.level;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.*;
-import net.minecraft.server.network.ServerPlayerConnection;
-import net.minecraft.util.thread.ProcessorHandle;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.boss.EnderDragonPart;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.entity.PartEntity;
@@ -33,9 +27,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.level.ChunkMapInjection;
 import xyz.bluspring.kilt.mixin.TrackedEntityAccessor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkLevel;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ChunkTaskPriorityQueueSorter;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerPlayerConnection;
+import net.minecraft.util.thread.ProcessorHandle;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapInject implements ChunkMapInjection {
@@ -53,9 +59,11 @@ public abstract class ChunkMapInject implements ChunkMapInjection {
     @Final
     private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
 
-    @Inject(method = "updateChunkScheduling", at = @At(value = "RETURN", ordinal = 1))
+    @Inject(method = "updateChunkScheduling", at = @At("TAIL"))
     private void kilt$fireTicketUpdatedEvent(long chunkPos, int newLevel, ChunkHolder holder, int oldLevel, CallbackInfoReturnable<ChunkHolder> cir) {
-        EventHooks.fireChunkTicketLevelUpdated(this.level, chunkPos, oldLevel, newLevel, holder);
+        if (ChunkLevel.isLoaded(oldLevel) || ChunkLevel.isLoaded(newLevel)) {
+            EventHooks.fireChunkTicketLevelUpdated(this.level, chunkPos, oldLevel, newLevel, holder);
+        }
     }
 
     @Definition(id = "chunkAccess", local = @Local(type = ChunkAccess.class))
