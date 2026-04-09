@@ -11,6 +11,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerSpawnPhantomsEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.BlockPos;
@@ -40,7 +41,7 @@ public abstract class PhantomSpawnerInject {
         @At(value = "MIXINEXTRAS:EXPRESSION", id = "skylight"),
         @At(value = "MIXINEXTRAS:EXPRESSION", id = "seaLevel"),
         @At(value = "MIXINEXTRAS:EXPRESSION", id = "canSeeSky")
-    })
+    }, slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;players()Ljava/util/List;")))
     private boolean kilt$checkShouldSpawnPhantoms(boolean original, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
         if (eventRef.get().getResult() == PlayerSpawnPhantomsEvent.Result.ALLOW) {
             return true;
@@ -60,7 +61,7 @@ public abstract class PhantomSpawnerInject {
     @ModifyExpressionValue(method = "tick", at = {
         @At(value = "MIXINEXTRAS:EXPRESSION", id = "isHarderThan"),
         @At(value = "MIXINEXTRAS:EXPRESSION", id = "randomCheck")
-    })
+    }, slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;canSeeSky(Lnet/minecraft/core/BlockPos;)Z")))
     private boolean kilt$checkCanForcefullySpawnPhantoms(boolean original, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
         return eventRef.get().getResult() == PlayerSpawnPhantomsEvent.Result.ALLOW || original;
     }
