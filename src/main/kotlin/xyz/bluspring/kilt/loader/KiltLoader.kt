@@ -85,16 +85,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val loader = FabricLoader.getInstance()
 
         if (loader.environmentType == EnvType.CLIENT && loader.isModLoaded("sodium")) {
-            // Kilt requires Indium to be able to work with Sodium, so...
-            if (!loader.isModLoaded("indium")) {
-                KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are missing Indium! Please install Indium to ensure Kilt is capable of running as intended."))
-            } else if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
-                // If someone wants to fix this, be my guest, drop a PR. Don't send threats of forking Kilt just because you don't like the fact that we don't support Embeddium.
+            // If someone wants to fix this, be my guest, drop a PR. Don't send threats of forking Kilt just because you don't like the fact that we don't support Embeddium.
+            if (loader.isModLoaded("embeddium") && !KiltFlags.FORCE_ALLOW_BLOCKED_MODS) {
                 KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: You are using Embeddium, which is not supported under Kilt!"))
             }
         }
 
-        // Sanity check for determining if Fabric mods are bundling Forge classes for whatever reason
+        // Sanity check for determining if Fabric mods are bundling NeoForge classes for whatever reason
         for (container in loader.allMods) {
             // Ignore ourselves and whatever we know works correctly.
             if (container.metadata.id == "kilt" || container.metadata.id == "forgeconfigapiport" ||
@@ -103,10 +100,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             )
                 continue
 
-            val path = container.findPath("net/minecraftforge")
+            val path = container.findPath("net/neoforged")
 
             if (path.isPresent && path.orElseThrow().isDirectory()) {
-                Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging Forge classes! This may lead to a game crash!")
+                Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging NeoForge classes! This may lead to a game crash!")
             }
         }
     }
