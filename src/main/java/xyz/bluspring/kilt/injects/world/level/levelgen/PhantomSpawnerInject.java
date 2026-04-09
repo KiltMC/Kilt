@@ -22,7 +22,9 @@ import net.minecraft.world.level.levelgen.PhantomSpawner;
 
 @Mixin(PhantomSpawner.class)
 public abstract class PhantomSpawnerInject {
-    @Inject(method = "tick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/level/ServerPlayer;blockPosition()Lnet/minecraft/core/BlockPos;"))
+    @Definition(id = "blockPosition", method = "Lnet/minecraft/server/level/ServerPlayer;blockPosition()Lnet/minecraft/core/BlockPos;")
+    @Expression("? = ?.blockPosition()")
+    @Inject(method = "tick", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
     private void kilt$callSpawnPhantomsEvent(ServerLevel level, boolean spawnEnemies, boolean spawnFriendlies, CallbackInfoReturnable<Integer> cir, @Local ServerPlayer player, @Local BlockPos pos, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
         eventRef.set(EventHooks.firePlayerSpawnPhantoms(player, level, pos));
     }
