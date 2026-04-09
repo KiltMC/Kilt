@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import kotlin.text.StringsKt;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,7 +21,7 @@ public abstract class PostChainInject {
 
     @WrapOperation(method = "parsePassNode", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/ResourceLocation;withDefaultNamespace(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"), require = 0)
     private ResourceLocation kilt$tryLoadNamespacedPostChain(String location, Operation<ResourceLocation> original, @Local(ordinal = 5) String fullLocation) {
-        if (fullLocation.contains(":")) {
+        if (fullLocation.contains(":") && StringsKt.count(fullLocation, c -> c == ':') == 1) {
             var rl = ResourceLocation.tryParse(fullLocation);
 
             if (rl != null) {
