@@ -1,18 +1,19 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "xyz.bluspring.kilt.compat.forgeconfig.mixin",
-    "compatibilityLevel": "JAVA_17",
-    "mixins": [
-        "ConfigSyncMixin",
-        "ForgeConfigAPIPortFabricClientMixin",
-        "ForgeConfigAPIPortFabricMixin",
-        "NetworkHooksMixin"
-    ],
-    "client": [
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    },
-    "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.bluspring.kilt.compat.forgeconfig.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ConfigSyncMixin",
+    "ForgeConfigAPIPortFabricClientMixin",
+    "ForgeConfigAPIPortFabricMixin",
+    "ForgeConfigRegistryImplMixin",
+    "NetworkHooksMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin"
 }
