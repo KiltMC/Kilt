@@ -1,10 +1,13 @@
 // TRACKED HASH: 8a008dde196be8f110c6df462a387035cbfd879c
 package xyz.bluspring.kilt.forgeinjects.client;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -54,7 +57,6 @@ import net.minecraftforge.common.extensions.IForgeEntity;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -66,10 +68,7 @@ import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftInject implements MinecraftInjection, IForgeMinecraft {
@@ -158,8 +157,16 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     private void kilt$preventRemovingScreen(Screen instance) {
     }
 
-    @Inject(method = "setScreen", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.PUTFIELD), cancellable = true)
-    private void kilt$callScreenEventOpenAndClose(Screen screen, CallbackInfo ci, @Local(argsOnly = true) LocalRef<Screen> screenRef) {
+    // This mixin is weird, if we change the guiScreen variable it will still set screen to the original one.
+    // To work around it, we use ModifyExpressionValue to change the value of screen,
+    // but we still need to change the value of guiScreen with a local reference for the init further down.
+    @Definition(id = "screen", field = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;")
+    @Definition(id = "guiScreen", local = @Local(type = Screen.class))
+    @Expression("this.screen = @(guiScreen)")
+    @ModifyExpressionValue(method = "setScreen", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private Screen kilt$callScreenEventOpenAndClose(
+            Screen screen, @Cancellable CallbackInfo ci, @Local(argsOnly = true) LocalRef<Screen> guiScreen
+    ) {
         ForgeHooksClient.clearGuiLayers((Minecraft) (Object) this);
         Screen old = this.screen;
 
@@ -167,16 +174,18 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
             var event = new ScreenEvent.Opening(old, screen);
             if (MinecraftForge.EVENT_BUS.post(event)) {
                 ci.cancel();
-                return;
+                return screen;
             }
 
-            screenRef.set(event.getNewScreen());
+            screen = event.getNewScreen();
+            guiScreen.set(screen);
         }
 
-        if (old != null && screenRef.get() != old) {
+        if (old != null && screen != old) {
             MinecraftForge.EVENT_BUS.post(new ScreenEvent.Closing(old));
             old.removed();
         }
+        return screen;
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.BEFORE), method = "runTick")
