@@ -7,6 +7,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
+import org.objectweb.asm.tree.MethodNode
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.invoke.LambdaMetafactory
 
@@ -15,41 +16,67 @@ object EnvironmentLambdaFixer {
     const val LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
 
-    fun fixClass(classNode: ClassNode) {
-        val methodsToMark = mutableMapOf<Pair<String, String>, AnnotationNode>()
+    private fun getAnnotations(methodNode: MethodNode): Collection<AnnotationNode> {
+        return KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
+    }
 
-        for (methodNode in classNode.methods) {
-            val annotations = KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
-            if (annotations.none { it.desc == ENVIRONMENT_TYPE.descriptor })
-                continue
+    private fun lacksEnvAnnotation(annotations: Collection<AnnotationNode>): Boolean {
+        return annotations.none { it.desc == ENVIRONMENT_TYPE.descriptor }
+    }
 
-            val envAnnotation = annotations.first { it.desc == ENVIRONMENT_TYPE.descriptor }
+    private fun lacksEnvAnnotation(methodNode: MethodNode): Boolean {
+        return lacksEnvAnnotation(getAnnotations(methodNode))
+    }
 
-            for (insnNode in methodNode.instructions) {
-                // Modified from Quilt - https://github.com/QuiltMC/quilt-loader/blob/develop/src/main/java/org/quiltmc/loader/impl/transformer/LambdaStripCalculator.java
-                if (insnNode is InvokeDynamicInsnNode) {
-                    if (Opcodes.H_INVOKESTATIC != insnNode.bsm.tag)
-                        continue
+    private fun markLambdas(
+        methodNode: MethodNode, classNode: ClassNode, envAnnotation: AnnotationNode,
+        methodsToMark: MutableMap<Pair<String, String>, AnnotationNode>
+    ) {
+        val nestedLambdas = mutableSetOf<String>()
+        for (insnNode in methodNode.instructions) {
+            // Modified from Quilt - https://github.com/QuiltMC/quilt-loader/blob/develop/src/main/java/org/quiltmc/loader/impl/transformer/LambdaStripCalculator.java
+            if (insnNode is InvokeDynamicInsnNode) {
+                if (Opcodes.H_INVOKESTATIC != insnNode.bsm.tag)
+                    continue
 
-                    if ("metafactory" != insnNode.bsm.name)
-                        continue
+                if ("metafactory" != insnNode.bsm.name)
+                    continue
 
-                    if (LAMBDA_CLASS_NAME != insnNode.bsm.owner)
-                        continue
+                if (LAMBDA_CLASS_NAME != insnNode.bsm.owner)
+                    continue
 
-                    if (LAMBDA_METHOD_DESCRIPTOR != insnNode.bsm.desc)
-                        continue
+                if (LAMBDA_METHOD_DESCRIPTOR != insnNode.bsm.desc)
+                    continue
 
-                    if (insnNode.bsmArgs?.size == 3) {
-                        if (insnNode.bsmArgs[1] is Handle) {
-                            val lambdaTarget = insnNode.bsmArgs[1] as Handle
-                            if (lambdaTarget.owner == classNode.name) {
-                                methodsToMark[Pair(lambdaTarget.name, lambdaTarget.desc)] = envAnnotation
-                            }
+                if (insnNode.bsmArgs?.size == 3) {
+                    if (insnNode.bsmArgs[1] is Handle) {
+                        val lambdaTarget = insnNode.bsmArgs[1] as Handle
+                        if (lambdaTarget.owner == classNode.name) {
+                            methodsToMark[Pair(lambdaTarget.name, lambdaTarget.desc)] = envAnnotation
+                            nestedLambdas.add(lambdaTarget.name)
                         }
                     }
                 }
             }
+        }
+        for (nestedNode in classNode.methods) {
+            if (nestedLambdas.contains(nestedNode.name) && lacksEnvAnnotation(nestedNode)) {
+                markLambdas(nestedNode, classNode, envAnnotation, methodsToMark)
+            }
+        }
+    }
+
+    fun fixClass(classNode: ClassNode) {
+        val methodsToMark = mutableMapOf<Pair<String, String>, AnnotationNode>()
+
+        for (methodNode in classNode.methods) {
+            val annotations = getAnnotations(methodNode)
+            if (lacksEnvAnnotation(annotations))
+                continue
+
+            val envAnnotation = annotations.first { it.desc == ENVIRONMENT_TYPE.descriptor }
+
+            markLambdas(methodNode, classNode, envAnnotation, methodsToMark)
         }
 
         for ((pair, annotationNode) in methodsToMark) {
