@@ -67,9 +67,6 @@ object EnvironmentLambdaFixer {
 
         for (methodNode in classNode.methods) {
             val annotations = methodNode.mergedAnnotations
-            if (lacksEnvAnnotation(annotations))
-                continue
-
             val envAnnotation = annotations.firstOrNull { it.desc == ENVIRONMENT_TYPE.descriptor } ?: continue
 
             markLambdas(methodNode, classNode, envAnnotation, methodsToMark)
