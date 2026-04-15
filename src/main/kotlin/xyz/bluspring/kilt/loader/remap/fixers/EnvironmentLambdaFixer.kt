@@ -52,7 +52,7 @@ object EnvironmentLambdaFixer {
                     if (insnNode.bsmArgs[1] is Handle) {
                         val lambdaTarget = insnNode.bsmArgs[1] as Handle
                         if (lambdaTarget.owner == classNode.name) {
-                            methodsToMark[Pair(lambdaTarget.name, lambdaTarget.desc)] = envAnnotation
+                            methodsToMark[lambdaTarget.name to lambdaTarget.desc] = envAnnotation
                             nestedLambdas.add(lambdaTarget.name)
                         }
                     }
@@ -74,7 +74,7 @@ object EnvironmentLambdaFixer {
             if (lacksEnvAnnotation(annotations))
                 continue
 
-            val envAnnotation = annotations.first { it.desc == ENVIRONMENT_TYPE.descriptor }
+            val envAnnotation = annotations.firstOrNull { it.desc == ENVIRONMENT_TYPE.descriptor } ?: continue
 
             markLambdas(methodNode, classNode, envAnnotation, methodsToMark)
         }
