@@ -16,14 +16,6 @@ object EnvironmentLambdaFixer {
     const val LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
 
-    private fun lacksEnvAnnotation(annotations: Collection<AnnotationNode>): Boolean {
-        return annotations.none { it.desc == ENVIRONMENT_TYPE.descriptor }
-    }
-
-    private fun lacksEnvAnnotation(methodNode: MethodNode): Boolean {
-        return lacksEnvAnnotation(methodNode.mergedAnnotations)
-    }
-
     private fun markLambdas(
         methodNode: MethodNode, classNode: ClassNode, envAnnotation: AnnotationNode,
         methodsToMark: MutableMap<Pair<String, String>, AnnotationNode>
@@ -56,7 +48,7 @@ object EnvironmentLambdaFixer {
             }
         }
         for (nestedNode in classNode.methods) {
-            if (nestedLambdas.contains(nestedNode.name) && lacksEnvAnnotation(nestedNode)) {
+            if (nestedLambdas.contains(nestedNode.name) && nestedNode.mergedAnnotations.none { it.desc == ENVIRONMENT_TYPE.descriptor }) {
                 markLambdas(nestedNode, classNode, envAnnotation, methodsToMark)
             }
         }
