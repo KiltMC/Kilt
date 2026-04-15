@@ -6,7 +6,9 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.minecraftforge.fml.ModLoadingContext
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodNode
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
@@ -159,6 +161,9 @@ object KiltHelper {
 
         return list
     }
+
+    val MethodNode.mergedAnnotations: Collection<AnnotationNode>
+        get() = mergeNullableCollections(this.visibleAnnotations, this.invisibleAnnotations)
 
     private data class OverrideData(
         val superClass: Class<*>,

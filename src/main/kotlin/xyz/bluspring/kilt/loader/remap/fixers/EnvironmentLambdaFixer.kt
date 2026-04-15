@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodNode
-import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.KiltHelper.mergedAnnotations
 import java.lang.invoke.LambdaMetafactory
 
 object EnvironmentLambdaFixer {
@@ -16,16 +16,12 @@ object EnvironmentLambdaFixer {
     const val LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
 
-    private fun getAnnotations(methodNode: MethodNode): Collection<AnnotationNode> {
-        return KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
-    }
-
     private fun lacksEnvAnnotation(annotations: Collection<AnnotationNode>): Boolean {
         return annotations.none { it.desc == ENVIRONMENT_TYPE.descriptor }
     }
 
     private fun lacksEnvAnnotation(methodNode: MethodNode): Boolean {
-        return lacksEnvAnnotation(getAnnotations(methodNode))
+        return lacksEnvAnnotation(methodNode.mergedAnnotations)
     }
 
     private fun markLambdas(
@@ -70,7 +66,7 @@ object EnvironmentLambdaFixer {
         val methodsToMark = mutableMapOf<Pair<String, String>, AnnotationNode>()
 
         for (methodNode in classNode.methods) {
-            val annotations = getAnnotations(methodNode)
+            val annotations = methodNode.mergedAnnotations
             if (lacksEnvAnnotation(annotations))
                 continue
 
