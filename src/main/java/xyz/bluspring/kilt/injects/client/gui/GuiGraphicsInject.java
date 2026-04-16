@@ -1,29 +1,16 @@
 // TRACKED HASH: 66858683859d22896e8fbc2be116d575c4c260c3
 package xyz.bluspring.kilt.injects.client.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.ItemDecoratorHandler;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
@@ -43,9 +30,23 @@ import xyz.bluspring.kilt.injections.client.gui.GuiGraphicsInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.tooltip.TooltipRenderUtilInjection;
 import xyz.bluspring.kilt.mixin.ClientTextTooltipAccessor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IGuiGraphicsExtension {
@@ -128,7 +129,7 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IGuiGra
                 return forgeTooltips.stream().noneMatch(e -> e instanceof ClientTextTooltip tooltip && ((ClientTextTooltipAccessor) tooltip).getText().equals(text));
             }
 
-            return true;
+            return forgeTooltips.stream().noneMatch(e -> component == e);
         }).toList();
 
         forgeTooltips.addAll(filtered);
