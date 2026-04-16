@@ -4,20 +4,21 @@ package xyz.bluspring.kilt.forgeinjects.world.item;
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,12 +33,14 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.CapabilityProviderInjection;
 import xyz.bluspring.kilt.injections.item.ItemStackInjection;
+import xyz.bluspring.kilt.injections.world.item.RarityInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Objects;
@@ -62,6 +65,9 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @Shadow private int count;
     @Shadow public abstract Item getItem();
     @Shadow public abstract InteractionResult useOn(UseOnContext context);
+
+    @Shadow
+    public abstract Rarity getRarity();
 
     @Unique private boolean kilt$hasRunForgeInit = false;
 
@@ -242,6 +248,29 @@ public abstract class ItemStackInject implements IForgeItemStack, CapabilityProv
     @ModifyReturnValue(method = "getAttributeModifiers", at = @At("RETURN"))
     private Multimap<Attribute, AttributeModifier> kilt$invokeAttributeModifiersEvent(Multimap<Attribute, AttributeModifier> original, EquipmentSlot slot) {
         return HashMultimap.create(ForgeHooks.getAttributeModifiers((ItemStack) (Object) this, slot, original)); // Kilt: Make mutable, other mods depend on this.
+    }
+
+    @WrapOperation(
+            method = {"getTooltipLines", "getDisplayName"},
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;",
+                    ordinal = 0
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/item/ItemStack;getRarity()Lnet/minecraft/world/item/Rarity;"
+                    )
+            ),
+            require = 2
+    )
+    public MutableComponent kilt$applyCustomRarityStyle(MutableComponent instance, ChatFormatting format, Operation<MutableComponent> original) {
+        var rarity = (RarityInjection) (Object) getRarity();
+        if (rarity.kilt$isForge()) {
+            return instance.withStyle(rarity.getStyleModifier());
+        }
+        return original.call(instance, format);
     }
 
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.tool.mixin.ItemStackMixin", name = "canPerformAction")

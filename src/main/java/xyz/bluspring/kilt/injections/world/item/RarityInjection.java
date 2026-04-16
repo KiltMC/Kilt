@@ -15,7 +15,7 @@ public interface RarityInjection {
                 name, (size) -> RarityAccessor.createRarity(name, size, formatting),
                 (values) -> RarityAccessor.setValues(values.toArray(new Rarity[0]))
         );
-        ((RarityInjection) (Object) value).setStyleModifier((style) -> style.applyFormat(formatting));
+        ((RarityInjection) (Object) value).kilt$setForge(true);
 
         return value;
     }
@@ -25,6 +25,14 @@ public interface RarityInjection {
         ((RarityInjection) (Object) value).setStyleModifier(styleModifier);
 
         return value;
+    }
+
+    default boolean kilt$isForge() {
+        throw new IllegalStateException();
+    }
+
+    default void kilt$setForge(boolean forge) {
+        throw new IllegalStateException();
     }
 
     default UnaryOperator<Style> getStyleModifier() {
