@@ -15,7 +15,6 @@ public interface RarityInjection {
                 name, (size) -> RarityAccessor.createRarity(name, size, formatting),
                 (values) -> RarityAccessor.setValues(values.toArray(new Rarity[0]))
         );
-        ((RarityInjection) (Object) value).setStyleModifier((style) -> style.applyFormat(formatting));
 
         return value;
     }
