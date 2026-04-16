@@ -52,7 +52,7 @@ class NeoForgeMod(
         KiltModContainer(this)
 
     val scanData = ModFileScanData()
-    lateinit var modObject: Any
+    val modObjects: MutableList<Any> = Collections.synchronizedList(mutableListOf())
 
     var parent: NeoForgeMod? = null
     var manifest: Manifest? = this.definition.additionalData.get("manifest") as? Manifest?

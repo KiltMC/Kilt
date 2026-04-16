@@ -30,6 +30,7 @@ import net.neoforged.fml.loading.FMLLoader
 import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
+import net.neoforged.fml.loading.modscan.ModAnnotation
 import net.neoforged.fml.loading.modscan.ModClassVisitor
 import net.neoforged.fml.loading.toposort.TopologicalSort
 import net.neoforged.neoforgespi.Environment
@@ -715,7 +716,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                         return@collect
 
                     val dist = it.annotationData["dist"]
-                    if (dist is Collection<*> && !dist.contains(FMLLoader.getDist())) {
+                    if (dist is Collection<*> && !dist.map { Dist.valueOf((it as ModAnnotation.EnumHolder).value) }.contains(FMLLoader.getDist())) {
                         return@collect
                     }
                     annotationCount++
@@ -730,7 +731,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
                     if (ktObj != null) {
                         // Load mods created using KFF
-                        mod.modObject = ktObj
+                        mod.modObjects.add(ktObj)
                     } else {
                         // Otherwise, initialize under the regular Java process
                         val constructors = clazz.constructors
@@ -754,7 +755,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                             instanceArgs.add(instance)
                         }
 
-                        mod.modObject = constructor.newInstance(*instanceArgs.toTypedArray())
+                        mod.modObjects.add(constructor.newInstance(*instanceArgs.toTypedArray()))
                     }
 
                     Kilt.logger.info("Initialized new instance of mod $modId.")
