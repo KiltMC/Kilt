@@ -9,12 +9,14 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.platform.Window;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -38,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.client.KiltClient;
 import xyz.bluspring.kilt.injections.client.gui.GuiInjection;
+import xyz.bluspring.kilt.injections.world.item.RarityInjection;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -67,6 +70,9 @@ public abstract class GuiInject implements GuiInjection {
     @Shadow public int screenWidth;
     @Shadow public int screenHeight;
     @Shadow public abstract void renderSelectedItemName(GuiGraphics guiGraphics);
+
+    @Shadow
+    public ItemStack lastToolHighlight;
 
     @WrapOperation(method = "renderEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;showIcon()Z"))
     private boolean kilt$checkIconVisible(MobEffectInstance instance, Operation<Boolean> original) {
@@ -375,6 +381,30 @@ public abstract class GuiInject implements GuiInjection {
             return kilt$yShift;
 
         return constant;
+    }
+
+    @WrapOperation(
+            method = "renderSelectedItemName",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;",
+                    ordinal = 0
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/item/ItemStack;getRarity()Lnet/minecraft/world/item/Rarity;"
+                    )
+            )
+    )
+    public MutableComponent kilt$applyCustomRarityStyle(
+            MutableComponent instance, ChatFormatting format, Operation<MutableComponent> original
+    ) {
+        var rarity = (RarityInjection) (Object) lastToolHighlight.getRarity();
+        if (rarity.kilt$isForge()) {
+            return instance.withStyle(rarity.getStyleModifier());
+        }
+        return original.call(instance, format);
     }
 
     // TODO: Debug text and FPS graph render, that should go into DebugScreenOverlay

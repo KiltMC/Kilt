@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.IExtensibleEnum;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,6 +18,9 @@ import java.util.function.UnaryOperator;
 @Mixin(Rarity.class)
 public class RarityInject implements RarityInjection, IExtensibleEnum {
     private UnaryOperator<Style> styleModifier;
+
+    @Unique
+    private boolean kilt$forge = false;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void kilt$init(String string, int i, ChatFormatting color, CallbackInfo ci) {
@@ -41,5 +45,15 @@ public class RarityInject implements RarityInjection, IExtensibleEnum {
     @CreateStatic
     private static Rarity create(String name, UnaryOperator<Style> styleModifier) {
         return RarityInjection.create(name, styleModifier);
+    }
+
+    @Override
+    public boolean kilt$isForge() {
+        return kilt$forge;
+    }
+
+    @Override
+    public void kilt$setForge(boolean forge) {
+        this.kilt$forge = forge;
     }
 }
