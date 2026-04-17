@@ -161,7 +161,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         if (manifest != null && parents == null && manifest.mainAttributes.getValue("FMLModType") != null)
             definitions.add(createCustomMod(path, manifest))
         else if (modsTomlEntry == null && parents == null)
-            // If no mods.toml even exists, just skip it, unless it's JiJ'd.
+        // If no mods.toml even exists, just skip it, unless it's JiJ'd.
             return emptyList()
         else if (modsTomlEntry != null) {
             // Load all mod definitions from the TOML.
@@ -469,7 +469,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             KiltRemapper.remapMods(definitions, remappedModsDir)
         } catch (e: Throwable) {
             e.printStackTrace()
-            throw RuntimeException("Errors occurred while remapping Forge mods!", e)
+            throw RuntimeException("Errors occurred while remapping NeoForge mods!", e)
         }
 
         val mods = mutableListOf<NeoForgeMod>()
@@ -515,9 +515,9 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     fun scanModClasses() {
-        Kilt.logger.info("Scanning all Forge mod classes...")
+        Kilt.logger.info("Scanning all NeoForge mod classes...")
 
-        val exception = RuntimeException("Failed to scan Forge mod classes in Kilt!")
+        val exception = RuntimeException("Failed to scan NeoForge mod classes in Kilt!")
 
         runBlocking {
             launch(Dispatchers.Default) {
@@ -574,14 +574,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            KnitLoader.instance.displayError("Errors occurred while scanning Forge mod classes!", exception)
+            KnitLoader.instance.displayError("Errors occurred while scanning NeoForge mod classes!", exception)
         }
     }
 
     fun loadMods() {
-        Kilt.logger.info("Starting initialization of Forge mods...")
+        Kilt.logger.info("Starting initialization of NeoForge mods...")
 
-        val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+        val exception = RuntimeException("Failed to load NeoForge mods in Kilt!")
 
         // Initialize @Mod annotated constructors
         initMods(exception)
