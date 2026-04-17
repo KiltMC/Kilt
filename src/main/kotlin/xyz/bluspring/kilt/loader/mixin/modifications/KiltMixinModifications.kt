@@ -538,7 +538,7 @@ object KiltMixinModifications {
                         val descriptor = it.removePrefix(name)
                         val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
 
-                        "${KiltRemapper.srgMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
+                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
                     } else it)
                 }
             }

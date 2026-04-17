@@ -81,7 +81,7 @@ object KiltRemapper {
     }
 
     internal val logger = LoggerFactory.getLogger("Kilt Remapper")
-    internal val useNamed = FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace != "intermediary"
+    // internal val useNamed = FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace != "intermediary"
 
     // Remapper extensions
     fun MappingResolver.mapClass(clazz: Class<*>): String = mapClassName("intermediary", "net.minecraft.$clazz").replace(".", "/")
@@ -92,25 +92,25 @@ object KiltRemapper {
         FabricLoader.getInstance().mappingResolver
 
     // This is created automatically using https://github.com/BluSpring/srg2intermediary
-    // srg -> intermediary
-    val srgIntermediaryMapping: IMappingFile = this::class.java.getResourceAsStream("/srg_intermediary.tiny")!!.buffered().use { IMappingFile.load(it) }
+    // moj -> intermediary
+    val mojIntermediaryMapping: IMappingFile = this::class.java.getResourceAsStream("/moj_intermediary.tiny")!!.buffered().use { IMappingFile.load(it) }
     val fabricMappings: INamedMappingFile = MappingConfiguration::class.java.classLoader.getResourceAsStream("mappings/mappings.tiny")!!.use { INamedMappingFile.load(it) }
 
-    private val devSrgIntermediaryMapping = srgIntermediaryMapping.run {
+    private val devMojIntermediaryMapping: IMappingFile = mojIntermediaryMapping.run {
         if (!forceProductionRemap)
             this.rename(DevMappingRenamer(FabricLoader.getInstance().mappingResolver))
         else
             this
     }
 
-    val intermediarySrgMapping: IMappingFile = srgIntermediaryMapping.reverse()
-    private val devIntermediarySrgMapping = devSrgIntermediaryMapping.reverse()
+    val intermediaryMojMapping: IMappingFile = mojIntermediaryMapping.reverse()
+    private val devIntermediaryMojMapping = devMojIntermediaryMapping.reverse()
 
     // if for whatever reason we need these, they're available
-    //val srgIntermediaryTree = TinyConverter.convert(srgIntermediaryMapping, "srg", "intermediary")
-    //val intermediarySrgTree = TinyConverter.convert(intermediarySrgMapping, "intermediary", "srg")
+    //val mojIntermediaryTree = TinyConverter.convert(mojIntermediaryMapping, "moj", "intermediary")
+    //val intermediaryMojTree = TinyConverter.convert(intermediaryMojMapping, "intermediary", "moj")
 
-    // Some workaround mappings, to remap some names to Kilt equivalents.
+    // Some workaround mappings to remap some names to Kilt equivalents.
     // This fixes some compatibility issues.
     private val kiltWorkaroundTree = TinyMappingFactory.load(
         this::class.java.getResourceAsStream("/kilt_workaround_mappings.tiny")!!.bufferedReader()
@@ -120,25 +120,25 @@ object KiltRemapper {
 
     private lateinit var remappedModsDir: Path
 
-    // SRG name -> (parent class name, intermediary/mapped name)
-    val srgMappedFields = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
+    // Moj name -> (parent class name, intermediary/mapped name)
+    val mojMappedFields = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, String>>())
 
-    // SRG name -> (parent class name, (intermediary/mapped name, descriptor))
-    val srgMappedMethods = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, MutableSet<Pair<String, String>>>>())
+    // Moj name -> (parent class name, (intermediary/mapped name, descriptor))
+    val mojMappedMethods = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, MutableSet<Pair<String, String>>>>())
 
     init {
         // Magical field references that are required because otherwise the remapper will deadlock
-        val srgIntermediaryMapping = devSrgIntermediaryMapping
+        val mojIntermediaryMapping = devMojIntermediaryMapping
         val forceProductionRemap = forceProductionRemap
         val mappingResolver = mappingResolver
-        val srgMappedFields = srgMappedFields
-        val srgMappedMethods = srgMappedMethods
+        val mojMappedFields = mojMappedFields
+        val mojMappedMethods = mojMappedMethods
 
         runBlocking {
             launch(Dispatchers.IO) {
-                srgIntermediaryMapping.classes.asFlow().concurrent().collect {
+                mojIntermediaryMapping.classes.asFlow().concurrent().collect {
                     it.fields.asFlow().concurrent().collect { f ->
-                        val map = srgMappedFields.getOrPut(f.original) {
+                        val map = mojMappedFields.getOrPut(f.original) {
                             Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
                         }
                         val mapped = if (!forceProductionRemap)
@@ -155,7 +155,7 @@ object KiltRemapper {
                     }
 
                     it.methods.asFlow().concurrent().collect { f ->
-                        val map = srgMappedMethods.getOrPut(f.original) {
+                        val map = mojMappedMethods.getOrPut(f.original) {
                             Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap())
                         }
                         val mapped = if (!forceProductionRemap)
@@ -257,7 +257,7 @@ object KiltRemapper {
             }
         }
 
-        srgGamePath = remapMinecraft("srg", devIntermediarySrgMapping)
+        mojGamePath = remapMinecraft("Mojang", devIntermediaryMojMapping)
 
         val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
@@ -267,9 +267,9 @@ object KiltRemapper {
 
         // Use the regular mod file
         val classProvider = ClassProvider.builder().apply {
-            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
+            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
             listOf(
-                srgGamePath,
+                mojGamePath,
                 // List down Forge paths
                 *KiltHelper.getKiltPaths().toTypedArray(),
                 // Add all Fabric mods
@@ -290,7 +290,7 @@ object KiltRemapper {
         else null
 
         // Initialize a global remapper state
-        enhancedRemapper = KiltEnhancedRemapper(classProvider, devSrgIntermediaryMapping, logConsumer) {
+        enhancedRemapper = KiltEnhancedRemapper(classProvider, devMojIntermediaryMapping, logConsumer) {
             // Initialize this a bit later, cuz we need the same libraries.
             ClassProvider.builder().apply {
                 // time to add Intermediary mappings to the mix! :,D
@@ -298,7 +298,7 @@ object KiltRemapper {
                     addLibrary(intermediaryMap)
                 }
 
-                // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. srgGamePath MUST be at the top of the list.
+                // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
                 listOf(
                     // List down Forge paths
                     *KiltHelper.getKiltPaths().toTypedArray(),
@@ -316,7 +316,7 @@ object KiltRemapper {
             }.build()
         }
 
-        //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, srgIntermediaryMapping, classProvider)
+        //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, mojIntermediaryMapping, classProvider)
         val resourceRemappers = listOf(
             ManifestResourceRemapper,
             IgnoreSignatureResourceRemapper
@@ -351,7 +351,7 @@ object KiltRemapper {
             val jarOutputStream = withContext(Dispatchers.IO) { JarOutputStream(tempModifiedJarFile.outputStream(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) }
 
             val entryToClassNodes = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<JarEntry, ClassNode>())
-            val classesToProcess = entryToClassNodes.values.intersect(KiltHelper.getForgeClassNodes().toSet()).toList()
+            // val classesToProcess = entryToClassNodes.values.intersect(KiltHelper.getForgeClassNodes().toSet()).toList()
 
             val mixinClasses = Collections.synchronizedSet(ClassNameHashSet())
             val refmaps = Collections.synchronizedSet(CaseInsensitiveStringHashSet())
@@ -533,7 +533,7 @@ object KiltRemapper {
                 }
                 json.add("mappings", mappings)
 
-                // Now, let's add the mappings data map directly to "named:intermediary"
+                // Now, let's add the mapping data map directly to "named:intermediary"
                 val dataMap = JsonObject()
                 dataMap.add("named:intermediary", mappings)
 
@@ -589,7 +589,7 @@ object KiltRemapper {
         val workaround = if (!ignoreWorkaround)
             kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
         else null
-        val intermediary = srgIntermediaryMapping.remapClass(name.replace(".", "/"))
+        val intermediary = mojIntermediaryMapping.remapClass(name.replace(".", "/"))
         if (toIntermediary) {
             return workaround ?: intermediary ?: name
         }
@@ -600,15 +600,15 @@ object KiltRemapper {
     }
 
     /**
-     * Converts Intermediary (or Mojmap in dev) mappings to SRG mappings.
+     * Converts Intermediary mappings to Moj mappings.
      */
     fun unmapClass(name: String): String {
         val intermediary = mappingResolver.unmapClassName("intermediary", name.replace("/", "."))
-        return intermediarySrgMapping.remapClass(intermediary.replace(".", "/"))
+        return intermediaryMojMapping.remapClass(intermediary.replace(".", "/"))
     }
 
     val gameFile = getMCGameFile()
-    lateinit var srgGamePath: Path
+    lateinit var mojGamePath: Path
 
     private fun getDeobfJarDir(gameDir: Path, gameId: String, gameVersion: String): Path {
         return GameProviderHelper::class.java
@@ -632,7 +632,7 @@ object KiltRemapper {
             if (sidedJar != null)
                 return sidedJar*/
 
-            // this gives the obfuscated JAR, we don't want that
+            // this gives the obfuscated JAR; we don't want that
             //val inputGameJar = FabricLoader.getInstance().objectShare.get("fabric-loader:inputGameJar")
             //if (inputGameJar is Path)
             //return inputGameJar.toFile()
@@ -685,25 +685,25 @@ object KiltRemapper {
     }
 
     private suspend fun remapMinecraft(mappingName: String, mappingFile: IMappingFile): Path {
-        val srgFile =
+        val mojFile =
             KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-${mappingName}_$MC_MAPPED_JAR_VERSION.jar"
 
-        if (srgFile.exists() && !forceRemap) {
-            logger.info("SRG-mapped Minecraft JAR detected, not creating a new remapped file.")
-            return srgFile
+        if (mojFile.exists() && !forceRemap) {
+            logger.info("${mappingName}-mapped Minecraft JAR detected, not creating a new remapped file.")
+            return mojFile
         }
 
         if (gameFile == null) {
             throw IllegalStateException("Minecraft JAR was not found!")
         }
 
-        val tempSrgFile =
+        val tempMojFile =
             KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-${mappingName}_$MC_MAPPED_JAR_VERSION.jar.tmp"
 
-        if (tempSrgFile.exists())
-            tempSrgFile.deleteIfExists()
+        if (tempMojFile.exists())
+            tempMojFile.deleteIfExists()
 
-        logger.info("Creating ${mappingName}-mapped Minecraft JAR for remapping Forge mods...")
+        logger.info("Creating ${mappingName}-mapped Minecraft JAR for remapping NeoForge mods...")
         val startTime = System.currentTimeMillis()
 
         val classProvider = ClassProvider.builder().apply {
@@ -712,12 +712,12 @@ object KiltRemapper {
                 this.addLibrary(path)
             }
         }.build()
-        val srgRemapper = EnhancedRemapper(classProvider, mappingFile, logConsumer)
+        val mojRemapper = EnhancedRemapper(classProvider, mappingFile, logConsumer)
 
         val gameJar = withContext(Dispatchers.IO) { JarFile(gameFile.toFile()) }
-        runCatching { tempSrgFile.createFile() }
+        runCatching { tempMojFile.createFile() }
 
-        tempSrgFile.outputStream().use { outputStream ->
+        tempMojFile.outputStream().use { outputStream ->
             withContext(Dispatchers.IO) { JarOutputStream(outputStream) }.use { outputJar ->
                 gameJar.stream().consumeAsFlow().flowOn(Dispatchers.IO)
                     .collect { entry ->
@@ -729,14 +729,14 @@ object KiltRemapper {
 
                             val classWriter = ClassWriter(0)
 
-                            val visitor = EnhancedClassRemapper(classWriter, srgRemapper, RenamingTransformer(srgRemapper, false))
+                            val visitor = EnhancedClassRemapper(classWriter, mojRemapper, RenamingTransformer(mojRemapper, false))
                             classNode.accept(visitor)
                             ConflictingStaticMethodFixer.fixClass(classNode)
 
                             // We need to remap to the correct name, otherwise the remapper completely fails in production environments.
-                            val srgName = mappingFile.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
+                            val mojName = mappingFile.remapClass(entry.name.removePrefix("/").removeSuffix(".class"))
 
-                            outputJar.putNextEntry(JarEntry("$srgName.class"))
+                            outputJar.putNextEntry(JarEntry("$mojName.class"))
                             outputJar.write(classWriter.toByteArray())
                             outputJar.closeEntry()
                         } else {
@@ -748,11 +748,11 @@ object KiltRemapper {
             }
         }
 
-        tempSrgFile.moveTo(srgFile, true)
+        tempMojFile.moveTo(mojFile, true)
 
         logger.info("Remapped Minecraft to $mappingName. (took ${System.currentTimeMillis() - startTime} ms)")
 
-        return srgFile
+        return mojFile
     }
 
     fun remapDescriptor(descriptor: String, reverse: Boolean = false, toIntermediary: Boolean = false): String {

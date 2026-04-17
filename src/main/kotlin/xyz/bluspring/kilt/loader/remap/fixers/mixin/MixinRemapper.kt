@@ -128,7 +128,7 @@ object MixinRemapper {
                                     val targets = mutableSetOf<String>()
 
                                     for (classTarget in classTargets) {
-                                        val possible = KiltRemapper.srgMappedMethods.filter { it.value.contains(classTarget) && it.key.startsWith(split[0]) }
+                                        val possible = KiltRemapper.mojMappedMethods.filter { it.value.contains(classTarget) && it.key.startsWith(split[0]) }
                                             .mapValues { it.value.getValue(classTarget) }
                                             .values
                                             .flatten()
@@ -406,22 +406,22 @@ object MixinRemapper {
         // If the descriptor is blank, we cannot safely determine what it actually is.
         // So, guesswork time. Hopefully this doesn't come up too often, if at all.
         if (descriptor.isBlank()) {
-            if (KiltRemapper.srgMappedMethods.contains(member)) {
-                for ((ownerClass, mappedPair) in KiltRemapper.srgMappedMethods[member]!!) {
+            if (KiltRemapper.mojMappedMethods.contains(member)) {
+                for ((ownerClass, mappedPair) in KiltRemapper.mojMappedMethods[member]!!) {
                     if (classTargets.contains(ownerClass))
                         return "$mappedClassDescriptor${mappedPair.first().first}".breakpoint()
                 }
 
-                return KiltRemapper.srgMappedMethods[member]!!.values.first().first().first
+                return KiltRemapper.mojMappedMethods[member]!!.values.first().first().first
             }
 
-            if (KiltRemapper.srgMappedFields.contains(member)) {
-                for ((ownerClass, mappedName) in KiltRemapper.srgMappedFields[member]!!) {
+            if (KiltRemapper.mojMappedFields.contains(member)) {
+                for ((ownerClass, mappedName) in KiltRemapper.mojMappedFields[member]!!) {
                     if (classTargets.contains(ownerClass))
                         return "$mappedClassDescriptor$mappedName".breakpoint()
                 }
 
-                return "$mappedClassDescriptor${KiltRemapper.srgMappedFields[member]!!.values.first()}".breakpoint()
+                return "$mappedClassDescriptor${KiltRemapper.mojMappedFields[member]!!.values.first()}".breakpoint()
             }
         } else if (classDescriptor.isBlank()) {
             // If the class descriptor is blank, we're going to struggle to find any information we need, but we can still use some information to find stuff.
