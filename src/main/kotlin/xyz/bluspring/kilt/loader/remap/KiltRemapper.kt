@@ -190,7 +190,7 @@ object KiltRemapper {
         this.remappedModsDir = remappedModsDir
 
         if (forceRemap)
-            logger.warn("Forced remaps enabled! All Forge mods will be remapped.")
+            logger.warn("Forced remaps enabled! All NeoForge mods will be remapped.")
 
         // Forcefully initialize the mapping resolver.
         // Otherwise, it just crashes from trying to initialize concurrently.
@@ -259,9 +259,9 @@ object KiltRemapper {
 
         mojGamePath = remapMinecraft("Mojang", devIntermediaryMojMapping)
 
-        val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
+        val exception = RuntimeException("Failed to remap NeoForge mods in Kilt!")
 
-        logger.info("Remapping Forge mods...")
+        logger.info("Remapping NeoForge mods...")
 
         val mods = modLoadingQueue.filter { !it.isBuiltin }.toSet()
 
@@ -270,14 +270,14 @@ object KiltRemapper {
             // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
             listOf(
                 mojGamePath,
-                // List down Forge paths
+                // List down NeoForge paths
                 *KiltHelper.getKiltPaths().toTypedArray(),
                 // Add all Fabric mods
                 *FabricLoader.getInstance().allMods
                     .flatMap { container -> container.rootPaths }.toTypedArray(),
                 // add mapped path too
                 *getGameClassPath(),
-                // Add all Forge mods to the library path, because dependencies don't have to be specified
+                // Add all NeoForge mods to the library path, because dependencies don't have to be specified
                 // in order to use mods lmao
                 *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
             ).forEach {
@@ -300,14 +300,14 @@ object KiltRemapper {
 
                 // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
                 listOf(
-                    // List down Forge paths
+                    // List down NeoForge paths
                     *KiltHelper.getKiltPaths().toTypedArray(),
                     // Add all Fabric mods
                     *FabricLoader.getInstance().allMods
                         .flatMap { container -> container.rootPaths }.toTypedArray(),
                     // add mapped path too
                     *runBlocking { getGameClassPath() },
-                    // Add all Forge mods to the library path, because dependencies don't have to be specified
+                    // Add all NeoForge mods to the library path, because dependencies don't have to be specified
                     // in order to use mods lmao
                     *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
                 ).forEach {
@@ -326,9 +326,9 @@ object KiltRemapper {
             enhancedRemapper.initDevRemapper()
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
-            val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")
+            val exception = RuntimeException("Failed to remap NeoForge mod ${mod.displayName} (${mod.id})!")
 
-            if (mod.isBuiltin) { // Prevent Kilt from remapping *directly* Forge mods. Yes, that started happening.
+            if (mod.isBuiltin) { // Prevent Kilt from remapping *directly* NeoForge mods. Yes, that started happening.
                 return
             }
 
