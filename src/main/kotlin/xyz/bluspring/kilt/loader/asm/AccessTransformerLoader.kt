@@ -316,7 +316,7 @@ object AccessTransformerLoader {
                 val classInfo = remapper.getClass(mojClassName).orElse(null)
 
                 if (classInfo == null) {
-                    logger.warn("Missing class reference (SRG: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                    logger.warn("Missing class reference (Mojang: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
                     return false
                 }
 
@@ -333,7 +333,7 @@ object AccessTransformerLoader {
                 val classInfo = remapper.getClass(mojClassName).orElse(null)
 
                 if (classInfo == null) {
-                    logger.warn("Missing class reference (SRG: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                    logger.warn("Missing class reference (Mojang: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
                     return false
                 }
 
