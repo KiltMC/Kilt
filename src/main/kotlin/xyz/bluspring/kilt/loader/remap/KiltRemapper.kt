@@ -257,7 +257,7 @@ object KiltRemapper {
             }
         }
 
-        mojGamePath = remapMinecraft("moj", devIntermediaryMojMapping)
+        mojGamePath = remapMinecraft("Mojang", devIntermediaryMojMapping)
 
         val exception = RuntimeException("Failed to remap Forge mods in Kilt!")
 
@@ -689,7 +689,7 @@ object KiltRemapper {
             KiltLoader.kiltCacheDir / "minecraft_${KiltLoader.MC_VERSION.friendlyString}-${mappingName}_$MC_MAPPED_JAR_VERSION.jar"
 
         if (mojFile.exists() && !forceRemap) {
-            logger.info("Mojmapped Minecraft JAR detected, not creating a new remapped file.")
+            logger.info("${mappingName}-mapped Minecraft JAR detected, not creating a new remapped file.")
             return mojFile
         }
 
