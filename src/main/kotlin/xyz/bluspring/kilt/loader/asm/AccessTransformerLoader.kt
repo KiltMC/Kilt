@@ -45,15 +45,15 @@ object AccessTransformerLoader {
                 val split = line.trim().split(whitespace)
 
                 // class name
-                val srgClassName = split[1].replace(".", "/")
+                val mojClassName = split[1].replace(".", "/")
 
-                val isVanillaClass = srgClassName.startsWith("net/minecraft/") || srgClassName.startsWith("com/mojang/")
+                val isVanillaClass = mojClassName.startsWith("net/minecraft/") || mojClassName.startsWith("com/mojang/")
                 val handledViaAccessWidener =
-                    isVanillaClass && widenAccessForVanillaClasses(split, srgClassName, accessWidener) // Handle access widening over Fabric
+                    isVanillaClass && widenAccessForVanillaClasses(split, mojClassName, accessWidener) // Handle access widening over Fabric
 
                 if (!handledViaAccessWidener) {
                     // Otherwise, this is for every other class
-                    handleAccessTransform(split, srgClassName)
+                    handleAccessTransform(split, mojClassName)
                 }
             } catch (e: Throwable) {
                 throw RuntimeException("Failed to process access transformer at line ${index + 1}: \"$line\"", e)
@@ -305,18 +305,18 @@ object AccessTransformerLoader {
         hasLoaded = true
     }
 
-    private fun widenAccessForVanillaClasses(split: List<String>, srgClassName: String, classTweaker: ClassTweaker): Boolean {
-        val intermediaryClassName = KiltRemapper.remapClass(srgClassName)
+    private fun widenAccessForVanillaClasses(split: List<String>, mojClassName: String, classTweaker: ClassTweaker): Boolean {
+        val intermediaryClassName = KiltRemapper.remapClass(mojClassName)
         val remapper = KiltRemapper.enhancedRemapper
         val accessWidener = classTweaker.visitAccessWidener(intermediaryClassName)!! // it shouldn't be possible for this to be null.
 
         // field / method
         if (split.size > 2 && !split[2].startsWith("#")) {
             if (split[2] == "*") { // Handle all of them
-                val classInfo = remapper.getClass(srgClassName).orElse(null)
+                val classInfo = remapper.getClass(mojClassName).orElse(null)
 
                 if (classInfo == null) {
-                    logger.warn("Missing class reference (SRG: $srgClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                    logger.warn("Missing class reference (SRG: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
                     return false
                 }
 
@@ -330,10 +330,10 @@ object AccessTransformerLoader {
                 }
             } else if (split[2] == "*()") {
 
-                val classInfo = remapper.getClass(srgClassName).orElse(null)
+                val classInfo = remapper.getClass(mojClassName).orElse(null)
 
                 if (classInfo == null) {
-                    logger.warn("Missing class reference (SRG: $srgClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
+                    logger.warn("Missing class reference (SRG: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
                     return false
                 }
 
@@ -382,7 +382,7 @@ object AccessTransformerLoader {
                     return true
                 }
 
-                val methodName = remapper.mapMethodName(srgClassName.replace(".", "/"), name, descriptor)
+                val methodName = remapper.mapMethodName(mojClassName.replace(".", "/"), name, descriptor)
 
                 // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
                 accessWidener.visitMethod(methodName, mappedDescriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
@@ -391,8 +391,8 @@ object AccessTransformerLoader {
             } else { // field
                 val name = split[2]
 
-                val fieldInfo = KiltRemapper.srgIntermediaryMapping.getClass(srgClassName)?.fields?.firstOrNull { it.original == name } ?: return false
-                val fieldName = KiltRemapper.enhancedRemapper.mapFieldName(srgClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
+                val fieldInfo = KiltRemapper.mojIntermediaryMapping.getClass(mojClassName)?.fields?.firstOrNull { it.original == name } ?: return false
+                val fieldName = KiltRemapper.enhancedRemapper.mapFieldName(mojClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
 
                 accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
                 accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.MUTABLE, true)

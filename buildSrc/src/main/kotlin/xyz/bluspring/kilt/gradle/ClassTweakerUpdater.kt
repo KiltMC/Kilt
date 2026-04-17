@@ -132,10 +132,10 @@ object ClassTweakerUpdater {
 
         for (classMapping in mojmap.classes) {
             for (field in classMapping.fields) {
-                val srgName = field.srcName
+                val mojName = field.srcName
 
                 if (field.srcDesc != null)
-                    fieldDescriptors.computeIfAbsent(classMapping.srcName) { mutableMapOf() }[srgName] = field.srcDesc!!
+                    fieldDescriptors.computeIfAbsent(classMapping.srcName) { mutableMapOf() }[mojName] = field.srcDesc!!
             }
         }
 
