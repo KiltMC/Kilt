@@ -303,17 +303,23 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             val dependencies = mutableListOf<ModDependency>()
 
             // Check all dependencies from the provided mod
-            for (forgeDep in mainConfig.getConfigList("dependencies", modId)) {
+            for (neoDep in mainConfig.getConfigList("dependencies", modId)) {
+                val depId = neoDep.getConfigElement<String>("modId").orElseThrow {
+                    Exception("NeoForge mod file $fileName's dependencies contain a dependency without a mod ID!")
+                }
                 val versionRange = MavenVersionAdapter.createFromVersionSpec(
-                    forgeDep.getConfigElement<String>("versionRange")
+                    neoDep.getConfigElement<String>("versionRange")
+                        .map {
+                            if (depId == "minecraft" && (it == "[1.21,1.21.1)" || it == "[1.21]"))
+                                "[1.21,1.21.2)" // Neo, what the fuck?
+                            else it
+                        }
                         .orElse("[0,)") // sure
                 )
 
                 dependencies.add(ModDependency(
-                    id = forgeDep.getConfigElement<String>("modId").orElseThrow {
-                        Exception("NeoForge mod file $fileName's dependencies contain a dependency without a mod ID!")
-                    },
-                    type = when (forgeDep.getConfigElement<String>("type").orElse("optional")) {
+                    id = depId,
+                    type = when (neoDep.getConfigElement<String>("type").orElse("optional")) {
                         "required" -> ModDependency.Type.REQUIRED
                         "optional" -> ModDependency.Type.OPTIONAL
                         "discouraged" -> ModDependency.Type.DISCOURAGED
@@ -324,16 +330,16 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                     constraint = NeoForgeVersionConstraint(versionRange),
 
                     // Forge has sided dependencies. How did we get sided dependencies before sided mods?
-                    side = when (forgeDep.getConfigElement<String>("side").orElse("BOTH")) {
+                    side = when (neoDep.getConfigElement<String>("side").orElse("BOTH")) {
                         "CLIENT" -> ModEnvironment.CLIENT
                         "SERVER" -> ModEnvironment.SERVER
                         "BOTH" -> ModEnvironment.SERVER
-                        else -> throw IllegalArgumentException("Invalid side ${forgeDep.getConfigElement<String>("side")} provided while handling Forge mod file $fileName!")
+                        else -> throw IllegalArgumentException("Invalid side ${neoDep.getConfigElement<String>("side")} provided while handling Forge mod file $fileName!")
                     },
 
                     // Knit has no reason to handle ordering, but we do, so we store it into the additional data.
                     additionalData = mapOf(
-                        "ordering" to IModInfo.Ordering.valueOf(forgeDep.getConfigElement<String>("ordering").orElse("NONE"))
+                        "ordering" to IModInfo.Ordering.valueOf(neoDep.getConfigElement<String>("ordering").orElse("NONE"))
                     )
                 ))
             }
