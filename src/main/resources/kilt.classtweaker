@@ -1195,6 +1195,7 @@ accessible class net/minecraft/client/multiplayer/prediction/BlockStatePredictio
 accessible field net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState blockState Lnet/minecraft/world/level/block/state/BlockState;
 accessible field net/minecraft/client/renderer/chunk/SectionRenderDispatcher level Lnet/minecraft/client/multiplayer/ClientLevel;
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask
+accessible method net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection updateGlobalBlockEntities (Ljava/util/Collection;)V
 
 # Kilt's own injected interfaces, these ones are manually inserted for interfaces
 # that can't be automatically generated, such as inner injections.
@@ -1318,6 +1319,7 @@ transitive-inject-interface net/minecraft/nbt/CompoundTag xyz/bluspring/kilt/inj
 transitive-inject-interface net/minecraft/nbt/ListTag xyz/bluspring/kilt/injections/nbt/ListTagInjection
 transitive-inject-interface net/minecraft/nbt/NbtAccounter xyz/bluspring/kilt/injections/nbt/NbtAccounterInjection
 transitive-inject-interface net/minecraft/network/Connection xyz/bluspring/kilt/injections/network/ConnectionInjection
+transitive-inject-interface net/minecraft/network/ConnectionProtocol xyz/bluspring/kilt/injections/network/ConnectionProtocolInjection
 transitive-inject-interface net/minecraft/network/FriendlyByteBuf xyz/bluspring/kilt/injections/network/FriendlyByteBufInjection
 transitive-inject-interface net/minecraft/network/PacketEncoder xyz/bluspring/kilt/injections/network/PacketEncoderInjection
 transitive-inject-interface net/minecraft/network/protocol/BundlerInfo xyz/bluspring/kilt/injections/network/protocol/BundlerInfoInjection
