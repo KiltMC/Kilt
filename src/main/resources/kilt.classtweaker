@@ -1196,6 +1196,7 @@ accessible field net/minecraft/client/multiplayer/prediction/BlockStatePredictio
 accessible field net/minecraft/client/renderer/chunk/SectionRenderDispatcher level Lnet/minecraft/client/multiplayer/ClientLevel;
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask
 accessible method net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection updateGlobalBlockEntities (Ljava/util/Collection;)V
+accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$SectionTaskResult
 
 # Kilt's own injected interfaces, these ones are manually inserted for interfaces
 # that can't be automatically generated, such as inner injections.
