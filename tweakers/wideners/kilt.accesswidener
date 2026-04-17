@@ -52,3 +52,8 @@ accessible field net/minecraft/world/item/crafting/Ingredient$ItemValue CODEC Lc
 accessible field net/minecraft/world/item/crafting/Ingredient$TagValue CODEC Lcom/mojang/serialization/Codec;
 
 accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
+accessible class net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState
+accessible field net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState blockState Lnet/minecraft/world/level/block/state/BlockState;
+accessible field net/minecraft/client/renderer/chunk/SectionRenderDispatcher level Lnet/minecraft/client/multiplayer/ClientLevel;
+accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask
+accessible method net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection updateGlobalBlockEntities (Ljava/util/Collection;)V
