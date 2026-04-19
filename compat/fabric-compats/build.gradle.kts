@@ -38,6 +38,12 @@ dependencies {
     modCompileOnly("dev.architectury:architectury-fabric:${property("architectury_version")}")
 
     modCompileOnly("maven.modrinth:automodpack:${property("automodpack_version")}")
+
+    modCompileOnly("maven.modrinth:veil:${property("veil_version")}-fabric,1.21.1")
+    modCompileOnly("maven.modrinth:3KUWeVhG:${property("veil_version")}-neoforge,1.21.1") // funny workaround to get Veil Neo to be downloaded
+
+    modCompileOnly("maven.modrinth:sable:${property("sable_version")}-fabric,1.21.1")
+    modCompileOnly("maven.modrinth:T9PomCSv:${property("sable_version")}-neoforge,1.21.1") // same for Sable Neo
 }
 
 tasks {

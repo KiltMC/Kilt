@@ -1,32 +1,34 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "xyz.bluspring.kilt.compat.fabric.mixin",
-    "compatibilityLevel": "JAVA_17",
-    "mixins": [
-        "architectury.RegistrarManagerImplMixin",
-        "emi.EmiAgnosFabricMixin",
-        "invmove.IForgeKeyMappingMixin",
-        "jei.FabricPluginFinderMixin",
-        "mkb.IKeyBindingMixin",
-        "mkb.IKeyConflictContextMixin",
-        "mkb.KeyConflictContextMixin",
-        "pehkui.ScaleTypeMixin",
-        "rei.PluginDetectorImplMixin",
-        "snowrealmagic.SnowVariantMixin",
-        "sophisticatedcore.IForgeBlockMixin",
-        "sophisticatedcore.IForgeBlockStateMixin",
-        "sophisticatedcore.IForgeItemMixin",
-        "sophisticatedcore.IForgeItemStackMixin",
-        "wthit.WailaMixin"
-    ],
-    "client": [
-        "amecsapi.KeyBindingManagerMixin",
-        "amecsapi.KeyMappingMixin",
-        "mkb.KeyMappingMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    },
-    "plugin": "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinPlugin"
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.bluspring.kilt.compat.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "architectury.RegistrarManagerImplMixin",
+    "emi.EmiAgnosFabricMixin",
+    "invmove.IForgeKeyMappingMixin",
+    "jei.FabricPluginFinderMixin",
+    "mkb.IKeyBindingMixin",
+    "mkb.IKeyConflictContextMixin",
+    "mkb.KeyConflictContextMixin",
+    "pehkui.ScaleTypeMixin",
+    "rei.PluginDetectorImplMixin",
+    "snowrealmagic.SnowVariantMixin",
+    "sophisticatedcore.IForgeBlockMixin",
+    "sophisticatedcore.IForgeBlockStateMixin",
+    "sophisticatedcore.IForgeItemMixin",
+    "sophisticatedcore.IForgeItemStackMixin",
+    "veil.FabricRegistrationFactoryMixin",
+    "veil.FabricRegistrationFactoryProviderMixin",
+    "wthit.WailaMixin"
+  ],
+  "client": [
+    "amecsapi.KeyBindingManagerMixin",
+    "amecsapi.KeyMappingMixin",
+    "mkb.KeyMappingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinPlugin"
 }

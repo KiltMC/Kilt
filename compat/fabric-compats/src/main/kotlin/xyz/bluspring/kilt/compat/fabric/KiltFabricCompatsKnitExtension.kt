@@ -1,12 +1,14 @@
 package xyz.bluspring.kilt.compat.fabric
 
 import net.fabricmc.loader.api.FabricLoader
+import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.compat.fabric.automodpack.KiltAutoModpackCompat
-import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
+import xyz.bluspring.kilt.compat.fabric.sable.SableCompatBridge
+import xyz.bluspring.kilt.compat.fabric.veil.VeilCompatBridge
 import xyz.bluspring.knit.loader.api.KnitModScanSetupApi
+import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
 
 class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
-
     override fun setupModScanning(api: KnitModScanSetupApi) {
         if (FabricLoader.getInstance().isModLoaded("automodpack")) {
             KiltAutoModpackCompat.modpackDir?.let { path ->
@@ -15,6 +17,27 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
                     api.addModDirectory(path.resolve(modDir))
                 }
             }
+        }
+
+        /*
+        listOf(
+            "FreeNativeResources",
+            "VeilAddShaderProcessors",
+            "VeilDynamicBuffersChanged",
+            "VeilPostProcessing",
+            "VeilRegisterBlockLayers",
+            "VeilRegisterFixedBuffers",
+            "VeilRegisterGlobalControllers",
+            "VeilRendererAvailable",
+            "VeilShaderCompile"
+        ).map { "foundry.veil.forge.event.Forge${it}Event" }
+         */
+        KiltModCompatBridgeManager.register("veil") {
+            VeilCompatBridge.init()
+        }
+
+        KiltModCompatBridgeManager.register("sable") {
+            SableCompatBridge.init()
         }
     }
 }

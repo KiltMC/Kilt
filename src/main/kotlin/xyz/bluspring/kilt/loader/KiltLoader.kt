@@ -41,6 +41,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.KiltEnvironment
@@ -65,6 +66,7 @@ import kotlin.io.path.*
 
 class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     private val tomlParser = TomlParser()
+    private val loadedModIds = mutableSetOf<String>()
 
     private val environment = KiltEnvironment()
 
@@ -115,6 +117,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // Load all mod definitions. This is recursive, and since we also need to handle JiJ, it's separated into another method.
         return loadModDefinitions(path)
+    }
+
+    override fun modExistsNatively(id: String): Boolean {
+        // Lie to Knit so we can selectively load stuff from this JAR.
+        if (KiltModCompatBridgeManager.canMakeActive(id))
+            return false
+
+        return super.modExistsNatively(id)
     }
 
     override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
@@ -482,6 +492,15 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // Then creates the mod containers for each mod.
         for (definition in definitions) {
+            loadedModIds.add(definition.id)
+
+            // Don't add the mods that probably shouldn't exist into here.
+            if (KiltModCompatBridgeManager.canMakeActive(definition.id)) {
+                // Directly inject into the classpath.
+                KnitLoader.instance.injectIntoClasspath(definition.path)
+                continue
+            }
+
             val config = definition.additionalData["config"] as NightConfigWrapper
 
             mods.add(NeoForgeMod(definition,
@@ -588,6 +607,9 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         Kilt.logger.info("Starting initialization of NeoForge mods...")
 
         val exception = RuntimeException("Failed to load NeoForge mods in Kilt!")
+
+        // Initialize any compatibility bridges that have been registered
+        KiltModCompatBridgeManager.processLoadedMods()
 
         // Initialize @Mod annotated constructors
         initMods(exception)
@@ -826,7 +848,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     fun hasMod(id: String): Boolean {
-        return mods.any { it != null && it.modId == id }
+        return this.loadedModIds.contains(id)
     }
 
     companion object {

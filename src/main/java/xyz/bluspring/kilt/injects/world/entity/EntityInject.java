@@ -1,6 +1,11 @@
 // TRACKED HASH: 34fb617752c8022973f9dca4fb9eed32600931bf
 package xyz.bluspring.kilt.injects.world.entity;
 
+import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiPredicate;
+
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -16,28 +21,9 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.portal.DimensionTransition;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.attachment.AttachmentSync;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.EntityCapability;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
@@ -64,10 +50,32 @@ import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 import xyz.bluspring.kilt.workarounds.InterimCalculation;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiPredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 @Mixin(value = Entity.class, priority = 1100)
 @Extends(AttachmentHolder.class)
@@ -621,6 +629,10 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     }
 
     // Kilt TODO: Do we need to implement setData?
+
+    public final void syncData(AttachmentType<?> type) {
+        AttachmentSync.syncEntityUpdate((Entity) (Object) this, type);
+    }
 
     @Override
     public <T, C> T getCapability(EntityCapability<T, C> capability, C context) {
