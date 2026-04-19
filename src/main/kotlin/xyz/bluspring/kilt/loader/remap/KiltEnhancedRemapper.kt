@@ -90,7 +90,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap) {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !name.startsWith("lambda$")) {
             return name
         }
 

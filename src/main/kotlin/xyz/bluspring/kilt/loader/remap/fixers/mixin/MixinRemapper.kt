@@ -121,6 +121,9 @@ object MixinRemapper {
 
                         fun remapMethodTarget(methodValue: String): Collection<String> {
                             if (methodValue.contains("*")) { // Need to remap wildcards
+                                if (methodValue == "*")
+                                    return listOf("*")
+
                                 val split = methodValue.split("*")
                                 if (split.size == 1 && methodValue.startsWith("*")) {
                                     return listOf(tryRemapMixinRefmap(split[0]))
@@ -301,7 +304,7 @@ object MixinRemapper {
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
     fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap)
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !value.startsWith("lambda$"))
             return value
 
         // Class reference, we can just return it directly.
