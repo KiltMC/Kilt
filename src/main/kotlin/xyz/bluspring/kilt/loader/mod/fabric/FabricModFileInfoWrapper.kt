@@ -44,7 +44,7 @@ class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
     }
 
     override fun getFile(): IModFile? {
-        return null
+        return FabricModFileWrapper(this.mod, this)
     }
 
     override fun getConfig(): IConfigurable? {
