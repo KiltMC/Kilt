@@ -171,6 +171,18 @@ object ClassTweakerUpdater {
                     widener += "transitive-extendable method $className $methodName $descriptor"
                 } else { // Field
                     val fieldName = split[2]
+
+                    // Add every single field
+                    if (fieldName == "*") {
+                        widener += "# wildcard fields for $className"
+                        mojmap.classes.firstOrNull { it.srcName == className }?.fields?.forEach { mapping ->
+                            widener += "transitive-accessible field $className ${mapping.srcName} ${mapping.srcDesc}"
+                            widener += "transitive-mutable field $className ${mapping.srcName} ${mapping.srcDesc}"
+                        }
+
+                        continue
+                    }
+
                     val descriptor = fieldDescriptors[className]?.get(fieldName) ?: "# TODO: ADD DESC"
 
                     val prefix = if (descriptor.contains("# TODO: ")) "# " else ""
