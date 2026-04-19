@@ -1225,6 +1225,7 @@ transitive-inject-interface net/minecraft/world/item/alchemy/PotionBrewing$Build
 transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour$Properties xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection$PropertiesInjection
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState xyz/bluspring/kilt/injections/client/multiplayer/prediction/BlockStatePredictionHandlerInjection$ServerVerifiedStateInjection
+transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection$TypeInjection
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
 transitive-inject-interface com/mojang/blaze3d/platform/GlStateManager xyz/bluspring/kilt/injections/blaze3d/platform/GlStateManagerInjection
@@ -1376,6 +1377,7 @@ transitive-inject-interface net/minecraft/world/entity/player/Player xyz/bluspri
 transitive-inject-interface net/minecraft/world/entity/projectile/ProjectileUtil xyz/bluspring/kilt/injections/world/entity/projectile/ProjectileUtilInjection
 transitive-inject-interface net/minecraft/world/entity/SpawnPlacements xyz/bluspring/kilt/injections/world/entity/SpawnPlacementsInjection
 transitive-inject-interface net/minecraft/world/entity/vehicle/AbstractMinecart xyz/bluspring/kilt/injections/world/entity/vehicle/AbstractMinecartInjection
+transitive-inject-interface net/minecraft/world/entity/vehicle/Boat xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlag xyz/bluspring/kilt/injections/world/flag/FeatureFlagInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlagRegistry xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection
 transitive-inject-interface net/minecraft/world/food/FoodData xyz/bluspring/kilt/injections/world/food/FoodDataInjection

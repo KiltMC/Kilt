@@ -27,3 +27,4 @@ transitive-inject-interface net/minecraft/world/item/alchemy/PotionBrewing$Build
 transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour$Properties xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection$PropertiesInjection
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState xyz/bluspring/kilt/injections/client/multiplayer/prediction/BlockStatePredictionHandlerInjection$ServerVerifiedStateInjection
+transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection$TypeInjection

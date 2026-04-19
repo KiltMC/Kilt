@@ -150,6 +150,7 @@ transitive-inject-interface net/minecraft/world/entity/player/Player xyz/bluspri
 transitive-inject-interface net/minecraft/world/entity/projectile/ProjectileUtil xyz/bluspring/kilt/injections/world/entity/projectile/ProjectileUtilInjection
 transitive-inject-interface net/minecraft/world/entity/SpawnPlacements xyz/bluspring/kilt/injections/world/entity/SpawnPlacementsInjection
 transitive-inject-interface net/minecraft/world/entity/vehicle/AbstractMinecart xyz/bluspring/kilt/injections/world/entity/vehicle/AbstractMinecartInjection
+transitive-inject-interface net/minecraft/world/entity/vehicle/Boat xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlag xyz/bluspring/kilt/injections/world/flag/FeatureFlagInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlagRegistry xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection
 transitive-inject-interface net/minecraft/world/food/FoodData xyz/bluspring/kilt/injections/world/food/FoodDataInjection
