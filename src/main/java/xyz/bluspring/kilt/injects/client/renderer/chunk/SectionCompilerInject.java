@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.AddSectionGeometryEvent;
+import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +22,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 import xyz.bluspring.kilt.injections.client.renderer.chunk.SectionCompilerInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
@@ -61,7 +64,7 @@ public abstract class SectionCompilerInject implements SectionCompilerInjection 
     @Definition(id = "MODEL", field = "Lnet/minecraft/world/level/block/RenderShape;MODEL:Lnet/minecraft/world/level/block/RenderShape;")
     @Expression("blockState.getRenderShape() == MODEL")
     @ModifyExpressionValue(method = "compile", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$handleModelDataCompile(boolean original, @Local BlockState state, @Local(argsOnly = true) RenderChunkRegion region, @Local(ordinal = 1) BlockPos pos, @Local RandomSource randomSource, @Local RenderType originalRenderType, @Local Map<RenderType, BufferBuilder> map, @Local(argsOnly = true) SectionBufferBuilderPack bufferBuilderPack, @Local PoseStack poseStack) {
+    private boolean kilt$handleModelDataCompile(boolean original, @Local BlockState state, @Local(argsOnly = true) RenderChunkRegion region, @Local(ordinal = 1) BlockPos pos, @Local RandomSource randomSource, @Local Map<RenderType, BufferBuilder> map, @Local(argsOnly = true) SectionBufferBuilderPack bufferBuilderPack, @Local PoseStack poseStack) {
         if (original) {
             var model = this.blockRenderer.getBlockModel(state);
             var modelData = region.getModelData(pos);
@@ -70,7 +73,7 @@ public abstract class SectionCompilerInject implements SectionCompilerInjection 
 
             ChunkRenderTypeSet renderTypes = model.getRenderTypes(state, randomSource, modelData);
             // Kilt: Fallback to Vanilla
-            if (modelData == ModelData.EMPTY && renderTypes.contains(originalRenderType) && renderTypes.kilt$size() == 1) {
+            if (modelData == ModelData.EMPTY && renderTypes.kilt$size() == 1 && ItemBlockRenderTypesInjection.getRenderLayers(state) == renderTypes && !KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
                 return true;
             }
 
