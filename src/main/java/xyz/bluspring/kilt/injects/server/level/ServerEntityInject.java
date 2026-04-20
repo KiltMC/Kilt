@@ -86,8 +86,6 @@ public abstract class ServerEntityInject implements ServerEntityInjection {
 
     @Inject(method = "sendPairingData", at = @At("TAIL"))
     private void kilt$handleSyncInitialAttachments(ServerPlayer player, Consumer<Packet<ClientGamePacketListener>> consumer, CallbackInfo ci) {
-        if (this.kilt$payloadAcceptor != null) {
-            AttachmentSync.syncInitialEntityAttachments(this.entity, player, packet -> ((Consumer) consumer).accept(packet));
-        }
+        AttachmentSync.syncInitialEntityAttachments(this.entity, player, packet -> ((Consumer) consumer).accept(packet));
     }
 }
