@@ -87,6 +87,11 @@ public abstract class SectionRenderDispatcherInject {
                     instance.kilt$setAdditionalRenderers(List.of());
                 }
             }
+
+            @Override
+            public void kilt$setAdditionalRenderers(List<AddSectionGeometryEvent.AdditionalSectionRenderer> renderers) {
+                this.additionalRenderers = renderers;
+            }
         }
     }
 }
