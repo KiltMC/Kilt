@@ -64,7 +64,7 @@ public abstract class SectionCompilerInject implements SectionCompilerInjection 
     @Definition(id = "MODEL", field = "Lnet/minecraft/world/level/block/RenderShape;MODEL:Lnet/minecraft/world/level/block/RenderShape;")
     @Expression("blockState.getRenderShape() == MODEL")
     @ModifyExpressionValue(method = "compile", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$handleModelDataCompile(boolean original, @Local BlockState state, @Local(argsOnly = true) RenderChunkRegion region, @Local(ordinal = 1) BlockPos pos, @Local RandomSource randomSource, @Local Map<RenderType, BufferBuilder> map, @Local(argsOnly = true) SectionBufferBuilderPack bufferBuilderPack, @Local PoseStack poseStack) {
+    private boolean kilt$handleModelDataCompile(boolean original, @Local BlockState state, @Local(argsOnly = true) RenderChunkRegion region, @Local(ordinal = 2) BlockPos pos, @Local RandomSource randomSource, @Local Map<RenderType, BufferBuilder> map, @Local(argsOnly = true) SectionBufferBuilderPack bufferBuilderPack, @Local PoseStack poseStack) {
         if (original) {
             var model = this.blockRenderer.getBlockModel(state);
             var modelData = region.getModelData(pos);
