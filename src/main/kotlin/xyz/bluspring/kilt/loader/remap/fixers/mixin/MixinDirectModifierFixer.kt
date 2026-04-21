@@ -5,9 +5,10 @@ import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodNode
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.RetargetingLocalModifier
 import xyz.bluspring.kilt.util.KiltHelper
 
-object MixinShareAccessFixer {
+object MixinDirectModifierFixer {
     fun fixClass(classNode: ClassNode) {
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)
         val removedMethods = mutableListOf<MethodNode>()
@@ -18,9 +19,9 @@ object MixinShareAccessFixer {
                 val annotations = KiltHelper.mergeNullableCollections(methodNode.visibleAnnotations, methodNode.invisibleAnnotations)
                 for (annotation in annotations) {
                     val modifiers = KiltMixinModifications.findMatchingModifiers(targetClass, annotation, methodNode.desc)
-                        .filterIsInstance<InjectedShareAccessModifier>()
+                    val shareAccessModifiers = modifiers.filterIsInstance<InjectedShareAccessModifier>()
 
-                    for (modifier in modifiers) {
+                    for (modifier in shareAccessModifiers) {
                         // We want to conflict as little as possible, so we're doing this.
                         val copiedMethodName = $$"kilt$modified_share_access$$${targetClass.split("/").last()}$$${methodNode.name}$$${annotation.desc.split("/").last().removeSuffix(";")}"
 
@@ -63,6 +64,11 @@ object MixinShareAccessFixer {
 
                         removedMethods.add(methodNode)
                         addedMethods.add(newMethod)
+                    }
+
+                    val retargetingLocalModifiers = modifiers.filterIsInstance<RetargetingLocalModifier>()
+                    for (modifier in retargetingLocalModifiers) {
+                        modifier.retargetLocals(methodNode)
                     }
                 }
             }

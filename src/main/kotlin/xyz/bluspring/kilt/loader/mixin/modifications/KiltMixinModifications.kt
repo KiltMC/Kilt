@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
+import com.llamalad7.mixinextras.sugar.Local
 import com.llamalad7.mixinextras.sugar.Share
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
@@ -30,6 +31,20 @@ object KiltMixinModifications {
     val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
     val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
     val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
+
+    val GLOBAL_MODIFIERS = listOf<MixinModifier>(
+        RetargetingLocalModifier(
+            // Fixes Create Aeronautics
+            "net/minecraft/client/MouseHandler",
+            listOf("turnPlayer", "turnPlayer(D)V"),
+            mapOf(
+                ParamPair("D", 4) to Local(ordinal = 1),
+                ParamPair("D", 5) to Local(ordinal = 2),
+                ParamPair("D", 1) to Local(ordinal = 4),
+                ParamPair("D", 2) to Local(ordinal = 5),
+            )
+        )
+    )
 
     val INJECT = register(
         Inject::class.java,
@@ -349,7 +364,7 @@ object KiltMixinModifications {
     fun findMatchingModifiers(className: String, annotation: AnnotationNode, descriptor: String): Collection<MixinModifier> {
         val annotation = getBaseAnnotation(annotation)
 
-        val modifiers = MODIFIERS[annotation.desc] ?: return emptyList()
+        val modifiers = (MODIFIERS[annotation.desc] ?: emptyList()) + GLOBAL_MODIFIERS
         val foundModifiers = mutableListOf<MixinModifier>()
         val map = annotationValuesToMap(annotation.values ?: emptyList())
 
@@ -382,6 +397,15 @@ object KiltMixinModifications {
                         if (descriptor.count { it.descriptor == param || it.descriptor == mappedParam || KiltRemapper.remapDescriptor(it.descriptor) == param || KiltRemapper.remapDescriptor(it.descriptor) == mappedParam } < ordinal + 1) {
                             continue@modifierSearch
                         }
+                    }
+
+                    foundModifiers.add(modifier)
+                }
+
+                // must be below everything!
+                is MethodBasedModifier -> {
+                    if (!modifier.matches(map["method"] ?: continue)) {
+                        continue
                     }
 
                     foundModifiers.add(modifier)
@@ -522,6 +546,26 @@ object KiltMixinModifications {
         })
     }
 
+    init {
+        for (modifier in GLOBAL_MODIFIERS) {
+            val owner = KiltRemapper.remapClass(modifier.owner)
+            MIXIN_CLASSES.add(owner)
+            modifier.mappedOwner = owner
+
+            if (modifier is MethodBasedModifier) {
+                modifier.mappedMethods = modifier.methods.map {
+                    (if (it.contains("(")) {
+                        val name = it.replaceAfter("(", "").removeSuffix("(")
+                        val descriptor = it.removePrefix(name)
+                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
+                    } else it)
+                }
+            }
+        }
+    }
+
     fun register(type: Class<*>, vararg mixinModifiers: MixinModifier): List<MixinModifier> {
         val list = mutableListOf<MixinModifier>()
         val typeDesc = Type.getDescriptor(type)
@@ -544,7 +588,6 @@ object KiltMixinModifications {
             }
 
             list.add(modifier)
-            println(modifier.asString())
         }
 
         MODIFIERS[typeDesc] = list
