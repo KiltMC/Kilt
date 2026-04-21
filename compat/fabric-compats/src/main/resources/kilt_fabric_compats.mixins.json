@@ -13,6 +13,8 @@
     "mkb.KeyConflictContextMixin",
     "pehkui.ScaleTypeMixin",
     "rei.PluginDetectorImplMixin",
+    "sable.BlockEntityPropellerMixin",
+    "sable.BlockEntitySubLevelReactionWheelMixin",
     "snowrealmagic.SnowVariantMixin",
     "sophisticatedcore.IForgeBlockMixin",
     "sophisticatedcore.IForgeBlockStateMixin",

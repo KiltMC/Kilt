@@ -86,7 +86,7 @@ object MixinRemapper {
                         continue
                     }
 
-                    fun tryRemapMixinRefmap(value: String): String {
+                    fun tryRemapMixinRefmap(value: String, isTarget: Boolean = true): String {
                         // Do NOT remap this - this typically indicates MixinSquared or other extensions.
                         if (value.startsWith("@"))
                             return value
@@ -96,13 +96,13 @@ object MixinRemapper {
                                 return value
 
                             val original = mixinMapping[value]!!
-                            val mapped = remapTargetString(original, classTargets, remapper)
+                            val mapped = remapTargetString(original, classTargets, remapper, isTarget)
 
                             mixinMapping[value] = mapped
 
                             value
                         } else {
-                            val mapped = remapTargetString(value, classTargets, remapper)
+                            val mapped = remapTargetString(value, classTargets, remapper, isTarget)
 
                             if (refmap != null) {
                                 mixinMapping[value] = mapped
@@ -126,7 +126,7 @@ object MixinRemapper {
 
                                 val split = methodValue.split("*")
                                 if (split.size == 1 && methodValue.startsWith("*")) {
-                                    return listOf(tryRemapMixinRefmap(split[0]))
+                                    return listOf(tryRemapMixinRefmap(split[0], false))
                                 } else {
                                     val targets = mutableSetOf<String>()
 
@@ -144,7 +144,7 @@ object MixinRemapper {
                                     return targets.toList()
                                 }
                             } else {
-                                return listOf(tryRemapMixinRefmap(methodValue))
+                                return listOf(tryRemapMixinRefmap(methodValue, false))
                             }
                         }
 
@@ -303,7 +303,7 @@ object MixinRemapper {
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
-    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
+    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper, isTarget: Boolean = true): String {
         if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !value.startsWith("lambda$"))
             return value
 
@@ -415,7 +415,27 @@ object MixinRemapper {
                         return "$mappedClassDescriptor${mappedPair.first().first}".breakpoint()
                 }
 
-                return KiltRemapper.mojMappedMethods[member]!!.values.first().first().first
+                if (isTarget) {
+                    // If we're dealing with target methods, we can probably just use the first-name remap.
+                    return KiltRemapper.mojMappedMethods[member]!!.values.first().first().first
+                }
+            }
+
+            if (!isTarget) {
+                // Can't really do first-name remaps safely here, we need to iterate through the class targets
+                // to figure out which method we *are* targeting.
+                for (target in classTargets) {
+                    val currentClass = remapper.getClass(target).orElse(null) ?: continue
+
+                    for (methodOpt in currentClass.methods) {
+                        val method = methodOpt.orElse(null) ?: continue
+
+                        if (method.name == member) {
+                            // oh hey look, we found one
+                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}"
+                        }
+                    }
+                }
             }
 
             if (KiltRemapper.mojMappedFields.contains(member)) {

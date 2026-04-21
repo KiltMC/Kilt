@@ -529,9 +529,7 @@ object KiltMixinModifications {
             "value" to value
         ).apply {
             if (target != null)
-                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper).apply {
-                    println(this)
-                }
+                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper)
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
@@ -560,7 +558,7 @@ object KiltMixinModifications {
                         val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
 
                         "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else it)
+                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
                 }
             }
         }
@@ -583,7 +581,7 @@ object KiltMixinModifications {
                         val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
 
                         "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else it)
+                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
                 }
             }
 
