@@ -257,7 +257,7 @@ object KiltRemapper {
             }
         }
 
-        mojGamePath = remapMinecraft("Mojang", devIntermediaryMojMapping)
+        mojGamePath = remapMinecraft("mojang", devIntermediaryMojMapping)
 
         val exception = RuntimeException("Failed to remap NeoForge mods in Kilt!")
 
