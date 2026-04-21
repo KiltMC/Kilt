@@ -13,7 +13,6 @@ class KiltMixinCanceller : MixinCanceller {
         "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin",
         "fuzs.nightconfigfixes.mixin.ConfigParserFabricMixin", // Replaced by ConfigParserTransform in Kilt
         "io.github.fabricators_of_create.porting_lib.resources.mixin.common.SimplePreparableReloadListenerMixin", // We handle this ourselves.
-        "dev.ryanhcode.sable.fabric.mixin.fix_bundle_packet.ClientPacketListenerMixin", // atrocious workaround
     )
 
     override fun shouldCancel(targetClassNames: List<String>, mixinClassName: String): Boolean {
