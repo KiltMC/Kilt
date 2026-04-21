@@ -84,7 +84,7 @@ object ClassTweakerUpdater {
 
         // Now, we should combine everything together into one shared class tweaker.
         val classTweakerBuilder = StringBuilder()
-        classTweakerBuilder.append("classTweaker v1 named")
+        classTweakerBuilder.append("classTweaker v2 named")
         classTweakerBuilder.newLine()
 
         // Neo ATs

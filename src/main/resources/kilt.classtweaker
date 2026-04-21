@@ -1,4 +1,4 @@
-classTweaker v1 named
+classTweaker v2 named
 
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Ljava/lang/String;Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
@@ -1550,6 +1550,8 @@ transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState xyz/bluspring/kilt/injections/client/multiplayer/prediction/BlockStatePredictionHandlerInjection$ServerVerifiedStateInjection
 transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection$TypeInjection
+
+transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
 transitive-inject-interface com/mojang/blaze3d/platform/GlStateManager xyz/bluspring/kilt/injections/blaze3d/platform/GlStateManagerInjection
