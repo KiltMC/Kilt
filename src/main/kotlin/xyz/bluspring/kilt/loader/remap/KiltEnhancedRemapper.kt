@@ -122,10 +122,18 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
         return intermediary
     }
 
+    private fun mapToMojang(name: String): String {
+        if (name.startsWith("net/minecraft/class_")) {
+            return KiltRemapper.unmapClass(name)
+        }
+
+        return name
+    }
+
     private fun getClassHierarchy(name: String): List<ClassProvider.IClassInfo> {
         val hierarchy = mutableListOf<ClassProvider.IClassInfo>()
 
-        var currentClass = provider.getClass(name).orElse(null) ?: return emptyList()
+        var currentClass = provider.getClass(mapToMojang(name)).orElse(null) ?: return emptyList()
         hierarchy.add(currentClass)
 
         do {
@@ -137,7 +145,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
                 hierarchy.addAll(getClassHierarchy(itf))
             }
 
-            currentClass = provider.getClass(currentClass.`super`).orElse(null) ?: break
+            currentClass = provider.getClass(mapToMojang(currentClass.`super` ?: break)).orElse(null) ?: break
 
             if (currentClass.name.startsWith("java/lang/") || currentClass.name.startsWith("com/google/")) {
                 break
