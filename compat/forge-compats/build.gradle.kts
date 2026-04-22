@@ -21,7 +21,6 @@ dependencies {
     modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
     compileOnly("maven.modrinth:thirst-was-taken:${property("thirst_version")}")
     compileOnly("maven.modrinth:ldlib:${property("ldlib_version")}")
-    compileOnly("maven.modrinth:littletiles:${property("littletiles_version")}")
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
 }
 
