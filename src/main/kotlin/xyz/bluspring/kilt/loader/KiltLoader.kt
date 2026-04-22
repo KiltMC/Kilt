@@ -646,7 +646,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // Automatically subscribe events
         try {
-            AutomaticEventSubscriber.inject(mod.container, mod.scanData, null)
+            AutomaticEventSubscriber.inject(mod.container, scanData, null)
         } catch (e: Throwable) {
             Kilt.logger.error("Failed to register events for mod ${mod.modId}!")
             val ex = RuntimeException("Failed to register events for mod ${mod.modId}!", e)
