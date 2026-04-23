@@ -2,6 +2,8 @@ package xyz.bluspring.kilt.injections.world.flag;
 
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.world.flag.FeatureFlagUniverse;
+
 public interface FeatureFlagInjection {
     default int kilt$extMaskIndex() {
         throw KiltHelper.createMixinException(FeatureFlagInjection.class, "kilt$extMaskIndex");
@@ -17,5 +19,13 @@ public interface FeatureFlagInjection {
 
     default void kilt$setModded(boolean modded) {
         throw KiltHelper.createMixinException(FeatureFlagInjection.class, "kilt$setModded");
+    }
+
+    default FeatureFlagUniverse kilt$universe() {
+        throw KiltHelper.createMixinException(FeatureFlagInjection.class, "kilt$universe");
+    }
+
+    default long kilt$mask() {
+        throw KiltHelper.createMixinException(FeatureFlagInjection.class, "kilt$mask");
     }
 }

@@ -1706,6 +1706,7 @@ transitive-inject-interface net/minecraft/world/entity/vehicle/AbstractMinecart 
 transitive-inject-interface net/minecraft/world/entity/vehicle/Boat xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlag xyz/bluspring/kilt/injections/world/flag/FeatureFlagInjection
 transitive-inject-interface net/minecraft/world/flag/FeatureFlagRegistry xyz/bluspring/kilt/injections/world/flag/FeatureFlagRegistryInjection
+transitive-inject-interface net/minecraft/world/flag/FeatureFlagSet xyz/bluspring/kilt/injections/world/flag/FeatureFlagSetInjection
 transitive-inject-interface net/minecraft/world/food/FoodData xyz/bluspring/kilt/injections/world/food/FoodDataInjection
 transitive-inject-interface net/minecraft/world/food/FoodProperties xyz/bluspring/kilt/injections/world/food/FoodPropertiesInjection
 transitive-inject-interface net/minecraft/world/inventory/AnvilMenu xyz/bluspring/kilt/injections/world/inventory/AnvilMenuInjection

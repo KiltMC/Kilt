@@ -320,30 +320,27 @@ class KiltEarlyRiser : Runnable {
                 // Need to create this, and make sure it remaps to the pre-existing one.
                 /*
                 Expected code:
-                public static GrassColorModifier create(String name, String id, ColorModifier delegate) {
-                    return GrassColorModifier.create(name, id, (BiomeSpecialEffectsGrassColorModifierInjection.ColorModifier) delegate);
+                public GrassColorModifier(String name, ColorModifier delegate) {
+                    this(name, (BiomeSpecialEffectsGrassColorModifierInjection.ColorModifier) delegate);
                 }
                  */
-                classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "create", "(Ljava/lang/String;Ljava/lang/String;L$colorModifierName;)L$grassColorModifierMapped;", null, null).apply {
+                classNode.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(Ljava/lang/String;L$colorModifierName;)V", null, null).apply {
                     this.visitCode()
 
                     val label0 = Label()
                     val label1 = Label()
-                    val label2 = Label()
 
                     this.visitLabel(label0)
                     this.visitVarInsn(Opcodes.ALOAD, 0)
                     this.visitVarInsn(Opcodes.ALOAD, 1)
                     this.visitVarInsn(Opcodes.ALOAD, 2)
-                    this.visitMethodInsn(Opcodes.INVOKESTATIC, grassColorModifierMapped, "create", "(Ljava/lang/String;Ljava/lang/String;L$biomeInjectionName\$ColorModifier;)L$grassColorModifierMapped;", false)
+                    this.visitMethodInsn(Opcodes.INVOKESPECIAL, grassColorModifierMapped, "<init>", "(Ljava/lang/String;L$biomeInjectionName\$ColorModifier;)V", false)
+                    this.visitInsn(Opcodes.RETURN)
 
                     this.visitLabel(label1)
-                    this.visitInsn(Opcodes.ARETURN)
-
-                    this.visitLabel(label2)
-                    this.visitLocalVariable("name", "Ljava/lang/String;", null, label0, label2, 0)
-                    this.visitLocalVariable("id", "Ljava/lang/String;", null, label0, label2, 1)
-                    this.visitLocalVariable("delegate", "L$biomeInjectionName\$ColorModifier;", null, label0, label2, 2)
+                    this.visitLocalVariable("this", "L$grassColorModifierMapped;", null, label0, label1, 0)
+                    this.visitLocalVariable("name", "Ljava/lang/String;", null, label0, label1, 1)
+                    this.visitLocalVariable("delegate", "L$biomeInjectionName\$ColorModifier;", null, label0, label1, 2)
 
                     this.visitMaxs(0, 0)
                     this.visitEnd()
@@ -356,7 +353,7 @@ class KiltEarlyRiser : Runnable {
                     return this.kilt$getDelegate().modifyGrassColor(x, z, grassColor);
                 }
                  */
-                run {
+                /*run {
                     val originalModifyColorMethod = classNode.methods.first { it.name == modifyColor }
                     classNode.methods.removeIf { it.name == modifyColor }
 
@@ -384,7 +381,7 @@ class KiltEarlyRiser : Runnable {
 
                     modifyColorMethod.visitMaxs(6, 6)
                     modifyColorMethod.visitEnd()
-                }
+                }*/
             }
 
             ClassTinkerers.addTransformation(biomeSpecialEffectsMapped) { classNode ->
