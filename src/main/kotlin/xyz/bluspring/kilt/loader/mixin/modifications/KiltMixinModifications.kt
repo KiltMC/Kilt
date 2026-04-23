@@ -38,10 +38,18 @@ object KiltMixinModifications {
             "net/minecraft/client/MouseHandler",
             listOf("turnPlayer", "turnPlayer(D)V"),
             mapOf(
-                ParamPair("D", 4) to Local(ordinal = 1),
-                ParamPair("D", 5) to Local(ordinal = 2),
-                ParamPair("D", 1) to Local(ordinal = 4),
-                ParamPair("D", 2) to Local(ordinal = 5),
+                LocalPair("D", Local(ordinal = 4)) to Local(ordinal = 1),
+                LocalPair("D", Local(ordinal = 5)) to Local(ordinal = 2),
+                LocalPair("D", Local(ordinal = 1)) to Local(ordinal = 4),
+                LocalPair("D", Local(ordinal = 2)) to Local(ordinal = 5),
+            )
+        ),
+        RetargetingLocalModifier(
+            // another Aeronautics fix
+            "net/minecraft/world/level/block/ComparatorBlock",
+            listOf("getInputSignal", "getInputSignal(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)I"),
+            mapOf(
+                LocalPair("Lnet/minecraft/core/Direction;", Local(name = arrayOf("direction"))) to Local(ordinal = 0)
             )
         )
     )
