@@ -39,11 +39,6 @@ public abstract class ComposterBlockInject extends Block implements ComposterBlo
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         super.onRemove(state, level, pos, newState, movedByPiston);
-    }
-
-    @SuppressWarnings({"UnresolvedMixinReference", "MixinAnnotationTarget"})
-    @Inject(method = "onRemove(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V", at = @At("TAIL"))
-    private void kilt$invalidateComposterCapabilities2(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston, CallbackInfo ci) {
         if (!state.is(newState.getBlock())) {
             level.invalidateCapabilities(pos);
         }
