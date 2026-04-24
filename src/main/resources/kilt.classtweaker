@@ -1637,6 +1637,9 @@ transitive-inject-interface net/minecraft/data/DataGenerator xyz/bluspring/kilt/
 transitive-inject-interface net/minecraft/data/loot/BlockLootSubProvider xyz/bluspring/kilt/injections/data/loot/BlockLootSubProviderInjection
 transitive-inject-interface net/minecraft/data/loot/LootTableProvider xyz/bluspring/kilt/injections/data/loot/LootTableProviderInjection
 transitive-inject-interface net/minecraft/data/recipes/RecipeProvider xyz/bluspring/kilt/injections/data/recipes/RecipeProviderInjection
+transitive-inject-interface net/minecraft/data/recipes/ShapedRecipeBuilder xyz/bluspring/kilt/injections/data/recipes/ShapedRecipeBuilderInjection
+transitive-inject-interface net/minecraft/data/recipes/ShapelessRecipeBuilder xyz/bluspring/kilt/injections/data/recipes/ShapelessRecipeBuilderInjection
+transitive-inject-interface net/minecraft/data/recipes/SimpleCookingRecipeBuilder xyz/bluspring/kilt/injections/data/recipes/SimpleCookingRecipeBuilderInjection
 transitive-inject-interface net/minecraft/data/registries/VanillaRegistries xyz/bluspring/kilt/injections/data/registries/VanillaRegistriesInjection
 transitive-inject-interface net/minecraft/data/tags/TagsProvider xyz/bluspring/kilt/injections/data/tags/TagsProviderInjection
 transitive-inject-interface net/minecraft/data/worldgen/BootstrapContext xyz/bluspring/kilt/injections/data/worldgen/BootstrapContextInjection
@@ -1744,6 +1747,8 @@ transitive-inject-interface net/minecraft/world/level/biome/BiomeGenerationSetti
 transitive-inject-interface net/minecraft/world/level/biome/Biome xyz/bluspring/kilt/injections/world/level/biome/BiomeInjection
 transitive-inject-interface net/minecraft/world/level/biome/MobSpawnSettings xyz/bluspring/kilt/injections/world/level/biome/MobSpawnSettingsInjection
 transitive-inject-interface net/minecraft/world/level/block/Block xyz/bluspring/kilt/injections/world/level/block/BlockInjection
+transitive-inject-interface net/minecraft/world/level/block/ComposterBlock xyz/bluspring/kilt/injections/world/level/block/ComposterBlockInjection
+transitive-inject-interface net/minecraft/world/level/block/CropBlock xyz/bluspring/kilt/injections/world/level/block/CropBlockInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity xyz/bluspring/kilt/injections/world/level/block/entity/AbstractFurnaceBlockEntityInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/BlockEntity xyz/bluspring/kilt/injections/world/level/block/entity/BlockEntityInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/BlockEntityType xyz/bluspring/kilt/injections/world/level/block/entity/BlockEntityTypeInjection

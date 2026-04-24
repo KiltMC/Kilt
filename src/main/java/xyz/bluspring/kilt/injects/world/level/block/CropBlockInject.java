@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+import xyz.bluspring.kilt.injections.world.level.block.CropBlockInjection;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 @Mixin(CropBlock.class)
-public abstract class CropBlockInject extends BushBlock {
+public abstract class CropBlockInject extends BushBlock implements CropBlockInjection {
     @Shadow
     protected static float getGrowthSpeed(Block block, BlockGetter level, BlockPos pos) {
         throw new UnsupportedOperationException("Implemented via mixin");
@@ -62,7 +63,7 @@ public abstract class CropBlockInject extends BushBlock {
         CommonHooks.fireCropGrowPost(level, pos, state);
     }
 
-    @Unique private static final ThreadLocal<BlockState> kilt$currentState = new ThreadLocal<>();
+    @Unique private static final ThreadLocal<BlockState> kilt$currentState = CropBlockInjection.kilt$currentState;
 
     @CreateStatic
     private static float getGrowthSpeed(BlockState state, BlockGetter level, BlockPos pos) {
