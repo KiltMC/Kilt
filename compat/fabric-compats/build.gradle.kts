@@ -24,7 +24,7 @@ dependencies {
     modCompileOnly("de.siphalor:amecsapi-1.20:${property("amecsapi_version")}") {
         isTransitive = false
     }
-    modCompileOnly("de.siphalor.amecs.amecs-key-modifiers:amecs-key-modifiers-mc1.20.0:${property("amecs_key_modifiers_version")}") {
+    modCompileOnly("de.siphalor.amecs.amecs-key-modifiers:amecs-key-modifiers-mc1.21.1:${property("amecs_key_modifiers_version")}") {
         isTransitive = false
     }
     modCompileOnly("dev.emi:emi-fabric:${property("emi_version")}")
