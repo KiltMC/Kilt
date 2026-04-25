@@ -4,8 +4,8 @@ import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import de.siphalor.amecs.key_modifiers.api.AmecsKeyModifierCombination;
-import net.minecraftforge.client.extensions.IForgeKeyMapping;
-import net.minecraftforge.client.settings.KeyModifier;
+import net.neoforged.neoforge.client.extensions.IKeyMappingExtension;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +24,7 @@ public abstract class KeyMappingMixin {
     private void kilt$amecs_key_modifiers$handleForgeModifiers(CallbackInfoReturnable<AmecsKeyModifierCombination> cir) {
         var keyModifiers = cir.getReturnValue();
 
-        var forgeModifier = ((IForgeKeyMapping) this).getKeyModifier();
+        var forgeModifier = ((IKeyMappingExtension) this).getKeyModifier();
         if (forgeModifier != KeyModifier.NONE) {
             keyModifiers.unset();
 
