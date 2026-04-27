@@ -329,7 +329,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
                 dependencies.add(ModDependency(
                     id = depId,
-                    type = when (neoDep.getConfigElement<String>("type").orElse("optional")) {
+                    type = when (neoDep.getConfigElement<String>("type").orElse("optional").lowercase()) {
                         "required" -> ModDependency.Type.REQUIRED
                         "optional" -> ModDependency.Type.OPTIONAL
                         "discouraged" -> ModDependency.Type.DISCOURAGED
