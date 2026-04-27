@@ -35,7 +35,7 @@ public abstract class LootDataTypeInject<T> implements LootDataTypeInjection<T> 
     @Shadow
     public abstract Codec<T> codec();
 
-    @ModifyExpressionValue(method = "<clinit>", at = @At(value = "NEW", target = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/storage/loot/LootDataType$Validator;)Lnet/minecraft/world/level/storage/loot/LootDataType;"))
+    @ModifyExpressionValue(method = "<clinit>", at = @At(value = "NEW", target = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/storage/loot/LootDataType$Validator;)Lnet/minecraft/world/level/storage/loot/LootDataType;", ordinal = 2))
     private static LootDataType<LootTable> kilt$attachExtendedLootTableData(LootDataType<LootTable> original) {
         RecordMixinRefMaps.EXTENDED_LOOT_DATA_TYPE.put(original, new RecordMixinRefMaps.ExtendedLootDataType<>(LootTable.EMPTY, ConditionalOps.createConditionalCodec(original.codec()), (table, id) -> {
             try {
