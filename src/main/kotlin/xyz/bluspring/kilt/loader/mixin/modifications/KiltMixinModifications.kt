@@ -343,6 +343,29 @@ object KiltMixinModifications {
     val WRAP_OPERATION = register(
         WrapOperation::class.java,
 
+        // Fix Genesis ServerLevelMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerLevel",
+            methods = listOf("tick"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.forgeinjects.server.level.ServerLevelInject",
+                    "name" to $$"kilt$useLevelDaytime",
+                    "prefix" to "redirect"
+                )),
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"))
+                ))
+            )
+        ),
+
         // Fixes Create's ProjectileUtilMixin
         ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/entity/projectile/ProjectileUtil",
