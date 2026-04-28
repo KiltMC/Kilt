@@ -570,6 +570,7 @@
         "client.KeyboardHandlerInject",
         "client.KeyMappingInject",
         "client.MinecraftInject",
+        "client.MinecraftInject$Early",
         "client.MouseHandlerInject",
         "client.OptionsInject",
         "client.RecipeBookCategoriesInject",
@@ -751,5 +752,5 @@
     },
     "overwrites": {
         "conformVisibility": true
-  }
+    }
 }
