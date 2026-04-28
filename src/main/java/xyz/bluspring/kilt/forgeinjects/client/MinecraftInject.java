@@ -12,7 +12,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import com.mojang.realmsclient.client.RealmsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Timer;
@@ -29,7 +28,6 @@ import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -368,53 +366,5 @@ public abstract class MinecraftInject implements MinecraftInjection, IForgeMinec
     @Override
     public ForgeGui kilt$getForgeGui() {
         return (ForgeGui) this.kilt$forgeGui;
-    }
-
-    // Use lower priority for screen delay. This gives priority to Fabric mods,
-    // allowing them to set their menu screen without interference from the Forge event.
-    @Mixin(value = Minecraft.class, priority = 500)
-    public static class Early {
-
-        @Unique
-        private Runnable kilt$setScreen;
-
-        @WrapOperation(
-                method = "<init>",
-                at = @At(
-                        value = "INVOKE",
-                        target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"
-                )
-        )
-        public void kilt$delaySettingInitialBanScreen(Minecraft instance, Screen guiScreen, Operation<Void> original) {
-            kilt$setScreen = () -> original.call(instance, guiScreen);
-        }
-
-        @WrapOperation(
-                method = "<init>",
-                at = @At(
-                        value = "INVOKE",
-                        target = "Lnet/minecraft/client/Minecraft;setInitialScreen(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig$QuickPlayData;)V"
-                )
-        )
-        public void kilt$delaySettingInitialScreen(
-                Minecraft instance, RealmsClient realmsClient, ReloadInstance reloadInstance,
-                GameConfig.QuickPlayData quickPlayData, Operation<Void> original
-        ) {
-            kilt$setScreen = () -> original.call(instance, realmsClient, reloadInstance, quickPlayData);
-        }
-
-        @Inject(
-                method = "method_29338",
-                at = @At(
-                        value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;onGameLoadFinished()V"
-                ),
-                order = 1001 // Needs to be after forge load.
-        )
-        private void kilt$setScreenAfterLoading(CallbackInfo ci) {
-            if (kilt$setScreen != null) {
-                kilt$setScreen.run();
-                kilt$setScreen = null;
-            }
-        }
     }
 }
