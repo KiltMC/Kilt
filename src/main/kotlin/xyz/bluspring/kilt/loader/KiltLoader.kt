@@ -479,9 +479,26 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         }
     }
 
+    /**
+     * The natural order of Forge mods (if no dependencies are marked) is whichever order they get placed in a hash map.
+     * See: https://github.com/MinecraftForge/MinecraftForge/blob/1.20.1/fmlloader/src/main/java/net/minecraftforge/fml/loading/UniqueModListBuilder.java#L42
+     * We want to use this order since some Forge mods might not declare their dependencies properly and just blindly rely on the default sorting.
+     */
+    fun getForgeNaturalOrder(): Comparator<ForgeMod> {
+        val modOrder = hashMapOf<String, Int>()
+        for (mod in this.mods) {
+            modOrder[mod.modId] = 0
+        }
+        var index = 0
+        for (modEntry in modOrder) {
+            modEntry.setValue(index++)
+        }
+        return Comparator.comparing { modOrder[it.modId] ?: 0 }
+    }
+
     override fun finishModScanning() {
         val graph = this.mods.buildGraph()
-        val sorted = TopologicalSort.topologicalSort(graph, null)
+        val sorted = TopologicalSort.topologicalSort(graph, getForgeNaturalOrder())
 
         // Sort the mods, otherwise stuff breaks.
         val modsRef = this.mods as MutableList<ForgeMod>
