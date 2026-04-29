@@ -280,7 +280,7 @@ object MixinRemapper {
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
-    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper): String {
+    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper, isTarget: Boolean = true): String {
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()
@@ -400,7 +400,27 @@ object MixinRemapper {
                         return "$mappedClassDescriptor$mappedName".breakpoint()
                 }
 
-                return KiltRemapper.srgMappedMethods[member]!!.values.first()
+                if (isTarget) {
+                    // If we're dealing with target methods, we can probably just use the first-name remap.
+                    return KiltRemapper.srgMappedMethods[member]!!.values.first()
+                }
+            }
+
+            if (!isTarget) {
+                // Can't really do first-name remaps safely here, we need to iterate through the class targets
+                // to figure out which method we *are* targeting.
+                for (target in classTargets) {
+                    val currentClass = remapper.getClass(target).orElse(null) ?: continue
+
+                    for (methodOpt in currentClass.methods) {
+                        val method = methodOpt.orElse(null) ?: continue
+
+                        if (method.name == member) {
+                            // oh hey look, we found one
+                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}"
+                        }
+                    }
+                }
             }
         } else if (classDescriptor.isBlank()) {
             // If the class descriptor is blank, we're going to struggle to find any information we need, but we can still use some information to find stuff.
