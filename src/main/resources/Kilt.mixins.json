@@ -121,7 +121,8 @@
     "compat.ratatouille.ShaderInstanceMixin",
     "compat.sodium.ItemRendererMixin",
     "compat.sodium.LevelRendererMixin",
-    "debug.PoseStackMixin"
+    "debug.PoseStackMixin",
+    "workarounds.early_screen_delay.MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1
