@@ -54,7 +54,7 @@ object MixinRemapper {
             return annotationNode
         }
 
-        fun tryRemapMixinRefmap(value: String): String {
+        fun tryRemapMixinRefmap(value: String, isTarget: Boolean = true): String {
             // Do NOT remap this - this typically indicates MixinSquared or other extensions.
             if (value.startsWith("@"))
                 return value
@@ -64,13 +64,13 @@ object MixinRemapper {
                     return value
 
                 val original = mixinMapping[value]!!
-                val mapped = remapTargetString(original, classTargets, remapper)
+                val mapped = remapTargetString(original, classTargets, remapper, isTarget)
 
                 mixinMapping[value] = mapped
 
                 value
             } else {
-                val mapped = remapTargetString(value, classTargets, remapper)
+                val mapped = remapTargetString(value, classTargets, remapper, isTarget)
 
                 if (refmap != null) {
                     mixinMapping[value] = mapped
@@ -88,10 +88,10 @@ object MixinRemapper {
             val methodValue = values["method"]!!
 
             if (methodValue is String) {
-                values["method"] = tryRemapMixinRefmap(methodValue)
+                values["method"] = tryRemapMixinRefmap(methodValue, false)
             } else if (methodValue is List<*>) {
                 values["method"] = methodValue.map {
-                    tryRemapMixinRefmap(it as String)
+                    tryRemapMixinRefmap(it as String, false)
                 }
             }
         }
