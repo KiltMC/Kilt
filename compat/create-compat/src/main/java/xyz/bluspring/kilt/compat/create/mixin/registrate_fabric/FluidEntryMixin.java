@@ -7,6 +7,8 @@ import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 
 @IfModLoaded("registrate-fabric")
@@ -19,5 +21,10 @@ public abstract class FluidEntryMixin extends RegistryEntry {
 
     public FluidType getType() {
         return ((Fluid) get()).forge$getFluidType();
+    }
+
+    @Intrinsic
+    public ForgeFlowingFluid getSource() {
+        return (ForgeFlowingFluid) ((ForgeFlowingFluid) get()).getSource();
     }
 }
