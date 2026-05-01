@@ -39,6 +39,7 @@
     "jei.FabricPluginFinderMixin",
     "jei.FluidStackMixin",
     "jei.TypedIngredientMixin",
+    "lodestone.LodestoneShaderRegistryMixin",
     "mkb.IKeyBindingMixin",
     "mkb.IKeyConflictContextMixin",
     "mkb.KeyConflictContextMixin",

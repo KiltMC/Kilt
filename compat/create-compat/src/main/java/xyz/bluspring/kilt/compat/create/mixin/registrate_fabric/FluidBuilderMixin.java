@@ -1,14 +1,12 @@
 package xyz.bluspring.kilt.compat.create.mixin.registrate_fabric;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.builders.AbstractBuilder;
-import com.tterrag.registrate.builders.Builder;
-import com.tterrag.registrate.builders.BuilderCallback;
-import com.tterrag.registrate.builders.FluidBuilder;
+import com.tterrag.registrate.builders.*;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.FluidEntry;
@@ -17,6 +15,8 @@ import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidType;
@@ -60,6 +60,10 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
     private NonNullSupplier<? extends SimpleFlowableFluid> source;
     @Mutable @Shadow @Final
     private List<TagKey<Fluid>> tags;
+
+    @Shadow
+    public abstract <I extends BucketItem> ItemBuilder<I, FluidBuilder<?, P>> bucket(NonNullBiFunction<? extends SimpleFlowableFluid, Item.Properties, ? extends I> factory);
+
     @Nullable
     private final NonNullSupplier<FluidType> fluidType;
     private NonNullConsumer<FluidType.Properties> typeProperties = NonNullConsumer.noop();
@@ -113,6 +117,42 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
 
         String bucketName = this.bucketName;
         this.kilt$fluidProperties = FluidBuilderHelper.createPropertiesConsumer(owner, name, bucketName);
+    }
+
+    @Intrinsic
+    public FluidBuilder<?, P> properties(NonNullConsumer<FluidType.Properties> cons) {
+        this.typeProperties = this.typeProperties.andThen(cons);
+        //noinspection unchecked
+        return (FluidBuilder<?, P>) (Object) this;
+    }
+
+    @WrapMethod(method = "fluidProperties")
+    public FluidBuilder<?, P> kilt$fluidProperties(NonNullConsumer<SimpleFlowableFluid.Properties> cons, Operation<FluidBuilder<?, P>> original) {
+        if (kilt$isForge) {
+            //noinspection unchecked
+            kilt$fluidProperties.andThen((NonNullConsumer<ForgeFlowingFluid.Properties>) (Object) cons);
+            //noinspection unchecked
+            return (FluidBuilder<?, P>) (Object) this;
+        }
+        return original.call(cons);
+    }
+
+    @WrapMethod(method = "bucket()Lcom/tterrag/registrate/builders/ItemBuilder;")
+    public ItemBuilder<BucketItem, FluidBuilder<?, P>> kilt$bucketFix(Operation<ItemBuilder<BucketItem, FluidBuilder<?, P>>> original) {
+        if (kilt$isForge) { // Needed to avoid a ClassCastException.
+            NonNullBiFunction<? extends ForgeFlowingFluid, Item.Properties, BucketItem> function = BucketItem::new;
+            //noinspection unchecked
+            return bucket((NonNullBiFunction<? extends SimpleFlowableFluid, Item.Properties, BucketItem>) (Object) function);
+        }
+        return original.call();
+    }
+
+    @WrapMethod(method = "lambda$bucket$11")
+    public BucketItem kilt$bucketLambdaFix(NonNullBiFunction factory, Item.Properties p, Operation<BucketItem> original) {
+        if (kilt$isForge) { // Needed to avoid a ClassCastException.
+            return (BucketItem) factory.apply(this.source.get(), p);
+        }
+        return original.call(factory, p);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))

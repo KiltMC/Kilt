@@ -264,6 +264,23 @@ object KiltMixinModifications {
     val MODIFY_VARIABLE = register(
         ModifyVariable::class.java,
 
+        // Fixes Genesis LevelRendererMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/LevelRenderer",
+            methods = listOf("renderSnowAndRain"),
+            variables = mapOf(
+                "at" to at("STORE", ordinal = 0),
+                "name" to listOf("f")
+            ),
+            replaceWith = listOf(
+                createAnnotation(ModifyVariable::class.java, mapOf(
+                    "method" to listOf("renderSnowAndRain"),
+                    "at" to at("STORE", ordinal = 0),
+                    "ordinal" to 1
+                ))
+            )
+        ),
+
         // Fixes the Aether's BossHealthOverlay
         ReplacedAnnotationsModifier(
             owner = "net/minecraft/client/gui/components/BossHealthOverlay",
@@ -342,6 +359,29 @@ object KiltMixinModifications {
 
     val WRAP_OPERATION = register(
         WrapOperation::class.java,
+
+        // Fix Genesis ServerLevelMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerLevel",
+            methods = listOf("tick"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.forgeinjects.server.level.ServerLevelInject",
+                    "name" to $$"kilt$useLevelDaytime",
+                    "prefix" to "redirect"
+                )),
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"))
+                ))
+            )
+        ),
 
         // Fixes Create's ProjectileUtilMixin
         ReplacedAnnotationsModifier(
