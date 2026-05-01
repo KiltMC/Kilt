@@ -264,6 +264,23 @@ object KiltMixinModifications {
     val MODIFY_VARIABLE = register(
         ModifyVariable::class.java,
 
+        // Fixes Genesis LevelRendererMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/LevelRenderer",
+            methods = listOf("renderSnowAndRain"),
+            variables = mapOf(
+                "at" to at("STORE", ordinal = 0),
+                "name" to listOf("f")
+            ),
+            replaceWith = listOf(
+                createAnnotation(ModifyVariable::class.java, mapOf(
+                    "method" to listOf("renderSnowAndRain"),
+                    "at" to at("STORE", ordinal = 0),
+                    "ordinal" to 1
+                ))
+            )
+        ),
+
         // Fixes the Aether's BossHealthOverlay
         ReplacedAnnotationsModifier(
             owner = "net/minecraft/client/gui/components/BossHealthOverlay",
