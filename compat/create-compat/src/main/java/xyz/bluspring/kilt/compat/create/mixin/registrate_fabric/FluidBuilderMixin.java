@@ -139,7 +139,7 @@ public abstract class FluidBuilderMixin<T extends ForgeFlowingFluid, P> extends 
 
     @WrapMethod(method = "bucket()Lcom/tterrag/registrate/builders/ItemBuilder;")
     public ItemBuilder<BucketItem, FluidBuilder<?, P>> kilt$bucketFix(Operation<ItemBuilder<BucketItem, FluidBuilder<?, P>>> original) {
-        if (kilt$isForge) {
+        if (kilt$isForge) { // Needed to avoid a ClassCastException.
             NonNullBiFunction<? extends ForgeFlowingFluid, Item.Properties, BucketItem> function = BucketItem::new;
             //noinspection unchecked
             return bucket((NonNullBiFunction<? extends SimpleFlowableFluid, Item.Properties, BucketItem>) (Object) function);

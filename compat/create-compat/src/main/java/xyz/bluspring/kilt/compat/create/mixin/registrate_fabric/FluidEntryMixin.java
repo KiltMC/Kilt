@@ -51,7 +51,7 @@ public abstract class FluidEntryMixin extends RegistryEntry {
 
     @WrapMethod(method = "getBucket")
     public <I extends Item> Optional<I> kilt$getBucket(Operation<Optional<I>> original) {
-        if (kilt$isForge) {
+        if (kilt$isForge) { // Needed to avoid a ClassCastException.
             return Optional.ofNullable((I) ((ForgeFlowingFluid) get()).getBucket());
         }
         return original.call();
