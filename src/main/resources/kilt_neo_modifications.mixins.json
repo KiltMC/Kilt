@@ -11,7 +11,7 @@
     "injectors": {
         "defaultRequire": 1
     },
-    "mixinPriority": 999,
+    "mixinPriority": 950,
     "mixinextras": {
         "minVersion": "0.5.0"
     },
