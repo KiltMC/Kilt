@@ -17,7 +17,7 @@ import top.theillusivec4.curios.common.data.CuriosSlotManager;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-@Mixin(value = DataLoaderBase.class, priority = 999, remap = false)
+@Mixin(value = DataLoaderBase.class, priority = 950, remap = false)
 public abstract class DataLoaderBaseMixin {
     // Blodhgarm told me to do this so I'm doing it
     @Inject(method = "registerListeners", at = @At("HEAD"))
