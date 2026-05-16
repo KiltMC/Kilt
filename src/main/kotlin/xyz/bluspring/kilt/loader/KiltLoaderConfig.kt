@@ -30,13 +30,14 @@ data class KiltLoaderConfig(
                 Codec.STRING.listOf()
                     .optionalFieldOf("force_disabled_mods", emptyList())
                     .forGetter(KiltLoaderConfig::forceDisabledModIds),
+                Codec.unboundedMap(
+                    Codec.STRING,
                     Codec.unboundedMap(
                         Codec.STRING,
-                        Codec.unboundedMap(
-                            Codec.STRING,
-                            ModDependencyOverride.CODEC
-                        )
-                    ).optionalFieldOf("dependency_overrides", emptyMap())
+                        ModDependencyOverride.CODEC
+                    )
+                )
+                    .optionalFieldOf("dependency_overrides", emptyMap())
                     .forGetter(KiltLoaderConfig::dependencyOverrides)
             )
                 .apply(instance, ::KiltLoaderConfig)
@@ -51,16 +52,21 @@ data class KiltLoaderConfig(
     ) {
         companion object {
             val VERSION_CONSTRAINT_CODEC: Codec<VersionRange> = Codec.STRING.xmap(
-                { VersionRange.createFromVersionSpec(it) },
-                {it.toString()}
+                VersionRange::createFromVersionSpec,
+                VersionRange::toString
             )
             val CODEC: Codec<ModDependencyOverride> = RecordCodecBuilder.create { instance ->
                 instance.group(
-                    VERSION_CONSTRAINT_CODEC.optionalFieldOf("version").forGetter { it.version },
-                    EnumUtils.createThrowingFallbackCodec<Type>().optionalFieldOf("type").forGetter { it.type },
-                    EnumUtils.createThrowingFallbackCodec<ModEnvironment>().optionalFieldOf("side").forGetter { it.side },
-                    EnumUtils.createThrowingFallbackCodec<IModInfo.Ordering>().optionalFieldOf("ordering").forGetter { it.ordering }
-                ).apply(instance, ::ModDependencyOverride)
+                    VERSION_CONSTRAINT_CODEC.optionalFieldOf("version")
+                        .forGetter(ModDependencyOverride::version),
+                    EnumUtils.createThrowingFallbackCodec<Type>().optionalFieldOf("type")
+                        .forGetter(ModDependencyOverride::type),
+                    EnumUtils.createThrowingFallbackCodec<ModEnvironment>().optionalFieldOf("side")
+                        .forGetter(ModDependencyOverride::side),
+                    EnumUtils.createThrowingFallbackCodec<IModInfo.Ordering>().optionalFieldOf("ordering")
+                        .forGetter(ModDependencyOverride::ordering)
+                )
+                    .apply(instance, ::ModDependencyOverride)
             }
         }
     }

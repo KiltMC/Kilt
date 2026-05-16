@@ -60,7 +60,6 @@ import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
@@ -374,27 +373,25 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             val dependencyOverrides = config.dependencyOverrides[modId]
 
             if (dependencyOverrides != null) {
-                val newDependencies = mutableMapOf<String, ModDependency>()
+                val modifiedDependencies = mutableMapOf<String, ModDependency>()
                 for (dep in dependencies) {
-                    newDependencies[dep.id] = dep
+                    modifiedDependencies[dep.id] = dep
                 }
                 for (dep in dependencyOverrides) {
-                    val prevDep = newDependencies[dep.key]
+                    val prevDep = modifiedDependencies[dep.key]
                     val additionalData = prevDep?.additionalData ?: mapOf()
-                    newDependencies[dep.key] = ModDependency(
+                    modifiedDependencies[dep.key] = ModDependency(
                         id = prevDep?.id ?: dep.key,
                         constraint = dep.value.version.map { ForgeVersionConstraint(it) as VersionConstraint }.orElse(prevDep?.constraint ?: ForgeVersionConstraint(VersionRange.createFromVersionSpec("(,1.0],[1.0,)"))),
                         type = dep.value.type.orElse(prevDep?.type ?: ModDependency.Type.OPTIONAL),
                         side = dep.value.side.orElse(prevDep?.side ?: ModEnvironment.BOTH),
-                        additionalData = if (dep.value.ordering.isPresent) {
-                            additionalData.plus(Pair("ordering", dep.value.ordering.get()))
-                        } else {
-                            additionalData
-                        }
+                        additionalData = dep.value.ordering.map {
+                            additionalData + ("ordering" to it)
+                        }.orElse(additionalData)
                     )
                 }
                 dependencies.clear()
-                dependencies.addAll(newDependencies.values)
+                dependencies.addAll(modifiedDependencies.values)
             }
 
             val definition = ModDefinition(
