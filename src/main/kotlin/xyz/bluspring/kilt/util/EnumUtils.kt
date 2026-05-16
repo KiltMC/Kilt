@@ -2,10 +2,13 @@ package xyz.bluspring.kilt.util
 
 import com.chocohead.mm.CasualStreamHandler
 import com.chocohead.mm.api.ClassTinkerers
+import com.mojang.serialization.Codec
 import net.minecraftforge.common.IExtensibleEnum
 import net.minecraftforge.fml.unsafe.UnsafeHacks
 import xyz.bluspring.kilt.Kilt
+import java.util.Locale.getDefault
 import java.util.function.Consumer
+import kotlin.text.uppercase
 
 object EnumUtils {
     @JvmStatic
@@ -47,6 +50,21 @@ object EnumUtils {
             Kilt.logger.error("Failed to dynamically load class $name!")
             e.printStackTrace()
             null
+        }
+    }
+
+    @JvmStatic
+    inline fun <reified T : Enum<T>> createThrowingFallbackCodec(ignoreCase: Boolean = true): Codec<T> {
+        return if (ignoreCase) {
+            Codec.STRING.xmap(
+                { enumValueOf<T>(it.uppercase()) },
+                { it.name.lowercase(getDefault()) }
+            )
+        } else {
+            Codec.STRING.xmap(
+                { enumValueOf<T>(it) },
+                { it.name }
+            )
         }
     }
 }

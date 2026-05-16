@@ -39,6 +39,7 @@ import net.minecraftforge.forgespi.language.MavenVersionAdapter
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.ModFileFactory
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import thedarkcolour.kotlinforforge.KotlinModContainer
@@ -56,6 +57,7 @@ import xyz.bluspring.knit.loader.KnitModLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
+import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -367,6 +369,32 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                         "ordering" to IModInfo.Ordering.valueOf(forgeDep.getConfigElement<String>("ordering").orElse("NONE"))
                     )
                 ))
+            }
+
+            val dependencyOverrides = config.dependencyOverrides[modId]
+
+            if (dependencyOverrides != null) {
+                val newDependencies = mutableMapOf<String, ModDependency>()
+                for (dep in dependencies) {
+                    newDependencies[dep.id] = dep
+                }
+                for (dep in dependencyOverrides) {
+                    val prevDep = newDependencies[dep.key]
+                    val additionalData = prevDep?.additionalData ?: mapOf()
+                    newDependencies[dep.key] = ModDependency(
+                        id = prevDep?.id ?: dep.key,
+                        constraint = dep.value.version.map { ForgeVersionConstraint(it) as VersionConstraint }.orElse(prevDep?.constraint ?: ForgeVersionConstraint(VersionRange.createFromVersionSpec("(,1.0],[1.0,)"))),
+                        type = dep.value.type.orElse(prevDep?.type ?: ModDependency.Type.OPTIONAL),
+                        side = dep.value.side.orElse(prevDep?.side ?: ModEnvironment.BOTH),
+                        additionalData = if (dep.value.ordering.isPresent) {
+                            additionalData.plus(Pair("ordering", dep.value.ordering.get()))
+                        } else {
+                            additionalData
+                        }
+                    )
+                }
+                dependencies.clear()
+                dependencies.addAll(newDependencies.values)
             }
 
             val definition = ModDefinition(
