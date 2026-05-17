@@ -343,7 +343,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                     side = when (neoDep.getConfigElement<String>("side").orElse("BOTH")) {
                         "CLIENT" -> ModEnvironment.CLIENT
                         "SERVER" -> ModEnvironment.SERVER
-                        "BOTH" -> ModEnvironment.SERVER
+                        "BOTH" -> ModEnvironment.BOTH
                         else -> throw IllegalArgumentException("Invalid side ${neoDep.getConfigElement<String>("side")} provided while handling Forge mod file $fileName!")
                     },
 
