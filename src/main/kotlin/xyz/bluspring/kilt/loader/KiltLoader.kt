@@ -379,7 +379,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 }
                 for (dep in dependencyOverrides) {
                     val prevDep = modifiedDependencies[dep.key]
-                    val additionalData = prevDep?.additionalData ?: mapOf()
+                    val additionalData = prevDep?.additionalData ?: mapOf("ordering" to IModInfo.Ordering.NONE)
                     modifiedDependencies[dep.key] = ModDependency(
                         id = prevDep?.id ?: dep.key,
                         constraint = dep.value.version.map { ForgeVersionConstraint(it) as VersionConstraint }.orElse(prevDep?.constraint ?: ForgeVersionConstraint(VersionRange.createFromVersionSpec("(,1.0],[1.0,)"))),
