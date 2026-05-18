@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
+import com.mojang.serialization.JsonOps
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import cpw.mods.niofs.union.KiltUnionFileSystemHelper
@@ -38,6 +39,7 @@ import net.neoforged.neoforgespi.language.IModInfo
 import net.neoforged.neoforgespi.language.MavenVersionAdapter
 import net.neoforged.neoforgespi.language.ModFileScanData
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import xyz.bluspring.kilt.Kilt
@@ -57,8 +59,10 @@ import xyz.bluspring.knit.loader.KnitModLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
+import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -69,6 +73,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     private val loadedModIds = mutableSetOf<String>()
 
     private val environment = KiltEnvironment()
+    var config = KiltLoaderConfig()
 
     // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
     // use the same mod ID.
@@ -108,6 +113,21 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             if (path.isPresent && path.orElseThrow().isDirectory()) {
                 Kilt.logger.warn("Kilt: Fabric mod ${container.metadata.name} (${container.metadata.id}) is likely repackaging NeoForge classes! This may lead to a game crash!")
             }
+        }
+
+        this.loadConfig()
+    }
+
+    fun loadConfig() {
+        if (KiltLoaderConfig.PATH.exists()) {
+            KiltLoaderConfig.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(KiltLoaderConfig.PATH.reader(options = arrayOf(StandardOpenOption.READ))))
+                .resultOrPartial()
+                .map { it.first }
+                .ifPresentOrElse({
+                    this.config = it
+                }) {
+                    Kilt.logger.error("Failed to load config!")
+                }
         }
     }
 
@@ -296,6 +316,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 continue
             }
 
+            if (this.config.forceDisabledModIds.contains(modId)) {
+                Kilt.logger.info("Mod ID $modId was detected to be forcefully disabled in the config, skipping.")
+                continue
+            }
+
             val modVersion = NeoForgeModVersion(DefaultArtifactVersion(
                 // Forge custom-replaces mod versions with string templates, so we need to handle that.
                 metadata.getConfigElement<String>("version").orElse("1")
@@ -363,6 +388,30 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 mixinConfigs.add(ModDefinition.MixinConfig(
                     mixinConfig.getConfigElement<String>("config").orElse(null) ?: continue
                 ))
+            }
+
+            val dependencyOverrides = config.dependencyOverrides[modId]
+
+            if (dependencyOverrides != null) {
+                val modifiedDependencies = mutableMapOf<String, ModDependency>()
+                for (dep in dependencies) {
+                    modifiedDependencies[dep.id] = dep
+                }
+                for (dep in dependencyOverrides) {
+                    val prevDep = modifiedDependencies[dep.key]
+                    val additionalData = prevDep?.additionalData ?: mapOf("ordering" to IModInfo.Ordering.NONE)
+                    modifiedDependencies[dep.key] = ModDependency(
+                        id = prevDep?.id ?: dep.key,
+                        constraint = dep.value.version.map { NeoForgeVersionConstraint(it) as VersionConstraint }.orElse(prevDep?.constraint ?: NeoForgeVersionConstraint(VersionRange.createFromVersionSpec("(,1.0],[1.0,)"))),
+                        type = dep.value.type.orElse(prevDep?.type ?: ModDependency.Type.OPTIONAL),
+                        side = dep.value.side.orElse(prevDep?.side ?: ModEnvironment.BOTH),
+                        additionalData = dep.value.ordering.map {
+                            additionalData + ("ordering" to it)
+                        }.orElse(additionalData)
+                    )
+                }
+                dependencies.clear()
+                dependencies.addAll(modifiedDependencies.values)
             }
 
             val definition = ModDefinition(
