@@ -80,6 +80,7 @@
     "resources.RegistryOpsAccessor",
     "server.level.TicketAccessor",
     "workarounds.ICommonPacketListenerMixin",
+    "workarounds.MutableDataComponentHolderMixin",
     "workarounds.ServerCommonPacketListenerImplMixin",
     "workarounds.ServerConfigurationPacketListenerMixin",
     "world.inventory.GrindstoneMenuAccessor",
