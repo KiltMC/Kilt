@@ -7,8 +7,8 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.capability.IFluidHandler
-import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toDroplets
-import xyz.bluspring.kilt.compat.transfer.fluid.FluidTransferUtils.toMillibuckets
+import xyz.bluspring.kilt.util.neoforge.fluid.FluidTransferUtils.toDroplets
+import xyz.bluspring.kilt.util.neoforge.fluid.FluidTransferUtils.toMillibuckets
 
 class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     override fun iterator(): MutableIterator<StorageView<FluidVariant>> {
