@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.IPlantable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(value = BushBlock.class, priority = 950)
 public abstract class BushBlockInject extends Block implements IPlantable {
@@ -25,13 +26,19 @@ public abstract class BushBlockInject extends Block implements IPlantable {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/BushBlock;mayPlaceOn(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z")
     )
     private boolean kilt$checkCanSustain(
-            BushBlock instance, BlockState stateAtPos, BlockGetter level, BlockPos posBelow, Operation<Boolean> original,
+            BushBlock instance, BlockState stateBelow, BlockGetter level, BlockPos posBelow, Operation<Boolean> original,
             @Local(argsOnly = true) BlockState state
     ) {
-        if (state.getBlock() == this) {
-            return stateAtPos.canSustainPlant(level, posBelow, Direction.UP, this);
+        if (
+                state.getBlock() == this &&
+                KiltHelper.INSTANCE.hasMethodOverride(
+                        stateBelow.getBlock().getClass(), Block.class, "canSustainPlant",
+                        BlockState.class, BlockGetter.class, BlockPos.class, Direction.class, IPlantable.class
+                )
+        ) {
+            return stateBelow.canSustainPlant(level, posBelow, Direction.UP, this);
         }
-        return original.call(instance, stateAtPos, level, posBelow);
+        return original.call(instance, stateBelow, level, posBelow);
     }
 
     // Kilt: handled by Porting Lib
