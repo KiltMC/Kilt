@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-@Mixin(value = BushBlock.class, priority = 950)
+@Mixin(BushBlock.class)
 public abstract class BushBlockInject extends Block implements IPlantable {
     public BushBlockInject(Properties properties) {
         super(properties);
