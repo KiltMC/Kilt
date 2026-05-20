@@ -21,12 +21,12 @@ public abstract class ItemDisplayContextInject implements IExtensibleEnum, ItemD
     @Unique private Supplier<ItemDisplayContext> fallback = () -> null;
 
     @ReservedConstructor
-    private ItemDisplayContextInject(int id, String name) {
+    private ItemDisplayContextInject(String fieldName, int ordinal, int id, String name) {
     }
 
     @CreateInitializer
-    private ItemDisplayContextInject(int id, String name, @Nullable String fallbackName) {
-        this(id, name);
+    private ItemDisplayContextInject(String fieldName, int ordinal, int id, String name, @Nullable String fallbackName) {
+        this(fieldName, ordinal, id, name);
         this.isModded = true;
         this.fallback = fallbackName == null ? () -> null : Suppliers.memoize(() -> ItemDisplayContext.valueOf(fallbackName));
     }
