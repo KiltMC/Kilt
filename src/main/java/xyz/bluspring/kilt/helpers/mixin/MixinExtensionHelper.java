@@ -7,6 +7,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
+import org.spongepowered.asm.util.asm.MethodNodeEx;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
@@ -58,8 +59,11 @@ public final class MixinExtensionHelper {
         }
 
         for (MethodNode methodNode : classNode.methods) {
-             if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
+             var createInitializer = Annotations.getVisible(methodNode, CreateInitializer.class);
+             if (createInitializer != null) {
                  var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                 initializer.invisibleAnnotations = new ArrayList<>();
+                 initializer.invisibleAnnotations.add(createInitializer);
                  initializer.visitCode();
 
                  for (AbstractInsnNode insnNode : methodNode.instructions) {
@@ -153,6 +157,17 @@ public final class MixinExtensionHelper {
                  targetClass.methods.add(initializer);
             }
         }
+    }
+
+    private static String getMixinModifiedName(ClassNode targetClass, String originalName) {
+        for (var method : targetClass.methods) {
+            if (method instanceof MethodNodeEx ex) {
+                if (ex.getOriginalName().equals(originalName)) {
+                    return ex.name;
+                }
+            }
+        }
+        return originalName;
     }
 
     @ApiStatus.Internal
@@ -252,6 +267,46 @@ public final class MixinExtensionHelper {
         }
 
         for (MethodNode methodNode : targetClass.methods) {
+            var createInitializer = Annotations.getInvisible(methodNode, CreateInitializer.class);
+            if (createInitializer != null) {
+                methodNode.invisibleAnnotations.remove(createInitializer);
+                boolean wasFixed = false;
+                InsnList fixedInstructions = new InsnList();
+                for (AbstractInsnNode insnNode : methodNode.instructions) {
+                    if (insnNode instanceof InvokeDynamicInsnNode invokeDynamicInsn) {
+                        // Mixin injection might rename the lambda, we need to update the name accordingly.
+                        if (Opcodes.H_INVOKESTATIC == invokeDynamicInsn.bsm.getTag()
+                                && "metafactory".equals(invokeDynamicInsn.bsm.getName())
+                                && LAMBDA_CLASS_NAME.equals(invokeDynamicInsn.bsm.getOwner())
+                                && LAMBDA_METHOD_DESCRIPTOR.equals(invokeDynamicInsn.bsm.getDesc())
+                                && invokeDynamicInsn.bsmArgs != null
+                                && invokeDynamicInsn.bsmArgs.length == 3
+                                && invokeDynamicInsn.bsmArgs[1] instanceof Handle target
+                                && target.getOwner().equals(slashedTargetClassName)
+                        ) {
+                            var name = getMixinModifiedName(targetClass, target.getName());
+                            if (!name.equals(target.getName())) {
+                                fixedInstructions.add(new InvokeDynamicInsnNode(invokeDynamicInsn.name, invokeDynamicInsn.desc, invokeDynamicInsn.bsm,
+                                        invokeDynamicInsn.bsmArgs[0],
+                                        new Handle(target.getTag(), target.getOwner(), name, target.getDesc(), target.isInterface()),
+                                        invokeDynamicInsn.bsmArgs[2]
+                                ));
+                                wasFixed = true;
+                            } else {
+                                fixedInstructions.add(invokeDynamicInsn);
+                            }
+                        } else {
+                            fixedInstructions.add(invokeDynamicInsn);
+                        }
+                    } else {
+                        fixedInstructions.add(insnNode);
+                    }
+                }
+                if (wasFixed) {
+                    methodNode.instructions.clear();
+                    methodNode.instructions.add(fixedInstructions);
+                }
+            }
             if (extend != null && methodNode.name.equals("<init>")) {
                 if (!containsThisCall(targetClass, methodNode.instructions)) {
                     methodsToRemove.add(methodNode);
