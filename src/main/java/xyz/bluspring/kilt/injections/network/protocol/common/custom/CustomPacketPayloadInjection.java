@@ -3,7 +3,6 @@ package xyz.bluspring.kilt.injections.network.protocol.common.custom;
 import java.util.List;
 
 import xyz.bluspring.kilt.helpers.StupidWorkarounds;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
@@ -30,10 +29,10 @@ public interface CustomPacketPayloadInjection {
     }
 
     default ClientboundCustomPayloadPacket toVanillaClientbound() {
-        throw KiltHelper.createMixinException(CustomPacketPayloadInjection.class, "toVanillaClientbound");
+        return new ClientboundCustomPayloadPacket((CustomPacketPayload) this);
     }
 
     default ServerboundCustomPayloadPacket toVanillaServerbound() {
-        throw KiltHelper.createMixinException(CustomPacketPayloadInjection.class, "toVanillaServerbound");
+        return new ServerboundCustomPayloadPacket((CustomPacketPayload) this);
     }
 }
