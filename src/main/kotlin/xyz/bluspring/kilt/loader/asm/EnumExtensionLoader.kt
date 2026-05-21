@@ -23,13 +23,12 @@ object EnumExtensionLoader {
     val indexed = mutableMapOf<String, Int>()
 
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment) return prototype
         return EnumPrototype(
             prototype.owningMod,
-            KiltRemapper.remapClass(prototype.enumName, toIntermediary = true),
+            KiltRemapper.remapClass(prototype.enumName, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
             prototype.fieldName,
-            KiltRemapper.remapDescriptor(prototype.ctorDesc, toIntermediary = true),
-            KiltRemapper.remapDescriptor(prototype.fullCtorDesc, toIntermediary = true),
+            KiltRemapper.remapDescriptor(prototype.ctorDesc, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
+            KiltRemapper.remapDescriptor(prototype.fullCtorDesc, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
             prototype.ctorParams
         )
     }
