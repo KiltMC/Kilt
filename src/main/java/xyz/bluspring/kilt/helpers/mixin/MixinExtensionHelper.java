@@ -1,17 +1,22 @@
 package xyz.bluspring.kilt.helpers.mixin;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
 
+import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public final class MixinExtensionHelper {
+    public static final String LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory.class);
+    public static final String LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;";
+
     // This should be executed in the mixin plugin with the corresponding method.
     // This is only separated into this class for anyone who wants to use this code.
     private static boolean containsOpcode(InsnList list, int opcode) {
@@ -54,47 +59,98 @@ public final class MixinExtensionHelper {
 
         for (MethodNode methodNode : classNode.methods) {
              if (Annotations.getVisible(methodNode, CreateInitializer.class) != null) {
-                var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                initializer.visitCode();
+                 var initializer = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                 initializer.visitCode();
 
-                for (AbstractInsnNode insnNode : methodNode.instructions) {
-                    if (insnNode instanceof MethodInsnNode methodInsn) {
-                        // super()/this()
-                        if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
-                            } else { // super()
-                                var superName = methodInsn.owner.equals(oldSuper) ? targetClass.superName : methodInsn.owner;
+                 for (AbstractInsnNode insnNode : methodNode.instructions) {
+                     if (insnNode instanceof MethodInsnNode methodInsn) {
+                         // super()/this()
+                         if (insnNode.getOpcode() == Opcodes.INVOKESPECIAL) {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) { // this()
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, slashedTargetClassName, "<init>", methodInsn.desc, false);
+                             } else { // super()
+                                 // Redirect any super call to the target's actual superclass
+                                 var superName = methodInsn.owner.equals(oldSuper) || methodInsn.owner.equals("java/lang/Object")
+                                         ? targetClass.superName
+                                         : methodInsn.owner;
 
-                                initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", methodInsn.desc, false);
-                            }
-                        } else {
-                            if (methodInsn.owner.equals(slashedMixinClassName)) {
-                                methodInsn.owner = slashedTargetClassName;
-                            }
+                                 initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", methodInsn.desc, false);
+                             }
+                         } else if (insnNode.getOpcode() == Opcodes.INVOKEVIRTUAL && methodInsn.name.equals("kilt$mixin$superCall")) { // super()
+                             // Find the existing super call we already added and remove it then swap it for our custom one.
+                             AbstractInsnNode superCall = null;
+                             for (AbstractInsnNode insn : initializer.instructions) {
+                                 if (insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode) insn).name.equals("<init>")) {
+                                     superCall = insn;
+                                     break;
+                                 }
+                             }
+                             if (superCall != null) {
+                                 initializer.instructions.remove(superCall);
+                             }
 
-                            initializer.instructions.add(methodInsn);
-                        }
-                    } else {
-                        if (insnNode instanceof FieldInsnNode fieldInsn) {
-                            if (fieldInsn.owner.equals(slashedMixinClassName)) {
-                                fieldInsn.owner = slashedTargetClassName;
-                            }
+                             initializer.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), "<init>", methodInsn.desc, false);
+                         } else {
+                             if (methodInsn.owner.equals(slashedMixinClassName)) {
+                                 methodInsn.owner = slashedTargetClassName;
+                             }
 
-                            initializer.instructions.add(fieldInsn);
-                        } else {
-                            initializer.instructions.add(insnNode);
-                        }
-                    }
-                }
+                             initializer.instructions.add(methodInsn);
+                         }
+                     } else if (insnNode instanceof InvokeDynamicInsnNode invokeDynamicInsn) {
+                         // Make lambdas actually remap correctly.
+                         if (Opcodes.H_INVOKESTATIC == invokeDynamicInsn.bsm.getTag()
+                                 && "metafactory".equals(invokeDynamicInsn.bsm.getName())
+                                 && LAMBDA_CLASS_NAME.equals(invokeDynamicInsn.bsm.getOwner())
+                                 && LAMBDA_METHOD_DESCRIPTOR.equals(invokeDynamicInsn.bsm.getDesc())
+                                 && invokeDynamicInsn.bsmArgs != null
+                                 && invokeDynamicInsn.bsmArgs.length == 3
+                                 && invokeDynamicInsn.bsmArgs[1] instanceof Handle target
+                                 && target.getOwner().equals(slashedMixinClassName)
+                         ) {
+                             initializer.instructions.add(new InvokeDynamicInsnNode(invokeDynamicInsn.name, invokeDynamicInsn.desc, invokeDynamicInsn.bsm,
+                                     invokeDynamicInsn.bsmArgs[0],
+                                     new Handle(target.getTag(), slashedTargetClassName, target.getName(), target.getDesc().replace(slashedMixinClassName, slashedTargetClassName), target.isInterface()),
+                                     invokeDynamicInsn.bsmArgs[2]
+                             ));
+                         } else {
+                             initializer.instructions.add(invokeDynamicInsn);
+                         }
+                     } else {
+                         if (insnNode instanceof FieldInsnNode fieldInsn) {
+                             if (fieldInsn.owner.equals(slashedMixinClassName)) {
+                                 fieldInsn.owner = slashedTargetClassName;
+                             }
 
-                initializer.visitEnd();
+                             initializer.instructions.add(fieldInsn);
+                         } else {
+                             initializer.instructions.add(insnNode);
+                         }
+                     }
+                 }
 
-                initializer.localVariables = methodNode.localVariables;
+                 initializer.visitEnd();
 
-                // We don't need the method's instructions anymore.
-                methodNode.instructions.clear();
-                targetClass.methods.add(initializer);
+                 var lvt = new ArrayList<>(methodNode.localVariables);
+                 for (int i = 0; i < lvt.size(); i++) {
+                     LocalVariableNode lv = lvt.get(i);
+
+                     if (lv.desc.contains("L" + slashedMixinClassName + ";")) {
+                         var signature = lv.signature;
+
+                         if (signature != null) {
+                             signature = signature.replace("L" + slashedMixinClassName + ";", "L" + slashedTargetClassName + ";");
+                         }
+
+                         lvt.set(i, new LocalVariableNode(lv.name, lv.desc.replace("L" + slashedMixinClassName + ";", "L" + slashedTargetClassName + ";"), signature, lv.start, lv.end, lv.index));
+                     }
+                 }
+
+                 initializer.localVariables = lvt;
+
+                 // We don't need the method's instructions anymore.
+                 methodNode.instructions.clear();
+                 targetClass.methods.add(initializer);
             }
         }
     }
