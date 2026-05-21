@@ -35,7 +35,6 @@ transitive-inject-interface net/minecraft/client/particle/ParticleEngine xyz/blu
 transitive-inject-interface net/minecraft/client/particle/Particle xyz/bluspring/kilt/injections/client/particle/ParticleInjection
 transitive-inject-interface net/minecraft/client/particle/ParticleRenderType xyz/bluspring/kilt/injections/client/particle/ParticleRenderTypeInjection
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
-transitive-inject-interface net/minecraft/client/RecipeBookCategories xyz/bluspring/kilt/injections/client/RecipeBookCategoriesInjection
 transitive-inject-interface net/minecraft/client/renderer/block/BlockModelShaper xyz/bluspring/kilt/injections/client/renderer/block/BlockModelShaperInjection
 transitive-inject-interface net/minecraft/client/renderer/block/BlockRenderDispatcher xyz/bluspring/kilt/injections/client/renderer/block/BlockRenderDispatcherInjection
 transitive-inject-interface net/minecraft/client/renderer/block/model/BakedQuad xyz/bluspring/kilt/injections/client/renderer/block/model/BakedQuadInjection
@@ -163,7 +162,6 @@ transitive-inject-interface net/minecraft/world/inventory/AnvilMenu xyz/blusprin
 transitive-inject-interface net/minecraft/world/inventory/BrewingStandMenu xyz/bluspring/kilt/injections/world/inventory/BrewingStandMenuInjection
 transitive-inject-interface net/minecraft/world/inventory/GrindstoneMenu xyz/bluspring/kilt/injections/world/inventory/GrindstoneMenuInjection
 transitive-inject-interface net/minecraft/world/inventory/RecipeBookMenu xyz/bluspring/kilt/injections/world/inventory/RecipeBookMenuInjection
-transitive-inject-interface net/minecraft/world/inventory/RecipeBookType xyz/bluspring/kilt/injections/world/inventory/RecipeBookTypeInjection
 transitive-inject-interface net/minecraft/world/inventory/Slot xyz/bluspring/kilt/injections/world/inventory/SlotInjection
 transitive-inject-interface net/minecraft/world/item/alchemy/PotionBrewing xyz/bluspring/kilt/injections/world/item/alchemy/PotionBrewingInjection
 transitive-inject-interface net/minecraft/world/item/ArrowItem xyz/bluspring/kilt/injections/world/item/ArrowItemInjection

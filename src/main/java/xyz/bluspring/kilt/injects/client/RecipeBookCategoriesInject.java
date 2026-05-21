@@ -17,14 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.client.RecipeBookCategoriesInjection;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 @Mixin(RecipeBookCategories.class)
-public class RecipeBookCategoriesInject implements RecipeBookCategoriesInjection, IExtensibleEnum {
+public class RecipeBookCategoriesInject implements IExtensibleEnum {
     @Shadow @Final
     @Mutable
     public static Map<RecipeBookCategories, List<RecipeBookCategories>> AGGREGATE_CATEGORIES;
