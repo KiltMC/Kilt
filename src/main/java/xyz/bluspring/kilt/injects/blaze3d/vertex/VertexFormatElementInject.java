@@ -21,7 +21,7 @@ public abstract class VertexFormatElementInject implements VertexFormatElementIn
     public abstract static class UsageInject implements IExtensibleEnum {
         @CreateStatic
         private static ExtensionInfo getExtensionInfo() {
-            return ExtensionInfo.nonExtended((Class) VertexFormatElement.Usage.class);
+            return ExtensionInfo.nonExtended(VertexFormatElement.Usage.class);
         }
     }
 }

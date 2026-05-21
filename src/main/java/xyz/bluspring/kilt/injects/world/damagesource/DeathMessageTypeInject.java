@@ -1,8 +1,7 @@
 package xyz.bluspring.kilt.injects.world.damagesource;
 
 import net.minecraft.world.damagesource.DeathMessageType;
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import net.neoforged.neoforge.common.damagesource.IDeathMessageProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,6 +12,8 @@ import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.damagesource.DeathMessageTypeInjection;
 
+@NamedEnum
+@NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
 @Mixin(DeathMessageType.class)
 public abstract class DeathMessageTypeInject implements IExtensibleEnum, DeathMessageTypeInjection {
     @Unique
@@ -23,6 +24,7 @@ public abstract class DeathMessageTypeInject implements IExtensibleEnum, DeathMe
         this.msgFunction = IDeathMessageProvider.DEFAULT;
     }
 
+    @ReservedConstructor
     private DeathMessageTypeInject(String name, int ordinal, String id) {}
 
     @CreateInitializer
@@ -38,6 +40,6 @@ public abstract class DeathMessageTypeInject implements IExtensibleEnum, DeathMe
 
     @CreateStatic
     private static ExtensionInfo getExtensionInfo() {
-        return ExtensionInfo.nonExtended((Class) DeathMessageType.class);
+        return ExtensionInfo.nonExtended(DeathMessageType.class);
     }
 }

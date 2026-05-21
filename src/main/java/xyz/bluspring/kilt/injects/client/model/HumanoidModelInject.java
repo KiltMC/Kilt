@@ -6,8 +6,10 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
 import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.ReservedConstructor;
 import net.neoforged.neoforge.client.IArmPoseTransformer;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.client.model.HumanoidModelArmPoseInjection;
 
@@ -17,9 +19,14 @@ public class HumanoidModelInject {
 
     @Mixin(HumanoidModel.ArmPose.class)
     public static class ArmPoseInject implements HumanoidModelArmPoseInjection, IExtensibleEnum {
-        @CreateStatic
-        private static HumanoidModel.ArmPose create(String name, boolean twoHanded, IArmPoseTransformer forgeArmPose) {
-            return HumanoidModelArmPoseInjection.create(name, twoHanded, forgeArmPose);
+
+        @ReservedConstructor
+        private ArmPoseInject(String name, int ordinal, final boolean twoHanded) {}
+
+        @CreateInitializer
+        private ArmPoseInject(String name, int ordinal, final boolean twoHanded, IArmPoseTransformer forgeArmPose) {
+            this(name, ordinal, twoHanded);
+            this.forgeArmPose = forgeArmPose;
         }
 
         private IArmPoseTransformer forgeArmPose;
@@ -30,14 +37,9 @@ public class HumanoidModelInject {
                 forgeArmPose.applyTransform(model, entity, arm);
         }
 
-        @Override
-        public void setArmPose(IArmPoseTransformer forgeArmPose) {
-            this.forgeArmPose = forgeArmPose;
-        }
-
         @CreateStatic
         private static ExtensionInfo getExtensionInfo() {
-            return ExtensionInfo.nonExtended((Class) HumanoidModel.ArmPose.class);
+            return ExtensionInfo.nonExtended(HumanoidModel.ArmPose.class);
         }
     }
 }

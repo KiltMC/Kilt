@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.ReservedConstructor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,7 +30,7 @@ public abstract class RaidInject {
     }
 
     @Mixin(Raid.RaiderType.class)
-    public abstract static class RaiderTypeInject implements RaidRaiderTypeInjection {
+    public abstract static class RaiderTypeInject implements RaidRaiderTypeInjection, IExtensibleEnum {
         @Unique Supplier<EntityType<? extends Raider>> entityTypeSupplier;
         @Unique boolean kilt$isNeo;
 
@@ -37,12 +39,13 @@ public abstract class RaidInject {
             this.entityTypeSupplier = () -> entityType;
         }
 
-        private RaiderTypeInject(EntityType<? extends Raider> entityType, int[] spawnsPerWave) {
+        @ReservedConstructor
+        private RaiderTypeInject(String name, int ordinal, EntityType<? extends Raider> entityType, int[] spawnsPerWave) {
         }
 
         @CreateInitializer
-        private RaiderTypeInject(Supplier<EntityType<? extends Raider>> entityTypeSupplier, int[] spawnsPerWave) {
-            this((EntityType<? extends Raider>) null, spawnsPerWave);
+        private RaiderTypeInject(String name, int ordinal, Supplier<EntityType<? extends Raider>> entityTypeSupplier, int[] spawnsPerWave) {
+            this(name, ordinal, (EntityType<? extends Raider>) null, spawnsPerWave);
             this.entityTypeSupplier = entityTypeSupplier;
         }
 

@@ -2,8 +2,7 @@ package xyz.bluspring.kilt.injects.world.damagesource;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageEffects;
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,6 +13,8 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 
 import java.util.function.Supplier;
 
+@NamedEnum
+@NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
 @Mixin(DamageEffects.class)
 public abstract class DamageEffectsInject implements IExtensibleEnum {
     @Shadow @Final @Mutable private String id;
@@ -25,6 +26,7 @@ public abstract class DamageEffectsInject implements IExtensibleEnum {
         this.soundSupplier = () -> sound;
     }
 
+    @ReservedConstructor
     private DamageEffectsInject(String name, int ordinal, String id, SoundEvent sound) {}
 
     @CreateInitializer
@@ -42,6 +44,6 @@ public abstract class DamageEffectsInject implements IExtensibleEnum {
 
     @CreateStatic
     private static ExtensionInfo getExtensionInfo() {
-        return ExtensionInfo.nonExtended((Class) DamageEffects.class);
+        return ExtensionInfo.nonExtended(DamageEffects.class);
     }
 }

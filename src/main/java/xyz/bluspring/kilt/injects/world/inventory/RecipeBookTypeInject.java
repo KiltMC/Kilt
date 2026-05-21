@@ -4,10 +4,12 @@ package xyz.bluspring.kilt.injects.world.inventory;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
 import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.NetworkedEnum;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.inventory.RecipeBookTypeInjection;
 
+@NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
 @Mixin(RecipeBookType.class)
 public class RecipeBookTypeInject implements RecipeBookTypeInjection, IExtensibleEnum {
     @CreateStatic

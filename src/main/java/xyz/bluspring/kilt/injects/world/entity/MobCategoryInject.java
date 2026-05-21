@@ -4,24 +4,18 @@ package xyz.bluspring.kilt.injects.world.entity;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
 import net.neoforged.fml.common.asm.enumextension.NamedEnum;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.entity.MobCategoryInjection;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @NamedEnum
 @Mixin(MobCategory.class)
-public abstract class MobCategoryInject implements MobCategoryInjection {
+public abstract class MobCategoryInject implements MobCategoryInjection, IExtensibleEnum {
     @Shadow @Final @Mutable
     public static Codec<MobCategory> CODEC;
 

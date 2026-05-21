@@ -1,10 +1,7 @@
 package xyz.bluspring.kilt.injects.world.item.component;
 
 import net.minecraft.world.item.component.FireworkExplosion;
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.IndexedEnum;
-import net.neoforged.fml.common.asm.enumextension.NamedEnum;
-import net.neoforged.fml.common.asm.enumextension.NetworkedEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 
@@ -14,7 +11,7 @@ public abstract class FireworkExplosionInject {
     @NamedEnum(1)
     @NetworkedEnum(NetworkedEnum.NetworkCheck.BIDIRECTIONAL)
     @Mixin(FireworkExplosion.Shape.class)
-    public abstract static class ShapeInject {
+    public abstract static class ShapeInject implements IExtensibleEnum {
         @CreateStatic
         private static ExtensionInfo getExtensionInfo() {
             return ExtensionInfo.nonExtended(FireworkExplosion.Shape.class);
