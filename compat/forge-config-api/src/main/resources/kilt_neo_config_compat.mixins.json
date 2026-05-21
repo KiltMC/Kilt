@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.bluspring.kilt.compat.neoconfig.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ModConfigMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
+  "mixinextras": {
+    "minVersion": "0.5.0-beta.5"
+  }
+}

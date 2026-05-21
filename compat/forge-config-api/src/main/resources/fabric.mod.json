@@ -28,5 +28,6 @@
         }
     },
     "mixins": [
+        "kilt_neo_config_compat.mixins.json"
     ]
 }
