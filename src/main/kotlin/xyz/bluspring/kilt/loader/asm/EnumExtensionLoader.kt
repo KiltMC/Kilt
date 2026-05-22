@@ -83,13 +83,7 @@ object EnumExtensionLoader {
             Type.FLOAT -> java.lang.Float.TYPE
             Type.DOUBLE -> java.lang.Double.TYPE
             Type.CHAR -> Character.TYPE
-            Type.ARRAY -> {
-                var clazz = Class.forName(type.internalName.replace("/", "."))
-                for (i in 0 ..< type.dimensions) {
-                    clazz = clazz.arrayType()
-                }
-				clazz
-            }
+            Type.ARRAY -> Class.forName(type.internalName.replace("/", "."))
             Type.OBJECT -> Class.forName(type.className)
             else -> throw IllegalStateException("Could not find the class for $type")
         }
