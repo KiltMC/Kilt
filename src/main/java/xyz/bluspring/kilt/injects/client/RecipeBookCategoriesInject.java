@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.injects.client;
 
 import com.google.common.collect.ImmutableList;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.ItemStack;
@@ -14,7 +16,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 
@@ -51,10 +52,14 @@ public class RecipeBookCategoriesInject implements IExtensibleEnum {
         return original;
     }
 
-    @Inject(method = "getCategories", at = @At("RETURN"), cancellable = true)
-    private static void kilt$useForgeCustomCategories(RecipeBookType recipeBookType, CallbackInfoReturnable<List<RecipeBookCategories>> cir) {
-        if (cir.getReturnValue() instanceof ImmutableList<RecipeBookCategories> && cir.getReturnValue().isEmpty()) {
-            cir.setReturnValue(RecipeBookManager.getCustomCategoriesOrEmpty(recipeBookType));
+    @WrapMethod(method = "getCategories", order = 1050)
+    private static List<RecipeBookCategories> kilt$useForgeCustomCategories(
+        RecipeBookType recipeBookType, Operation<List<RecipeBookCategories>> original
+    ) {
+        try {
+            return original.call(recipeBookType);
+        } catch (MatchException ignored) {
+            return RecipeBookManager.getCustomCategoriesOrEmpty(recipeBookType);
         }
     }
 
