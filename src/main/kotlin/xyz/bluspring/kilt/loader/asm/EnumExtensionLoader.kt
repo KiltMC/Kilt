@@ -69,7 +69,9 @@ object EnumExtensionLoader {
     }
 
     private fun getEnumProxy(fieldReference: EnumParameters.FieldReference): EnumProxy<*> {
-        return Class.forName(fieldReference.owner.className).getDeclaredField(fieldReference.fieldName).get(null) as EnumProxy<*>
+        // Luckily for us, NeoForge crashes unless these are public.
+        // This is good because getDeclaredField might crash the game on servers.
+        return Class.forName(fieldReference.owner.className).getField(fieldReference.fieldName).get(null) as EnumProxy<*>
     }
 
     private fun getCastClass(type: Type): Class<*> {
@@ -112,7 +114,9 @@ object EnumExtensionLoader {
                                 args
                             }
                             is EnumParameters.MethodReference -> {
-                                val method = Class.forName(parameters.owner.className).getDeclaredMethod(parameters.methodName, Integer.TYPE, Class::class.java)
+                                // Luckily for us, NeoForge crashes unless these are public.
+                                // This is good because getDeclaredMethod might crash the game on servers.
+                                val method = Class.forName(parameters.owner.className).getMethod(parameters.methodName, Integer.TYPE, Class::class.java)
                                 val args = mutableListOf<Any>()
                                 for (i in 0..< descriptor.argumentCount) {
                                     if (indexed[name] == i) {
