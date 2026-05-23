@@ -46,7 +46,7 @@ public abstract class ServerPlayerGameModeInject {
 
 	@WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
 	private boolean kilt$tryHandleDestroyedByPlayer(ServerLevel instance, BlockPos blockPos, boolean b, Operation<Boolean> original, @Local BlockState state) {
-		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "onDestroyedByPlayer", BlockState.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
+		if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IForgeBlock.class, "onDestroyedByPlayer", BlockState.class, Level.class, BlockPos.class, Player.class, boolean.class, FluidState.class)) {
 			return state.onDestroyedByPlayer(instance, blockPos, this.player, b, this.level.getFluidState(blockPos));
 		}
 
