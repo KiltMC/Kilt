@@ -27,9 +27,19 @@ public abstract class ChorusFlowerBlockInject {
     @Definition(id = "i", local = @Local(type = int.class))
     @Expression("i < 5")
     @ModifyExpressionValue(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$preGrowEvent(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 1) BlockPos pos, @Local(argsOnly = true) BlockState state, @Share("shouldRunPostEvent") LocalBooleanRef shouldRunPostEvent) {
+    private boolean kilt$preGrowEvent(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 1) BlockPos pos, @Local(argsOnly = true) BlockState state) {
+        return original && ForgeHooks.onCropsGrowPre(level, pos, state, true);
+    }
+
+    @Inject(
+            method = "randomTick",
+            at = @At(
+                    value = "INVOKE", ordinal = 0,
+                    target = "Lnet/minecraft/server/level/ServerLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
+            )
+    )
+    private void kilt$onEnterIfStatement(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci, @Share("shouldRunPostEvent") LocalBooleanRef shouldRunPostEvent) {
         shouldRunPostEvent.set(true);
-        return original && !ForgeHooks.onCropsGrowPre(level, pos, state, true);
     }
 
     @Inject(method = "randomTick", at = @At("RETURN"))
