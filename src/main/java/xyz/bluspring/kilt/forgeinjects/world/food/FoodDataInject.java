@@ -1,6 +1,7 @@
 // TRACKED HASH: 67468ffd11d7ad051ef0ba08d2f696e15a0b8fef
 package xyz.bluspring.kilt.forgeinjects.world.food;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -15,20 +16,34 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.injections.world.food.FoodDataInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(FoodData.class)
 public abstract class FoodDataInject implements FoodDataInjection {
     @Shadow public abstract void eat(Item item, ItemStack stack);
 
+    @Unique private final AtomicBoolean kilt$calledForgeEat = new AtomicBoolean(false);
     @Unique private final AtomicReference<LivingEntity> kilt$entity = new AtomicReference<>(null);
+
+    @WrapMethod(method = "eat(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;)V")
+    private void kilt$onFabricEat(Item item, ItemStack stack, Operation<Void> original) {
+        if (!kilt$calledForgeEat.get() && KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), FoodData.class, "eat", Item.class, ItemStack.class, LivingEntity.class)) {
+            eat(item, stack, null);
+        } else {
+            original.call(item, stack);
+        }
+    }
 
     @Override
     public void eat(Item item, ItemStack stack, @Nullable LivingEntity entity) {
         this.kilt$entity.set(entity);
+        kilt$calledForgeEat.set(true);
         this.eat(item, stack);
         this.kilt$entity.set(null);
+        kilt$calledForgeEat.set(false);
     }
 
     @WrapOperation(method = "eat(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getFoodProperties()Lnet/minecraft/world/food/FoodProperties;"))
