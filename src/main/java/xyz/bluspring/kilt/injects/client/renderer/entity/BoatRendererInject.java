@@ -29,7 +29,7 @@ public abstract class BoatRendererInject implements BoatRendererInjection {
                     target = "Lnet/minecraft/resources/ResourceLocation;withDefaultNamespace(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"
             )
     )
-    private static ResourceLocation kilt$getNamspeacedTextureLocation(String texture, Operation<ResourceLocation> original) {
+    private static ResourceLocation kilt$getNamespacedTextureLocation(String texture, Operation<ResourceLocation> original) {
         if (texture.contains(":")) {
             String brokenPrefix = StringUtils.substringBefore(texture, ":");
             String namespace = StringUtils.substringAfterLast(brokenPrefix, "/");

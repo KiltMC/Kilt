@@ -25,7 +25,7 @@ public class RarityInject implements RarityInjection, IExtensibleEnum {
     RarityInject(String fieldName, int ordinal, int id, String name, ChatFormatting color) {}
 
     @Inject(method = "<init>(Ljava/lang/String;IILjava/lang/String;Lnet/minecraft/ChatFormatting;)V", at = @At("RETURN"))
-    public void kilt$init(String string, int i, int id, String name, ChatFormatting color, CallbackInfo ci) {
+    public void kilt$setupDefaultStyleModifier(String string, int i, int id, String name, ChatFormatting color, CallbackInfo ci) {
         this.styleModifier = style -> style.withColor(color);
     }
 
