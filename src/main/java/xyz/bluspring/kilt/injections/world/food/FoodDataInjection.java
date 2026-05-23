@@ -6,5 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public interface FoodDataInjection {
-    void eat(Item item, ItemStack stack, @Nullable LivingEntity entity);
+    default void eat(Item item, ItemStack stack, @Nullable LivingEntity entity)  {
+        throw new IllegalStateException();
+    }
 }
