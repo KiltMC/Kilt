@@ -107,7 +107,7 @@ object EnumExtensionLoader {
                             is EnumParameters.Constant -> parameters.params
                             is EnumParameters.FieldReference -> {
                                 val proxy = getEnumProxy(parameters)
-                                val args = mutableListOf<Any>()
+                                val args = mutableListOf<Any?>()
                                 for (i in 0..< descriptor.argumentCount) {
                                     args.add(proxy.getParameter(i))
                                 }
@@ -117,7 +117,7 @@ object EnumExtensionLoader {
                                 // Luckily for us, NeoForge crashes unless these are public.
                                 // This is good because getDeclaredMethod might crash the game on servers.
                                 val method = Class.forName(parameters.owner.className).getMethod(parameters.methodName, Integer.TYPE, Class::class.java)
-                                val args = mutableListOf<Any>()
+                                val args = mutableListOf<Any?>()
                                 for (i in 0..< descriptor.argumentCount) {
                                     if (indexed[name] == i) {
                                         args.add(-1)
