@@ -1,10 +1,10 @@
 package xyz.bluspring.kilt.util
 
-import com.chocohead.mm.CasualStreamHandler
-import com.chocohead.mm.api.ClassTinkerers
 import com.mojang.serialization.Codec
 import net.minecraftforge.fml.unsafe.UnsafeHacks
 import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum
+import xyz.bluspring.fork.mm.CasualStreamHandler
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
 import java.util.Locale.getDefault
 import java.util.function.Consumer

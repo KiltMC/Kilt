@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.asm
 
-import com.chocohead.mm.api.ClassTinkerers
 import it.unimi.dsi.fastutil.objects.Object2IntMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import net.fabricmc.loader.api.FabricLoader
@@ -10,6 +9,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import org.spongepowered.asm.util.Annotations
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.nio.file.Files

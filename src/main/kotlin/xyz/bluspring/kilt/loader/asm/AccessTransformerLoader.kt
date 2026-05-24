@@ -1,11 +1,11 @@
 package xyz.bluspring.kilt.loader.asm
 
-import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.classtweaker.api.ClassTweaker
 import net.fabricmc.loader.impl.lib.classtweaker.api.visitor.AccessWidenerVisitor
 import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.util.regex.Pattern

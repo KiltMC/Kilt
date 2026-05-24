@@ -28,7 +28,7 @@
     "server": [
       "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
     ],
-    "mm:early_risers": [
+    "mm_kilt:early_risers": [
       "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
     ],
     "mixinsquared-adjuster": [
@@ -51,7 +51,7 @@
     "fabric-api": ">=${fabric_version}",
     "minecraft": "${minecraft_version}",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-    "mm": ">=${fabric_asm_version}"
+    "mm_kilt": ">=${fabric_asm_version}"
   },
   "custom": {
     "kilt:access_transformer": [

@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.asm.coremod
 
-import com.chocohead.mm.api.ClassTinkerers
 import net.neoforged.coremod.api.TargetType
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
@@ -8,6 +7,7 @@ import org.objectweb.asm.tree.MethodNode
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.slf4j.LoggerFactory
 import org.slf4j.MarkerFactory
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.asm.NashornHelper

@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.asm
 
-import com.chocohead.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -10,6 +9,7 @@ import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
