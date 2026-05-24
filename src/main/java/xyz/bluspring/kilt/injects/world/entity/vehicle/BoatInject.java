@@ -6,9 +6,7 @@ import java.util.function.Supplier;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.NamedEnum;
-import net.neoforged.fml.common.asm.enumextension.NetworkedEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import net.neoforged.neoforge.common.extensions.IBoatExtension;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -113,7 +111,7 @@ public abstract class BoatInject extends Entity implements IBoatExtension {
     @NamedEnum(1)
     @NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
     @Mixin(Boat.Type.class)
-    public abstract static class TypeInject implements BoatInjection.TypeInjection {
+    public abstract static class TypeInject implements BoatInjection.TypeInjection, IExtensibleEnum {
         @Shadow @Final private Block planks;
         @Shadow @Final public static Boat.Type BAMBOO;
 
@@ -123,17 +121,19 @@ public abstract class BoatInject extends Entity implements IBoatExtension {
         @Unique private Supplier<Item> stickItem = () -> Items.STICK;
         @Unique private boolean raft;
 
-        private TypeInject(Block planks, String name) {}
+        @ReservedConstructor
+        private TypeInject(String fieldName, int ordinal, Block planks, String name) {}
 
         @CreateInitializer
-        private TypeInject(Block planks, String name, boolean raft) {
-            this(planks, name);
+        @ReservedConstructor
+        private TypeInject(String fieldName, int ordinal, Block planks, String name, boolean raft) {
+            this(fieldName, ordinal, planks, name);
             this.raft = raft;
         }
 
         @CreateInitializer
-        private TypeInject(Supplier<Block> planks, String name, Supplier<Item> boatItem, Supplier<Item> chestBoatItem, Supplier<Item> stickItem, boolean raft) {
-            this(Blocks.AIR, name);
+        private TypeInject(String fieldName, int ordinal, Supplier<Block> planks, String name, Supplier<Item> boatItem, Supplier<Item> chestBoatItem, Supplier<Item> stickItem, boolean raft) {
+            this(fieldName, ordinal, Blocks.AIR, name);
             this.planksSupplier = planks;
             this.boatItem = boatItem;
             this.chestBoatItem = chestBoatItem;

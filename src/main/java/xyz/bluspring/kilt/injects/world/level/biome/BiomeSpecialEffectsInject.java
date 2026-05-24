@@ -1,9 +1,6 @@
 package xyz.bluspring.kilt.injects.world.level.biome;
 
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
-import net.neoforged.fml.common.asm.enumextension.NamedEnum;
-import net.neoforged.fml.common.asm.enumextension.NetworkedEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.helpers.mixin.AbstractOverride;
@@ -26,11 +23,12 @@ public abstract class BiomeSpecialEffectsInject {
             return this.delegate.modifyGrassColor(x, z, grassColor);
         }
 
-        GrassColorModifierInject(String name) {}
+        @ReservedConstructor
+        GrassColorModifierInject(String fieldName, int ordinal, String name) {}
 
         @CreateInitializer
-        GrassColorModifierInject(String name, ColorModifier delegate) {
-            this(name);
+        GrassColorModifierInject(String fieldName, int ordinal, String name, ColorModifier delegate) {
+            this(fieldName, ordinal, name);
             this.delegate = delegate;
         }
 

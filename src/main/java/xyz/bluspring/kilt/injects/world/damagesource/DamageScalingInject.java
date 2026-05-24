@@ -1,8 +1,7 @@
 package xyz.bluspring.kilt.injects.world.damagesource;
 
 import net.minecraft.world.damagesource.DamageScaling;
-import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
-import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.*;
 import net.neoforged.neoforge.common.damagesource.IScalingFunction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,6 +12,8 @@ import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.damagesource.DamageScalingInjection;
 
+@NamedEnum
+@NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
 @Mixin(DamageScaling.class)
 public abstract class DamageScalingInject implements IExtensibleEnum, DamageScalingInjection {
     @Unique
@@ -23,6 +24,7 @@ public abstract class DamageScalingInject implements IExtensibleEnum, DamageScal
         this.scaling = IScalingFunction.DEFAULT;
     }
 
+    @ReservedConstructor
     private DamageScalingInject(String name, int ordinal, String id) {}
 
     @CreateInitializer
@@ -38,6 +40,6 @@ public abstract class DamageScalingInject implements IExtensibleEnum, DamageScal
 
     @CreateStatic
     private static ExtensionInfo getExtensionInfo() {
-        return ExtensionInfo.nonExtended((Class) DamageScaling.class);
+        return ExtensionInfo.nonExtended(DamageScaling.class);
     }
 }
