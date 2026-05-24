@@ -25,10 +25,10 @@ object EnumExtensionLoader {
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
         return EnumPrototype(
             prototype.owningMod,
-            KiltRemapper.remapClass(prototype.enumName, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
+            KiltRemapper.remapClass(prototype.enumName),
             prototype.fieldName,
-            KiltRemapper.remapDescriptor(prototype.ctorDesc, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
-            KiltRemapper.remapDescriptor(prototype.fullCtorDesc, toIntermediary = !FabricLoader.getInstance().isDevelopmentEnvironment),
+            KiltRemapper.remapDescriptor(prototype.ctorDesc),
+            KiltRemapper.remapDescriptor(prototype.fullCtorDesc),
             prototype.ctorParams
         )
     }
@@ -74,17 +74,17 @@ object EnumExtensionLoader {
         return Class.forName(fieldReference.owner.className).getField(fieldReference.fieldName).get(null) as EnumProxy<*>
     }
 
-    private fun getCastClass(type: Type): Class<*> {
+    private fun getCastClass(type: Type): Class<*>? {
         return when (type.sort) {
-            Type.VOID -> Void.TYPE
-            Type.BOOLEAN -> java.lang.Boolean.TYPE
-            Type.BYTE -> java.lang.Byte.TYPE
-            Type.SHORT -> java.lang.Short.TYPE
-            Type.INT -> Integer.TYPE
-            Type.LONG -> java.lang.Long.TYPE
-            Type.FLOAT -> java.lang.Float.TYPE
-            Type.DOUBLE -> java.lang.Double.TYPE
-            Type.CHAR -> Character.TYPE
+            Type.VOID -> Void::class.javaPrimitiveType
+            Type.BOOLEAN -> Boolean::class.javaPrimitiveType
+            Type.BYTE -> Byte::class.javaPrimitiveType
+            Type.SHORT -> Short::class.javaPrimitiveType
+            Type.INT -> Int::class.javaPrimitiveType
+            Type.LONG -> Long::class.javaPrimitiveType
+            Type.FLOAT -> Float::class.javaPrimitiveType
+            Type.DOUBLE -> Double::class.javaPrimitiveType
+            Type.CHAR -> Char::class.javaPrimitiveType
             Type.ARRAY -> Class.forName(type.internalName.replace("/", "."))
             Type.OBJECT -> Class.forName(type.className)
             else -> throw IllegalStateException("Could not find the class for $type")
@@ -108,7 +108,7 @@ object EnumExtensionLoader {
                             is EnumParameters.FieldReference -> {
                                 val proxy = getEnumProxy(parameters)
                                 val args = mutableListOf<Any?>()
-                                for (i in 0..< descriptor.argumentCount) {
+                                for (i in 0 until descriptor.argumentCount) {
                                     args.add(proxy.getParameter(i))
                                 }
                                 args
@@ -118,7 +118,7 @@ object EnumExtensionLoader {
                                 // This is good because getDeclaredMethod might crash the game on servers.
                                 val method = Class.forName(parameters.owner.className).getMethod(parameters.methodName, Integer.TYPE, Class::class.java)
                                 val args = mutableListOf<Any?>()
-                                for (i in 0..< descriptor.argumentCount) {
+                                for (i in 0 until descriptor.argumentCount) {
                                     if (indexed[name] == i) {
                                         args.add(-1)
                                     } else {
@@ -140,7 +140,7 @@ object EnumExtensionLoader {
     private fun countEnumFields(classNode: ClassNode): Int {
         var count = 0
         for (field in classNode.fields) {
-            if (field.desc == "L" + classNode.name + ";" && (field.access and Opcodes.ACC_STATIC) != 0) {
+            if (field.desc == "L${classNode.name};" && (field.access and Opcodes.ACC_STATIC) != 0) {
                 count++
             }
         }
@@ -162,8 +162,8 @@ object EnumExtensionLoader {
                 }
 				EnumExtensionLoader.indexed[targetClass.name] = index.toInt()
 				val fixedIndex = index.toInt()
-                targetClass.methods.stream().filter { method: MethodNode? -> method!!.name == "<init>" }
-                    .forEach { constructor: MethodNode? ->
+                targetClass.methods.stream().filter { method -> method!!.name == "<init>" }
+                    .forEach { constructor ->
                         val list = InsnList()
                         list.add(LabelNode())
                         list.add(VarInsnNode(Opcodes.ILOAD, 2))
@@ -177,7 +177,7 @@ object EnumExtensionLoader {
     fun postApplyEnum(targetClass: ClassNode, mixinClass: ClassNode) {
         if (mixinClass.interfaces.contains(EXTENSIBLE_ENUM)) {
             val clinit =
-                targetClass.methods.stream().filter { method: MethodNode? -> method!!.name == "<clinit>" }.findFirst()
+                targetClass.methods.stream().filter { method -> method!!.name == "<clinit>" }.findFirst()
                     .orElseThrow()
 
             // Fill all EnumProxy instances.
@@ -276,7 +276,7 @@ object EnumExtensionLoader {
                     clinit.maxStack = 6
                 }
                 clinit.instructions.insertBefore(clinit.instructions.getLast(), fieldSetup)
-                val getExtensionInfo = targetClass.methods.stream().filter { method: MethodNode? ->
+                val getExtensionInfo = targetClass.methods.stream().filter { method ->
                     method!!.name == "getExtensionInfo" &&
                             method.desc == "()$extensionInfoDesc" &&
                             (method.access and Opcodes.ACC_STATIC) != 0
