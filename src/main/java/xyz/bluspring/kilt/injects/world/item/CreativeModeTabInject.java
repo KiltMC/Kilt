@@ -1,14 +1,16 @@
 package xyz.bluspring.kilt.injects.world.item;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,11 +26,14 @@ import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
 import xyz.bluspring.kilt.mixin.CreativeModeTabAccessor;
 import xyz.bluspring.kilt.mixin.world.item.CreativeModeTabBuilderAccessor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 
 @Mixin(CreativeModeTab.class)
 public abstract class CreativeModeTabInject implements CreativeModeTabInjection {
@@ -142,6 +147,9 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         @Shadow
         public abstract CreativeModeTab.Builder backgroundTexture(ResourceLocation resourceLocation);
 
+        @Shadow
+        public abstract CreativeModeTab.Builder displayItems(CreativeModeTab.DisplayItemsGenerator displayItemsGenerator);
+
         @Unique private static final ResourceLocation CREATIVE_INVENTORY_TABS_IMAGE = ResourceLocation.withDefaultNamespace("textures/gui/container/creative_inventory/tabs.png");
         @Unique private static final ResourceLocation CREATIVE_ITEM_SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
 
@@ -215,6 +223,17 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         public CreativeModeTab.Builder withTabsAfter(ResourceKey<CreativeModeTab>... tabs) {
             Stream.of(tabs).map(ResourceKey::location).forEach(this.tabsAfter::add);
             return self();
+        }
+
+        @Override
+        public CreativeModeTab.Builder displayItems(Collection<? extends Holder<? extends ItemLike>> collection) {
+            return this.displayItems((p, o) -> collection.stream()
+                .map(Holder::value)
+                .map(ItemLike::asItem)
+                .filter(i -> i != Items.AIR)
+                .filter(i -> i.isEnabled(p.enabledFeatures()))
+                .forEach(o::accept)
+            );
         }
 
         @Override

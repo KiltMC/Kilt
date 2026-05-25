@@ -1,14 +1,18 @@
 package xyz.bluspring.kilt.injections.world.item;
 
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+
 import xyz.bluspring.kilt.mixin.CreativeModeTabAccessor;
 import xyz.bluspring.kilt.mixin.world.item.CreativeModeTabBuilderAccessor;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.List;
-import java.util.function.Function;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.ItemLike;
 
 public interface CreativeModeTabInjection {
     static CreativeModeTab create(CreativeModeTab.Builder builder) {
@@ -101,6 +105,10 @@ public interface CreativeModeTabInjection {
 
         default CreativeModeTab.Builder withTabsAfter(ResourceLocation... tabs) {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withTabsAfter");
+        }
+
+        default CreativeModeTab.Builder displayItems(Collection<? extends Holder<? extends ItemLike>> collection) {
+            throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "displayItems");
         }
 
         default boolean kilt$hasSearchBar() {
