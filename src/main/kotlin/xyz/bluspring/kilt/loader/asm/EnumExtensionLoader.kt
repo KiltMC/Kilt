@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import net.fabricmc.loader.api.FabricLoader
 import net.neoforged.fml.common.asm.enumextension.*
 import net.neoforged.fml.common.asm.enumextension.NetworkedEnum.NetworkCheck
+import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
@@ -180,6 +181,76 @@ object EnumExtensionLoader {
                 targetClass.methods.stream().filter { method -> method!!.name == "<clinit>" }.findFirst()
                     .orElseThrow()
 
+            val vanillaCount = INITIAL_ENUM_COUNTS.getOrDefault(targetClass.name, 0)
+
+            // Make sure the ordinal parameter does not change between reboots.
+            let {
+                val enumPositions: TreeMap<String, Int> = TreeMap()
+                var vanillaRemaining = vanillaCount
+                for (i in 0 until clinit.instructions.size()) {
+                    when (val ins = clinit.instructions.get(i)) {
+                        is MethodInsnNode -> {
+                            if (ins.name == "<init>" && ins.owner == targetClass.name) {
+                                val assign = ins.next
+                                if (assign is FieldInsnNode) {
+                                    // We don't want to change the ordinal of the vanilla parameters.
+                                    if (vanillaRemaining > 0) {
+                                        vanillaRemaining--
+                                        continue
+                                    }
+                                    enumPositions[assign.name] = i
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val enumOrdinals = mutableMapOf<String, Int>()
+
+                // Overwrite the ordinals for each non-vanilla enum (including Fabric ones) based on their order in our map.
+                // This effectively sorts them in alphabetical order.
+                var newIndex = vanillaCount
+                for ((name, pos) in enumPositions) {
+                    val ins = clinit.instructions.get(pos)
+                    var prev = ins
+                    while (prev !is TypeInsnNode || prev.desc != targetClass.name || prev.opcode != Opcodes.NEW) {
+                        prev = prev.previous
+                    }
+                    enumOrdinals[name] = newIndex
+                    clinit.instructions.set(prev.next.next.next, pushInt(newIndex))
+
+                    newIndex++
+                }
+
+                // Sort the $VALUES array based on the ordinal after it has been set for the last time.
+                val fixValuesOrder = InsnList()
+                fixValuesOrder.add(LabelNode())
+                fixValuesOrder.add(FieldInsnNode(Opcodes.GETSTATIC, targetClass.name, $$"$VALUES", "[L${targetClass.name};"))
+
+                fixValuesOrder.add(InvokeDynamicInsnNode(
+                    "apply", "()Ljava/util/function/Function;",
+                    Handle(
+                        Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                        $$"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
+                        false
+                    ),
+                    Type.getType("(Ljava/lang/Object;)Ljava/lang/Object;"),
+                    Handle(Opcodes.H_INVOKEVIRTUAL, "java/lang/Enum", "ordinal", "()I", false),
+                    Type.getType("(L${targetClass.name};)Ljava/lang/Integer;")
+                ))
+
+                fixValuesOrder.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Comparator", "comparing", "(Ljava/util/function/Function;)Ljava/util/Comparator;", true))
+                fixValuesOrder.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Arrays", "sort", "([Ljava/lang/Object;Ljava/util/Comparator;)V", false))
+
+                var setValuesIndex = 0
+                for (ins in clinit.instructions) {
+                    if (ins is FieldInsnNode && ins.name == $$"$VALUES" && ins.owner == targetClass.name && ins.desc == "[L${targetClass.name};" && ins.opcode == Opcodes.PUTSTATIC) {
+                        setValuesIndex = clinit.instructions.indexOf(ins)
+                    }
+                }
+                clinit.instructions.insert(clinit.instructions[setValuesIndex], fixValuesOrder)
+            }
+
             // Fill all EnumProxy instances.
             val proxies = proxies.get(targetClass.name)
 			proxies?.keys?.forEach(Consumer { fieldName: String? ->
@@ -217,7 +288,6 @@ object EnumExtensionLoader {
 
             // Overwrite getExtensionInfo
             val currentCount = countEnumFields(targetClass)
-            val vanillaCount = INITIAL_ENUM_COUNTS.getOrDefault(targetClass.name, 0)
             if (currentCount != vanillaCount) {
                 var networkCheck: NetworkCheck? = null
                 val networked = Annotations.getVisible(mixinClass, NetworkedEnum::class.java)
