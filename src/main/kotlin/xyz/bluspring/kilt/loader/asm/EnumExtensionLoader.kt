@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.loader.asm
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
-import net.fabricmc.loader.api.FabricLoader
 import net.neoforged.fml.common.asm.enumextension.*
 import net.neoforged.fml.common.asm.enumextension.NetworkedEnum.NetworkCheck
 import org.objectweb.asm.Handle
@@ -36,10 +35,10 @@ object EnumExtensionLoader {
 
     fun loadEnumExtension(mod: NeoForgeMod) {
         mod.config.getConfigList("mods").forEach { config ->
-            config.getConfigElement<String>("enumExtensions").ifPresent{ file ->
+            config.getConfigElement<String>("enumExtensions").ifPresent { file ->
                 val path = mod.owningFile.getFile().findResource(file)
                 if (Files.isRegularFile(path)) {
-                    EnumPrototype.load(mod, path).forEach{ prototype ->
+                    EnumPrototype.load(mod, path).forEach { prototype ->
                         val usablePrototype = remapPrototype(prototype)
                         enumExtensions.computeIfAbsent(
                             usablePrototype.enumName,
@@ -51,11 +50,14 @@ object EnumExtensionLoader {
         }
     }
 
-    private fun <T> forceSetEnumProxyValue(proxy: EnumProxy<T>, value: Any) where T: Enum<T>, T: IExtensibleEnum {
+    private fun <T> forceSetEnumProxyValue(proxy: EnumProxy<T>, value: Any) where T : Enum<T>, T : IExtensibleEnum {
         @Suppress("UNCHECKED_CAST")
         proxy.value = value as T
     }
 
+
+    //Keep this constant close to the function below.
+    val SET_PROXY_VALUE_TARGET_CLASS = javaClass.name.replace(".", "/")
     //Automatically invoked by enums after enum extension, DO NOT DELETE!
     @Suppress("unused")
     fun setProxyValue(enumName: String, fieldName: String, enum: Any) {
@@ -135,7 +137,7 @@ object EnumExtensionLoader {
         }
     }
 
-    val INITIAL_ENUM_COUNTS: Object2IntMap<String?> = Object2IntOpenHashMap<String?>()
+    val INITIAL_ENUM_COUNTS: Object2IntMap<String> = Object2IntOpenHashMap()
     const val EXTENSIBLE_ENUM: String = "net/neoforged/fml/common/asm/enumextension/IExtensibleEnum"
 
     private fun countEnumFields(classNode: ClassNode): Int {
@@ -157,19 +159,18 @@ object EnumExtensionLoader {
             // I decided to set this parameter to the same value as ordinal for all values since there isn't really any good reason to allow Fabric mods to set their own values here.
             val indexed = Annotations.getInvisible(mixinClass, IndexedEnum::class.java)
             if (indexed != null) {
-                var index = Annotations.getValue<Number?>(indexed)
+                var index = Annotations.getValue<Int>(indexed)
                 if (index == null) {
                     index = 0
                 }
-				EnumExtensionLoader.indexed[targetClass.name] = index.toInt()
-				val fixedIndex = index.toInt()
-                targetClass.methods.stream().filter { method -> method!!.name == "<init>" }
+				EnumExtensionLoader.indexed[targetClass.name] = index
+				targetClass.methods.filter { method -> method.name == "<init>" }
                     .forEach { constructor ->
                         val list = InsnList()
                         list.add(LabelNode())
                         list.add(VarInsnNode(Opcodes.ILOAD, 2))
-                        list.add(VarInsnNode(Opcodes.ISTORE, 3 + fixedIndex))
-                        constructor!!.instructions.insertBefore(constructor.instructions.getFirst(), list)
+                        list.add(VarInsnNode(Opcodes.ISTORE, 3 + index))
+                        constructor.instructions.insertBefore(constructor.instructions.getFirst(), list)
                     }
             }
         }
@@ -177,15 +178,13 @@ object EnumExtensionLoader {
 
     fun postApplyEnum(targetClass: ClassNode, mixinClass: ClassNode) {
         if (mixinClass.interfaces.contains(EXTENSIBLE_ENUM)) {
-            val clinit =
-                targetClass.methods.stream().filter { method -> method!!.name == "<clinit>" }.findFirst()
-                    .orElseThrow()
+            val clinit = targetClass.methods.first { it.name == "<clinit>" }
 
             val vanillaCount = INITIAL_ENUM_COUNTS.getOrDefault(targetClass.name, 0)
 
             // Make sure the ordinal parameter does not change between reboots.
             let {
-                val enumPositions: TreeMap<String, Int> = TreeMap()
+                val enumPositions = TreeMap<String, Int>()
                 var vanillaRemaining = vanillaCount
                 for (i in 0 until clinit.instructions.size()) {
                     when (val ins = clinit.instructions.get(i)) {
@@ -266,13 +265,12 @@ object EnumExtensionLoader {
 			proxies?.keys?.forEach(Consumer { fieldName: String? ->
 				val fillProxy = InsnList()
 				fillProxy.add(LabelNode())
-				val enumExtensionLoader = "xyz/bluspring/kilt/loader/asm/EnumExtensionLoader"
 				fillProxy.add(
 					FieldInsnNode(
 						Opcodes.GETSTATIC,
-						enumExtensionLoader,
+                        SET_PROXY_VALUE_TARGET_CLASS,
 						"INSTANCE",
-						"L$enumExtensionLoader;"
+						"L$SET_PROXY_VALUE_TARGET_CLASS;"
 					)
 				)
 				fillProxy.add(LdcInsnNode(targetClass.name))
@@ -288,7 +286,7 @@ object EnumExtensionLoader {
 				fillProxy.add(
 					MethodInsnNode(
 						Opcodes.INVOKEVIRTUAL,
-						enumExtensionLoader,
+                        SET_PROXY_VALUE_TARGET_CLASS,
 						"setProxyValue",
 						"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V"
 					)
@@ -356,11 +354,11 @@ object EnumExtensionLoader {
                     clinit.maxStack = 6
                 }
                 clinit.instructions.insertBefore(clinit.instructions.getLast(), fieldSetup)
-                val getExtensionInfo = targetClass.methods.stream().filter { method ->
-                    method!!.name == "getExtensionInfo" &&
-                            method.desc == "()$extensionInfoDesc" &&
-                            (method.access and Opcodes.ACC_STATIC) != 0
-                }.findFirst().orElseThrow()
+                val getExtensionInfo = targetClass.methods.first {
+                    it.name == "getExtensionInfo" &&
+                    it.desc == "()$extensionInfoDesc" &&
+                    (it.access and Opcodes.ACC_STATIC) != 0
+                }
                 getExtensionInfo.instructions.clear()
                 getExtensionInfo.instructions.add(LabelNode())
                 getExtensionInfo.instructions.add(
