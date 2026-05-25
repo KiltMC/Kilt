@@ -222,10 +222,20 @@ object EnumExtensionLoader {
                     newIndex++
                 }
 
+                val valuesName = KiltRemapper.enhancedRemapper.mapFieldName(
+                    KiltRemapper.unmapClass(targetClass.name),
+                    $$"$VALUES",
+                    "[L${KiltRemapper.unmapClass(targetClass.name)};"
+                )
+
                 // Sort the $VALUES array based on the ordinal after it has been set for the last time.
                 val fixValuesOrder = InsnList()
                 fixValuesOrder.add(LabelNode())
-                fixValuesOrder.add(FieldInsnNode(Opcodes.GETSTATIC, targetClass.name, $$"$VALUES", "[L${targetClass.name};"))
+                fixValuesOrder.add(FieldInsnNode(
+                    Opcodes.GETSTATIC, targetClass.name,
+                    valuesName,
+                    "[L${targetClass.name};"
+                ))
 
                 fixValuesOrder.add(InvokeDynamicInsnNode(
                     "apply", "()Ljava/util/function/Function;",
@@ -244,7 +254,7 @@ object EnumExtensionLoader {
 
                 var setValuesIndex = 0
                 for (ins in clinit.instructions) {
-                    if (ins is FieldInsnNode && ins.name == $$"$VALUES" && ins.owner == targetClass.name && ins.desc == "[L${targetClass.name};" && ins.opcode == Opcodes.PUTSTATIC) {
+                    if (ins is FieldInsnNode && ins.name == valuesName && ins.owner == targetClass.name && ins.desc == "[L${targetClass.name};" && ins.opcode == Opcodes.PUTSTATIC) {
                         setValuesIndex = clinit.instructions.indexOf(ins)
                     }
                 }
