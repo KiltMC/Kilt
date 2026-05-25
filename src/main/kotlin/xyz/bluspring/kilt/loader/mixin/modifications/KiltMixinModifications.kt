@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.ModifyReturnValue
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import com.llamalad7.mixinextras.sugar.Share
 import org.objectweb.asm.Type
@@ -254,6 +255,60 @@ object KiltMixinModifications {
                         "at" to listOf(at(
                             value = "INVOKE",
                             target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"
+                        ))
+                    )
+                )
+            )
+        ),
+
+        // Fix mixins like TFCs EntityMixin::fixUpdateFluidPushingToTreatWaterLikeFluidsAsWater
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/Entity",
+            methods = listOf("updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "RETURN"
+                )),
+                "cancellable" to true
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf(
+                            "updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z",
+	                        $$"kilt$updateFluidHeightAndDoFluidPushingInterimCalcCheck$handleModdedReturnValue(Lnet/minecraft/tags/TagKey;D)Z"
+                        ),
+                        "at" to listOf(at(
+                            value = "RETURN"
+                        )),
+                        "cancellable" to true
+                    )
+                )
+            )
+        )
+    )
+
+    val MODIFY_RETURN_VALUE = register(
+        ModifyReturnValue::class.java,
+
+        // We don't want to discourage people from using ModifyReturnValue.
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/Entity",
+            methods = listOf("updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "RETURN"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    ModifyReturnValue::class.java, mapOf(
+                        "method" to listOf(
+                            "updateFluidHeightAndDoFluidPushing(Lnet/minecraft/tags/TagKey;D)Z",
+							$$"kilt$updateFluidHeightAndDoFluidPushingInterimCalcCheck$handleModdedReturnValue(Lnet/minecraft/tags/TagKey;D)Z"
+                        ),
+                        "at" to listOf(at(
+                            value = "RETURN"
                         ))
                     )
                 )

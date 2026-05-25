@@ -13,6 +13,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
@@ -60,6 +61,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -294,12 +296,13 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return original.setSourcePos(pos);
     }
 
-    @Inject(method = "isEyeInFluid", at = @At("HEAD"), cancellable = true)
-    private void kilt$checkEyeInFluidType(TagKey<Fluid> fluidTag, CallbackInfoReturnable<Boolean> cir) {
+    @ModifyReturnValue(method = "isEyeInFluid", at = @At("RETURN"))
+    private boolean kilt$checkEyeInFluidType(boolean original, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
         if (fluidTag == FluidTags.WATER)
-            cir.setReturnValue(this.isEyeInFluidType(ForgeMod.WATER_TYPE.get()));
+            return this.isEyeInFluidType(ForgeMod.WATER_TYPE.get());
         else if (fluidTag == FluidTags.LAVA)
-            cir.setReturnValue(this.isEyeInFluidType(ForgeMod.LAVA_TYPE.get()));
+            return this.isEyeInFluidType(ForgeMod.LAVA_TYPE.get());
+        return original;
     }
 
     @Definition(id = "fluidHeight", field = "Lnet/minecraft/world/entity/Entity;fluidHeight:Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;")
@@ -438,9 +441,17 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(DD)D"))
-    private double kilt$useInterimCalc(double a, double b, Operation<Double> original, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
+    private double kilt$useInterimCalc(
+            double a, double b, Operation<Double> original,
+            @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs,
+            @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef,
+            @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim,
+            @Local(argsOnly = true) TagKey<Fluid> fluidTag, @Local(ordinal = 1) LocalBooleanRef bl2
+    ) {
         interim.set(interimCalcs.get().computeIfAbsent(fluidTypeRef.get(), t -> MutableTriple.of(0.0, Vec3.ZERO, 0)));
         interim.get().setLeft(Math.max(a, interim.get().getLeft()));
+
+        bl2.set(kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), bl2.get()));
 
         return original.call(a, b);
     }
@@ -464,7 +475,7 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;length()D", ordinal = 0), cancellable = true)
-    private void kilt$useInterimValuesForCalc(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs) {
+    private void kilt$useInterimValuesForCalc(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef) {
         if (interimCalcs.get().isEmpty() || (interimCalcs.get().size() == 1 && (interimCalcs.get().containsKey(ForgeMod.WATER_TYPE.get()) || interimCalcs.get().containsKey(ForgeMod.LAVA_TYPE.get())))) {
             interimCalcs.get().forEach((fluidType, interim) -> {
                 this.setFluidTypeHeight(fluidType, interim.getLeft());
@@ -498,12 +509,19 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             this.setFluidTypeHeight(fluidType, interim.getLeft());
         });
 
-        if (fluidTag == FluidTags.WATER)
-            cir.setReturnValue(this.isInFluidType(ForgeMod.WATER_TYPE.get()));
-        else if (fluidTag == FluidTags.LAVA)
-            cir.setReturnValue(this.isInFluidType(ForgeMod.LAVA_TYPE.get()));
-        else
-            cir.setReturnValue(false);
+        kilt$originalForCancelCheck = kilt$isCorrectFluidTypeForTag(
+                fluidTag, fluidTypeRef.get(), interimCalcs.get(), false
+        );
+
+        cir.setReturnValue(kilt$updateFluidHeightAndDoFluidPushingInterimCalcCheck$handleModdedReturnValue(fluidTag, motionScale));
+    }
+
+    @Unique
+    private boolean kilt$originalForCancelCheck = false;
+
+    @Unique
+    public boolean kilt$updateFluidHeightAndDoFluidPushingInterimCalcCheck$handleModdedReturnValue(TagKey<Fluid> fluidTag, double motionScale) {
+        return kilt$originalForCancelCheck;
     }
 
     @WrapWithCondition(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2DoubleMap;put(Ljava/lang/Object;D)D", remap = false))
@@ -512,11 +530,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             return true;
 
         return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), true);
-    }
-
-    @ModifyReturnValue(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "RETURN", ordinal = 1))
-    private boolean kilt$ensureIsActuallyInFluidType(boolean original, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
-        return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), original);
     }
 
     @Unique
