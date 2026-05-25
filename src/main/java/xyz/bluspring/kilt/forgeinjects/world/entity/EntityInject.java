@@ -13,6 +13,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.EntityExtensions;
 import io.github.fabricators_of_create.porting_lib.fluids.PortingLibFluids;
@@ -60,6 +61,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -439,9 +441,17 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(DD)D"))
-    private double kilt$useInterimCalc(double a, double b, Operation<Double> original, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef, @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim) {
+    private double kilt$useInterimCalc(
+            double a, double b, Operation<Double> original,
+            @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs,
+            @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef,
+            @Share("interim") LocalRef<MutableTriple<Double, Vec3, Integer>> interim,
+            @Local(argsOnly = true) TagKey<Fluid> fluidTag, @Local(ordinal = 1) LocalBooleanRef bl2
+    ) {
         interim.set(interimCalcs.get().computeIfAbsent(fluidTypeRef.get(), t -> MutableTriple.of(0.0, Vec3.ZERO, 0)));
         interim.get().setLeft(Math.max(a, interim.get().getLeft()));
+
+        bl2.set(kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), bl2.get()));
 
         return original.call(a, b);
     }
@@ -452,17 +462,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     @ModifyExpressionValue(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$checkIsPushedByFluid(boolean original, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef) {
         return this.isPushedByFluid(fluidTypeRef.get()) || original;
-    }
-
-    @Definition(id = "bl2", local = @Local(type = boolean.class, ordinal = 1))
-    @Expression("bl2 = @(true)")
-    @ModifyExpressionValue(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$makeSureIsInFluid(
-            boolean original, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef,
-            @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs,
-            @Local(argsOnly = true) TagKey<Fluid> fluidTag
-    ) {
-        return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), original);
     }
 
     // Kilt: we don't need to handle d0 < 0.4D, that's already updated
