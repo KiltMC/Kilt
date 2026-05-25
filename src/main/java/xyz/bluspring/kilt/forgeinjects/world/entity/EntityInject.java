@@ -453,6 +453,17 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return this.isPushedByFluid(fluidTypeRef.get()) || original;
     }
 
+    @Definition(id = "bl2", local = @Local(type = boolean.class, ordinal = 1))
+    @Expression("bl2 = @(true)")
+    @ModifyExpressionValue(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$makeSureIsInFluid(
+            boolean original, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef,
+            @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs,
+            @Local(argsOnly = true) TagKey<Fluid> fluidTag
+    ) {
+        return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), original);
+    }
+
     // Kilt: we don't need to handle d0 < 0.4D, that's already updated
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", ordinal = 0))
@@ -512,11 +523,6 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
             return true;
 
         return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), true);
-    }
-
-    @ModifyReturnValue(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "RETURN", ordinal = 1))
-    private boolean kilt$ensureIsActuallyInFluidType(boolean original, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef, @Share(value = "interimCalcs", namespace = Kilt.MOD_ID) LocalRef<Object2ObjectMap<FluidType, MutableTriple<Double, Vec3, Integer>>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
-        return kilt$isCorrectFluidTypeForTag(fluidTag, fluidTypeRef.get(), interimCalcs.get(), original);
     }
 
     @Unique
