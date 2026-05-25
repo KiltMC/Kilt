@@ -18,7 +18,7 @@ import java.util.function.Consumer
 
 object EnumExtensionLoader {
 
-    val enumExtensions = mutableMapOf<String, MutableSet<EnumPrototype>>()
+    val enumExtensions = mutableSetOf<EnumPrototype>()
     val proxies = mutableMapOf<String, MutableMap<String, EnumParameters.FieldReference>>()
     val indexed = mutableMapOf<String, Int>()
 
@@ -40,10 +40,7 @@ object EnumExtensionLoader {
                 if (Files.isRegularFile(path)) {
                     EnumPrototype.load(mod, path).forEach { prototype ->
                         val usablePrototype = remapPrototype(prototype)
-                        enumExtensions.computeIfAbsent(
-                            usablePrototype.enumName,
-                            { TreeSet() }
-                        ).add(usablePrototype)
+                        enumExtensions.add(usablePrototype)
                     }
                 }
             }
@@ -95,45 +92,43 @@ object EnumExtensionLoader {
     }
 
     fun applyEnumExtensions() {
-        enumExtensions.forEach { (name, prototypes) ->
-            for (prototype in prototypes) {
-                val descriptor = Type.getType(prototype.ctorDesc)
-                val parameters = prototype.ctorParams
-                if (parameters is EnumParameters.FieldReference) {
-                    proxies.computeIfAbsent(prototype.enumName, {mutableMapOf()})[prototype.fieldName] = parameters
-                }
-                ClassTinkerers.enumBuilder(
-                    prototype.enumName, *descriptor.argumentTypes
-                ).addEnum(
-                    prototype.fieldName, {
-                        when (parameters) {
-                            is EnumParameters.Constant -> parameters.params
-                            is EnumParameters.FieldReference -> {
-                                val proxy = getEnumProxy(parameters)
-                                val args = mutableListOf<Any?>()
-                                for (i in 0 until descriptor.argumentCount) {
-                                    args.add(proxy.getParameter(i))
-                                }
-                                args
-                            }
-                            is EnumParameters.MethodReference -> {
-                                // Luckily for us, NeoForge crashes unless these are public.
-                                // This is good because getDeclaredMethod might crash the game on servers.
-                                val method = Class.forName(parameters.owner.className).getMethod(parameters.methodName, Integer.TYPE, Class::class.java)
-                                val args = mutableListOf<Any?>()
-                                for (i in 0 until descriptor.argumentCount) {
-                                    if (indexed[name] == i) {
-                                        args.add(-1)
-                                    } else {
-                                        args.add(method.invoke(null, i, getCastClass(descriptor.argumentTypes[i])))
-                                    }
-                                }
-                                args
-                            }
-                        }.toTypedArray()
-                    }
-                ).build()
+        for (prototype in enumExtensions) {
+            val descriptor = Type.getType(prototype.ctorDesc)
+            val parameters = prototype.ctorParams
+            if (parameters is EnumParameters.FieldReference) {
+                proxies.computeIfAbsent(prototype.enumName, {mutableMapOf()})[prototype.fieldName] = parameters
             }
+            ClassTinkerers.enumBuilder(
+                prototype.enumName, *descriptor.argumentTypes
+            ).addEnum(
+                prototype.fieldName, {
+                    when (parameters) {
+                        is EnumParameters.Constant -> parameters.params
+                        is EnumParameters.FieldReference -> {
+                            val proxy = getEnumProxy(parameters)
+                            val args = mutableListOf<Any?>()
+                            for (i in 0 until descriptor.argumentCount) {
+                                args.add(proxy.getParameter(i))
+                            }
+                            args
+                        }
+                        is EnumParameters.MethodReference -> {
+                            // Luckily for us, NeoForge crashes unless these are public.
+                            // This is good because getDeclaredMethod might crash the game on servers.
+                            val method = Class.forName(parameters.owner.className).getMethod(parameters.methodName, Integer.TYPE, Class::class.java)
+                            val args = mutableListOf<Any?>()
+                            for (i in 0 until descriptor.argumentCount) {
+                                if (indexed[prototype.enumName] == i) {
+                                    args.add(-1)
+                                } else {
+                                    args.add(method.invoke(null, i, getCastClass(descriptor.argumentTypes[i])))
+                                }
+                            }
+                            args
+                        }
+                    }.toTypedArray()
+                }
+            ).build()
         }
     }
 
