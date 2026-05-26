@@ -174,6 +174,7 @@ object KiltRemapper {
     }
 
     fun discardMojangMappings() {
+        OverridingMethodWrappers.init() // We need to remap before Mojang remapper is discarded.
         enhancedMojangRemapper = null
         mojangGamePath = null
         mojangMappedMethods = null
@@ -373,7 +374,6 @@ object KiltRemapper {
             enhancedMojangRemapper = KiltEnhancedRemapper(mojangClassProvider, devMojangIntermediaryMapping as IMappingFile, logConsumer) {
                 initEnhancedRemapper(intermediaryMap, modLoadingQueue)
             }
-            OverridingMethodWrappers.init() // We need to remap before Mojang remapper is discarded.
         }
 
         //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, srgIntermediaryMapping, classProvider)
