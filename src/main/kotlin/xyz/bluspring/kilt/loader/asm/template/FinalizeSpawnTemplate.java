@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.loader.asm;
+package xyz.bluspring.kilt.loader.asm.template;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
