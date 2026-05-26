@@ -98,6 +98,7 @@
     "resources.RegistryOpsAccessor",
     "server.level.TicketAccessor",
     "workarounds.avoid_feature_cycles.BiomeGenerationSettings$PlainBuilderMixin",
+    "workarounds.finalize_spawn.ForgeEventFactoryMixin",
     "workarounds.fluid_stack_droplets.FluidStackMixin",
     "world.inventory.GrindstoneMenuAccessor",
     "world.item.CreativeModeTabBuilderAccessor",
