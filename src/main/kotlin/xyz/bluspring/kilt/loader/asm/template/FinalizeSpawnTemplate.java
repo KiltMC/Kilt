@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 
 @Pseudo // Pseudo is needed to avoid compile error, we remove it when generating the actual mixin.
-@Mixin(targets = {""}) // We populate targets at runtime.
+@Mixin(targets = {""}, priority = 1050) // We populate targets at runtime.
 public class FinalizeSpawnTemplate {
 
     @WrapMethod(method = "finalizeSpawn")
