@@ -60,7 +60,7 @@ object OverridingMethodWrappers {
 
 
 
-        prepareMixinFromTemplate(mainName, template, { classTarget ->
+        prepareMixinFromTemplate(mainName, template, false, { classTarget ->
             classTarget.methods.any { method ->
                 method.name == finalizeSpawnName &&
                 method.descriptor == finalizeSpawnDesc &&
@@ -74,7 +74,7 @@ object OverridingMethodWrappers {
     }
 
     private fun prepareMixinFromTemplate(
-        name: String, template: String, predicate: Predicate<ClassProvider.IClassInfo>
+        name: String, template: String, oneMixinPerTarget: Boolean, predicate: Predicate<ClassProvider.IClassInfo>
     ) {
         val helperUrl = Kilt::class.java.classLoader.getResource("$template.class")!!
         val classReader = ClassReader(helperUrl.readBytes())
@@ -87,68 +87,87 @@ object OverridingMethodWrappers {
         val mappings = mutableMapOf<String, String>()
         val alreadyRefMapped = mutableSetOf<String>()
 
-		for ((i, target) in targets.withIndex()) {
-            val classNode = ClassNode(ASM.API_VERSION)
-            classReader.accept(classNode, 0)
-
-            val mixinAnnotation = Annotations.getInvisible(classNode, Mixin::class.java)
-            classNode.invisibleAnnotations.removeIf { node -> node.desc == "L${Pseudo::class.java.name.replace(".", "/")};" }
-
-            fun remapAnnotation(annotationNode: AnnotationNode) {
-                MixinRemapper.remapMixinAnnotation(
-                    annotationNode, enhancedMojangRemapper!!,
-                    targets.map { KiltRemapper.unmapClass(it) }, classNode.name, mappings,
-                    alreadyRefMapped, null
+		if (oneMixinPerTarget) {
+            for ((i, target) in targets.withIndex()) {
+                prepareSingleMixinFromTemplate(
+                    classReader, targets, template, "$name$i",
+                    setOf(target), mappings, alreadyRefMapped
                 )
             }
+        } else {
+            prepareSingleMixinFromTemplate(
+                classReader, targets, template, name,
+                targets, mappings, alreadyRefMapped
+            )
+        }
+    }
 
-            // When renaming the class we need to check inside the methods where the class name is hardcoded in some places.
-            val currentName = "$name$i"
-			classNode.name = "${mixinPackage.replace(".", "/")}/$currentName"
-            for (method in classNode.methods) {
-                for (variable in method.localVariables) {
-                    if (variable.desc == "L$template;") {
-                        variable.desc = "L${classNode.name};"
-                    }
+    private fun prepareSingleMixinFromTemplate(
+        classReader: ClassReader, remapTargets: Set<String>,
+        template: String, currentName: String, actualTargets: Set<String>,
+        mappings: MutableMap<String, String>, alreadyRefMapped: MutableSet<String>
+    ) {
+        val classNode = ClassNode(ASM.API_VERSION)
+        classReader.accept(classNode, 0)
+
+        val mixinAnnotation = Annotations.getInvisible(classNode, Mixin::class.java)
+        classNode.invisibleAnnotations.removeIf { node -> node.desc == "L${Pseudo::class.java.name.replace(".", "/")};" }
+
+        fun remapAnnotation(annotationNode: AnnotationNode) {
+            MixinRemapper.remapMixinAnnotation(
+                annotationNode, enhancedMojangRemapper!!,
+                remapTargets.map { KiltRemapper.unmapClass(it) }, classNode.name, mappings,
+                alreadyRefMapped, null
+            )
+        }
+
+        // When renaming the class we need to check inside the methods where the class name is hardcoded in some places.
+        classNode.name = "${mixinPackage.replace(".", "/")}/$currentName"
+        for (method in classNode.methods) {
+            for (variable in method.localVariables) {
+                if (variable.desc == "L$template;") {
+                    variable.desc = "L${classNode.name};"
                 }
-                for (ins in method.instructions) {
-                    when (ins) {
-                        is InvokeDynamicInsnNode -> {
-                            ins.desc = ins.desc.replace(template, classNode.name)
-                            for (i in ins.bsmArgs.indices) {
-                                val arg = ins.bsmArgs[i]
-                                if (arg is Handle) {
-                                    ins.bsmArgs[i] = Handle(
-                                        arg.tag, if (arg.owner == template) classNode.name else arg.owner,
-                                        arg.name, arg.desc.replace(template, classNode.name),
-                                        arg.isInterface
-                                    )
-                                }
+            }
+            for (ins in method.instructions) {
+                when (ins) {
+                    is InvokeDynamicInsnNode -> {
+                        ins.desc = ins.desc.replace(template, classNode.name)
+                        for (i in ins.bsmArgs.indices) {
+                            val arg = ins.bsmArgs[i]
+                            if (arg is Handle) {
+                                ins.bsmArgs[i] = Handle(
+                                    arg.tag, if (arg.owner == template) classNode.name else arg.owner,
+                                    arg.name, arg.desc.replace(template, classNode.name),
+                                    arg.isInterface
+                                )
                             }
                         }
-                        is MethodInsnNode -> {
-                            if (ins.owner == template) {
-                                ins.owner = classNode.name
-                            }
+                    }
+                    is MethodInsnNode -> {
+                        if (ins.owner == template) {
+                            ins.owner = classNode.name
                         }
-                        is LdcInsnNode -> {
+                    }
+                    is LdcInsnNode -> {
+                        if (actualTargets.size == 1) {
                             val type = ins.cst
                             if (type is Type && type.descriptor == "L${TargetClass::class.java.name.replace(".", "/")};") {
-                                ins.cst = Type.getType("L$target;")
+                                ins.cst = Type.getType("L${actualTargets.first()};")
                             }
                         }
                     }
                 }
-                method.invisibleAnnotations?.forEach { remapAnnotation(it) }
-                method.visibleAnnotations?.forEach { remapAnnotation(it) }
             }
-
-            Annotations.setValue(mixinAnnotation, "targets", listOf(target))
-            val writer = ClassWriter(0)
-            classNode.accept(writer)
-            ClassTinkerers.define(classNode.name, writer.toByteArray())
-            mixins.add(currentName.replace("/", "."))
+            method.invisibleAnnotations?.forEach { remapAnnotation(it) }
+            method.visibleAnnotations?.forEach { remapAnnotation(it) }
         }
+
+        Annotations.setValue(mixinAnnotation, "targets", actualTargets.toList())
+        val writer = ClassWriter(0)
+        classNode.accept(writer)
+        ClassTinkerers.define(classNode.name, writer.toByteArray())
+        mixins.add(currentName.replace("/", "."))
     }
 
     @JvmStatic
