@@ -28,37 +28,31 @@ import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
-import java.util.*
 import java.util.function.Predicate
-import java.util.stream.Stream
 
 object OverridingMethodWrappers {
 
-    @JvmStatic
-    val mixinPackage = "xyz.bluspring.kilt.mixin"
+    const val MIXIN_PACKAGE = "xyz.bluspring.kilt.mixin"
 
     private const val unmappedFinalizedSpawnDesc = "(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;"
 
-    @JvmStatic
     val finalizeSpawnName: String = KiltRemapper.enhancedMojangRemapper?.mapMethodName("net/minecraft/world/entity/Mob", "finalizeSpawn", unmappedFinalizedSpawnDesc)!!
 
     val finalizeSpawnDesc = KiltRemapper.remapDescriptor(unmappedFinalizedSpawnDesc)
 
-    private val mixins = mutableListOf<String>()
+    @JvmStatic
+    val mixins = mutableListOf<String>()
     private val classCache = mutableMapOf<Path, ClassProvider.IClassInfo>()
 
-    var enhancedMojangRemapper: KiltEnhancedRemapper? = null
+    var enhancedMojangRemapper: KiltEnhancedRemapper? = KiltRemapper.enhancedMojangRemapper
         private set
 
     interface TargetClass {}
 
     init {
-        enhancedMojangRemapper = KiltRemapper.enhancedMojangRemapper
         // Finalize spawn exists in a bunch of places, we need a mixin where the exact value of targets depends on what classes exist at runtime.
         val mainName = "gen/FinalizeSpawnFix"
         val template = "xyz/bluspring/kilt/loader/asm/template/FinalizeSpawnTemplate"
-
-
 
         prepareMixinFromTemplate(mainName, template, false, { classTarget ->
             classTarget.methods.any { method ->
@@ -122,7 +116,7 @@ object OverridingMethodWrappers {
         }
 
         // When renaming the class we need to check inside the methods where the class name is hardcoded in some places.
-        classNode.name = "${mixinPackage.replace(".", "/")}/$currentName"
+        classNode.name = "${MIXIN_PACKAGE.replace(".", "/")}/$currentName"
         for (method in classNode.methods) {
             for (variable in method.localVariables) {
                 if (variable.desc == "L$template;") {
@@ -173,11 +167,6 @@ object OverridingMethodWrappers {
     @JvmStatic
     fun init() {}
 
-    @JvmStatic
-    fun getMixins(): List<String> {
-        return mixins
-    }
-
     // Based on ClassProviderBuilderImpl::addLibrary
     private fun findClasses(path: Path): Set<Path> {
         var innerPath: Path
@@ -218,7 +207,7 @@ object OverridingMethodWrappers {
         return classCache[name]
     }
 
-    private fun getClassesIf(paths: Stream<Path>, predicate: Predicate<ClassProvider.IClassInfo>): Set<String> {
+    private fun getClassesIf(paths: Collection<Path>, predicate: Predicate<ClassProvider.IClassInfo>): Set<String> {
         val classes = mutableSetOf<String>()
         paths.forEach { path ->
             for (foundClass in findClasses(path)) {
@@ -233,10 +222,10 @@ object OverridingMethodWrappers {
 
     private fun getClassesIf(predicate: Predicate<ClassProvider.IClassInfo>): Set<String> {
         return setOf(
-            *getClassesIf(Arrays.stream(runBlocking { KiltRemapper.getGameClassPath() }), predicate).toTypedArray(),
-            *getClassesIf(KiltHelper.getKiltPaths().stream(), predicate).toTypedArray(),
-            *getClassesIf(FabricLoader.getInstance().allMods.flatMap { container -> container.rootPaths }.stream(), predicate).toTypedArray(),
-            *getClassesIf(KiltLoader.instance.mods.stream().flatMap { it.paths.stream() }, predicate).toTypedArray()
+            *getClassesIf(listOf(*runBlocking { KiltRemapper.getGameClassPath() }), predicate).toTypedArray(),
+            *getClassesIf(KiltHelper.getKiltPaths(), predicate).toTypedArray(),
+            *getClassesIf(FabricLoader.getInstance().allMods.flatMap { container -> container.rootPaths }, predicate).toTypedArray(),
+            *getClassesIf(KiltLoader.instance.mods.flatMap { it.paths }, predicate).toTypedArray()
         )
     }
 }

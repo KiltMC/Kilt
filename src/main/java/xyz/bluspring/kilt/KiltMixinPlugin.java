@@ -96,7 +96,7 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        if (mixinPackage.equals(OverridingMethodWrappers.getMixinPackage())) {
+        if (mixinPackage.equals(OverridingMethodWrappers.MIXIN_PACKAGE)) {
             return OverridingMethodWrappers.getMixins();
         }
         return null;
