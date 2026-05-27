@@ -11,8 +11,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
-import xyz.bluspring.kilt.loader.asm.OverridingMethodWrappers;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 @Pseudo // Pseudo is needed to avoid compile error, we remove it when generating the actual mixin.
 @Mixin(targets = {""}, priority = 1050) // We populate targets at runtime.
@@ -20,13 +18,7 @@ public class FinalizeSpawnTemplate {
 
     @WrapMethod(method = "finalizeSpawn")
     public SpawnGroupData kilt$finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, SpawnGroupData spawnData, CompoundTag dataTag, Operation<SpawnGroupData> original) {
-        if (
-                KiltHelper.INSTANCE.hasMethodOverride(
-                        this.getClass(), OverridingMethodWrappers.TargetClass.class, OverridingMethodWrappers.getFinalizeSpawnName(),
-                        ServerLevelAccessor.class, DifficultyInstance.class, MobSpawnType.class,
-                        SpawnGroupData.class, CompoundTag.class
-                )
-        ) {
+        if (ForgeEventFactory.kilt$hasFiredInitializeEvent.get().contains(this)) {
             return original.call(level, difficulty, reason, spawnData, dataTag);
         }
         return ForgeEventFactory.kilt$onFinalizeSpawn(
