@@ -30,6 +30,7 @@ public class ForgeEventFactoryMixin {
     )
     private static SpawnGroupData kilt$onFinalizeSpawn(Mob instance, ServerLevelAccessor serverLevelAccessor, DifficultyInstance difficultyInstance, MobSpawnType mobSpawnType, SpawnGroupData spawnGroupData, CompoundTag compoundTag, Operation<SpawnGroupData> forgeOriginal) {
         var actualOriginal = kilt$fabricOriginal.get();
+        kilt$fabricOriginal.set(null);
         if (actualOriginal == null) {
             actualOriginal = forgeOriginal;
         }
