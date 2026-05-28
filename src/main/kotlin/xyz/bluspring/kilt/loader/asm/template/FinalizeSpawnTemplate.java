@@ -8,9 +8,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
+import xyz.bluspring.kilt.workarounds.ForgeEventFactoryWorkaround;
 
 @Pseudo // Pseudo is needed to avoid compile error, we remove it when generating the actual mixin.
 @Mixin(targets = {""}, priority = 1050) // We populate targets at runtime.
@@ -18,10 +18,10 @@ public class FinalizeSpawnTemplate {
 
     @WrapMethod(method = "finalizeSpawn")
     public SpawnGroupData kilt$finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, SpawnGroupData spawnData, CompoundTag dataTag, Operation<SpawnGroupData> original) {
-        if (ForgeEventFactory.kilt$hasFiredInitializeEvent.get().contains(this)) {
+        if (ForgeEventFactoryWorkaround.kilt$hasFiredInitializeEvent.get().contains(this)) {
             return original.call(level, difficulty, reason, spawnData, dataTag);
         }
-        return ForgeEventFactory.kilt$onFinalizeSpawn(
+        return ForgeEventFactoryWorkaround.kilt$onFinalizeSpawn(
                 (Mob) (Object) this, level, difficulty, reason, spawnData, dataTag,
                 args -> {
                     var newLevel = (ServerLevelAccessor) args[1];
