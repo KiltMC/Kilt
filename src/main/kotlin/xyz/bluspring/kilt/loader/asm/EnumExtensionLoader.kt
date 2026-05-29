@@ -22,10 +22,8 @@ object EnumExtensionLoader {
     val proxies = mutableMapOf<String, MutableMap<String, EnumParameters.FieldReference>>()
     val indexed = mutableMapOf<String, Int>()
 
-    private val insnListSizeField = InsnList::class.java.getDeclaredField("size")
-
-    init {
-        insnListSizeField.isAccessible = true
+    private val insnListSizeField = InsnList::class.java.getDeclaredField("size").apply {
+        isAccessible = true
     }
 
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
