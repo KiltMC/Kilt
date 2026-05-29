@@ -51,6 +51,15 @@ object KiltMixinModifications {
             mapOf(
                 LocalPair("Lnet/minecraft/core/Direction;", Local(name = arrayOf("direction"))) to Local(ordinal = 0)
             )
+        ),
+
+        // Fix No Man's Land ServerPlayerMixin
+        // https://github.com/Alchemists-Of-Yore/No-Mans-Land/blob/1.21.1/src/main/java/com/farcr/nomansland/common/mixin/ServerPlayerMixin.java#L35-L41
+        // This lambda is added by NeoForge and contains some of the logic. Luckily for us, they have the same signature.
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/server/level/ServerPlayer",
+            methods = listOf($$"lambda$startSleepInBed$13"),
+            remapMethodsTo = "startSleepInBed"
         )
     )
 
