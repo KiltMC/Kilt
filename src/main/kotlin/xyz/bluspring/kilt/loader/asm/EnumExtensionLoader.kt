@@ -22,6 +22,12 @@ object EnumExtensionLoader {
     val proxies = mutableMapOf<String, MutableMap<String, EnumParameters.FieldReference>>()
     val indexed = mutableMapOf<String, Int>()
 
+    private val insnListSizeField = InsnList::class.java.getDeclaredField("size")
+
+    init {
+        insnListSizeField.isAccessible = true
+    }
+
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
         return EnumPrototype(
             prototype.owningMod,
@@ -184,9 +190,7 @@ object EnumExtensionLoader {
             insn = insn.next
         }
         if (actualSize != -1 && notedSize != actualSize && index == actualSize) {
-            val sizeField = nodes.javaClass.getDeclaredField("size")
-            sizeField.isAccessible = true
-            sizeField.set(nodes, actualSize)
+            insnListSizeField.set(nodes, actualSize)
         }
     }
 
