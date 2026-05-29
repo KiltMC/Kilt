@@ -171,11 +171,33 @@ object EnumExtensionLoader {
         }
     }
 
+    private fun fixSize(nodes: InsnList) {
+        val notedSize = nodes.size()
+        var index = 0
+        var actualSize = -1
+        var insn = nodes.first
+        while (insn != null) {
+            index++
+            if (insn == nodes.last) {
+                actualSize = index
+            }
+            insn = insn.next
+        }
+        if (actualSize != -1 && notedSize != actualSize && index == actualSize) {
+            val sizeField = nodes.javaClass.getDeclaredField("size")
+            sizeField.isAccessible = true
+            sizeField.set(nodes, actualSize)
+        }
+    }
+
     fun postApplyEnum(targetClass: ClassNode, mixinClass: ClassNode) {
         if (mixinClass.interfaces.contains(EXTENSIBLE_ENUM)) {
             val clinit = targetClass.methods.first { it.name == "<clinit>" }
 
             val vanillaCount = INITIAL_ENUM_COUNTS.getOrDefault(targetClass.name, 0)
+
+            // Fix ArrayIndexOutOfBoundsException exceptions because the cached size does not match the size of the linked list.
+            fixSize(clinit.instructions)
 
             // Make sure the ordinal parameter does not change between reboots.
             let {
