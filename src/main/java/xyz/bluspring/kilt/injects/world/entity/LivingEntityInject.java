@@ -17,7 +17,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleOptions;
@@ -37,16 +36,11 @@ import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.neoforge.common.*;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
-import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
@@ -651,104 +645,12 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         return original && !this.useItem.canPerformAction(ItemAbilities.SHIELD_BLOCK);
     }
 
-    @WrapOperation(
-        method = {"startSleeping", "method_18404"},
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;setValue(Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Ljava/lang/Object;"
-        ),
-        expect = 2
-    )
-    private Object kilt$setBedOccupied(
-        BlockState blockState, Property<?> property, Comparable<?> comparable, Operation<Object> original,
-        @Share("occupied") LocalRef<Boolean> occupied
-    ) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(
-            blockState.getBlock().getClass(), IBlockExtension.class, "setBedOccupied",
-            BlockState.class, Level.class, BlockPos.class, LivingEntity.class, Boolean.TYPE
-        )) {
-            // If mods override setBedOccupied they might not have the OCCUPIED block state, so early exit to avoid an exception.
-            occupied.set((Boolean) comparable);
-            return blockState;
-        } else {
-            occupied.set(null);
-        }
-        return original.call(blockState, property, comparable);
-    }
-
-    @WrapOperation(
-        method = {"startSleeping", "method_18404"},
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"
-        ),
-        expect = 2
-    )
-    private boolean kilt$setBedOccupied(
-        Level level, BlockPos blockPos, BlockState blockState, int i, Operation<Boolean> original,
-        @Share("occupied") LocalRef<Boolean> occupied
-    ) {
-        if (occupied.get() != null) {
-            blockState.setBedOccupied(level, blockPos, (LivingEntity) (Object) this, occupied.get());
-            return true;
-        }
-        return original.call(level, blockPos, blockState, i);
-    }
-
-    @Definition(id = "BedBlock", type = BedBlock.class)
-    @Expression("? instanceof BedBlock")
-    @WrapOperation(
-        method = {"method_18405", "method_18404", "startSleeping"},
-        at = @At("MIXINEXTRAS:EXPRESSION"),
-        expect = 3
-    )
-    private boolean kilt$isBed(
-        Object object, Operation<Boolean> original, @Local(argsOnly = true) BlockPos blockPos
-    ) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(
-            object.getClass(), IBlockExtension.class, "isBed",
-            BlockState.class, BlockGetter.class, BlockPos.class, LivingEntity.class
-        )) {
-            return ((IBlockExtension) object).isBed(
-                this.level().getBlockState(blockPos),
-                this.level(), blockPos, (LivingEntity) (Object) this
-            );
-        }
-        return original.call(object);
-    }
+    // The rest of the bed checks are implemented via Fabric API.
 
     @WrapMethod(method = "checkBedExists")
     private boolean kilt$checkBedExists(Operation<Boolean> original) {
         boolean hasBed = original.call();
         return EventHooks.canEntityContinueSleeping((LivingEntity) (Object) this, hasBed ? null : Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
-    }
-
-    @WrapOperation(
-        method = "getBedOrientation",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/BedBlock;getBedOrientation(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/core/Direction;"
-        )
-    )
-    private Direction kilt$getBedOrientation(BlockGetter blockGetter, BlockPos blockPos, Operation<Direction> original) {
-        var state = blockGetter.getBlockState(blockPos);
-        //noinspection ConstantValue
-        if (
-            (
-                KiltHelper.INSTANCE.hasMethodOverride(
-                    state.getBlock().getClass(), IBlockExtension.class, "getBedDirection",
-                    BlockState.class, LevelReader.class, BlockPos.class
-                ) || // If bed is not BebBlock we need to run the NeoForge getBedDirection for the correct result even if not overriden.
-                KiltHelper.INSTANCE.hasMethodOverride(
-                    state.getBlock().getClass(), IBlockExtension.class, "isBed",
-                    BlockState.class, BlockGetter.class, BlockPos.class, LivingEntity.class
-                )
-            ) &&
-            state.isBed(blockGetter, blockPos, (LivingEntity) (Object) this)
-        ) {
-            return state.getBedDirection(blockGetter instanceof LevelReader reader ? reader : level(), blockPos);
-        }
-        return original.call(blockGetter, blockPos);
     }
 
     @ModifyReturnValue(method = "getProjectile", at = @At("RETURN"))

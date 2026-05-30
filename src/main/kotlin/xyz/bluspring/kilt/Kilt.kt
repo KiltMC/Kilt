@@ -14,12 +14,20 @@ import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.state.BlockState
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.common.extensions.IBlockExtension
 import net.neoforged.neoforge.event.EventHooks
 import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.server.ServerLifecycleHooks
@@ -29,6 +37,7 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.KiltHelper.hasMethodOverride
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
@@ -104,6 +113,57 @@ class Kilt : ModInitializer {
                 return@register null
 
             EventHooks.canPlayerStartSleeping(player, pos, Either.right(Unit.INSTANCE)).left().orElse(null)
+        }
+
+        EntitySleepEvents.SET_BED_OCCUPATION_STATE.register { entity, pos, state, occupied ->
+            if (
+                hasMethodOverride(
+                    state.block.javaClass, IBlockExtension::class.java, "setBedOccupied",
+                    BlockState::class.java, Level::class.java, BlockPos::class.java,
+                    LivingEntity::class.java, Boolean::class.javaPrimitiveType!!
+                )
+            ) {
+                state.setBedOccupied(entity.level(), pos, entity, occupied)
+                return@register true
+            } else {
+                return@register false
+            }
+        }
+
+        EntitySleepEvents.ALLOW_BED.register { entity, pos, state, bool ->
+            if (
+                hasMethodOverride(
+                    state.block.javaClass, IBlockExtension::class.java, "isBed",
+                    BlockState::class.java, BlockGetter::class.java, BlockPos::class.java, LivingEntity::class.java
+                )
+            ) {
+                return@register if (state.isBed(entity.level(), pos, entity)) {
+                    InteractionResult.SUCCESS
+                } else {
+                    InteractionResult.FAIL
+                }
+            }
+            return@register InteractionResult.PASS
+        }
+
+        EntitySleepEvents.MODIFY_SLEEPING_DIRECTION.register { entity, pos, direction ->
+            val state: BlockState = entity.level().getBlockState(pos)
+            if (
+                (
+                    hasMethodOverride(
+                        state.block.javaClass, IBlockExtension::class.java, "getBedDirection",
+                        BlockState::class.java, LevelReader::class.java, BlockPos::class.java
+                    ) || // If bed is not BebBlock we need to run the NeoForge getBedDirection for the correct result even if not overriden.
+                    hasMethodOverride(
+                        state.block.javaClass, IBlockExtension::class.java, "isBed",
+                        BlockState::class.java, BlockGetter::class.java, BlockPos::class.java, LivingEntity::class.java
+                    )
+                ) &&
+                state.isBed(entity.level(), pos, entity)
+            ) {
+                return@register state.getBedDirection(entity.level(), pos)
+            }
+            return@register direction
         }
 
         EntitySleepEvents.ALLOW_SETTING_SPAWN.register { player, pos ->
