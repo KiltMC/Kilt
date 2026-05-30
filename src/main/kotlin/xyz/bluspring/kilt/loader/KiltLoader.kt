@@ -84,10 +84,16 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     )
 
     // This over here is a wall of shame for mods that use different mod IDs between their Forge and Fabric variants.
-    private val FORGE_TO_FABRIC_MODS = mapOf(
+    @get:JvmName("getNeoForgeToFabricMods")
+    val NEOFORGE_TO_FABRIC_MODS = mapOf(
         // Forge ID -> Fabric ID
         "cloth_config" to "cloth-config",
-        "playeranimator" to "player-animator"
+        "playeranimator" to "player-animator",
+
+        // This list isn't a wall of shame though :D
+        "rubidium" to "sodium",
+        "embeddium" to "sodium",
+        "oculus" to "iris",
     )
 
     init {
@@ -149,8 +155,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
-        if (FORGE_TO_FABRIC_MODS.contains(dependencyId))
-            return FORGE_TO_FABRIC_MODS[dependencyId]!!
+        if (NEOFORGE_TO_FABRIC_MODS.contains(dependencyId))
+            return NEOFORGE_TO_FABRIC_MODS[dependencyId]!!
 
         val loader = FabricLoader.getInstance()
         if (loader.isModLoaded(dependencyId))
