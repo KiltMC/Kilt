@@ -1,20 +1,12 @@
 // TRACKED HASH: 0103ffc8bca3b91dd898021eb13bdca66921d3eb
 package xyz.bluspring.kilt.injects.world.entity;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Stack;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
@@ -24,34 +16,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.EffectCure;
-import net.neoforged.neoforge.common.EffectCures;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.common.damagesource.DamageContainer;
-import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
-import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
-import net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent;
-import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
-import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
@@ -75,6 +39,29 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.*;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
+import net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityInject extends Entity implements ILivingEntityExtension, LivingEntityInjection {
@@ -658,7 +645,12 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         return original && !this.useItem.canPerformAction(ItemAbilities.SHIELD_BLOCK);
     }
 
-    // TODO: bed checks
+    // The rest of the bed checks are implemented via Fabric API.
+
+    @ModifyReturnValue(method = "checkBedExists", at = @At("RETURN"))
+    private boolean kilt$checkBedExists(boolean hasBed) {
+        return EventHooks.canEntityContinueSleeping((LivingEntity) (Object) this, hasBed ? null : Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
+    }
 
     @ModifyReturnValue(method = "getProjectile", at = @At("RETURN"))
     private ItemStack kilt$tryGetProjectileStack(ItemStack original, @Local(argsOnly = true) ItemStack weapon) {
