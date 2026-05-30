@@ -61,8 +61,8 @@ object KiltMixinModifications {
         // This lambda is added by NeoForge and contains some of the logic. Luckily for us, they have the same signature.
         NameRemappingAnnotationModifier(
             owner = "net/minecraft/server/level/ServerPlayer",
-            methods = listOf($$"lambda$startSleepInBed$13"),
-            remapMethodsTo = "startSleepInBed"
+            methods = listOf($$"lambda$startSleepInBed$13", $$"lambda$startSleepInBed$13(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;"),
+            remapMethodsTo = "startSleepInBed(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;"
         )
     )
 
