@@ -42,6 +42,9 @@ object KiltMixinModifications {
                 LocalPair("D", Local(ordinal = 5)) to Local(ordinal = 2),
                 LocalPair("D", Local(ordinal = 1)) to Local(ordinal = 4),
                 LocalPair("D", Local(ordinal = 2)) to Local(ordinal = 5),
+                // https://github.com/Alchemists-Of-Yore/No-Mans-Land/blob/1.21.1/src/main/java/com/farcr/nomansland/common/mixin/client/MouseHandlerMixin.java#L25
+                LocalPair("D", Local(name = arrayOf("d0"))) to Local(ordinal = 1),
+                LocalPair("D", Local(name = arrayOf("d1"))) to Local(ordinal = 2)
             )
         ),
         RetargetingLocalModifier(
