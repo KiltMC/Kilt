@@ -59,7 +59,7 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun mapFieldName(owner: String, name: String, descriptor: String): String {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && name != "this$0") {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !name.startsWith("this$")) {
             return name
         }
 
