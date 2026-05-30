@@ -16,6 +16,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
+import xyz.bluspring.kilt.loader.asm.OverridingMethodWrappers;
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifier;
 
 import java.util.List;
@@ -95,6 +96,9 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        if (mixinPackage.equals(OverridingMethodWrappers.MIXIN_PACKAGE)) {
+            return OverridingMethodWrappers.getMixins();
+        }
         return null;
     }
 

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
+import xyz.bluspring.kilt.loader.asm.OverridingMethodWrappers
 import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinCancellableInitFixer
@@ -173,6 +174,7 @@ object KiltRemapper {
     }
 
     fun discardMojangMappings() {
+        OverridingMethodWrappers.init() // We need to remap before Mojang remapper is discarded.
         enhancedMojangRemapper = null
         mojangGamePath = null
         mojangMappedMethods = null
