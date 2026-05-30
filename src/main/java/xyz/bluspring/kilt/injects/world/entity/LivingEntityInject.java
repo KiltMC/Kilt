@@ -647,9 +647,8 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
 
     // The rest of the bed checks are implemented via Fabric API.
 
-    @WrapMethod(method = "checkBedExists")
-    private boolean kilt$checkBedExists(Operation<Boolean> original) {
-        boolean hasBed = original.call();
+    @ModifyReturnValue(method = "checkBedExists", at = @At("RETURN"))
+    private boolean kilt$checkBedExists(boolean hasBed) {
         return EventHooks.canEntityContinueSleeping((LivingEntity) (Object) this, hasBed ? null : Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
     }
 
