@@ -37,7 +37,6 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
-import xyz.bluspring.kilt.util.KiltHelper.hasMethodOverride
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
@@ -117,7 +116,7 @@ class Kilt : ModInitializer {
 
         EntitySleepEvents.SET_BED_OCCUPATION_STATE.register { entity, pos, state, occupied ->
             if (
-                hasMethodOverride(
+                KiltHelper.hasMethodOverride(
                     state.block.javaClass, IBlockExtension::class.java, "setBedOccupied",
                     BlockState::class.java, Level::class.java, BlockPos::class.java,
                     LivingEntity::class.java, Boolean::class.javaPrimitiveType!!
@@ -132,7 +131,7 @@ class Kilt : ModInitializer {
 
         EntitySleepEvents.ALLOW_BED.register { entity, pos, state, bool ->
             if (
-                hasMethodOverride(
+                KiltHelper.hasMethodOverride(
                     state.block.javaClass, IBlockExtension::class.java, "isBed",
                     BlockState::class.java, BlockGetter::class.java, BlockPos::class.java, LivingEntity::class.java
                 )
@@ -150,11 +149,11 @@ class Kilt : ModInitializer {
             val state: BlockState = entity.level().getBlockState(pos)
             if (
                 (
-                    hasMethodOverride(
+                    KiltHelper.hasMethodOverride(
                         state.block.javaClass, IBlockExtension::class.java, "getBedDirection",
                         BlockState::class.java, LevelReader::class.java, BlockPos::class.java
-                    ) || // If bed is not BebBlock we need to run the NeoForge getBedDirection for the correct result even if not overriden.
-                    hasMethodOverride(
+                    ) || // If bed is not BedBlock we need to run the NeoForge getBedDirection for the correct result even if not overridden.
+                    KiltHelper.hasMethodOverride(
                         state.block.javaClass, IBlockExtension::class.java, "isBed",
                         BlockState::class.java, BlockGetter::class.java, BlockPos::class.java, LivingEntity::class.java
                     )
