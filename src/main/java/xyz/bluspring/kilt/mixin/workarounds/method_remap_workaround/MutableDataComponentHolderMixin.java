@@ -1,16 +1,21 @@
-package xyz.bluspring.kilt.mixin.workarounds;
+package xyz.bluspring.kilt.mixin.workarounds.method_remap_workaround;
+
+import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
+
+import net.neoforged.neoforge.common.MutableDataComponentHolder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.workarounds.MutableDataComponentHolderWorkaround;
 
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
-import net.neoforged.neoforge.common.MutableDataComponentHolder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.*;
-import xyz.bluspring.kilt.workarounds.MutableDataComponentHolderWorkaround;
-
-import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
 
 @Implements(@Interface(iface = MutableDataComponentHolderWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(MutableDataComponentHolder.class)

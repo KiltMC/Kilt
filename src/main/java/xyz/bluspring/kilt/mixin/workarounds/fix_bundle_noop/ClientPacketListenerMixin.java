@@ -1,4 +1,4 @@
-package xyz.bluspring.kilt.mixin.workarounds;
+package xyz.bluspring.kilt.mixin.workarounds.fix_bundle_noop;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
