@@ -1,12 +1,13 @@
 package xyz.bluspring.kilt.injections.resources;
 
 import io.github.fabricators_of_create.porting_lib.extensions.common.ResourceLocationExtension;
-import net.minecraft.resources.ResourceLocation;
 import xyz.bluspring.kilt.processor.FabricInjectedInterface;
+
+import net.minecraft.resources.ResourceLocation;
 
 @FabricInjectedInterface(ResourceLocation.class)
 public interface ResourceLocationInjection extends ResourceLocationExtension {
-    default ResourceLocation self() {
+    private ResourceLocation self() { // Kilt: make private cuz otherwise things panic
         return (ResourceLocation) this;
     }
 
