@@ -89,11 +89,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Forge ID -> Fabric ID
         "cloth_config" to "cloth-config",
         "playeranimator" to "player-animator",
-
-        // This list isn't a wall of shame though :D
-        "rubidium" to "sodium",
-        "embeddium" to "sodium",
-        "oculus" to "iris",
     )
 
     init {
