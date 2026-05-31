@@ -38,7 +38,8 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
 
     @Inject(method = "addEntity", at = @At("HEAD"), cancellable = true)
     private void kilt$callEntityJoinLevelEvent(T entity, boolean worldGenSpawned, CallbackInfoReturnable<Boolean> cir) {
-        if (this.kilt$callWithoutEvent.getAndSet(false) && entity instanceof Entity e && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(e, e.level(), worldGenSpawned)).isCanceled())
+        // Yes, this should in fact be inverted. We want the event to be fired when kilt$callWithoutEvent is set to false.
+        if (!this.kilt$callWithoutEvent.getAndSet(false) && entity instanceof Entity e && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(e, e.level(), worldGenSpawned)).isCanceled())
             cir.setReturnValue(false);
     }
 
