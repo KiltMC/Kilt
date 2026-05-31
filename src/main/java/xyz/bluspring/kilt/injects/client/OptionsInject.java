@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.injects.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -66,9 +68,26 @@ public abstract class OptionsInject implements OptionsInjection {
         isLimited.set(this.kilt$loadOptionsLimited);
     }
 
+    @WrapWithCondition(
+        method = "processOptions",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/Options;processDumpedOptions(Lnet/minecraft/client/Options$OptionAccess;)V"
+        )
+    )
+    private boolean kilt$preventDumpedOptionsIfLimited(
+        Options instance, @Coerce Object optionAccess, @Share("limited") LocalBooleanRef isLimited
+    ) {
+        return !isLimited.get();
+    }
+
     @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Lnet/minecraft/client/OptionInstance;)V"))
     private <T> void kilt$preventRunIfLimited(Options.FieldAccess instance, String s, OptionInstance<T> tOptionInstance, Operation<Void> original, @Share("limited") LocalBooleanRef isLimited) {
         if (isLimited.get()) {
+            if (s.equals("menuBackgroundBlurriness")) { // Kilt: Pretty good marker for us to stop using the limited rules
+                isLimited.set(false);
+            }
+
             return;
         }
 
@@ -87,10 +106,6 @@ public abstract class OptionsInject implements OptionsInjection {
     @WrapOperation(method = "processOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options$FieldAccess;process(Ljava/lang/String;Z)Z"))
     private boolean kilt$returnSelfIfLimited(Options.FieldAccess instance, String s, boolean b, Operation<Boolean> original, @Share("limited") LocalBooleanRef isLimited) {
         if (isLimited.get()) {
-            if (s.equals("onboardAccessibility")) { // Kilt: Pretty good marker for us to stop using the limited rules
-                isLimited.set(false);
-            }
-
             return b;
         }
 
