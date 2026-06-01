@@ -675,6 +675,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     fun loadMods() {
         Kilt.logger.info("Starting initialization of NeoForge mods...")
 
+        // Needed by Twilight Forest
+        FMLLoader.progressWindowTick = {}
+        FMLLoader.beforeStart(ModuleLayer.boot())
+
         val exception = RuntimeException("Failed to load NeoForge mods in Kilt!")
 
         // Initialize any compatibility bridges that have been registered
