@@ -80,6 +80,7 @@
       "resources.RegistryOpsAccessor",
       "server.level.TicketAccessor",
       "workarounds.avoid_feature_cycles.BiomeGenerationSettings$PlainBuilderMixin",
+      "workarounds.mapped_registry_aliases.MappedRegistryMixin",
       "workarounds.method_remap_workaround.ICommonPacketListenerMixin",
       "workarounds.method_remap_workaround.MutableDataComponentHolderMixin",
       "workarounds.method_remap_workaround.ServerCommonPacketListenerImplMixin",
