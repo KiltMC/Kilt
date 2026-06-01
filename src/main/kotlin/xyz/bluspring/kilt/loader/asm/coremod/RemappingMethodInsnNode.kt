@@ -10,4 +10,5 @@ open class RemappingMethodInsnNode(opcode: Int, owner: String, name: String, des
     KiltRemapper.remapDescriptor(descriptor), isInterface
 ) {
     constructor(opcode: Int, owner: String, name: String, descriptor: String) : this(opcode, owner, name, descriptor, opcode == Opcodes.INVOKEINTERFACE)
+    constructor(original: MethodInsnNode) : this(original.opcode, original.owner, original.name, original.desc, original.itf)
 }

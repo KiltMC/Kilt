@@ -7,4 +7,6 @@ open class RemappingFieldInsnNode(opcode: Int, owner: String, name: String, desc
     KiltRemapper.remapClass(owner, ignoreWorkaround = true),
     name,
     KiltRemapper.remapDescriptor(descriptor)
-)
+) {
+    constructor(original: FieldInsnNode) : this(original.opcode, original.owner, original.name, original.desc)
+}

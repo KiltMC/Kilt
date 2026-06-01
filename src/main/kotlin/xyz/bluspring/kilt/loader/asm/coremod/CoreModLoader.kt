@@ -1,10 +1,25 @@
 package xyz.bluspring.kilt.loader.asm.coremod
 
 import com.google.gson.JsonParser
+import cpw.mods.modlauncher.VoteDeadlockException
+import cpw.mods.modlauncher.VoteRejectedException
+import cpw.mods.modlauncher.api.ITransformer
+import cpw.mods.modlauncher.api.ITransformerActivity
+import cpw.mods.modlauncher.api.TargetType
+import cpw.mods.modlauncher.api.TransformerVoteResult
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
+import net.neoforged.neoforgespi.coremod.ICoreMod
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldNode
+import org.objectweb.asm.tree.MethodNode
+import org.slf4j.LoggerFactory
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
-
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import java.security.MessageDigest
+import java.util.*
 
 // A reimplementation of Forge's coremodding system.
 // Mainly utilizes some code from https://github.com/neoforged/CoreMods/blob/main/src/main/java/net/neoforged/coremod/CoreModScriptingEngine.java
@@ -17,7 +32,7 @@ object CoreModLoader {
     )
 
     val ALLOWED_CLASSES = setOf(
-        "net.minecraftforge.coremod.api.ASMAPI", "org.objectweb.asm.Opcodes",
+        "net.neoforged.coremod.api.ASMAPI", "org.objectweb.asm.Opcodes",
 
         // Editing the code of methods
         "org.objectweb.asm.tree.AbstractInsnNode",
@@ -96,6 +111,112 @@ object CoreModLoader {
 
                 it.tabs.removeIf { t -> t != tab }
             }, true)
+        }
+
+        loadJavaCoreMods()
+    }
+
+    private val logger = LoggerFactory.getLogger("Kilt CoreMod Loader")
+
+    private fun loadJavaCoreMods() {
+        val coremods = ServiceLoader.load(ICoreMod::class.java)
+        val mergedTransformers = mutableMapOf<String, MutableList<ITransformer<*>>>()
+
+        // Group by class targets
+        for (coreMod in coremods) {
+            for (transformer in coreMod.transformers) {
+                for (target in transformer.targets()) {
+                    mergedTransformers.computeIfAbsent(target.className) { mutableListOf() }
+                        .add(transformer)
+                }
+            }
+        }
+
+        for ((className, transformers) in mergedTransformers) {
+            val targetedTransformers = transformers.groupBy { it.targetType }
+
+            ClassTinkerers.addPostTransformation(KiltRemapper.remapClass(className)) { classNode ->
+                try {
+                    val hash by lazy {
+                        val digest = MessageDigest.getInstance("SHA-256")
+                        val writer = ClassWriter(0)
+                        classNode.accept(writer)
+                        digest.digest(writer.toByteArray())
+                    }
+                    val context = TransformerVotingContext(className, true, { hash }, mutableListOf(), ITransformerActivity.CLASSLOADING_REASON)
+
+                    // the voting system is... very confusing. no joke, the only project I can find that actually uses a result that *isn't* TransformerVoteResult.YES
+                    // is Sponge.
+                    fun <T : Any> transform(node: T, transformers: Collection<ITransformer<T>>, toMojang: (T) -> T = { it }, fromMojang: (T) -> T = { it }): T {
+                        var actualNode = node
+                        context.node = actualNode
+
+                        val actualTransformers = transformers.toMutableList()
+                        do {
+                            val votes = transformers.associateWith { it.castVote(context) }
+                            if (votes.containsValue(TransformerVoteResult.REJECT)) {
+                                throw VoteRejectedException()
+                            }
+
+                            if (votes.containsValue(TransformerVoteResult.NO)) {
+                                actualTransformers.removeAll(votes.filterValues { it == TransformerVoteResult.NO }.keys)
+                            }
+
+                            if (votes.containsValue(TransformerVoteResult.YES)) {
+                                val transformer = votes.filterValues { it == TransformerVoteResult.YES }.keys.first()
+                                logger.debug("Transforming $node using $transformer (${transformer.targets()})")
+                                actualNode = fromMojang(transformer.transform(toMojang(actualNode), context))
+                                actualTransformers.remove(transformer)
+                                continue
+                            }
+
+                            if (votes.containsValue(TransformerVoteResult.DEFER)) {
+                                throw VoteDeadlockException()
+                            }
+                        } while (actualTransformers.isNotEmpty())
+
+                        return actualNode
+                    }
+
+                    val actualClassNode = transform(classNode, (targetedTransformers[TargetType.PRE_CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
+
+                    // we actually need to do a full replace! oh boy! let's hope this works well enough!
+                    if (actualClassNode != classNode) {
+                        actualClassNode.accept(classNode)
+                    }
+
+                    val fields = ArrayList<FieldNode>(actualClassNode.fields.size)
+                    for (field in actualClassNode.fields) {
+                        fields.add(transform(field, ((targetedTransformers[TargetType.FIELD] ?: emptyList()) as Collection<ITransformer<FieldNode>>).filter {
+                            it.targets().any { f ->
+                                f.elementName == field.name && f.elementDescriptor == field.desc
+                            }
+                        }))
+                    }
+
+                    val methods = ArrayList<MethodNode>(actualClassNode.methods.size)
+                    for (method in actualClassNode.methods) {
+                        methods.add(transform(method, ((targetedTransformers[TargetType.METHOD] ?: emptyList()) as Collection<ITransformer<MethodNode>>).filter {
+                            it.targets().any { f ->
+                                f.elementName == method.name && f.elementDescriptor == method.desc
+                            }
+                        }))
+                    }
+
+                    actualClassNode.fields = fields
+                    actualClassNode.methods = methods
+
+                    val postTransformedClassNode = transform(actualClassNode, (targetedTransformers[TargetType.CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
+
+                    // Part two, oh boy!
+                    if (postTransformedClassNode != actualClassNode) {
+                        postTransformedClassNode.accept(classNode)
+                    }
+                } catch (e: Throwable) {
+                    logger.error("An error occurred in a coremod while transforming $className/${classNode.name}!", e)
+                    throw e
+                }
+            }
         }
     }
 }
