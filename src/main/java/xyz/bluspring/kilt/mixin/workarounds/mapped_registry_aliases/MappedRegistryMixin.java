@@ -20,19 +20,28 @@ import java.lang.invoke.MethodType;
 @Implements(@Interface(iface = MappedRegistryWorkaround.class, prefix = "kilt$i$"))
 public class MappedRegistryMixin implements FabricRegistry {
 
+    private static final MethodHandle kilt$super$addAlias;
+
+    static {
+        try {
+            // https://stackoverflow.com/a/15674467
+            //noinspection JavaLangInvokeHandleSignature
+            kilt$super$addAlias = MethodHandles.lookup().findSpecial(
+                BaseMappedRegistry.class, "addAlias",
+                MethodType.methodType(Void.TYPE, ResourceLocation.class, ResourceLocation.class),
+                MappedRegistry.class
+            );
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Intrinsic(displace = true)
     public void kilt$i$addAlias(ResourceLocation old, ResourceLocation newId) {
         if (KiltLoader.Companion.getInstance().hasMod(old.getNamespace())) {
             try {
-                // https://stackoverflow.com/a/15674467
-                @SuppressWarnings("JavaLangInvokeHandleSignature")
-                MethodHandle super$addAlias = MethodHandles.lookup().findSpecial(
-                    BaseMappedRegistry.class, "addAlias",
-                    MethodType.methodType(Void.TYPE, ResourceLocation.class, ResourceLocation.class),
-                    MappedRegistry.class
-                );
                 //noinspection JavaLangInvokeHandleSignature
-                super$addAlias.invoke(this, old, newId);
+                kilt$super$addAlias.invoke(this, old, newId);
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
