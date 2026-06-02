@@ -535,6 +535,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             CoreModLoader.scanAndLoadCoreMods(mod)
         }
         EnumExtensionLoader.applyEnumExtensions()
+        CoreModLoader.loadJavaCoreMods()
     }
 
     override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<NeoForgeMod> {

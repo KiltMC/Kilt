@@ -112,13 +112,13 @@ object CoreModLoader {
                 it.tabs.removeIf { t -> t != tab }
             }, true)
         }
-
-        loadJavaCoreMods()
     }
 
     private val logger = LoggerFactory.getLogger("Kilt CoreMod Loader")
 
-    private fun loadJavaCoreMods() {
+    fun loadJavaCoreMods() {
+        if (!enableCoreMods)
+            return
         val coremods = ServiceLoader.load(ICoreMod::class.java)
         val mergedTransformers = mutableMapOf<String, MutableList<ITransformer<*>>>()
 
