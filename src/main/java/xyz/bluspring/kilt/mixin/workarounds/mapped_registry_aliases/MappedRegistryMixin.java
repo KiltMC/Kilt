@@ -4,10 +4,7 @@ import net.fabricmc.fabric.api.event.registry.FabricRegistry;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.registries.BaseMappedRegistry;
-import org.spongepowered.asm.mixin.Implements;
-import org.spongepowered.asm.mixin.Interface;
-import org.spongepowered.asm.mixin.Intrinsic;
-import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.*;
 import xyz.bluspring.kilt.loader.KiltLoader;
 import xyz.bluspring.kilt.workarounds.MappedRegistryWorkaround;
 
@@ -18,8 +15,9 @@ import java.lang.invoke.MethodType;
 @SuppressWarnings("NonExtendableApiUsage")
 @Mixin(value = MappedRegistry.class, priority = 1050)
 @Implements(@Interface(iface = MappedRegistryWorkaround.class, prefix = "kilt$i$"))
-public class MappedRegistryMixin implements FabricRegistry {
+public abstract class MappedRegistryMixin implements FabricRegistry {
 
+    @Unique
     private static final MethodHandle kilt$super$addAlias;
 
     static {
