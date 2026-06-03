@@ -122,6 +122,7 @@ object CoreModLoader {
     fun loadJavaCoreMods() {
         if (!enableCoreMods)
             return
+
         val coremods = ServiceLoader.load(ICoreMod::class.java)
         val mergedTransformers = mutableMapOf<String, MutableList<ITransformer<*>>>()
 

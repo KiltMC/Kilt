@@ -541,8 +541,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             EnumExtensionLoader.loadEnumExtension(mod)
             CoreModLoader.scanAndLoadCoreMods(mod)
         }
+
         EnumExtensionLoader.applyEnumExtensions()
-        CoreModLoader.loadJavaCoreMods()
     }
 
     override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<NeoForgeMod> {
@@ -611,6 +611,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
         FMLPaths.setup(environment) // jesus christ
+
+        // Load Java coremods, this should be handled before access transformers so we don't mess with access modifier stuff.
+        // Although, people probably shouldn't be relying on that.
+        CoreModLoader.loadJavaCoreMods()
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
