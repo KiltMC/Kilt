@@ -256,7 +256,7 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
             ci.cancel();
     }*/
 
-    @Unique private String language = "en_us";
+    @Shadow private String language = "en_us";
 
     @Override
     public String getLanguage() {
