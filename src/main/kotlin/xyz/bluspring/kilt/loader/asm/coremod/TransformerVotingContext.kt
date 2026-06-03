@@ -68,7 +68,7 @@ class TransformerVotingContext(
 
     private fun toObjectArray(insn: AbstractInsnNode): Array<Any?> {
         return when (insn) {
-            is MethodInsnNode -> arrayOf(insn.name, insn.desc, insn.owner, insn.desc)
+            is MethodInsnNode -> arrayOf(insn.name, insn.desc, insn.owner, insn.itf)
             is FieldInsnNode -> arrayOf(insn.name, insn.desc, insn.owner)
             else -> emptyArray()
         }
