@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.compat.create.flywheel.BakedModelBuffererHelper;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -33,7 +32,7 @@ public abstract class BakedModelBuffererMixin {
     @Inject(method = "bufferModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
     private static void kilt$flywheel$tryLoadModelDataSingle(CallbackInfoReturnable<SimpleModel> cir, @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
                                                              @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
-        modelData.set(BakedModelBuffererHelper.getModelData().get());
+        modelData.set(model.getModelData(level, pos, state, level.getModelData(pos)));
         random.setSeed(seed);
         renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
     }
@@ -41,9 +40,7 @@ public abstract class BakedModelBuffererMixin {
     @Inject(method = "bufferBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
     private static void kilt$flywheel$tryLoadModelData(CallbackInfoReturnable<SimpleModel> cir, @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
                                                        @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
-        modelData.set(BakedModelBuffererHelper.getModelDataLookup().get().apply(pos));
-        modelData.set(model.getModelData(level, pos, state, modelData.get()));
-
+        modelData.set(model.getModelData(level, pos, state, level.getModelData(pos)));
         random.setSeed(seed);
         renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
     }

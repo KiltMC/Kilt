@@ -17,7 +17,9 @@ import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.IEventBus
@@ -74,6 +76,8 @@ import kotlin.io.path.*
 class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     private val tomlParser = TomlParser()
     private val loadedModIds = mutableSetOf<String>()
+
+    private val bridgedModDefinitions = mutableListOf<ModDefinition>()
 
     private val environment = KiltEnvironment()
     var config = KiltLoaderConfig()
@@ -575,6 +579,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             if (KiltModCompatBridgeManager.canMakeActive(definition.id)) {
                 // Directly inject into the classpath.
                 KnitLoader.instance.injectIntoClasspath(definition.path)
+                this.bridgedModDefinitions.add(definition)
                 continue
             }
 
@@ -619,9 +624,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
 
-        // Handle loading compatibility mixins where necessary.
+        val rootsField = ModContainerImpl::class.java.getDeclaredField("roots").apply {
+            isAccessible = true
+        }
+
         for ((entry, _) in KiltModCompatBridgeManager.entries) {
             if (KiltModCompatBridgeManager.isActive(entry)) {
+                // Handle loading compatibility mixins where necessary.
                 for (mixinConfig in entry.enabledMixinConfigs) {
                     Mixins.addConfiguration(mixinConfig)
                 }
@@ -632,6 +641,15 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                         config.config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_0_14_0)
                     }
                 }
+
+                // Inject the Neo paths into their native Fabric mods.
+                val neoDefinition = this.bridgedModDefinitions.first { definition -> definition.id == entry.neoForgeModId }
+                val fabricContainer = FabricLoader.getInstance().getModContainer(entry.fabricModId).orElseThrow()
+
+                val paths = fabricContainer.rootPaths.toMutableList()
+                paths.add(FileSystemUtil.getJarFileSystem(neoDefinition.path, false).get().rootDirectories.first())
+
+                rootsField.set(fabricContainer, paths)
             }
         }
     }
