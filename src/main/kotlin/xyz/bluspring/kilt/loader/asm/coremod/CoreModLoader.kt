@@ -138,8 +138,6 @@ object CoreModLoader {
         for ((className, transformers) in mergedTransformers) {
             val targetedTransformers = transformers.groupBy { it.targetType }
 
-            val inverseRemapper = KiltRemapper.enhancedInverseRemapper.capture()
-
             ClassTinkerers.addPostTransformation(KiltRemapper.remapClass(className)) { classNode ->
                 try {
                     val hash by lazy {
@@ -151,8 +149,7 @@ object CoreModLoader {
                     val context = TransformerVotingContext(className, true, { hash }, mutableListOf(), ITransformerActivity.CLASSLOADING_REASON)
 
                     val remappedNode = ClassNode()
-                    classNode.accept(EnhancedClassRemapper(remappedNode, inverseRemapper.get(), RenamingTransformer(inverseRemapper.get(), false)))
-                    inverseRemapper.release()
+                    classNode.accept(EnhancedClassRemapper(remappedNode, KiltRemapper.enhancedInverseRemapper, RenamingTransformer(KiltRemapper.enhancedInverseRemapper, false)))
 
                     // the voting system is... very confusing. no joke, the only project I can find that actually uses a result that *isn't* TransformerVoteResult.YES
                     // is Sponge.
