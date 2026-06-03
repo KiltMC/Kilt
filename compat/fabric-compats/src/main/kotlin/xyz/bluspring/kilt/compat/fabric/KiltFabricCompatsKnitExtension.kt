@@ -19,6 +19,15 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             }
         }
 
+        // Funny little workaround to avoid classload issues in mixin later
+        if (FabricLoader.getInstance().isModLoaded("sable")) {
+            try {
+                Class.forName($$"dev.ryanhcode.sable.mixin.AbstractSableMixinPlugin$MixinConstraints")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+
         /*
         listOf(
             "FreeNativeResources",
@@ -36,7 +45,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             VeilCompatBridge.init()
         }
 
-        KiltModCompatBridgeManager.register("sable") {
+        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json")) {
             SableCompatBridge.init()
         }
     }

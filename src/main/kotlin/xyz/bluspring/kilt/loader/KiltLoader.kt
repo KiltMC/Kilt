@@ -42,6 +42,8 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
+import org.spongepowered.asm.mixin.FabricUtil
+import org.spongepowered.asm.mixin.Mixins
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
@@ -90,6 +92,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         "cloth_config" to "cloth-config",
         "playeranimator" to "player-animator",
     )
+
+    // Otherwise, Neo mods trying to target local names end up failing miserably,
+    // due to NeoForge's mixin version being on 0.15.2, which notably misses this commit in 0.17.0
+    // that fixes the actual parameter names - https://github.com/FabricMC/Mixin/commit/41a0eadd1847e03e1405811b3209badc98c597de
+    override val fabricMixinCompatibilityVersion: Int = FabricUtil.COMPATIBILITY_0_14_0
 
     init {
         val loader = FabricLoader.getInstance()
@@ -607,6 +614,22 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
+
+        // Handle loading compatibility mixins where necessary.
+        for ((entry, _) in KiltModCompatBridgeManager.entries) {
+            if (KiltModCompatBridgeManager.isActive(entry)) {
+                for (mixinConfig in entry.enabledMixinConfigs) {
+                    Mixins.addConfiguration(mixinConfig)
+                }
+
+                for (config in Mixins.getConfigs()) {
+                    if (entry.enabledMixinConfigs.contains(config.name)) {
+                        config.config.decorate(FabricUtil.KEY_MOD_ID, entry.fabricModId)
+                        config.config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_0_14_0)
+                    }
+                }
+            }
+        }
     }
 
     fun scanModClasses() {

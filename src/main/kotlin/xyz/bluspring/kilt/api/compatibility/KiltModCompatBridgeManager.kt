@@ -18,28 +18,39 @@ object KiltModCompatBridgeManager {
     @ApiStatus.Internal
     internal val entries = mutableMapOf<ModEntry, Runnable>()
 
-    fun register(modId: String, onEnabled: Runnable) {
-        this.entries[ModEntry(modId, modId)] = onEnabled
+    fun register(fabricModId: String, enabledMixinConfigs: Collection<String>, onEnabled: Runnable) {
+        register(fabricModId, fabricModId, enabledMixinConfigs, onEnabled)
     }
 
-    fun register(fabricModId: String, neoForgeModId: String, onEnabled: Runnable) {
-        this.entries[ModEntry(fabricModId, neoForgeModId)] = onEnabled
+    @JvmOverloads
+    fun register(fabricModId: String, neoForgeModId: String = fabricModId, enabledMixinConfigs: Collection<String> = emptyList(), onEnabled: Runnable) {
+        this.entries[ModEntry(fabricModId, neoForgeModId, enabledMixinConfigs)] = onEnabled
     }
 
     fun isActive(fabricModId: String): Boolean {
-        val entry = this.entries.keys.firstOrNull { it.fabricModId == fabricModId } ?: return false
+        val entry = getModEntryFabric(fabricModId) ?: return false
         return isActive(entry)
     }
 
     @ApiStatus.Internal
     internal fun canMakeActive(neoForgeModId: String): Boolean {
-        val entry = this.entries.keys.firstOrNull { it.neoForgeModId == neoForgeModId } ?: return false
+        val entry = getModEntryNeo(neoForgeModId) ?: return false
         return FabricLoader.getInstance().isModLoaded(entry.fabricModId)
     }
 
     @ApiStatus.Internal
     fun isActive(entry: ModEntry): Boolean {
         return KiltLoader.instance.hasMod(entry.neoForgeModId) && FabricLoader.getInstance().isModLoaded(entry.fabricModId)
+    }
+
+    @ApiStatus.Internal
+    internal fun getModEntryFabric(fabricModId: String): ModEntry? {
+        return this.entries.keys.firstOrNull { it.fabricModId == fabricModId }
+    }
+
+    @ApiStatus.Internal
+    internal fun getModEntryNeo(neoForgeModId: String): ModEntry? {
+        return this.entries.keys.firstOrNull { it.neoForgeModId == neoForgeModId }
     }
 
     @ApiStatus.Internal
@@ -57,8 +68,10 @@ object KiltModCompatBridgeManager {
     }
 
     @ApiStatus.Internal
+    @JvmRecord
     data class ModEntry(
         val neoForgeModId: String,
         val fabricModId: String,
+        val enabledMixinConfigs: Collection<String>,
     )
 }

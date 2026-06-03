@@ -20,6 +20,9 @@
         ],
         "main": [
             "xyz.bluspring.kilt.compat.fabric.KiltFabricCompats"
+        ],
+        "mixinsquared": [
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinCanceller"
         ]
     },
     "mixins": [
