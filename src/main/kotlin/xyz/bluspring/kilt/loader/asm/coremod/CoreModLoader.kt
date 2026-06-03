@@ -18,9 +18,11 @@ import org.objectweb.asm.tree.MethodNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
+import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper.enhancedRemapper
+import xyz.bluspring.knit.loader.KnitLoader
 import java.security.MessageDigest
 import java.util.*
 
@@ -122,6 +124,16 @@ object CoreModLoader {
     fun loadJavaCoreMods() {
         if (!enableCoreMods)
             return
+
+        for (mod in KiltLoader.instance.mods) {
+            if (mod.modFile == null) continue
+            val coreModStream = mod.getFile("META-INF/services/net.neoforged.neoforgespi.coremod.ICoreMod")
+            if (coreModStream != null) {
+                coreModStream.close()
+                KnitLoader.instance.injectIntoClasspath(mod.modFile.toPath())
+            }
+        }
+
         val coremods = ServiceLoader.load(ICoreMod::class.java)
         val mergedTransformers = mutableMapOf<String, MutableList<ITransformer<*>>>()
 
