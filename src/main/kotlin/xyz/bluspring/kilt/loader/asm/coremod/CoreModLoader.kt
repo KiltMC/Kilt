@@ -8,6 +8,8 @@ import cpw.mods.modlauncher.api.ITransformerActivity
 import cpw.mods.modlauncher.api.TargetType
 import cpw.mods.modlauncher.api.TransformerVoteResult
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
+import net.minecraftforge.fart.internal.EnhancedClassRemapper
+import net.minecraftforge.fart.internal.RenamingTransformer
 import net.neoforged.neoforgespi.coremod.ICoreMod
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
@@ -18,6 +20,7 @@ import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.KiltRemapper.enhancedRemapper
 import java.security.MessageDigest
 import java.util.*
 
@@ -145,9 +148,12 @@ object CoreModLoader {
                     }
                     val context = TransformerVotingContext(className, true, { hash }, mutableListOf(), ITransformerActivity.CLASSLOADING_REASON)
 
+                    val remappedNode = ClassNode()
+                    classNode.accept(EnhancedClassRemapper(remappedNode, KiltRemapper.enhancedInverseRemapper, RenamingTransformer(KiltRemapper.enhancedInverseRemapper, false)))
+
                     // the voting system is... very confusing. no joke, the only project I can find that actually uses a result that *isn't* TransformerVoteResult.YES
                     // is Sponge.
-                    fun <T : Any> transform(node: T, transformers: Collection<ITransformer<T>>, toMojang: (T) -> T = { it }, fromMojang: (T) -> T = { it }): T {
+                    fun <T : Any> transform(node: T, transformers: Collection<ITransformer<T>>): T {
                         var actualNode = node
                         context.node = actualNode
 
@@ -165,7 +171,7 @@ object CoreModLoader {
                             if (votes.containsValue(TransformerVoteResult.YES)) {
                                 val transformer = votes.filterValues { it == TransformerVoteResult.YES }.keys.first()
                                 logger.debug("Transforming $node using $transformer (${transformer.targets()})")
-                                actualNode = fromMojang(transformer.transform(toMojang(actualNode), context))
+                                actualNode = transformer.transform(actualNode, context)
                                 actualTransformers.remove(transformer)
                                 continue
                             }
@@ -178,12 +184,7 @@ object CoreModLoader {
                         return actualNode
                     }
 
-                    val actualClassNode = transform(classNode, (targetedTransformers[TargetType.PRE_CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
-
-                    // we actually need to do a full replace! oh boy! let's hope this works well enough!
-                    if (actualClassNode != classNode) {
-                        actualClassNode.accept(classNode)
-                    }
+                    val actualClassNode = transform(remappedNode, (targetedTransformers[TargetType.PRE_CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
 
                     val fields = ArrayList<FieldNode>(actualClassNode.fields.size)
                     for (field in actualClassNode.fields) {
@@ -208,10 +209,11 @@ object CoreModLoader {
 
                     val postTransformedClassNode = transform(actualClassNode, (targetedTransformers[TargetType.CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
 
-                    // Part two, oh boy!
-                    if (postTransformedClassNode != actualClassNode) {
-                        postTransformedClassNode.accept(classNode)
-                    }
+                    val unmappedClassNode = ClassNode()
+                    postTransformedClassNode.accept(EnhancedClassRemapper(unmappedClassNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
+                    classNode.fields.clear()
+                    classNode.methods.clear()
+                    unmappedClassNode.accept(classNode)
                 } catch (e: Throwable) {
                     logger.error("An error occurred in a coremod while transforming $className/${classNode.name}!", e)
                     throw e

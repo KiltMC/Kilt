@@ -117,6 +117,7 @@ object KiltRemapper {
     )
 
     lateinit var enhancedRemapper: KiltEnhancedRemapper
+    lateinit var enhancedInverseRemapper: KiltEnhancedRemapper
 
     private lateinit var remappedModsDir: Path
 
@@ -177,6 +178,32 @@ object KiltRemapper {
     }
 
     fun init() {}
+
+    private fun initEnhancedRemapper(intermediaryMap: Path?, modLoadingQueue: Collection<ModDefinition>): ClassProvider {
+        // Initialize this a bit later, cuz we need the same libraries.
+        return ClassProvider.builder().apply {
+            // time to add Intermediary mappings to the mix! :,D
+            if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
+                addLibrary(intermediaryMap)
+            }
+
+            // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
+            listOf(
+                // List down NeoForge paths
+                *KiltHelper.getKiltPaths().toTypedArray(),
+                // Add all Fabric mods
+                *FabricLoader.getInstance().allMods
+                    .flatMap { container -> container.rootPaths }.toTypedArray(),
+                // add mapped path too
+                *runBlocking { getGameClassPath() },
+                // Add all NeoForge mods to the library path, because dependencies don't have to be specified
+                // in order to use mods lmao
+                *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
+            ).forEach {
+                addLibrary(it)
+            }
+        }.build()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
@@ -291,29 +318,10 @@ object KiltRemapper {
 
         // Initialize a global remapper state
         enhancedRemapper = KiltEnhancedRemapper(classProvider, devMojIntermediaryMapping, logConsumer) {
-            // Initialize this a bit later, cuz we need the same libraries.
-            ClassProvider.builder().apply {
-                // time to add Intermediary mappings to the mix! :,D
-                if (FabricLoader.getInstance().isDevelopmentEnvironment && !forceProductionRemap) {
-                    addLibrary(intermediaryMap)
-                }
-
-                // IMPORTANT: this cannot be a flow or use merge, otherwise the order isn't retained. mojGamePath MUST be at the top of the list.
-                listOf(
-                    // List down NeoForge paths
-                    *KiltHelper.getKiltPaths().toTypedArray(),
-                    // Add all Fabric mods
-                    *FabricLoader.getInstance().allMods
-                        .flatMap { container -> container.rootPaths }.toTypedArray(),
-                    // add mapped path too
-                    *runBlocking { getGameClassPath() },
-                    // Add all NeoForge mods to the library path, because dependencies don't have to be specified
-                    // in order to use mods lmao
-                    *modLoadingQueue.map { mod -> mod.path }.toTypedArray()
-                ).forEach {
-                    addLibrary(it)
-                }
-            }.build()
+            initEnhancedRemapper(intermediaryMap, modLoadingQueue)
+        }
+        enhancedInverseRemapper = KiltEnhancedRemapper(classProvider, devIntermediaryMojMapping, logConsumer) {
+            initEnhancedRemapper(intermediaryMap, modLoadingQueue)
         }
 
         //val mixinRemapper = KiltMixinRemapper(enhancedRemapper, mojIntermediaryMapping, classProvider)
@@ -322,8 +330,10 @@ object KiltRemapper {
             IgnoreSignatureResourceRemapper
         )
 
-        if (FabricLoader.getInstance().isDevelopmentEnvironment)
+        if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             enhancedRemapper.initDevRemapper()
+            enhancedInverseRemapper.initDevRemapper()
+        }
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap NeoForge mod ${mod.displayName} (${mod.id})!")
