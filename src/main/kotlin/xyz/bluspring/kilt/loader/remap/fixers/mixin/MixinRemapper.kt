@@ -417,7 +417,7 @@ object MixinRemapper {
 
                 if (isTarget) {
                     // If we're dealing with target methods, we can probably just use the first-name remap.
-                    return KiltRemapper.mojMappedMethods[member]!!.values.first().first().first
+                    return KiltRemapper.mojMappedMethods[member]!!.values.first().first().first.breakpoint()
                 }
             }
 
@@ -430,9 +430,15 @@ object MixinRemapper {
                     for (methodOpt in currentClass.methods) {
                         val method = methodOpt.orElse(null) ?: continue
 
-                        if (method.name == member) {
+                        if (method.name == member
+                            // makes sure that we're actually targeting the right place.
+                            && (
+                                method.toString().startsWith(target) ||
+                                method.toString().startsWith(currentClass.mapped)
+                            )
+                        ) {
                             // oh hey look, we found one
-                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}"
+                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}".breakpoint()
                         }
                     }
                 }
