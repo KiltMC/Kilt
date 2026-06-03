@@ -22,12 +22,14 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.level.block.FlowerPotBlockInjection;
+import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import java.util.Collections;
@@ -81,6 +83,26 @@ public abstract class FlowerPotBlockInject extends Block implements FlowerPotBlo
     @Inject(method = "isEmpty", at = @At("HEAD"))
     public void kilt$cacheContents(CallbackInfoReturnable<Boolean> cir) {
         this.getPotted();
+    }
+
+    @Unique
+    private static final String KILT$GET_POTTED = KiltRemapper.enhancedRemapper.mapMethodName(
+        "net/minecraft/world/level/block/FlowerPotBlock", "getPotted", "()Lnet/minecraft/world/level/block/Block;"
+    );
+
+    @WrapOperation(
+        method = {"useWithoutItem", "getCloneItemStack", "isEmpty", "method_54018"},
+        at = @At(
+            value = "FIELD",
+            target = "Lnet/minecraft/world/level/block/FlowerPotBlock;potted:Lnet/minecraft/world/level/block/Block;",
+            opcode = Opcodes.GETFIELD
+        )
+    )
+    private static Block kilt$wrapPotted(FlowerPotBlock block, Operation<Block> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), FlowerPotBlock.class, KILT$GET_POTTED)) {
+            return block.getPotted();
+        }
+        return original.call(block);
     }
 
     @Inject(method = "getPotted", at = @At("HEAD"))
