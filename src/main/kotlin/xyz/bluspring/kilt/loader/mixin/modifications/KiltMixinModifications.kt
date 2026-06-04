@@ -605,6 +605,21 @@ object KiltMixinModifications {
                 }
             }
 
+            if (modifier is NameRemappingAnnotationModifier) {
+                modifier.remapMethodsTo = MixinRemapper.remapTargetString(
+                    modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(modifier.owner)),
+                    KiltRemapper.enhancedRemapper
+                )
+            }
+            if (modifier is ReplacedAnnotationsModifier) {
+                val mutableList = modifier.replaceWith.toMutableList()
+                MixinRemapper.remapMixinAnnotations(
+                    mutableList, KiltRemapper.enhancedRemapper,
+                    listOf(modifier.owner), modifier.owner
+                )
+                modifier.replaceWith = mutableList
+            }
+
             list.add(modifier)
         }
 
