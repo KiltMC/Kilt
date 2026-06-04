@@ -430,13 +430,8 @@ object MixinRemapper {
                     for (methodOpt in currentClass.methods) {
                         val method = methodOpt.orElse(null) ?: continue
 
-                        if (method.name == member
-                            // makes sure that we're actually targeting the right place.
-                            && (
-                                method.toString().startsWith(target) ||
-                                method.toString().startsWith(currentClass.mapped)
-                            )
-                        ) {
+                        val declaringClass = method.declaringClass
+                        if (method.name == member && currentClass == declaringClass) {
                             // oh hey look, we found one
                             return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}".breakpoint()
                         }
