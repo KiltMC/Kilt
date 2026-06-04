@@ -16,7 +16,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
 
-        val replaceWith: List<AnnotationNode> = listOf()
+        var replaceWith: List<AnnotationNode> = listOf()
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
         override lateinit var mappedMethods: List<String>
@@ -54,7 +54,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
 
-        val remapMethodsTo: String,
+        var remapMethodsTo: String,
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
         override lateinit var mappedMethods: List<String>
