@@ -1,16 +1,17 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "xyz.bluspring.kilt.compat.create.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "flywheel.BakedModelBuffererMixin",
-    "flywheel.FlywheelBackendXplatImplMixin"
-  ],
-  "client": [
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.kilt.compat.create.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "flywheel.BakedModelBuffererMixin",
+        "flywheel.FabricMeshEmitterManagerAccessor",
+        "flywheel.FlywheelBackendXplatImplMixin"
+    ],
+    "client": [
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
 }
