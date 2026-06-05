@@ -762,7 +762,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             modsByLoaders.entries.asFlow()
                 .collect { (loader, mods) ->
                     mods.asFlow().concurrent().collect { mod ->
-                        mod.container = loader.loadMod(mod, mod.scanData, ModuleLayer.empty())
+                        mod.modContainer = loader.loadMod(mod, mod.scanData, ModuleLayer.empty())
                     }
                 }
         }

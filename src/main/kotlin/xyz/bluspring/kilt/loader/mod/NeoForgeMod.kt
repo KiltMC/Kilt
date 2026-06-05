@@ -7,6 +7,7 @@ import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.EventListener
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
+import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.event.IModBusEvent
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.neoforgespi.language.*
@@ -45,7 +46,18 @@ class NeoForgeMod(
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    lateinit var container: ModContainer
+    lateinit var modContainer: ModContainer
+
+    // Needed by Twilight Forest
+    fun getContainer(): ModContainer {
+        if (!this::modContainer.isInitialized) {
+            val activeContainer = ModLoadingContext.get().activeContainer
+            if (activeContainer.modId == modId) {
+                return activeContainer
+            }
+        }
+        return modContainer
+    }
 
     val scanData = ModFileScanData()
 
@@ -175,8 +187,8 @@ class NeoForgeMod(
     val eventBus: IEventBus
         get() {
             // Try to focus the container event bus
-            if (this.container.eventBus != null) {
-                return this.container.eventBus!!
+            if (this.modContainer.eventBus != null) {
+                return this.modContainer.eventBus!!
             }
 
             if (!::lateEventBus.isInitialized) {
