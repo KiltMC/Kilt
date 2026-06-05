@@ -322,7 +322,7 @@ dependencies {
     // Compatibility layers
     listOf(
         "transfer-api-compat", "forge-compats", "create-compat",
-        "fabric-compats"
+        "fabric-compats", "forge-config-api"
     ).forEach { layer ->
         runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
     }
