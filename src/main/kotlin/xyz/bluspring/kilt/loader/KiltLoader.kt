@@ -775,16 +775,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         }
     }
 
-    private fun constructMods(exception: Exception) {
-        try {
-//            ModLoader.runEventGenerator { mod -> FMLConstructModEvent(mod, ModLoadingStage.CONSTRUCT) }
-//            ModLoadingStage.CONSTRUCT.deferredWorkQueue.runTasks()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            exception.addSuppressed(e)
-        }
-    }
-
     private fun loadTransformers(mod: NeoForgeMod) {
         if (mod.modFile == null || mod.definition.isBuiltin) {
             val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")

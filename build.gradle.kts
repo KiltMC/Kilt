@@ -537,7 +537,10 @@ tasks {
     }
 
     compileKotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
+        compilerOptions {
+            freeCompilerArgs.set(listOf("-Xexplicit-backing-fields"))
+            jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
+        }
     }
 
     compileTestKotlin {

@@ -7,6 +7,7 @@ import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.EventListener
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
+import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.event.IModBusEvent
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.neoforgespi.language.*
@@ -18,6 +19,7 @@ import org.apache.maven.artifact.versioning.VersionRange
 import org.spongepowered.asm.mixin.connect.IMixinConnector
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
+import xyz.bluspring.kilt.util.fallback
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModDependency
@@ -45,7 +47,14 @@ class NeoForgeMod(
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    lateinit var container: ModContainer
+    var container: ModContainer by fallback {
+        val activeContainer = ModLoadingContext.get().activeContainer
+        if (activeContainer.modId == this.modId) {
+            return@fallback activeContainer
+        }
+
+        throw IllegalStateException("Could not get mod container for ${this.displayName} (${this.modId})")
+    }
 
     val scanData = ModFileScanData()
 
