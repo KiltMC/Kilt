@@ -62,7 +62,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 227
+    const val REMAPPER_VERSION = 228
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -337,14 +337,15 @@ object KiltRemapper {
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap NeoForge mod ${mod.displayName} (${mod.id})!")
+            var allowSoftFail = false
 
             if (mod.isBuiltin) { // Prevent Kilt from remapping *directly* NeoForge mods. Yes, that started happening.
                 return
             }
 
-            // Avoid remapping JiJ'd mods, but also mods like Registrate require remapping, and they don't provide a TOML file.
+            // If JiJ'd libraries fail to remap, we can mark it as a "soft failure".
             if (mod.additionalData["isJiJ"] == true && (mod.additionalData["manifest"] as? Manifest?)?.mainAttributes?.getValue("FMLModType") != "GAMELIBRARY") {
-                return
+                allowSoftFail = true
             }
 
             val hash = withContext(Dispatchers.IO) { DigestUtils.md5Hex(file.inputStream()) }
@@ -523,6 +524,7 @@ object KiltRemapper {
                         ConflictingStaticMethodFixer.fixClass(remappedNode)
                         EnvironmentRemapper.remapClass(remappedNode)
                         EnvironmentLambdaFixer.fixClass(remappedNode)
+                        RemoveModulesFixer.fixClass(remappedNode)
                     }
 
                     val writer = ClassWriter(Opcodes.ASM9)
@@ -574,6 +576,12 @@ object KiltRemapper {
             jar.close()
 
             if (exception.suppressed.isNotEmpty()) {
+                // Soft fail if a JiJ'd mod failed to remap.
+                if (allowSoftFail) {
+                    logger.warn("Failed to remap ${mod.id}, but it's a library mod so we should be able to safely ignore it.", exception)
+                    return
+                }
+
                 throw exception
             } else {
                 // We've finished writing the mod file successfully, so let's not make it temporary anymore.

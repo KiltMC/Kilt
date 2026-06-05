@@ -13,6 +13,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 
@@ -252,5 +253,13 @@ object KiltHelper {
     @JvmStatic
     fun createMixinException(injection: Class<*>, methodName: String): RuntimeException {
         return RuntimeException("Go yell at Naz, he forgot to implement ${injection.simpleName}#$methodName")
+    }
+
+    @JvmStatic
+    fun resolveModuleToUnnamed(module: Optional<Module>): Optional<Module> {
+        if (module.isPresent)
+            return module
+
+        return Optional.of(this::class.java.module)
     }
 }
