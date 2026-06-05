@@ -76,10 +76,12 @@ object MixinShadowRemapper {
         return remapped
     }
 
+    data class MethodReference(val name: String, val desc: String)
+
     private fun updateFieldsAndMethods(
         classNode: ClassNode, remapper: KiltEnhancedRemapper,
         remappedFields: MutableMap<String, String>,
-        remappedMethods: MutableMap<String, String>,
+        remappedMethods: MutableMap<MethodReference, String>,
         targetClassNames: Collection<String>,
         unmappedParentMixinLookup: Map<String, ClassNode>, renameNodes: Boolean,
     ) {
@@ -96,7 +98,7 @@ object MixinShadowRemapper {
         for (method in classNode.methods) {
             val remapped = remapMethod(method, remapper, targetClassNames) ?: continue
 
-            remappedMethods[method.name] = remapped
+            remappedMethods[MethodReference(method.name, method.desc)] = remapped
             if (renameNodes) {
                 method.name = remapped
             }
@@ -121,7 +123,7 @@ object MixinShadowRemapper {
 
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, unmappedParentMixinLookup: Map<String, ClassNode>) {
         val remappedFields = mutableMapOf<String, String>()
-        val remappedMethods = mutableMapOf<String, String>()
+        val remappedMethods = mutableMapOf<MethodReference, String>()
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)
 
         // Collect shadows in this class
@@ -134,7 +136,7 @@ object MixinShadowRemapper {
                     val remapped = remappedFields[insnNode.name] ?: continue
                     insnNode.name = remapped
                 } else if (insnNode is MethodInsnNode) {
-                    val remapped = remappedMethods[insnNode.name] ?: continue
+                    val remapped = remappedMethods[MethodReference(insnNode.name, insnNode.desc)] ?: continue
                     insnNode.name = remapped
                 } else if (insnNode is InvokeDynamicInsnNode) {
                     if ("metafactory" != insnNode.bsm.name)
@@ -151,7 +153,7 @@ object MixinShadowRemapper {
                             val lambdaTarget = insnNode.bsmArgs[1] as Handle
                             if (lambdaTarget.owner == classNode.name) {
                                 val handle = Handle(lambdaTarget.tag, lambdaTarget.owner,
-                                    remappedMethods[lambdaTarget.name] ?: continue,
+                                    remappedMethods[MethodReference(lambdaTarget.name, lambdaTarget.desc)] ?: continue,
                                     lambdaTarget.desc, lambdaTarget.isInterface
                                 )
 
