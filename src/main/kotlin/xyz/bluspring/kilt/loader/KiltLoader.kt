@@ -9,7 +9,6 @@ import cpw.mods.modlauncher.api.IEnvironment
 import cpw.mods.niofs.union.KiltUnionFileSystemHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.stream.consumeAsFlow
@@ -22,22 +21,16 @@ import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.Event
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.ModContainer
-import net.neoforged.fml.ModLoadingContext
-import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.common.Mod
-import net.neoforged.fml.javafmlmod.AutomaticEventSubscriber
-import net.neoforged.fml.javafmlmod.FMLModContainer
 import net.neoforged.fml.loading.FMLLoader
 import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
-import net.neoforged.fml.loading.modscan.ModAnnotation
 import net.neoforged.fml.loading.modscan.ModClassVisitor
 import net.neoforged.fml.loading.toposort.TopologicalSort
 import net.neoforged.neoforgespi.Environment
 import net.neoforged.neoforgespi.language.IModInfo
+import net.neoforged.neoforgespi.language.IModLanguageLoader
 import net.neoforged.neoforgespi.language.MavenVersionAdapter
 import net.neoforged.neoforgespi.language.ModFileScanData
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
@@ -55,6 +48,7 @@ import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.mod.NeoForgeModVersion
 import xyz.bluspring.kilt.loader.mod.NeoForgeVersionConstraint
+import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
@@ -68,6 +62,7 @@ import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
 import java.util.jar.Manifest
@@ -81,6 +76,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
     private val environment = KiltEnvironment()
     var config = KiltLoaderConfig()
+
+    val languageLoaders: Collection<IModLanguageLoader> by lazy {
+        ServiceLoader.load(IModLanguageLoader::class.java).toList()
+    }
 
     // At this point, this is a wall of shame for mods that bundle both Forge and Fabric as one JAR, but don't actually
     // use the same mod ID.
@@ -730,91 +729,37 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Initialize any compatibility bridges that have been registered
         KiltModCompatBridgeManager.processLoadedMods()
 
-        // Initialize @Mod annotated constructors
-        initMods(exception)
+        // Create all mod containers
+        val languageLoaders = this.languageLoaders
 
-        // Register @EventBusSubscriber annotations
         runBlocking {
-            launch(Dispatchers.Default) {
-                // TODO: Need to make sure to group mods together so they load in the correct order from each other
-                mods.asFlow()
-                    .collect { mod ->
-                        try {
-                            registerAnnotations(mod, mod.scanData)
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
-                            exception.addSuppressed(e)
-                        }
+            val modsByLoaders = mods.groupBy { mod ->
+                languageLoaders.firstOrNull { loader ->
+                    loader.name() == mod.loader
+                } ?: run {
+                    exception.addSuppressed(IllegalArgumentException("No language loader found by ID ${mod.loader}!"))
+                    NoopLanguageLoader
+                }
+            }
+
+            if (exception.suppressed.isNotEmpty()) {
+                exception.printStackTrace()
+                KnitLoader.instance.displayError("Errors occurred while creating NeoForge mods!", exception)
+            }
+
+            modsByLoaders.entries.asFlow()
+                .collect { (loader, mods) ->
+                    mods.asFlow().concurrent().collect { mod ->
+                        mod.container = loader.loadMod(mod, mod.scanData, ModuleLayer.empty())
                     }
-            }.join()
+                }
         }
 
-        // Then construct mods in the CONSTRUCT loading stage
-        constructMods(exception)
+        // Actual initializing goes into FML now, yay
 
         if (exception.suppressed.isNotEmpty()) {
             exception.printStackTrace()
-            KnitLoader.instance.displayError("Errors occurred while loading Forge mods!", exception)
-        }
-    }
-
-    private val launcher = FabricLauncherBase.getLauncher()
-
-    private suspend fun registerAnnotations(mod: NeoForgeMod, scanData: ModFileScanData) {
-        val exception = RuntimeException("Failed to register annotations for mod ${mod.displayName} (${mod.modId})!")
-
-        // Automatically subscribe events
-        try {
-            AutomaticEventSubscriber.inject(mod.container, scanData, null)
-        } catch (e: Throwable) {
-            Kilt.logger.error("Failed to register events for mod ${mod.modId}!")
-            val ex = RuntimeException("Failed to register events for mod ${mod.modId}!", e)
-            e.printStackTrace()
-            exception.addSuppressed(ex)
-        }
-
-        if (exception.suppressed.isNotEmpty())
-            throw exception
-    }
-
-    private fun checkTypeOrParentsAreType(rootType: Type, topType: Type): Boolean {
-        if (topType == rootType)
-            return true
-
-        if (!topType.className.contains("$"))
-            return false
-
-        try {
-            val classNameSplit = topType.className.split("$")
-            for ((index, typeLvl) in classNameSplit.withIndex()) {
-                if (index == 0 && Type.getType(Class.forName(typeLvl, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
-                    return true
-                else {
-                    val combined = classNameSplit.chunked(index + 1)[0].joinToString("$")
-                    if (Type.getType(Class.forName(combined, false, FabricLauncherBase.getLauncher().targetClassLoader)) == rootType)
-                        return true
-                }
-            }
-        } catch (_: Throwable) {
-            // oh so that's why dedicated server kept crashing.
-            return false
-        }
-
-        return false
-    }
-
-    private fun initMods(exception: Exception) {
-        runBlocking {
-            mods.asFlow()
-                .collect { mod ->
-                    try {
-                        initMod(mod, mod.scanData)
-                    } catch (e: Throwable) {
-                        Kilt.logger.error("Failed to load mod ${mod.displayName} (${mod.modId})!")
-                        e.printStackTrace()
-                        exception.addSuppressed(RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})", e))
-                    }
-                }
+            KnitLoader.instance.displayError("Errors occurred while loading NeoForge mods!", exception)
         }
     }
 
@@ -825,105 +770,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         } catch (e: Throwable) {
             e.printStackTrace()
             exception.addSuppressed(e)
-        }
-    }
-
-    suspend fun initMod(mod: NeoForgeMod, scanData: ModFileScanData) {
-        val exception = RuntimeException("Failed to load mod ${mod.displayName} (${mod.modId})!")
-
-        // Datapack mod, don't try to init
-        if (mod.loader == "lowcodefml")
-            return
-
-        // this should probably belong to FMLJavaModLanguageProvider, but I doubt there's any mods that use it.
-        // I hope.
-        var hasInitialized = false
-        var hasErrored = false
-        var annotationCount = 0
-
-        val constructorArgs = mapOf<Class<*>, Any?>(
-            IEventBus::class.java to mod.eventBus,
-            ModContainer::class.java to mod.container,
-            FMLModContainer::class.java to mod.container,
-            Dist::class.java to FMLLoader.getDist()
-        )
-
-        scanData.annotations.asFlow()
-            .filter { it.annotationType == MOD_ANNOTATION }
-            .collect {
-                // it.clazz.className - Class
-                // it.annotationData["value"] as String - Mod ID
-
-                var extraThrowable: Throwable? = null
-
-                try {
-                    val modId = it.annotationData["value"] as String
-
-                    if (modId != mod.modId)
-                        return@collect
-
-                    val dist = it.annotationData["dist"]
-                    if (dist is Collection<*> && !dist.map { Dist.valueOf((it as ModAnnotation.EnumHolder).value) }.contains(FMLLoader.getDist())) {
-                        return@collect
-                    }
-                    annotationCount++
-
-                    ModLoadingContext.get().activeContainer = mod.container
-
-                    val clazz = launcher.loadIntoTarget(it.clazz.className)
-                    val ktObj = try { clazz.kotlin.objectInstance } catch (e: Throwable) {
-                        extraThrowable = e
-                        null
-                    }
-
-                    if (ktObj != null) {
-                        // Load mods created using KFF
-                        mod.modObjects.add(ktObj)
-                    } else {
-                        // Otherwise, initialize under the regular Java process
-                        val constructors = clazz.constructors
-
-//                        if (constructors.size != 1) // I forgot we literally add empty constructors.
-//                            return@collect
-
-                        val constructor = constructors.first()
-                        val parameterTypes = constructor.parameterTypes
-                        val foundArgs = mutableSetOf<Class<*>>()
-                        val instanceArgs = mutableSetOf<Any>()
-
-                        for (type in parameterTypes) {
-                            val instance = constructorArgs[type]
-                                ?: throw IllegalStateException("Mod constructor has unsupported argument $type.")
-
-                            if (!foundArgs.add(type)) {
-                                throw IllegalStateException("Duplicate mod constructor argument type $type")
-                            }
-
-                            instanceArgs.add(instance)
-                        }
-
-                        mod.modObjects.add(constructor.newInstance(*instanceArgs.toTypedArray()))
-                    }
-
-                    Kilt.logger.info("Initialized new instance of mod $modId.")
-                    hasInitialized = true
-
-                    ModLoadingContext.get().activeContainer = null
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    if (extraThrowable != null)
-                        exception.addSuppressed(extraThrowable)
-                    exception.addSuppressed(e)
-                    hasErrored = true
-                }
-            }
-
-        if (!hasInitialized && mod.shouldScan && !mod.modId.startsWith("jij_") && !hasErrored && annotationCount != 0) {
-            exception.addSuppressed(IllegalStateException("Mod ID ${mod.modId} is an invalid Java FML mod!"))
-        }
-
-        if (exception.suppressed.isNotEmpty()) {
-            throw exception
         }
     }
 
@@ -982,7 +828,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version
 
         private val MOD_ANNOTATION = Type.getType(Mod::class.java)
-        private val AUTO_SUBSCRIBE_ANNOTATION = Type.getType(EventBusSubscriber::class.java)
 
         val kiltCacheDir = (FabricLoader.getInstance().gameDir / ".kilt").apply {
             runCatching { this.createDirectories() }

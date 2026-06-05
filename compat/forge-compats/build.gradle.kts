@@ -22,6 +22,7 @@ dependencies {
     compileOnly("maven.modrinth:thirst-was-taken:${property("thirst_version")}")
     compileOnly("maven.modrinth:ldlib:${property("ldlib_version")}")
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
+    compileOnly("thedarkcolour:kfflang-neoforge:${property("kotlinforforge_version")}")
 }
 
 tasks {

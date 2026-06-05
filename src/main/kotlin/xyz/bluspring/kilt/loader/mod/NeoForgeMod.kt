@@ -6,6 +6,7 @@ import net.neoforged.bus.api.BusBuilder
 import net.neoforged.bus.api.Event
 import net.neoforged.bus.api.EventListener
 import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.ModContainer
 import net.neoforged.fml.event.IModBusEvent
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.neoforgespi.language.*
@@ -15,9 +16,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import org.spongepowered.asm.mixin.connect.IMixinConnector
-import thedarkcolour.kotlinforforge.neoforge.KotlinModContainer
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
@@ -42,17 +41,13 @@ class NeoForgeMod(
 
     private val updateURL: URL? = null,
 
-    val shouldScan: Boolean = true
+    val shouldScan: Boolean = true,
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    val container = if (definition.additionalData["loader"] == "kotlinforforge")
-        KotlinModContainer(this)
-    else
-        KiltModContainer(this)
+    lateinit var container: ModContainer
 
     val scanData = ModFileScanData()
-    val modObjects: MutableList<Any> = Collections.synchronizedList(mutableListOf())
 
     var parent: NeoForgeMod? = null
     var manifest: Manifest? = this.definition.additionalData.get("manifest") as? Manifest?
@@ -179,6 +174,11 @@ class NeoForgeMod(
 
     val eventBus: IEventBus
         get() {
+            // Try to focus the container event bus
+            if (this.container.eventBus != null) {
+                return this.container.eventBus!!
+            }
+
             if (!::lateEventBus.isInitialized) {
                 lateEventBus = BusBuilder.builder().apply {
                     setExceptionHandler(::onEventFailed)
