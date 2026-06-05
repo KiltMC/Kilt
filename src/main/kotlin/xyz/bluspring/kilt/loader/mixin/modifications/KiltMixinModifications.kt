@@ -576,21 +576,42 @@ object KiltMixinModifications {
 
     init {
         for (modifier in GLOBAL_MODIFIERS) {
-            val owner = KiltRemapper.remapClass(modifier.owner)
-            MIXIN_CLASSES.add(owner)
-            modifier.mappedOwner = owner
+            finalizeModifier(modifier)
+        }
+    }
 
-            if (modifier is MethodBasedModifier) {
-                modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+    fun finalizeModifier(modifier: MixinModifier) {
+        val owner = KiltRemapper.remapClass(modifier.owner)
+        MIXIN_CLASSES.add(owner)
+        modifier.mappedOwner = owner
 
-                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
-                }
+        if (modifier is MethodBasedModifier) {
+            modifier.mappedMethods = modifier.methods.map {
+                (if (it.contains("(")) {
+                    val name = it.replaceAfter("(", "").removeSuffix("(")
+                    val descriptor = it.removePrefix(name)
+                    val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+                    "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
+                } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
             }
+        }
+
+        if (modifier is NameRemappingAnnotationModifier) {
+            modifier.remapMethodsTo = modifier.remapMethodsTo.map {
+                MixinRemapper.remapTargetString(
+                    it, listOf(KiltRemapper.unmapClass(modifier.owner)),
+                    KiltRemapper.enhancedRemapper
+                )
+            }
+        }
+        if (modifier is ReplacedAnnotationsModifier) {
+            val mutableList = modifier.replaceWith.toMutableList()
+            MixinRemapper.remapMixinAnnotations(
+                mutableList, KiltRemapper.enhancedRemapper,
+                listOf(modifier.owner), modifier.owner
+            )
+            modifier.replaceWith = mutableList
         }
     }
 
@@ -599,38 +620,7 @@ object KiltMixinModifications {
         val typeDesc = Type.getDescriptor(type)
 
         for (modifier in mixinModifiers) {
-            val owner = KiltRemapper.remapClass(modifier.owner)
-            MIXIN_CLASSES.add(owner)
-            modifier.mappedOwner = owner
-
-            if (modifier is MethodBasedModifier) {
-                modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
-
-                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
-                }
-            }
-
-            if (modifier is NameRemappingAnnotationModifier) {
-                modifier.remapMethodsTo = modifier.remapMethodsTo.map {
-                    MixinRemapper.remapTargetString(
-                        it, listOf(KiltRemapper.unmapClass(modifier.owner)),
-                        KiltRemapper.enhancedRemapper
-                    )
-                }
-            }
-            if (modifier is ReplacedAnnotationsModifier) {
-                val mutableList = modifier.replaceWith.toMutableList()
-                MixinRemapper.remapMixinAnnotations(
-                    mutableList, KiltRemapper.enhancedRemapper,
-                    listOf(modifier.owner), modifier.owner
-                )
-                modifier.replaceWith = mutableList
-            }
+            finalizeModifier(modifier)
 
             list.add(modifier)
         }
