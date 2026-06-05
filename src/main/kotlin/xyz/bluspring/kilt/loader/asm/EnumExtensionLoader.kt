@@ -39,6 +39,12 @@ object EnumExtensionLoader {
 
     fun loadEnumExtension(mod: NeoForgeMod) {
         mod.config.getConfigList("mods").forEach { config ->
+            // Prevent mods from loading enum extensions that aren't theirs.
+            val modId = config.getConfigElement<String>("modId")
+            if (modId.isEmpty || modId.get() != mod.modId) {
+                return@forEach
+            }
+
             config.getConfigElement<String>("enumExtensions").ifPresent { file ->
                 val path = mod.owningFile.getFile().findResource(file)
                 if (Files.isRegularFile(path)) {
