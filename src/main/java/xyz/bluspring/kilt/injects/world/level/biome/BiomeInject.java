@@ -1,10 +1,6 @@
 // TRACKED HASH: 65326a80010482966a2797124eab63fbaf21f71e
 package xyz.bluspring.kilt.injects.world.level.biome;
 
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,6 +8,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.level.biome.BiomeInjection;
+
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 
 @Mixin(Biome.class)
 public class BiomeInject implements BiomeInjection {
@@ -39,12 +40,12 @@ public class BiomeInject implements BiomeInjection {
 
     @Inject(at = @At("HEAD"), method = "method_28423", cancellable = true)
     private static void kilt$useOriginalClimateSettings(Biome biome, CallbackInfoReturnable<Biome.ClimateSettings> cir) {
-        cir.setReturnValue(((BiomeInjection) (Object) biome).modifiableBiomeInfo().getOriginalBiomeInfo().climateSettings());
+        cir.setReturnValue(biome.modifiableBiomeInfo().getOriginalBiomeInfo().climateSettings());
     }
 
     @Inject(at = @At("HEAD"), method = "method_28421", cancellable = true)
     private static void kilt$useOriginalSpecialEffects(Biome biome, CallbackInfoReturnable<BiomeSpecialEffects> cir) {
-        cir.setReturnValue(((BiomeInjection) (Object) biome).modifiableBiomeInfo().getOriginalBiomeInfo().effects());
+        cir.setReturnValue(biome.modifiableBiomeInfo().getOriginalBiomeInfo().effects());
     }
 
     @Inject(at = @At("HEAD"), method = "getMobSettings", cancellable = true)

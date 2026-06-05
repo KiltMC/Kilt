@@ -254,6 +254,7 @@ dependencies {
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
+    include(modApi("maven.modrinth:modmenu-badges-lib:${rootProject.property("modmenu_badges_version")}")!!)
 
     // Forge stuff
     api(include("net.neoforged:bus:${property("eventbus_version")}") {
@@ -629,7 +630,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting_lib")
+            embeds("porting_lib", "modmenu-badges-lib")
             incompatible("async", "embeddium")
         }
 
@@ -641,7 +642,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting-lib")
+            embeds("porting-lib", "modmenu-badges-lib")
             incompatible("embeddium")
         }
     }

@@ -462,8 +462,15 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 ),
 
                 loaderCustomData = mapOf(
-                    // This is to trick ModMenu into giving Forge mods the "Forge" tag.
-                    "patchwork:patcherMeta" to true
+                    "mcb" to listOf<Map<String, Any>>(
+                        // https://syorito-hatsuki.github.io/modmenu-badges-lib/
+                        mapOf(
+                            "name" to "NeoForge",
+                            "labelColor" to argb(255, 255, 255),
+                            "outlineColor" to argb(207, 128, 55),
+                            "fillColor" to argb(136, 60, 18),
+                        )
+                    )
                 )
             )
 
@@ -471,6 +478,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         }
 
         return definitions
+    }
+
+    private fun argb(r: Int, g: Int, b: Int, a: Int = 255): Int {
+        // 0xFF_FF_FF_FF
+        return (a shl 24) or (r shl 16) or (g shl 8) or b
     }
 
     override fun getBuiltinModDefinitions(): List<ModDefinition> {
