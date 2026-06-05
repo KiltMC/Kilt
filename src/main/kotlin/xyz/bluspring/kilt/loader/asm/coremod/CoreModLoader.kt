@@ -12,6 +12,9 @@ import net.minecraftforge.fart.internal.EnhancedClassRemapper
 import net.minecraftforge.fart.internal.RenamingTransformer
 import net.neoforged.neoforgespi.coremod.ICoreMod
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.signature.SignatureReader
+import org.objectweb.asm.signature.SignatureVisitor
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
@@ -210,6 +213,28 @@ object CoreModLoader {
 
                     val postTransformedClassNode = transform(actualClassNode, (targetedTransformers[TargetType.CLASS] ?: emptyList()) as Collection<ITransformer<ClassNode>>)
 
+                    // Some mods like Twilight Forest implement JVM type signatures that are invalid according to the JVM specification, which
+                    // causes issues while remapping.
+                    // We need to validate and repair the signatures so we can actually remap shit again, but this ultimately needs to be fixed on
+                    // the offending mods' side, in the event that a JVM actually validates these signatures.
+                    // Offending signature: https://github.com/TeamTwilight/twilightforest/blob/82f1b4b9c15eedcc4fbaccdd513d0b44d818710c/tf-asm/src/main/java/twilightforest/asm/transformers/beardifier/BeardifierClassTransformer.java#L26
+                    // JVM specification reference: https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-TypeArgument
+                    if (postTransformedClassNode.signature != null) {
+                        postTransformedClassNode.signature = validateAndRepairSignature(postTransformedClassNode.signature, postTransformedClassNode.name, "class", transformers)
+                    }
+
+                    for (field in postTransformedClassNode.fields) {
+                        if (field.signature != null) {
+                            field.signature = validateAndRepairSignature(field.signature, postTransformedClassNode.name, "field ${field.name}:${field.desc}", transformers)
+                        }
+                    }
+
+                    for (method in postTransformedClassNode.methods) {
+                        if (method.signature != null) {
+                            method.signature = validateAndRepairSignature(method.signature, postTransformedClassNode.name, "method ${method.name}${method.desc}", transformers)
+                        }
+                    }
+
                     val unmappedClassNode = ClassNode()
                     postTransformedClassNode.accept(EnhancedClassRemapper(unmappedClassNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
                     classNode.fields.clear()
@@ -221,5 +246,61 @@ object CoreModLoader {
                 }
             }
         }
+    }
+
+    private fun validateAndRepairSignature(signature: String, className: String, location: String, transformers: List<ITransformer<*>>): String {
+        try {
+            // Validate with ASM directly first, this is our source of truth.
+            // That way, if we fucked up our repair code, we won't crash instantly.
+            val reader = SignatureReader(signature)
+            reader.accept(object : SignatureVisitor(Opcodes.ASM9) {})
+
+            // Nothing wrong, we can continue.
+            return signature
+        } catch (_: IllegalArgumentException) {
+            // Time to warn the user about the invalid signature.
+            logger.warn("Found an invalid type signature \"${signature}\" at $location while remapping coremod transformations on class ${className}!")
+            logger.warn("Potential offending coremod transformers (${transformers.size}):")
+            for (transformer in transformers) {
+                logger.warn(" - ${transformer::class.java.name} (targeting ${transformer.targetType})")
+            }
+        }
+
+        // This is definitely horrendously incorrect,
+        var currentSignature = ""
+        var signatureLayer = 0
+        var builtSignature = ""
+
+        for (ch in signature) {
+            if (ch == '<' || ch == '>') {
+                if (ch == '<') {
+                    signatureLayer++
+                    currentSignature += ch
+                }
+
+                if (builtSignature.isNotBlank()) {
+                    val firstChar = builtSignature[0]
+                    currentSignature += if (firstChar != 'L' && firstChar != 'Z' && firstChar != 'C' && firstChar != 'B' && firstChar != 'S' && firstChar != 'I' && firstChar != 'F' && firstChar != 'J' && firstChar != 'D' && firstChar != 'V' && firstChar != '[' && firstChar != 'T') {
+                        // Invalid type signature found, we've gotta fix it now.
+                        "L${builtSignature.removeSurrounding("L", ";").replace(".", "/")};"
+                    } else {
+                        builtSignature
+                    }
+
+                    builtSignature = ""
+                }
+
+                if (ch == '>') {
+                    signatureLayer--
+                    currentSignature += ch
+                }
+            } else if (signatureLayer > 0) {
+                builtSignature += ch
+            } else {
+                currentSignature += ch
+            }
+        }
+
+        return currentSignature
     }
 }

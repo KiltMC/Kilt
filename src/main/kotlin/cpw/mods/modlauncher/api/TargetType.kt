@@ -6,7 +6,7 @@ import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
 import java.util.function.Supplier
 
-class TargetType<T>(private val name: String, val nodeType: Class<T>) {
+data class TargetType<T>(private val name: String, val nodeType: Class<T>) {
     companion object {
         @JvmField val PRE_CLASS = TargetType("PRE_CLASS", ClassNode::class.java)
         @JvmField val CLASS = TargetType("CLASS", ClassNode::class.java)
