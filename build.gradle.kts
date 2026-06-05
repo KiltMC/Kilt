@@ -617,7 +617,7 @@ tasks {
         displayName = "Kilt v${project.version} (MC ${project.property("minecraft_version")})"
         version = project.version as String
         changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
-        type = ReleaseType.ALPHA
+        type = ReleaseType.STABLE
         modLoaders.add("fabric")
 
         dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
@@ -635,7 +635,6 @@ tasks {
         }
 
         curseforge {
-            type = ReleaseType.BETA // Because apparently CurseForge hides alpha builds.
             projectId = project.property("publishing.curseforge").toString()
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
