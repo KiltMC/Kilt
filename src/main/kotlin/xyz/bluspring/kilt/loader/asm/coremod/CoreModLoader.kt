@@ -239,6 +239,34 @@ object CoreModLoader {
                     postTransformedClassNode.accept(EnhancedClassRemapper(unmappedClassNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
                     classNode.fields.clear()
                     classNode.methods.clear()
+
+                    // Validate added fields and methods, some Fabric mods provide accessors for already-existing methods,
+                    // which then breaks here because they get applied twice.
+                    // We're gonna need to remove 'em ourselves.
+                    val fieldsToRemove = mutableListOf<FieldNode>()
+                    val methodsToRemove = mutableListOf<MethodNode>()
+
+                    for (fieldNode in unmappedClassNode.fields) {
+                        if ((fieldNode.access and Opcodes.ACC_SYNTHETIC != 0) // Just in case, y'know
+                            && unmappedClassNode.fields.any { it.name == fieldNode.name && it.desc == fieldNode.desc && (it.access and Opcodes.ACC_SYNTHETIC == 0) }
+                        ) {
+                            fieldsToRemove.add(fieldNode)
+                            logger.warn("Found duplicate field ${fieldNode.name}:${fieldNode.desc} in class ${unmappedClassNode.name}, attempting to remove.")
+                        }
+                    }
+
+                    for (methodNode in unmappedClassNode.methods) {
+                        if ((methodNode.access and Opcodes.ACC_SYNTHETIC != 0) // Most accessors should be marked synthetic.
+                            && unmappedClassNode.methods.any { it.name == methodNode.name && it.desc == methodNode.desc && (it.access and Opcodes.ACC_SYNTHETIC == 0) }
+                        ) {
+                            methodsToRemove.add(methodNode)
+                            logger.warn("Found duplicate method ${methodNode.name}${methodNode.desc} in class ${unmappedClassNode.name}, attempting to remove.")
+                        }
+                    }
+
+                    unmappedClassNode.fields.removeAll(fieldsToRemove)
+                    unmappedClassNode.methods.removeAll(methodsToRemove)
+
                     unmappedClassNode.accept(classNode)
                 } catch (e: Throwable) {
                     logger.error("An error occurred in a coremod while transforming $className/${classNode.name}!", e)

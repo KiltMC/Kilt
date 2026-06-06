@@ -15,7 +15,7 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
 @Mixin(Biome.class)
-public class BiomeInject implements BiomeInjection {
+public abstract class BiomeInject implements BiomeInjection {
     private ModifiableBiomeInfo modifiableBiomeInfo;
 
     @Inject(at = @At("TAIL"), method = "<init>")
