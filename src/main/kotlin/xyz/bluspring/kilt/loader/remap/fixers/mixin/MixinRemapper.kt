@@ -14,9 +14,6 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.MixinRefmap
 import xyz.bluspring.kilt.util.KiltHelper
 import java.util.*
-import kotlin.collections.contains
-import kotlin.collections.set
-import kotlin.text.get
 
 // Remaps all mixins and their associated refmaps
 object MixinRemapper {
@@ -338,6 +335,7 @@ object MixinRemapper {
     //      - methodName(ILother/descriptor/Stuff;)V
     //      - Lpkg/to/ClassName;methodName(ILother/descriptor/Stuff;)V
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
+    //      - pkg/to/ClassName/methodName(IL/other/descriptor/Stuff;)V // another one?? seriously???
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
     fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper, isTarget: Boolean = true): String {
@@ -345,7 +343,7 @@ object MixinRemapper {
             return value
 
         // Class reference, we can just return it directly.
-        if (value.contains("/") && !value.startsWith("L") && !value.contains(";")) {
+        if (value.contains("/") && !value.startsWith("L") && !value.contains(";") && !value.contains("(")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()
         }
 
@@ -360,8 +358,14 @@ object MixinRemapper {
             value.replaceAfter(';', "")
         else if (value.contains(".")) // ah, here's the cursed format.
             "L${value.replaceAfter(".", "").removeSuffix(".")};"
-        else
+        else if (value.contains("/")) { // oh no, there's another cursed format in town.
+            val split = value.split("/")
+            if (split.last().contains("("))
+                "L${split.dropLast(1).joinToString("/")};"
+            else ""
+        } else
             ""
+
         val mappedClassDescriptor = KiltRemapper.remapDescriptor(classDescriptor)
         val className = classDescriptor.removeSurrounding("L", ";")
 
