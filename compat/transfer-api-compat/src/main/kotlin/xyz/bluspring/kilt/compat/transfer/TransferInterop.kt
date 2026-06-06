@@ -4,7 +4,12 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorage
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
-import net.neoforged.neoforge.capabilities.Capabilities
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.neoforged.neoforge.capabilities.*
 import team.reborn.energy.api.EnergyStorage
 import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyStorageCapability
 import xyz.bluspring.kilt.compat.transfer.energy.ForgeEnergyStorage
@@ -12,7 +17,11 @@ import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidItemStorageCapability
 import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidStorageCapability
 import xyz.bluspring.kilt.compat.transfer.fluid.ForgeFluidStorage
 import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapability
+import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapabilityProvider
 import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
+import xyz.bluspring.kilt.compat.transfer.mixin.BlockCapabilityAccessor
+import xyz.bluspring.kilt.compat.transfer.mixin.EntityCapabilityAccessor
+import xyz.bluspring.kilt.compat.transfer.mixin.ItemCapabilityAccessor
 
 class TransferInterop : ModInitializer {
     override fun onInitialize() {
@@ -95,7 +104,21 @@ class TransferInterop : ModInitializer {
 
             null
         }
+
+        Capabilities.ItemHandler.BLOCK.providers = AlternativeCapabilityMap(Capabilities.ItemHandler.BLOCK.providers) { mutableListOf(FabricItemStorageCapabilityProvider(it)) }
     }
+
+    private var <T, C> BlockCapability<T, C>.providers: MutableMap<Block, MutableList<IBlockCapabilityProvider<T, C>>>
+        get() = (this as BlockCapabilityAccessor<T, C>).`kilt$getProviders`()
+        set(value) = (this as BlockCapabilityAccessor<T, C>).`kilt$setProviders`(value)
+
+    private var <T, C> EntityCapability<T, C>.providers: MutableMap<EntityType<*>, MutableList<ICapabilityProvider<Entity, C, T>>>
+        get() = (this as EntityCapabilityAccessor<T, C>).`kilt$getProviders`()
+        set(value) = (this as EntityCapabilityAccessor<T, C>).`kilt$setProviders`(value)
+
+    private var <T, C> ItemCapability<T, C>.providers: MutableMap<Item, MutableList<ICapabilityProvider<ItemStack, C, T>>>
+        get() = (this as ItemCapabilityAccessor<T, C>).`kilt$getProviders`()
+        set(value) = (this as ItemCapabilityAccessor<T, C>).`kilt$setProviders`(value)
 
     /*@SubscribeEvent
     fun onAttachBlockEntityCapabilities(event: AttachCapabilitiesEvent<BlockEntity>) {

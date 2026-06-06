@@ -4,7 +4,10 @@
     "package": "xyz.bluspring.kilt.compat.transfer.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
-        "BlockEntityMixin"
+        "BlockCapabilityAccessor",
+        "BlockEntityMixin",
+        "EntityCapabilityAccessor",
+        "ItemCapabilityAccessor"
     ],
     "client": [
     ],
