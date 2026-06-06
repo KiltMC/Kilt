@@ -326,14 +326,6 @@ object KiltMixinModifications {
             "kilt\$getItemColors"
         ),
         AccessorModifier(
-            "net/minecraft/world/level/storage/loot/LootTable",
-            listOf("getPools", "pools"),
-            "()Ljava/util/List;",
-
-            "xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection",
-            "kilt\$getPools"
-        ),
-        AccessorModifier(
             "net/minecraft/client/particle/ParticleEngine",
             listOf("getProviders", "providers"),
             "()Ljava/util/Map;",
