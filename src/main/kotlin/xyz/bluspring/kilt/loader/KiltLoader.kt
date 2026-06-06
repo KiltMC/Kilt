@@ -40,6 +40,7 @@ import org.objectweb.asm.Type
 import org.spongepowered.asm.mixin.FabricUtil
 import org.spongepowered.asm.mixin.Mixins
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader
@@ -48,6 +49,7 @@ import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.mod.NeoForgeModVersion
 import xyz.bluspring.kilt.loader.mod.NeoForgeVersionConstraint
+import xyz.bluspring.kilt.loader.mod.fabric.WrappedFabricModContainer
 import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
@@ -740,6 +742,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
         // Initialize any compatibility bridges that have been registered
         KiltModCompatBridgeManager.processLoadedMods()
+
+        // Let's provide any Fabric mods with their wrapped container entrypoints
+        for (container in FabricLoader.getInstance().getEntrypointContainers(KiltWrappedModContainerEntrypoint.ENTRYPOINT, KiltWrappedModContainerEntrypoint::class.java)) {
+            container.entrypoint.onLoadModContainer(WrappedFabricModContainer.get(container.provider))
+        }
 
         // Create all mod containers
         val languageLoaders = this.languageLoaders

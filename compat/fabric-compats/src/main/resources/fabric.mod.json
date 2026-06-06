@@ -23,6 +23,12 @@
         ],
         "mixinsquared": [
             "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinCanceller"
+        ],
+        "kilt:mod_container": [
+            {
+                "adapter": "kotlin",
+                "value": "xyz.bluspring.kilt.compat.fabric.architectury.KiltArchitecturyApiCompat"
+            }
         ]
     },
     "mixins": [
