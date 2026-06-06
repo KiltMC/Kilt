@@ -70,7 +70,7 @@ public class ReloadableServerResourcesInject implements ReloadableServerResource
     private static List<PreparableReloadListener> kilt$addForgeResourceReloadListener(List<PreparableReloadListener> listeners, @Local ReloadableServerResources serverResources, @Local(argsOnly = true) LayeredRegistryAccess<RegistryLayer> registryAccess, @Local(argsOnly = true) Commands.CommandSelection commandSelection, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
         var list = new ArrayList<>(listeners);
         list.addAll(EventHooks.onResourceReload(serverResources, registryAccess.compositeAccess()));
-        listeners.forEach(rl -> {
+        list.forEach(rl -> {
             if (rl instanceof ContextAwareReloadListener srl) srl.injectContext(serverResources.getConditionContext(), serverResources.getRegistryLookup());
         });
         listenersRef.set(list);
