@@ -447,7 +447,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 // Sets the parent ID of the mod definition
                 parentId = parentId,
 
-                icon = metadata.getConfigElement<String>("logoFile").orElse(""),
+                icon = metadata.getConfigElement<String>("logoFile").orElse(mainConfig.getConfigElement<String>("logoFile").orElse("")) ?: "",
 
                 // Forge mods handle both, there's no way to define sided mods.
                 environment = ModEnvironment.BOTH,
