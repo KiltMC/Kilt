@@ -54,7 +54,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
 
-        var remapMethodsTo: String,
+        var remapMethodsTo: List<String>,
     ) : AnnotationBasedModifier {
         override lateinit var mappedOwner: String
         override lateinit var mappedMethods: List<String>
@@ -65,9 +65,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
 
                 KiltMixinModifications.createAnnotation(annotation.desc,
                     KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
-                        this["method"] = listOf(
-                            MixinRemapper.remapTargetString(remapMethodsTo, listOf(KiltRemapper.unmapClass(classInfo.name)), KiltRemapper.enhancedRemapper)
-                        )
+                        this["method"] = remapMethodsTo
                     })
             }
 

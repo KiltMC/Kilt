@@ -62,7 +62,17 @@ object KiltMixinModifications {
         NameRemappingAnnotationModifier(
             owner = "net/minecraft/server/level/ServerPlayer",
             methods = listOf($$"lambda$startSleepInBed$13", $$"lambda$startSleepInBed$13(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;"),
-            remapMethodsTo = "startSleepInBed(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;"
+            remapMethodsTo = listOf("startSleepInBed(Lnet/minecraft/core/BlockPos;)Lcom/mojang/datafixers/util/Either;")
+        ),
+
+        // Fix Blueprint's PlayerRendererMixin https://github.com/team-abnormals/blueprint/blob/1.21.x/src/main/java/com/teamabnormals/blueprint/core/mixin/client/PlayerRendererMixin.java#L20
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/renderer/entity/player/PlayerRenderer",
+            methods = listOf("renderNameTag"),
+            remapMethodsTo = listOf(
+                "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V",
+                "renderNameTag(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V"
+            )
         )
     )
 
@@ -196,14 +206,14 @@ object KiltMixinModifications {
         NameRemappingAnnotationModifier(
             owner = "net/minecraft/client/particle/ParticleEngine",
             methods = listOf($$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"),
-            remapMethodsTo = $$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V"
+            remapMethodsTo = listOf($$"render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V")
         ),
 
         // Fixes Iron's Spells & Spellbooks' ItemStackMixin
         NameRemappingAnnotationModifier(
             owner = "net/minecraft/world/item/ItemStack",
             methods = listOf("<init>(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/nbt/CompoundTag;)V"),
-            remapMethodsTo = $$"kilt$initItemStackWithTagWorkaround"
+            remapMethodsTo = listOf($$"kilt$initItemStackWithTagWorkaround")
         ),
 
         // Fixes Little Tiles' MinecraftMixin
@@ -242,7 +252,7 @@ object KiltMixinModifications {
         NameRemappingAnnotationModifier(
             owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
             methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
-            remapMethodsTo = "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V"
+            remapMethodsTo = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V")
         )
     )
 
@@ -364,7 +374,7 @@ object KiltMixinModifications {
         NameRemappingAnnotationModifier(
             "net/minecraft/world/entity/player/Player",
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
-            remapMethodsTo = "getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"
+            remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
         )
     )
 
@@ -566,21 +576,42 @@ object KiltMixinModifications {
 
     init {
         for (modifier in GLOBAL_MODIFIERS) {
-            val owner = KiltRemapper.remapClass(modifier.owner)
-            MIXIN_CLASSES.add(owner)
-            modifier.mappedOwner = owner
+            finalizeModifier(modifier)
+        }
+    }
 
-            if (modifier is MethodBasedModifier) {
-                modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+    fun finalizeModifier(modifier: MixinModifier) {
+        val owner = KiltRemapper.remapClass(modifier.owner)
+        MIXIN_CLASSES.add(owner)
+        modifier.mappedOwner = owner
 
-                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
-                }
+        if (modifier is MethodBasedModifier) {
+            modifier.mappedMethods = modifier.methods.map {
+                (if (it.contains("(")) {
+                    val name = it.replaceAfter("(", "").removeSuffix("(")
+                    val descriptor = it.removePrefix(name)
+                    val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
+
+                    "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
+                } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
             }
+        }
+
+        if (modifier is NameRemappingAnnotationModifier) {
+            modifier.remapMethodsTo = modifier.remapMethodsTo.map {
+                MixinRemapper.remapTargetString(
+                    it, listOf(KiltRemapper.unmapClass(modifier.owner)),
+                    KiltRemapper.enhancedRemapper
+                )
+            }
+        }
+        if (modifier is ReplacedAnnotationsModifier) {
+            val mutableList = modifier.replaceWith.toMutableList()
+            MixinRemapper.remapMixinAnnotations(
+                mutableList, KiltRemapper.enhancedRemapper,
+                listOf(modifier.owner), modifier.owner
+            )
+            modifier.replaceWith = mutableList
         }
     }
 
@@ -589,36 +620,7 @@ object KiltMixinModifications {
         val typeDesc = Type.getDescriptor(type)
 
         for (modifier in mixinModifiers) {
-            val owner = KiltRemapper.remapClass(modifier.owner)
-            MIXIN_CLASSES.add(owner)
-            modifier.mappedOwner = owner
-
-            if (modifier is MethodBasedModifier) {
-                modifier.mappedMethods = modifier.methods.map {
-                    (if (it.contains("(")) {
-                        val name = it.replaceAfter("(", "").removeSuffix("(")
-                        val descriptor = it.removePrefix(name)
-                        val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
-
-                        "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                    } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
-                }
-            }
-
-            if (modifier is NameRemappingAnnotationModifier) {
-                modifier.remapMethodsTo = MixinRemapper.remapTargetString(
-                    modifier.remapMethodsTo, listOf(KiltRemapper.unmapClass(modifier.owner)),
-                    KiltRemapper.enhancedRemapper
-                )
-            }
-            if (modifier is ReplacedAnnotationsModifier) {
-                val mutableList = modifier.replaceWith.toMutableList()
-                MixinRemapper.remapMixinAnnotations(
-                    mutableList, KiltRemapper.enhancedRemapper,
-                    listOf(modifier.owner), modifier.owner
-                )
-                modifier.replaceWith = mutableList
-            }
+            finalizeModifier(modifier)
 
             list.add(modifier)
         }
