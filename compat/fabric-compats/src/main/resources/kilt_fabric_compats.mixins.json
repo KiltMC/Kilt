@@ -29,6 +29,7 @@
     "mkb.KeyConflictContextMixin",
     "pehkui.ScaleTypeMixin",
     "rei.PluginDetectorImplMixin",
+    "resourcefullib.FabricRegistryEntryMixin",
     "sable.BlockEntityPropellerMixin",
     "sable.BlockEntitySubLevelReactionWheelMixin",
     "sable.SableSubLevelRenderPlatformImplMixin",

@@ -47,6 +47,8 @@ dependencies {
 
     modCompileOnly("maven.modrinth:sable:${property("sable_version")}-fabric,1.21.1")
     modCompileOnly("maven.modrinth:T9PomCSv:${property("sable_version")}-neoforge,1.21.1") // same for Sable Neo
+
+    modCompileOnly("maven.modrinth:resourceful-lib:${property("resourcefullib_version")}-fabric,1.21.1")
 }
 
 tasks {
