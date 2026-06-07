@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.extensions.IKeyMappingExtension;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -72,8 +73,7 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
     @Expression("keyCode == 256")
     @Inject(
         method = "keyPressed",
-        at = @At("MIXINEXTRAS:EXPRESSION"),
-        cancellable = true
+        at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private void kilt$checkPassToRelease(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (!kilt$releasing) {
@@ -86,7 +86,6 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
                 lastPressedKey = key;
                 isLastKeyHeldDown = true;
             }
-            cir.setReturnValue(true);
         }
     }
 
@@ -99,6 +98,7 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
         )
     )
     private void kilt$setKeyToUnbound(Options options, KeyMapping keyMapping, InputConstants.Key key, Operation<Void> original) {
+        if (!kilt$releasing) return;
         this.selectedKey.setKeyModifierAndCode(KeyModifier.NONE, InputConstants.UNKNOWN);
         original.call(options, keyMapping, key);
         lastPressedKey = InputConstants.UNKNOWN;
@@ -119,6 +119,7 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
         Options options, KeyMapping keyMapping, InputConstants.Key key, Operation<Void> original,
         @Cancellable CallbackInfoReturnable<Boolean> cir
     ) {
+        if (!kilt$releasing) return;
         if (lastPressedKey.equals(key)) {
             isLastKeyHeldDown = false;
         } else if (lastPressedModifier.equals(key)) {
@@ -140,6 +141,19 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
         } else {
             cir.setReturnValue(true);
         }
+    }
+
+    @Inject(
+        method = "keyPressed",
+        at = @At(
+            value = "FIELD",
+            target = "Lnet/minecraft/client/gui/screens/options/controls/KeyBindsScreen;selectedKey:Lnet/minecraft/client/KeyMapping;",
+            opcode = Opcodes.PUTFIELD
+        ),
+        cancellable = true
+    )
+    private void kilt$afterSetKey(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+        if (!kilt$releasing) cir.setReturnValue(true);
     }
 
     @Intrinsic
