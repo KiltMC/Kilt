@@ -85,7 +85,7 @@ object CoreModLoader {
         "xyz.bluspring.kilt.loader.asm.coremod.RemappingMethodInsnNode"
     )
 
-    val loadedCoreMods = mutableListOf<CoreMod>()
+    var loadedCoreMods = 0
     val enableCoreMods = KiltFlags.DISABLE_COREMODS
 
     fun scanAndLoadCoreMods(mod: NeoForgeMod) {
@@ -107,7 +107,7 @@ object CoreModLoader {
                     coreMod.init()
 
                     mod.coreMods.add(coreMod)
-                    loadedCoreMods.add(coreMod)
+                    loadedCoreMods++
                 }
             }
         } catch (e: Exception) {
@@ -137,6 +137,8 @@ object CoreModLoader {
                         .add(transformer)
                 }
             }
+
+            loadedCoreMods++
         }
 
         for ((className, transformers) in mergedTransformers) {

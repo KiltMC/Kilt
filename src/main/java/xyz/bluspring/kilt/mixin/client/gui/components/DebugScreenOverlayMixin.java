@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.mixin.client.gui.components;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.components.DebugScreenOverlay;
+import java.util.List;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader;
 
-import java.util.List;
+import net.minecraft.client.gui.components.DebugScreenOverlay;
+
+import net.fabricmc.loader.api.FabricLoader;
 
 @Mixin(DebugScreenOverlay.class)
 public class DebugScreenOverlayMixin {
@@ -33,7 +35,7 @@ public class DebugScreenOverlayMixin {
         messages.add(Kilt.Companion.getLoader().getMods().size() + " mods loaded");
 
         if (CoreModLoader.INSTANCE.getEnableCoreMods())
-            messages.add(CoreModLoader.INSTANCE.getLoadedCoreMods().size() + " coremods loaded");
+            messages.add(CoreModLoader.INSTANCE.getLoadedCoreMods() + " coremods loaded");
 
         messages.add("");
     }
