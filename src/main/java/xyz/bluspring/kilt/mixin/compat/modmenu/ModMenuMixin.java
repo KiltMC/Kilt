@@ -1,32 +1,31 @@
 package xyz.bluspring.kilt.mixin.compat.modmenu;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
-import net.minecraft.client.gui.screens.Screen;
+import com.terraformersmc.modmenu.ModMenu;
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.loader.KiltLoader;
 
 @IfModLoaded("modmenu")
 @Pseudo
-@Mixin(targets = "com.terraformersmc.modmenu.ModMenu")
+@Mixin(ModMenu.class)
 public abstract class ModMenuMixin {
-    @ModifyReturnValue(method = "getConfigScreen", at = @At("RETURN"))
-    private static Screen kilt$addForgeConfigScreenIfPossible(Screen original, @Local(argsOnly = true) String modId, @Local(argsOnly = true) Screen parent) {
+    @Inject(method = "getConfigScreenFactory", at = @At("HEAD"), cancellable = true)
+    private static void kilt$addForgeConfigScreenIfPossible(String modId, CallbackInfoReturnable<ConfigScreenFactory<?>> cir) {
         var kiltMod = KiltLoader.Companion.getInstance().getMod(modId);
         if (kiltMod != null) {
             // Kilt: Add Forge config screens to ModMenu
             var container = kiltMod.getContainer();
             var screenExtension = container.getCustomExtension(IConfigScreenFactory.class);
 
-            if (screenExtension.isPresent()) {
-                return screenExtension.get().createScreen(container, parent);
-            }
+            screenExtension.ifPresent(iConfigScreenFactory ->
+                cir.setReturnValue(parent -> iConfigScreenFactory.createScreen(container, parent))
+            );
         }
-
-        return original;
     }
 }
