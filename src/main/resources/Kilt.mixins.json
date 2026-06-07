@@ -73,6 +73,7 @@
         "compat.forge.zerocore.ClientProxyMixin",
         "compat.modmenu.FabricIconHandlerMixin",
         "compat.modmenu.ModMenuMixin",
+        "compat.porting_lib.LootModifierManagerMixin",
         "core.BuiltInRegistriesAccessor",
         "core.NonNullListAccessor",
         "data.registries.VanillaRegistriesAccessor",
