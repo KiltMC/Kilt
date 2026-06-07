@@ -90,6 +90,18 @@ class KiltEnhancedRemapper(private val provider: ClassProvider, private val file
     }
 
     override fun mapMethodName(owner: String, name: String, descriptor: String): String {
+        // really, really dumb remap because some mods actually call into this, unfortunately.
+        fun matchesSelf(className: String): Boolean {
+            return name == "self" && descriptor == "()L$className;" && getClassHierarchy(owner).any { it.name == className || it.`super` == className }
+        }
+
+        if (matchesSelf("net/minecraft/world/entity/LivingEntity")
+            || matchesSelf("net/minecraft/network/protocol/PacketFlow")
+            || matchesSelf("net/minecraft/server/level/ServerChunkCache")
+            || matchesSelf("net/minecraft/server/players/PlayerList")
+        )
+            return $$"neoforge$self"
+
         if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !name.startsWith("lambda$")) {
             return name
         }
