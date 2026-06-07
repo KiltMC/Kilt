@@ -1,14 +1,10 @@
 package xyz.bluspring.kilt.util
 
-import com.mojang.serialization.Codec
 import net.minecraftforge.fml.unsafe.UnsafeHacks
-import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum
 import xyz.bluspring.fork.mm.CasualStreamHandler
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
-import java.util.Locale.getDefault
 import java.util.function.Consumer
-import kotlin.text.uppercase
 
 object EnumUtils {
     @JvmStatic
@@ -50,21 +46,6 @@ object EnumUtils {
             Kilt.logger.error("Failed to dynamically load class $name!")
             e.printStackTrace()
             null
-        }
-    }
-
-    @JvmStatic
-    inline fun <reified T : Enum<T>> createThrowingFallbackCodec(ignoreCase: Boolean = true): Codec<T> {
-        return if (ignoreCase) {
-            Codec.STRING.xmap(
-                { enumValueOf<T>(it.uppercase()) },
-                { it.name.lowercase(getDefault()) }
-            )
-        } else {
-            Codec.STRING.xmap(
-                { enumValueOf<T>(it) },
-                { it.name }
-            )
         }
     }
 }

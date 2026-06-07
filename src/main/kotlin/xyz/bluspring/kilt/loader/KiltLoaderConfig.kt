@@ -1,15 +1,16 @@
 package xyz.bluspring.kilt.loader
 
-import com.mojang.serialization.Codec
-import com.mojang.serialization.codecs.RecordCodecBuilder
+import fish.cichlidmc.tinycodecs.api.codec.Codec
+import fish.cichlidmc.tinycodecs.api.codec.CompositeCodec
 import net.fabricmc.loader.api.FabricLoader
 import net.neoforged.neoforgespi.language.IModInfo
 import org.apache.maven.artifact.versioning.VersionRange
-import xyz.bluspring.kilt.util.EnumUtils
+import xyz.bluspring.kilt.util.enumThrowingFallbackCodec
+import xyz.bluspring.kilt.util.unboundedMap
 import xyz.bluspring.knit.loader.mod.ModDependency.Type
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import java.nio.file.Path
-import java.util.Optional
+import java.util.*
 
 @JvmRecord
 data class KiltLoaderConfig(
@@ -25,23 +26,14 @@ data class KiltLoaderConfig(
 ) {
     companion object {
         val PATH: Path = FabricLoader.getInstance().configDir.resolve("kilt_overrides.json")
-        val CODEC: Codec<KiltLoaderConfig> = RecordCodecBuilder.create { instance ->
-            instance.group(
-                Codec.STRING.listOf()
-                    .optionalFieldOf("force_disabled_mods", emptyList())
-                    .forGetter(KiltLoaderConfig::forceDisabledModIds),
-                Codec.unboundedMap(
-                    Codec.STRING,
-                    Codec.unboundedMap(
-                        Codec.STRING,
-                        ModDependencyOverride.CODEC
-                    )
-                )
-                    .optionalFieldOf("dependency_overrides", emptyMap())
-                    .forGetter(KiltLoaderConfig::dependencyOverrides)
-            )
-                .apply(instance, ::KiltLoaderConfig)
-        }
+        val CODEC: Codec<KiltLoaderConfig> = CompositeCodec.of(
+            Codec.STRING.listOf().optional(emptyList())
+                .fieldOf("force_disabled_mods"), KiltLoaderConfig::forceDisabledModIds,
+            unboundedMap(Codec.STRING, unboundedMap(Codec.STRING, ModDependencyOverride.CODEC))
+                .optional(emptyMap()).fieldOf("dependency_overrides"), KiltLoaderConfig::dependencyOverrides,
+
+            ::KiltLoaderConfig
+        ).codec
     }
 
     data class ModDependencyOverride(
@@ -55,19 +47,14 @@ data class KiltLoaderConfig(
                 VersionRange::createFromVersionSpec,
                 VersionRange::toString
             )
-            val CODEC: Codec<ModDependencyOverride> = RecordCodecBuilder.create { instance ->
-                instance.group(
-                    VERSION_CONSTRAINT_CODEC.optionalFieldOf("version")
-                        .forGetter(ModDependencyOverride::version),
-                    EnumUtils.createThrowingFallbackCodec<Type>().optionalFieldOf("type")
-                        .forGetter(ModDependencyOverride::type),
-                    EnumUtils.createThrowingFallbackCodec<ModEnvironment>().optionalFieldOf("side")
-                        .forGetter(ModDependencyOverride::side),
-                    EnumUtils.createThrowingFallbackCodec<IModInfo.Ordering>().optionalFieldOf("ordering")
-                        .forGetter(ModDependencyOverride::ordering)
-                )
-                    .apply(instance, ::ModDependencyOverride)
-            }
+
+            val CODEC: Codec<ModDependencyOverride> = CompositeCodec.of(
+                VERSION_CONSTRAINT_CODEC.optional().fieldOf("version"), ModDependencyOverride::version,
+                enumThrowingFallbackCodec<Type>().optional().fieldOf("type"), ModDependencyOverride::type,
+                enumThrowingFallbackCodec<ModEnvironment>().optional().fieldOf("side"), ModDependencyOverride::side,
+                enumThrowingFallbackCodec<IModInfo.Ordering>().optional().fieldOf("ordering"), ModDependencyOverride::ordering,
+                ::ModDependencyOverride
+            ).codec
         }
     }
 }

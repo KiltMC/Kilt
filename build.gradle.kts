@@ -15,6 +15,7 @@ plugins {
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
+    id("com.gradleup.shadow") version "9.4.2"
 }
 
 apply<KiltLoomPlugin>()
@@ -238,6 +239,8 @@ allprojects {
     }
 }
 
+val shadedDep by configurations.creating
+
 dependencies {
     // Forge Reimplementations
     val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "milk", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
@@ -255,6 +258,11 @@ dependencies {
         exclude("org.spongepowered", "mixin")
     }
     include(modApi("maven.modrinth:modmenu-badges-lib:${rootProject.property("modmenu_badges_version")}")!!)
+
+    // Extra libraries that should be shaded
+    shadedDep(api("xyz.bluspring.fork:fishflakes:${property("fishflakes_version")}")!!)
+    shadedDep(api("xyz.bluspring.fork:tiny-json:${property("tinyjson_version")}")!!)
+    shadedDep(api("xyz.bluspring.fork:tiny-codecs:${property("tinycodecs_version")}")!!)
 
     // Forge stuff
     api(include("net.neoforged:bus:${property("eventbus_version")}") {
@@ -555,6 +563,18 @@ tasks {
 
     named<Jar>("sourcesJar") {
         duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    shadowJar {
+        configurations = listOf(shadedDep)
+        archiveClassifier.set("dev-shadow")
+
+        relocate("fish.cichlidmc", "xyz.bluspring.kilt.shaded.cichlidmc")
+    }
+
+    remapJar {
+        dependsOn(shadowJar)
+        inputFile.set(shadowJar.get().archiveFile)
     }
 
     // configure the maven publication

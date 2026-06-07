@@ -3,10 +3,10 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
-import com.mojang.serialization.JsonOps
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import cpw.mods.niofs.union.KiltUnionFileSystemHelper
+import fish.cichlidmc.tinyjson.TinyJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
@@ -134,14 +134,16 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
     fun loadConfig() {
         if (KiltLoaderConfig.PATH.exists()) {
-            KiltLoaderConfig.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseReader(KiltLoaderConfig.PATH.reader(options = arrayOf(StandardOpenOption.READ))))
-                .resultOrPartial()
-                .map { it.first }
-                .ifPresentOrElse({
-                    this.config = it
-                }) {
-                    Kilt.logger.error("Failed to load config!")
-                }
+            try {
+                KiltLoaderConfig.CODEC.decode(TinyJson.parse(KiltLoaderConfig.PATH.reader(options = arrayOf(StandardOpenOption.READ))))
+                    .ifPresentOrElse({
+                        this.config = it
+                    }, {
+                        Kilt.logger.error("An error occurred while trying to load the Kilt loader config! Error: $it")
+                    })
+            } catch (e: Throwable) {
+                Kilt.logger.error("An error occurred while trying to load the Kilt loader config!", e)
+            }
         }
     }
 
