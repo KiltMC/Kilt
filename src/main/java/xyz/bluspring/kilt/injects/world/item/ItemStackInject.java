@@ -1,9 +1,6 @@
 // TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.injects.world.item;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -13,6 +10,23 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
@@ -29,20 +43,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.item.ItemStackInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.PatchedDataComponentMap;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.ItemLike;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @Mixin(value = ItemStack.class, priority = 1050)
 public abstract class ItemStackInject implements MutableDataComponentHolder, IItemStackExtension, ItemStackInjection {
@@ -57,6 +59,9 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
 
     @Shadow
     public abstract boolean is(Item item);
+
+    @Shadow
+    public abstract Rarity getRarity();
 
     public ItemStackInject(ItemLike item, int count) {}
 
@@ -150,6 +155,25 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
             return getItem().getMaxDamage((ItemStack) (Object) this);
         }
         return original;
+    }
+
+    @Definition(id = "withStyle", method = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")
+    @Definition(id = "getRarity", method = "Lnet/minecraft/world/item/ItemStack;getRarity()Lnet/minecraft/world/item/Rarity;")
+    @Definition(id = "color", method = "Lnet/minecraft/world/item/Rarity;color()Lnet/minecraft/ChatFormatting;")
+    @Expression("?.withStyle(this.getRarity().color())")
+    @WrapOperation(
+        method = {"getTooltipLines", "getDisplayName"},
+        at = @At(value = "MIXINEXTRAS:EXPRESSION"),
+        expect = 2
+    )
+    private MutableComponent kilt$applyRarityStyleModifier(
+        MutableComponent instance, ChatFormatting chatFormatting, Operation<MutableComponent> original
+    ) {
+        var rarity = this.getRarity();
+        if (rarity.kilt$hasCustomStyleModifier()) {
+            return instance.withStyle(rarity.getStyleModifier());
+        }
+        return original.call(instance, chatFormatting);
     }
 
 //    @ModifyReturnValue(method = "getTooltipLines", at = @At(value = "RETURN", ordinal = 1)) Handled by fabric oops
