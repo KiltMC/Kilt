@@ -1,20 +1,22 @@
 // TRACKED HASH: 13883d3a815e6b78fb2ecf76ce46710d2684597f
 package xyz.bluspring.kilt.injects.world.level.block;
 
+import java.util.Optional;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.WoodType;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 
-import java.util.Optional;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.WoodType;
 
 @Mixin(FenceGateBlock.class)
 public abstract class FenceGateBlockInject extends HorizontalDirectionalBlock {
@@ -32,7 +34,9 @@ public abstract class FenceGateBlockInject extends HorizontalDirectionalBlock {
 
     @CreateInitializer
     public FenceGateBlockInject(Optional<WoodType> woodType, BlockBehaviour.Properties properties, Optional<SoundEvent> openSound, Optional<SoundEvent> closeSound) {
-        this(woodType.orElse(null), properties);
+        this(woodType.orElse(
+            WoodType.OAK // Kilt: Use oak as a default
+        ), properties);
         this.openSound = openSound.orElseThrow();
         this.closeSound = closeSound.orElseThrow();
         this.kilt$isCustomSounds = true;
