@@ -1,20 +1,25 @@
 // TRACKED HASH: fd1859323d2b7b647915a5c458b0159a1f4e13b1
 package xyz.bluspring.kilt.injects.client.gui;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
 import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
@@ -47,6 +52,8 @@ public abstract class GuiInject implements GuiInjection {
     @Shadow
     @Final
     private Minecraft minecraft;
+    @Shadow
+    private ItemStack lastToolHighlight;
     @Unique private final GuiLayerManager layerManager = new GuiLayerManager();
 
     @Unique public int leftHeight;
@@ -187,6 +194,23 @@ public abstract class GuiInject implements GuiInjection {
             original.call(instance, guiGraphics);
             this.layerManager.kilt$callPostRenderEvent(SPECTATOR_TOOLTIP, guiGraphics, deltaTracker);
         }
+    }
+
+    @Definition(id = "withStyle", method = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")
+    @Definition(id = "getRarity", method = "Lnet/minecraft/world/item/ItemStack;getRarity()Lnet/minecraft/world/item/Rarity;")
+    @Definition(id = "color", method = "Lnet/minecraft/world/item/Rarity;color()Lnet/minecraft/ChatFormatting;")
+    @Definition(id = "lastToolHighlight", field = "Lnet/minecraft/client/gui/Gui;lastToolHighlight:Lnet/minecraft/world/item/ItemStack;")
+    @Expression("?.withStyle(this.lastToolHighlight.getRarity().color())")
+    @WrapOperation(
+        method = "renderSelectedItemName",
+        at = @At(value = "MIXINEXTRAS:EXPRESSION")
+    )
+    private MutableComponent kilt$applyRarityStyleModifier(MutableComponent instance, ChatFormatting chatFormatting, Operation<MutableComponent> original) {
+        var rarity = this.lastToolHighlight.getRarity();
+        if (rarity.kilt$hasCustomStyleModifier()) {
+            return instance.withStyle(rarity.getStyleModifier());
+        }
+        return original.call(instance, chatFormatting);
     }
 
     @WrapMethod(method = "renderPlayerHealth")
