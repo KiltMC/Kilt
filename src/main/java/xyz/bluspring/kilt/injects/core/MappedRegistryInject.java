@@ -1,22 +1,16 @@
 // TRACKED HASH: 399562caae5944ef11e0759f3ce9d673134c41a2
 package xyz.bluspring.kilt.injects.core;
 
-import java.util.HashSet;
 import java.util.Map;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.registry.RegistryIdRemapCallback;
 import net.neoforged.neoforge.registries.BaseMappedRegistry;
 import net.neoforged.neoforge.registries.IRegistryExtension;
-import net.neoforged.neoforge.registries.RegistryManager;
-import net.neoforged.neoforge.registries.RegistrySnapshot;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,9 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
 
@@ -40,7 +32,6 @@ import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import xyz.bluspring.kilt.loader.KiltLoader;
 
 @Extends(BaseMappedRegistry.class)
 @Mixin(MappedRegistry.class)
@@ -61,25 +52,6 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Shadow
     private boolean frozen;
     @Unique private final ThreadLocal<Integer> kilt$id = new ThreadLocal<>();
-
-    @Unique
-    private static final ResourceLocation KILT$APPLY_SNAPSHOT_PHASE = ResourceLocation.fromNamespaceAndPath(Kilt.MOD_ID, "apply_snapshot");
-
-    @Inject(
-        method = "<init>(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Lifecycle;Z)V",
-        at = @At("RETURN"),
-        order = 1050
-    )
-    private void kilt$init(ResourceKey<?> key, Lifecycle registryLifecycle, boolean hasIntrusiveHolders, CallbackInfo ci) {
-        var namespace = key.location().getNamespace();
-        if (namespace.equals(ResourceLocation.DEFAULT_NAMESPACE) || KiltLoader.Companion.getInstance().hasMod(namespace)) {
-            var idRemapEvent = RegistryIdRemapCallback.event(this);
-            idRemapEvent.addPhaseOrdering(Event.DEFAULT_PHASE, KILT$APPLY_SNAPSHOT_PHASE);
-            idRemapEvent.register(KILT$APPLY_SNAPSHOT_PHASE, state -> {
-                RegistryManager.applySnapshot((MappedRegistry<?>) (Object) this, new RegistrySnapshot(this, false), new HashSet<>());
-            });
-        }
-    }
 
     @Override
     public Holder.Reference<T> register(int id, ResourceKey<T> key, T value, RegistrationInfo info) {
