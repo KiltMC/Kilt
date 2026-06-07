@@ -86,6 +86,7 @@
         "workarounds.method_remap_workaround.MutableDataComponentHolderMixin",
         "workarounds.method_remap_workaround.ServerCommonPacketListenerImplMixin",
         "workarounds.method_remap_workaround.ServerConfigurationPacketListenerMixin",
+        "workarounds.registry_clear.MappedRegistryMixin",
         "world.inventory.GrindstoneMenuAccessor",
         "world.item.CreativeModeTabBuilderAccessor",
         "world.item.UseAnimAccessor",
