@@ -7,8 +7,7 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.registries.RegistryManager;
-import net.neoforged.neoforge.registries.RegistrySnapshot;
+import net.neoforged.neoforge.registries.BaseMappedRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,9 +15,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.core.MappedRegistryInjection;
-import xyz.bluspring.kilt.loader.KiltLoader;
-
-import java.util.HashSet;
 
 @Mixin(MappedRegistry.class)
 public abstract class MappedRegistryMixin<T> implements Registry<T>, MappedRegistryInjection<T> {
@@ -31,23 +27,13 @@ public abstract class MappedRegistryMixin<T> implements Registry<T>, MappedRegis
         at = @At("RETURN"),
         order = 1050
     )
-    private void kilt$applySnapshot(ResourceKey<? extends Registry<T>> key, Lifecycle registryLifecycle, boolean hasIntrusiveHolders, CallbackInfo ci) {
-        var namespace = key.location().getNamespace();
-        if (namespace.equals(ResourceLocation.DEFAULT_NAMESPACE) || KiltLoader.Companion.getInstance().hasMod(namespace)) {
-            var idRemapEvent = RegistryIdRemapCallback.event(this);
-            idRemapEvent.addPhaseOrdering(Event.DEFAULT_PHASE, KILT$APPLY_SNAPSHOT_PHASE);
-            idRemapEvent.register(KILT$APPLY_SNAPSHOT_PHASE, state -> {
-                this.unfreeze();
-                var snapshot = new RegistrySnapshot(this, false);
-                this.clear(false);
-                snapshot.getAliases().forEach(this::addAlias);
-                for (int id : snapshot.getIds().keySet()) {
-                    ResourceKey<T> idKey = ResourceKey.create(key, snapshot.getIds().get(id));
-                    registerIdMapping(idKey, id);
-                }
-                this.freeze();
-            });
-        }
+    private void kilt$initClearBakeBridge(ResourceKey<? extends Registry<T>> key, Lifecycle registryLifecycle, boolean hasIntrusiveHolders, CallbackInfo ci) {
+        var idRemapEvent = RegistryIdRemapCallback.event(this);
+        idRemapEvent.addPhaseOrdering(Event.DEFAULT_PHASE, KILT$APPLY_SNAPSHOT_PHASE);
+        idRemapEvent.register(KILT$APPLY_SNAPSHOT_PHASE, state -> {
+            ((BaseMappedRegistry<T>) (Object) this).clearCallbacks.forEach(callback -> callback.onClear(this, false));
+            ((BaseMappedRegistry<T>) (Object) this).bakeCallbacks.forEach(callback -> callback.onBake(this));
+        });
     }
 
 }
