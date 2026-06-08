@@ -1,6 +1,8 @@
 // TRACKED HASH: 8a008dde196be8f110c6df462a387035cbfd879c
 package xyz.bluspring.kilt.injects.client;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
@@ -10,101 +12,83 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.neoforged.fml.ModLoader;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.DimensionTransitionScreenManager;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.extensions.IMinecraftExtension;
+import net.neoforged.neoforge.client.loading.ClientModLoader;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
+import net.neoforged.neoforge.common.extensions.IEntityExtension;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.client.ClientStartingCallback;
+import xyz.bluspring.kilt.injections.client.MinecraftInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.extensions.IMinecraftExtension;
-import net.neoforged.neoforge.client.loading.ClientModLoader;
-import net.neoforged.fml.ModLoader;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
-import net.neoforged.neoforge.common.extensions.IBlockExtension;
-import net.neoforged.neoforge.common.extensions.IEntityExtension;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.bluspring.kilt.client.ClientStartingCallback;
-import xyz.bluspring.kilt.client.KiltClient;
-import xyz.bluspring.kilt.injections.client.MinecraftInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftInject implements MinecraftInjection, IMinecraftExtension {
-    @Shadow @Final @Mutable
-    private ItemColors itemColors;
-
+    @Shadow @Final @Mutable private ItemColors itemColors;
     @Shadow @Final private ReloadableResourceManager resourceManager;
     @Shadow @Final public Options options;
-    @Shadow private volatile boolean pause;
     @Shadow @Final public ParticleEngine particleEngine;
     @Shadow @Final private PackRepository resourcePackRepository;
-
     @Shadow public abstract BlockColors getBlockColors();
-
-    @Mutable
-    @Shadow @Final private BlockColors blockColors;
+    @Mutable @Shadow @Final private BlockColors blockColors;
     @Shadow @Nullable public LocalPlayer player;
     @Shadow @Nullable public HitResult hitResult;
     @Shadow @Final private DeltaTracker.Timer timer;
-    @Unique
-    private float realPartialTick;
-
-    // This has to be public, it's a field that is used by the WorkaroundFixer.
-    public Gui kilt$forgeGui = null;
+    @Shadow @Nullable public ClientLevel level;
+    @Shadow @Nullable public MultiPlayerGameMode gameMode;
 
     @Inject(method = "getBlockColors", at = @At("HEAD"))
     private void kilt$workaroundEmptyBlockColors(CallbackInfoReturnable<BlockColors> cir) {
         if (this.blockColors == null)
             this.blockColors = BlockColors.createDefault();
-    }
-
-    @Override
-    public ItemColors getItemColors() {
-        if (this.itemColors == null)
-            this.itemColors = ItemColors.createDefault(this.getBlockColors());
-
-        return this.itemColors;
-    }
-
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;updateVsync(Z)V", shift = At.Shift.BEFORE), method = "<init>")
-    public void kilt$initializeForge(GameConfig gameConfig, CallbackInfo ci) {
-        ClientHooks.initClientHooks((Minecraft) (Object) this, this.resourceManager);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -119,7 +103,12 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;<init>(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;Lnet/minecraft/client/renderer/RenderBuffers;)V", shift = At.Shift.AFTER))
     private void kilt$postRegisterStageEvent(GameConfig gameConfig, CallbackInfo ci) {
-        ModLoader.postEvent(new net.neoforged.neoforge.client.event.RenderLevelStageEvent.RegisterStageEvent());
+        ModLoader.postEvent(new RenderLevelStageEvent.RegisterStageEvent());
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;updateVsync(Z)V", shift = At.Shift.BEFORE), method = "<init>")
+    public void kilt$initializeForge(GameConfig gameConfig, CallbackInfo ci) {
+        ClientHooks.initClientHooks((Minecraft) (Object) this, this.resourceManager);
     }
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;<init>(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/renderer/texture/TextureManager;)V", shift = At.Shift.BY, by = 2))
@@ -224,7 +213,47 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
         }
     }
 
-    @Inject(method = "pickBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z", ordinal = 0), cancellable = true)
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    private void kilt$tryHandleUnloadLevel(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo ci) {
+        if (this.level != null) {
+            NeoForge.EVENT_BUS.post(new LevelEvent.Unload(this.level));
+        }
+    }
+
+    @WrapOperation(method = "setLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;updateScreenAndTick(Lnet/minecraft/client/gui/screens/Screen;)V"))
+    private void kilt$tryUseNeoTransition(Minecraft instance, Screen screen, Operation<Void> original, @Local(argsOnly = true) ClientLevel level, @Local(argsOnly = true) ReceivingLevelScreen.Reason reason) {
+        ResourceKey<Level> fromDim = null;
+        ResourceKey<Level> toDim = null;
+        if (level != null)
+            toDim = level.dimension();
+
+        if (this.level != null)
+            fromDim = this.level.dimension();
+
+        if (DimensionTransitionScreenManager.kilt$hasScreen(toDim, fromDim)) {
+            original.call(instance, DimensionTransitionScreenManager.getScreenFromLevel(level, this.level).create(() -> false, reason));
+        } else {
+            original.call(instance, screen);
+        }
+    }
+
+    @Definition(id = "gameMode", field = "Lnet/minecraft/client/Minecraft;gameMode:Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;")
+    @Expression("this.gameMode = null")
+    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$firePlayerLogoutEvent(Screen nextScreen, boolean keepResourcePacks, CallbackInfo ci) {
+        ClientHooks.firePlayerLogout(this.gameMode, this.player);
+    }
+
+    // Kilt: we're not reverting registries thanks
+
+    @Definition(id = "integratedServer", local = @Local(type = IntegratedServer.class))
+    @Expression("integratedServer != null")
+    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$handleUnloadEvent(Screen nextScreen, boolean keepResourcePacks, CallbackInfo ci) {
+        NeoForge.EVENT_BUS.post(new LevelEvent.Unload(this.level));
+    }
+
+    @Inject(method = "pickBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z", ordinal = 0, opcode = Opcodes.GETFIELD), cancellable = true)
     private void kilt$callForgePickInputEvent(CallbackInfo ci) {
         if (ClientHooks.onClickInput(2, this.options.keyPickItem, InteractionHand.MAIN_HAND).isCanceled())
             ci.cancel();
@@ -256,5 +285,13 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
         }
 
         return result;
+    }
+
+    @Override
+    public ItemColors getItemColors() {
+        if (this.itemColors == null)
+            this.itemColors = ItemColors.createDefault(this.getBlockColors());
+
+        return this.itemColors;
     }
 }
