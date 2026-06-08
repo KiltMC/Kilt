@@ -290,6 +290,7 @@ dependencies {
     // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
     implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}") {
         exclude("org.ow2.asm")
+        exclude("net.sf.jopt-simple") // otherwise prod crashes
     })
     implementation(include("net.fabricmc:tiny-remapper:${property("tiny_remapper_version")}")!!)
 
