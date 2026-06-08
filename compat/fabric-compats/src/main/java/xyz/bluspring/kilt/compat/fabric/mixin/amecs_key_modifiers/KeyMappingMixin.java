@@ -49,7 +49,7 @@ public abstract class KeyMappingMixin implements IKeyMapping, KeyMappingWorkarou
         ci.cancel();
     }
 
-    @Inject(method = "<init>(Ljava/lang/String;Lnet/neoforged/neoforge/client/settings/IKeyConflictContext;Lnet/neoforged/neoforge/client/settings/KeyModifier;Lcom/mojang/blaze3d/platform/InputConstants$Key;Ljava/lang/String;)V", at = @At("RETURN"))
+    @Inject(method = "<init>*", at = @At("RETURN"))
     private void kilt$amecs$initWithModifier(String description, IKeyConflictContext keyConflictContext, KeyModifier keyModifier, InputConstants.Key keyCode, String category, CallbackInfo ci) {
         kilt$amecs$setKeyModifier(keyModifier);
     }
