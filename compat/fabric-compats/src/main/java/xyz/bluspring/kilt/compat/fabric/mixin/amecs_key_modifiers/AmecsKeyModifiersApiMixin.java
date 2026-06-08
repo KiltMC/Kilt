@@ -18,7 +18,7 @@ import xyz.bluspring.kilt.compat.fabric.amecs.KeyMappingWorkaround;
 @Pseudo
 @IfModLoaded("amecs_key_modifiers")
 @Mixin(value = AmecsKeyModifiersApi.class, priority = 1010)
-public class AmecsKeyModifiersApiMixin {
+public abstract class AmecsKeyModifiersApiMixin {
 
     @WrapOperation(
         method = "resetBoundModifiers",
@@ -29,7 +29,7 @@ public class AmecsKeyModifiersApiMixin {
     )
     private static void kilt$amecs$onReset(
         AmecsKeyModifierCombination instance, Operation<Void> original,
-        @Local(argsOnly = true, name = "mapping") KeyMapping mapping
+        @Local(argsOnly = true) KeyMapping mapping
     ) {
         original.call(instance);
         var keyModifierDefault = mapping.getDefaultKeyModifier();

@@ -14,7 +14,7 @@ import xyz.bluspring.kilt.compat.fabric.amecs.KeyMappingWorkaround;
 @Pseudo
 @IfModLoaded(value = "amecsapi", maxVersion = "1.7.0")
 @Mixin(value = KeyBindingUtils.class, priority = 1010)
-public class KeyBindingUtilsMixin {
+public abstract class KeyBindingUtilsMixin {
 
     @Inject(
         method = "resetBoundModifiers",

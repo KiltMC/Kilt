@@ -92,7 +92,7 @@ public abstract class KeyMappingMixin implements IKeyBinding, KeyMappingWorkarou
         method = "@MixinSquared:Handler",
         at = @At("MIXINEXTRAS:EXPRESSION")
     )
-    private boolean kilt$ameces$disableNeoForgeDefaultCheck(boolean original) {
+    private boolean kilt$amecs$disableNeoForgeDefaultCheck(boolean original) {
         return true;
     }
 
