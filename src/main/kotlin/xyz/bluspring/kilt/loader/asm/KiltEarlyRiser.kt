@@ -470,9 +470,19 @@ class KiltEarlyRiser : Runnable {
                 "net.neoforged.fml.config.ModConfigs",
                 "net.neoforged.neoforge.client.gui.ConfigurationScreen",
                 "net.neoforged.neoforge.common.ModConfigSpec",
-                $$"net.neoforged.neoforge.common.ModConfigSpec$RestartType",
-                "net.neoforged.neoforge.common.TranslatableEnum",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$BooleanValue",
                 $$"net.neoforged.neoforge.common.ModConfigSpec$Builder",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$BuilderContext",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$ConfigValue",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$DoubleValue",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$EnumValue",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$IntValue",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$ListValueSpec",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$LongValue",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$RestartType",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$Range",
+                $$"net.neoforged.neoforge.common.ModConfigSpec$ValueSpec",
+                "net.neoforged.neoforge.common.TranslatableEnum",
             )
 
             val helperUrl = Kilt::class.java.classLoader.getResource("net/neoforged/neoforge/common/NeoForge.class")!!
