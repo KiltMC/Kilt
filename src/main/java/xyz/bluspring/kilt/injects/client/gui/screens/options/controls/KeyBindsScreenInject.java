@@ -128,9 +128,7 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
 
         if (!isLastKeyHeldDown && !isLastModifierHeldDown) {
             if (!lastPressedKey.equals(InputConstants.UNKNOWN)) {
-                this.selectedKey.setKeyModifierAndCode(
-                    KeyModifier.getKeyModifier(lastPressedModifier), lastPressedKey
-                );
+                this.selectedKey.setKeyModifierAndCode(KeyModifier.getKeyModifier(lastPressedModifier), lastPressedKey);
                 original.call(options, this.selectedKey, lastPressedKey);
             } else {
                 this.selectedKey.setKeyModifierAndCode(KeyModifier.NONE, lastPressedModifier);
@@ -167,7 +165,7 @@ public abstract class KeyBindsScreenInject extends OptionsSubScreen {
         if (kilt$doReleaseLogic.contains(key)) {
             kilt$doReleaseLogic.remove(key);
             kilt$releasing = true;
-            boolean result = keyPressed(keyCode, scanCode, modifiers);
+            boolean result = this.keyPressed(keyCode, scanCode, modifiers);
             kilt$releasing = false;
             return result;
         }
