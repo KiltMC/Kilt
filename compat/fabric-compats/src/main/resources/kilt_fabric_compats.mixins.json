@@ -44,7 +44,7 @@
     "client": [
         "amecs_key_modifiers.AmecsKeyModifiersApiMixin",
         "amecs_key_modifiers.KeyMappingMixin",
-        "amecsapi.KeyBindsListKeyEntryMixin",
+		"amecsapi.KeyBindingUtilsMixin",
         "amecsapi.KeyMappingMixin",
         "mkb.KeyMappingMixin"
     ],
