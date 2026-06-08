@@ -394,31 +394,6 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        run {
-            ClassTinkerers.addTransformation("joptsimple.internal.Strings") { classNode ->
-                // What the fuck, why
-                if (classNode.methods.none { it.name == "join" && it.desc == "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;" }) {
-                    val joinMethod = classNode.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "join", "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", null, null)
-                    joinMethod.visitCode()
-                    val label0 = Label()
-                    val label1 = Label()
-
-                    joinMethod.visitLabel(label0)
-                    joinMethod.visitFieldInsn(Opcodes.GETSTATIC, "xyz/bluspring/kilt/util/KiltHelper", "INSTANCE", "Lxyz/bluspring/kilt/util/KiltHelper;")
-                    joinMethod.visitVarInsn(Opcodes.ALOAD, 0)
-                    joinMethod.visitVarInsn(Opcodes.ALOAD, 1)
-                    joinMethod.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "xyz/bluspring/kilt/util/KiltHelper", "joinToString", "([Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false)
-                    joinMethod.visitInsn(Opcodes.ARETURN)
-
-                    joinMethod.visitLabel(label1)
-                    joinMethod.visitLocalVariable("pieces", "[Ljava/lang/String;", null, label0, label1, 0)
-                    joinMethod.visitLocalVariable("separator", "Ljava/lang/String;", null, label0, label1, 1)
-                    joinMethod.visitMaxs(3, 2)
-                    joinMethod.visitEnd()
-                }
-            }
-        }
-
         // Turns out some mods extend some final classes in Sodium, which are apparently not final in Rubidium/Embeddium.
         if (FabricLoader.getInstance().isModLoaded("sodium")) {
             ClassTinkerers.addTransformation("me.jellysquid.mods.sodium.client.world.WorldSlice") { classNode ->
