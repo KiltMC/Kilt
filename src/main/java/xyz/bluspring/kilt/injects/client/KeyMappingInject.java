@@ -136,8 +136,12 @@ public abstract class KeyMappingInject implements IKeyMappingExtension {
 
     @WrapMethod(method = "click")
     private static void kilt$wrapKeyClick(InputConstants.Key key, Operation<Void> original, @Share("currentMap") LocalRef<KeyMapping> currentMap) {
-        for (KeyMapping keyMapping : FORGE_MAP.getAll(key)) {
+        var keys = FORGE_MAP.getAll(key);
+        for (KeyMapping keyMapping : keys) {
             currentMap.set(keyMapping);
+            original.call(key);
+        }
+        if (FORGE_MAP.kilt$isEmpty()) {
             original.call(key);
         }
     }
@@ -154,8 +158,12 @@ public abstract class KeyMappingInject implements IKeyMappingExtension {
 
     @WrapMethod(method = "set")
     private static void kilt$wrapKeySet(InputConstants.Key key, boolean held, Operation<Void> original, @Share("currentMap") LocalRef<KeyMapping> currentMap) {
-        for (KeyMapping keyMapping : FORGE_MAP.getAll(key)) {
+        var keys = FORGE_MAP.getAll(key);
+        for (KeyMapping keyMapping : keys) {
             currentMap.set(keyMapping);
+            original.call(key, held);
+        }
+        if (FORGE_MAP.kilt$isEmpty()) {
             original.call(key, held);
         }
     }
