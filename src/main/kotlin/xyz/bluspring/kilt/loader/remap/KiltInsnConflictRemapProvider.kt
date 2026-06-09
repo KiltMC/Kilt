@@ -28,17 +28,6 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
     }
 
     override fun remapField(owner: String, name: String, descriptor: String): String {
-        when (owner) {
-            potionBrewingMapped ->
-                when (name) {
-                    "f_43532_", pbFromMapped, "from" ->
-                        return $$"kilt$from"
-
-                    "f_43534_", pbToMapped, "to" ->
-                        return $$"kilt$to"
-                }
-        }
-
         return super.remapField(owner, name, descriptor)
     }
 }
