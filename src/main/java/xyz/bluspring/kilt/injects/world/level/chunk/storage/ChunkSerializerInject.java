@@ -1,10 +1,13 @@
 package xyz.bluspring.kilt.injects.world.level.chunk.storage;
 
+import java.util.EnumSet;
 import java.util.Objects;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.common.NeoForge;
@@ -26,9 +29,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkType;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 @Mixin(ChunkSerializer.class)
 public abstract class ChunkSerializerInject {
@@ -79,5 +84,12 @@ public abstract class ChunkSerializerInject {
         } catch (Throwable throwable) {
             LOGGER.error("[Kilt/NeoForge] Failed to write chunk attachments. An attachment has likely thrown an exception while trying to write its state, thus it will not persist. Report this to Kilt!", throwable);
         }
+    }
+
+    @WrapOperation(method = {"write", "read"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/status/ChunkStatus;heightmapsAfter()Ljava/util/EnumSet;"))
+    private static EnumSet<Heightmap.Types> kilt$mergeChunkSaveHeightmaps(ChunkStatus instance, Operation<EnumSet<Heightmap.Types>> original) {
+        var set = original.call(instance);
+        set.addAll(instance.getChunkSaveHeightmaps());
+        return set;
     }
 }

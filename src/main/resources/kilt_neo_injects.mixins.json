@@ -578,6 +578,7 @@
     "world.level.chunk.LevelChunkSectionInject",
     "world.level.chunk.LevelChunkSectionInject$BlockCounterInject",
     "world.level.chunk.PalettedContainerInject",
+    "world.level.chunk.status.ChunkStatusInject",
     "world.level.chunk.status.ChunkStatusTasksInject",
     "world.level.chunk.storage.ChunkSerializerInject",
     "world.level.chunk.storage.EntityStorageInject",

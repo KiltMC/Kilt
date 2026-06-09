@@ -66,19 +66,16 @@ public abstract class ChunkMapInject implements ChunkMapInjection {
         }
     }
 
-    @Definition(id = "chunkAccess", local = @Local(type = ChunkAccess.class))
-    @Definition(id = "LevelChunk", type = LevelChunk.class)
-    @Expression("chunkAccess instanceof LevelChunk")
-    @Inject(method = "method_60440", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @Inject(method = "method_60440", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;setLoaded(Z)V", ordinal = 0, shift = At.Shift.AFTER))
+    private void kilt$callChunkUnloadEvent(ChunkHolder chunkHolder, long l, CallbackInfo ci, @Local ChunkAccess chunkAccess) {
+        NeoForge.EVENT_BUS.post(new ChunkEvent.Unload(chunkAccess));
+    }
+
+    @Inject(method = "method_60440", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ThreadedLevelLightEngine;updateChunkStatus(Lnet/minecraft/world/level/ChunkPos;)V"))
     private void kilt$callAllChunkUnload(ChunkHolder chunkHolder, long l, CallbackInfo ci, @Local ChunkAccess chunkAccess) {
         CommonHooks.onChunkUnload(this.poiManager, chunkAccess);
 
         // Kilt: don't implement chunk type cache optimization
-    }
-
-    @Inject(method = "method_60440", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;setLoaded(Z)V", ordinal = 0, shift = At.Shift.AFTER))
-    private void kilt$callChunkUnloadEvent(ChunkHolder chunkHolder, long l, CallbackInfo ci, @Local ChunkAccess chunkAccess) {
-        NeoForge.EVENT_BUS.post(new ChunkEvent.Unload(chunkAccess));
     }
 
     @Inject(method = "save", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ChunkMap;write(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/nbt/CompoundTag;)Ljava/util/concurrent/CompletableFuture;"))

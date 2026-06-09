@@ -1759,6 +1759,7 @@ transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour
 transitive-inject-interface net/minecraft/world/level/block/state/properties/WoodType xyz/bluspring/kilt/injections/world/level/block/state/properties/WoodTypeInjection
 transitive-inject-interface net/minecraft/world/level/chunk/ChunkAccess xyz/bluspring/kilt/injections/world/level/chunk/ChunkAccessInjection
 transitive-inject-interface net/minecraft/world/level/chunk/ChunkGenerator xyz/bluspring/kilt/injections/world/level/chunk/ChunkGeneratorInjection
+transitive-inject-interface net/minecraft/world/level/chunk/status/ChunkStatus xyz/bluspring/kilt/injections/world/level/chunk/status/ChunkStatusInjection
 transitive-inject-interface net/minecraft/world/level/chunk/storage/SectionStorage xyz/bluspring/kilt/injections/world/level/chunk/storage/SectionStorageInjection
 transitive-inject-interface net/minecraft/world/level/DataPackConfig xyz/bluspring/kilt/injections/world/level/DataPackConfigInjection
 transitive-inject-interface net/minecraft/world/level/dimension/end/EndDragonFight xyz/bluspring/kilt/injections/world/level/dimension/end/EndDragonFightInjection

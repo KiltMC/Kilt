@@ -246,6 +246,13 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
 
     // Kilt: we're not reverting registries thanks
 
+    @Inject(method = "clearClientLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;updateScreenAndTick(Lnet/minecraft/client/gui/screens/Screen;)V"))
+    private void kilt$callUnloadEventInClear(Screen nextScreen, CallbackInfo ci) {
+        if (this.level != null) {
+            NeoForge.EVENT_BUS.post(new LevelEvent.Unload(this.level));
+        }
+    }
+
     @Definition(id = "integratedServer", local = @Local(type = IntegratedServer.class))
     @Expression("integratedServer != null")
     @Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("MIXINEXTRAS:EXPRESSION"))
