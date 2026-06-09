@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
 import kotlinx.atomicfu.locks.synchronized
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
@@ -249,7 +250,49 @@ object MixinRemapper {
         }
     }
 
+    private fun tryRemapMixinAnnotations(annotations: MutableList<AnnotationNode>): MutableList<AnnotationNode> {
+        val updated = mutableListOf<AnnotationNode>()
+
+        for (annotationNode in annotations) {
+            if (annotationNode.desc == MIXIN_TYPE.descriptor) {
+                val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+                if (values.contains("targets")) {
+                    val targets = values["targets"]!!
+
+                    if (targets is String) {
+                        values["targets"] = KiltRemapper.remapClass(targets.replace(".", "/").removeSurrounding("L", ";"))
+                        updated.add(AnnotationNode(Opcodes.ASM9, MIXIN_TYPE.descriptor).apply {
+                            this.values = KiltMixinModifications.mapToAnnotationValues(values)
+                        })
+                        continue
+                    } else if (targets is List<*>) {
+                        values["targets"] = targets.map { KiltRemapper.remapClass((it as String).replace(".", "/").removeSurrounding("L", ";")) }
+                        updated.add(AnnotationNode(Opcodes.ASM9, MIXIN_TYPE.descriptor).apply {
+                            this.values = KiltMixinModifications.mapToAnnotationValues(values)
+                        })
+                        continue
+                    }
+                }
+            }
+
+            updated.add(annotationNode)
+        }
+
+        return updated
+    }
+
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmaps: Collection<MixinRefmap>) {
+        // Remap class targets
+        run {
+            if (classNode.visibleAnnotations != null) {
+                classNode.visibleAnnotations = tryRemapMixinAnnotations(classNode.visibleAnnotations)
+            }
+
+            if (classNode.invisibleAnnotations != null) {
+                classNode.invisibleAnnotations = tryRemapMixinAnnotations(classNode.invisibleAnnotations)
+            }
+        }
+
         val alreadyRefmapped = Collections.synchronizedSet(mutableSetOf<String>())
 
         val classTargets = getMixinClassTargets(classNode)
@@ -261,8 +304,8 @@ object MixinRemapper {
 
         // Then, get the mappings that exist with this mixin class.
         val mixinMapping = refmap?.mappings?.get(classNode.name)
-                // If one does not exist, just provide an empty map.
-                ?: mutableMapOf()
+            // If one does not exist, just provide an empty map.
+            ?: mutableMapOf()
 
         // The idea is if we don't have a matching mapping, we need to remap directly on the string instead.
 
