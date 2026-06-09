@@ -390,43 +390,6 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        // Neo changes the signature here, which.. changes the whole fucking class.
-        // Mass ASM time in probably the dumbest way possible.
-        /*run {
-            val goalMapped = KiltRemapper.remapClass("net/minecraft/world/entity/ai/goal/RangedBowAttackGoal")
-            val mobClassMapped = KiltRemapper.remapClass("net/minecraft/world/entity/Mob")
-            val monsterClassMapped = KiltRemapper.remapClass("net/minecraft/world/entity/monster/Monster")
-            val mobMapped = FabricLoader.getInstance().mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1380", "mob", "Lnet/minecraft/world/entity/monster/Monster;")
-            ClassTinkerers.addPostTransformation(goalMapped) { classNode ->
-                for (methodNode in classNode.methods) {
-                    if (methodNode.name == $$"kilt$tryUsingMob" || methodNode.name.startsWith($$"kilt$i$") || Modifier.isStatic(methodNode.access))
-                        continue
-
-                    val afterInsns = mutableMapOf<AbstractInsnNode, InsnList>()
-                    for (insnNode in methodNode.instructions) {
-                        if (insnNode is FieldInsnNode && insnNode.opcode == Opcodes.GETFIELD && insnNode.owner == goalMapped && insnNode.name == mobMapped && insnNode.desc == "L${monsterClassMapped};") {
-                            val list = InsnList()
-                            list.add(VarInsnNode(Opcodes.ALOAD, 0))
-                            list.add(FieldInsnNode(insnNode.opcode, insnNode.owner, insnNode.name, insnNode.desc))
-                            list.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, insnNode.owner, $$"kilt$tryUsingMob", "(L$monsterClassMapped;)L$mobClassMapped;", false))
-                            afterInsns[insnNode] = list
-                        }
-                    }
-
-                    val beforeNodes = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
-                    for (before in afterInsns.keys) {
-                        beforeNodes[before] = before.previous
-                    }
-
-                    for ((before, after) in afterInsns) {
-                        val prevNode = beforeNodes[before]!!
-                        methodNode.instructions.remove(before)
-                        methodNode.instructions.insert(prevNode, after)
-                    }
-                }
-            }
-        }*/
-
         // Turns out some mods extend some final classes in Sodium, which are apparently not final in Rubidium/Embeddium.
         if (FabricLoader.getInstance().isModLoaded("sodium")) {
             ClassTinkerers.addTransformation("me.jellysquid.mods.sodium.client.world.WorldSlice") { classNode ->
