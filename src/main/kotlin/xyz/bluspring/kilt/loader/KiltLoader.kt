@@ -54,6 +54,7 @@ import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.kilt.util.buildGraph
 import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.KnitModLoader
@@ -635,6 +636,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Load Java coremods, this should be handled before access transformers so we don't mess with access modifier stuff.
         // Although, people probably shouldn't be relying on that.
         CoreModLoader.loadJavaCoreMods()
+        ModifiedCloneWorkaroundLoader.init() // Init this after coremods so the post transforms always run after.
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
