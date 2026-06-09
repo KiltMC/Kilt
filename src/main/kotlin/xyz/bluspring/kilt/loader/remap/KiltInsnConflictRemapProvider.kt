@@ -22,6 +22,11 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
                 when (name) {
                     "getCures" -> return $$"neoforge$getCures"
                 }
+
+            "net/minecraft/server/level/ServerEntity", KiltRemapper.remapClass("net/minecraft/server/level/ServerEntity") ->
+                when (name) {
+                    "sendPairingData" -> return $$"neoforge$sendPairingData"
+                }
         }
 
         return super.remapMethod(owner, name, descriptor)

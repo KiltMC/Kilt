@@ -253,7 +253,16 @@ object KiltMixinModifications {
             owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
             methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
             remapMethodsTo = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V")
-        )
+        ),
+
+        // Fixes Quark's ServerEntityMixin
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/server/level/ServerEntity",
+            methods = listOf("sendPairingData", "sendPairingData(Lnet/minecraft/server/level/ServerPlayer;Lnet/neoforged/neoforge/network/bundle/PacketAndPayloadAcceptor;)V",
+                "method_18757"
+            ),
+            remapMethodsTo = listOf($$"neoforge$sendPairingData(Lnet/minecraft/server/level/ServerPlayer;Lnet/neoforged/neoforge/network/bundle/PacketAndPayloadAcceptor;)V")
+        ),
     )
 
     val MODIFY_VARIABLE = register(

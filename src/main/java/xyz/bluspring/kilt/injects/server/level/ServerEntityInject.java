@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.injects.server.level;
 
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.llamalad7.mixinextras.expression.Definition;
@@ -21,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.server.level.ServerEntityInjection;
 
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.level.ServerEntity;
@@ -52,11 +53,12 @@ public abstract class ServerEntityInject implements ServerEntityInjection {
         EventHooks.onStopEntityTracking(this.entity, player);
     }
 
-    @Unique private PacketAndPayloadAcceptor<?> kilt$payloadAcceptor;
+    @Unique private PacketAndPayloadAcceptor<ClientGamePacketListener> kilt$payloadAcceptor;
+    @Unique private final AtomicBoolean kilt$isDeferringPairingData = new AtomicBoolean(false);
 
     @WrapOperation(method = "addPairing", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerEntity;sendPairingData(Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V"))
     private void kilt$wrapWithPacketAndPayloadAcceptor(ServerEntity instance, ServerPlayer player, Consumer<Packet<ClientGamePacketListener>> consumer, Operation<Void> original) {
-        this.kilt$payloadAcceptor = new PacketAndPayloadAcceptor<>((Consumer<Packet<? super ClientCommonPacketListener>>) (Object) consumer); // why?
+        this.kilt$payloadAcceptor = new PacketAndPayloadAcceptor<>((Consumer<Packet<? super ClientGamePacketListener>>) (Object) consumer); // why?
         original.call(instance, player, consumer);
         this.kilt$payloadAcceptor = null;
     }
@@ -66,11 +68,33 @@ public abstract class ServerEntityInject implements ServerEntityInjection {
         EventHooks.onStartEntityTracking(this.entity, player);
     }
 
+    @Unique
+    public void neoforge$sendPairingData(ServerPlayer player, PacketAndPayloadAcceptor<ClientGamePacketListener> acceptor) {
+        if (this.kilt$isDeferringPairingData.getAndSet(false)) {
+            return;
+        }
+
+        this.sendPairingData(player, acceptor);
+    }
+
     @Override
     public void sendPairingData(ServerPlayer player, PacketAndPayloadAcceptor<ClientGamePacketListener> acceptor) {
         this.kilt$payloadAcceptor = acceptor;
         this.sendPairingData(player, acceptor::accept);
         this.kilt$payloadAcceptor = null;
+    }
+
+    @Inject(method = "sendPairingData", at = @At("HEAD"))
+    private void kilt$tryHandleFunnyMixins(ServerPlayer player, Consumer<Packet<ClientGamePacketListener>> consumer, CallbackInfo ci) {
+        try {
+            this.kilt$isDeferringPairingData.set(true);
+
+            this.neoforge$sendPairingData(player, Objects.requireNonNullElseGet(this.kilt$payloadAcceptor,
+                () -> new PacketAndPayloadAcceptor<>((Consumer<Packet<? super ClientGamePacketListener>>) (Object) consumer))
+            );
+        } finally {
+            this.kilt$isDeferringPairingData.set(false);
+        }
     }
 
     @Definition(id = "trackedDataValues", field = "Lnet/minecraft/server/level/ServerEntity;trackedDataValues:Ljava/util/List;")
