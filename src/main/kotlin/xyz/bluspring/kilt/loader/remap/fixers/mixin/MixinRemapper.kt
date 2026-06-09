@@ -282,17 +282,6 @@ object MixinRemapper {
     }
 
     fun remapClass(classNode: ClassNode, remapper: KiltEnhancedRemapper, refmaps: Collection<MixinRefmap>) {
-        // Remap class targets
-        run {
-            if (classNode.visibleAnnotations != null) {
-                classNode.visibleAnnotations = tryRemapMixinAnnotations(classNode.visibleAnnotations)
-            }
-
-            if (classNode.invisibleAnnotations != null) {
-                classNode.invisibleAnnotations = tryRemapMixinAnnotations(classNode.invisibleAnnotations)
-            }
-        }
-
         val alreadyRefmapped = Collections.synchronizedSet(mutableSetOf<String>())
 
         val classTargets = getMixinClassTargets(classNode)
@@ -324,6 +313,17 @@ object MixinRemapper {
                     classNode.name, method.name, method.desc,
                     mixinMapping, alreadyRefmapped, refmap
                 )
+            }
+        }
+
+        // Remap class targets
+        run {
+            if (classNode.visibleAnnotations != null) {
+                classNode.visibleAnnotations = tryRemapMixinAnnotations(classNode.visibleAnnotations)
+            }
+
+            if (classNode.invisibleAnnotations != null) {
+                classNode.invisibleAnnotations = tryRemapMixinAnnotations(classNode.invisibleAnnotations)
             }
         }
 
