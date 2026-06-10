@@ -41,7 +41,7 @@ import xyz.bluspring.kilt.loader.remap.resource.ManifestResourceRemapper
 import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
 import xyz.bluspring.kilt.util.ClassNameHashSet
 import xyz.bluspring.kilt.util.KiltHelper
-import xyz.bluspring.kilt.util.ModifiedCloneWorkaroundLoader
+import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.util.collect
 import xyz.bluspring.knit.loader.util.concurrent
