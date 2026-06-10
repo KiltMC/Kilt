@@ -3,18 +3,8 @@ package xyz.bluspring.kilt.loader.asm
 import com.chocohead.mm.api.ClassTinkerers
 import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraftforge.fart.api.ClassProvider
-import net.minecraftforge.fart.internal.ClassProviderImpl
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Handle
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
-import org.objectweb.asm.tree.AnnotationNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.InvokeDynamicInsnNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.*
+import org.objectweb.asm.tree.*
 import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.Pseudo
 import org.spongepowered.asm.util.Annotations
@@ -42,7 +32,7 @@ object OverridingMethodWrappers {
 
     @JvmStatic
     val mixins = mutableListOf<String>()
-    private val classCache = mutableMapOf<Path, ClassProvider.IClassInfo>()
+    private val classCache = mutableMapOf<Path, ClassNode>()
 
     var enhancedMojangRemapper: KiltEnhancedRemapper? = KiltRemapper.enhancedMojangRemapper
         private set
@@ -57,7 +47,7 @@ object OverridingMethodWrappers {
         prepareMixinFromTemplate(mainName, template, false, { classTarget ->
             classTarget.methods.any { method ->
                 method.name == finalizeSpawnName &&
-                method.descriptor == finalizeSpawnDesc &&
+                method.desc == finalizeSpawnDesc &&
                 (Opcodes.ACC_STATIC and method.access == 0) &&
                 (Opcodes.ACC_PUBLIC and method.access != 0)
             }
@@ -68,7 +58,7 @@ object OverridingMethodWrappers {
     }
 
     private fun prepareMixinFromTemplate(
-        name: String, template: String, oneMixinPerTarget: Boolean, predicate: Predicate<ClassProvider.IClassInfo>
+        name: String, template: String, oneMixinPerTarget: Boolean, predicate: Predicate<ClassNode>
     ) {
         val helperUrl = Kilt::class.java.classLoader.getResource("$template.class")!!
         val classReader = ClassReader(helperUrl.readBytes())
@@ -76,7 +66,7 @@ object OverridingMethodWrappers {
         // We go through all the classes in vanilla and every single loaded mod to find overrides of finalizeSpawn.
         // All of them will need the mixin.
         // Or well, technically only the ones that extend Mob need it, but checking that isn't really worth it since we'll be using intermediary names in production anyway, and they're usually unique.
-        val targets = getClassesIf(predicate)
+        val targets = getClassesIf(predicate).getTargets()
 
         val mappings = mutableMapOf<String, String>()
         val alreadyRefMapped = mutableSetOf<String>()
@@ -99,7 +89,7 @@ object OverridingMethodWrappers {
     private fun prepareSingleMixinFromTemplate(
         classReader: ClassReader, remapTargets: Set<String>,
         template: String, currentName: String, actualTargets: Set<String>,
-        mappings: MutableMap<String, String>, alreadyRefMapped: MutableSet<String>
+        mappings: MutableMap<String, String>, alreadyRefMapped: MutableSet<String>,
     ) {
         val classNode = ClassNode(ASM.API_VERSION)
         classReader.accept(classNode, 0)
@@ -193,7 +183,7 @@ object OverridingMethodWrappers {
     }
 
     // Based on ClassProviderImpl.
-    private fun getClassInfo(name: Path): ClassProvider.IClassInfo? {
+    private fun getClassInfo(name: Path): ClassNode? {
         if (!classCache.containsKey(name)) {
             val stream = Files.newInputStream(name)
             val byteArray = ByteArrayOutputStream()
@@ -202,30 +192,56 @@ object OverridingMethodWrappers {
             while ((stream.read(buf, 0, buf.size).also { cnt = it }) != -1) {
                 byteArray.write(buf, 0, cnt)
             }
-            classCache[name] = ClassProviderImpl.ClassInfo(byteArray.toByteArray())
+            val reader = ClassReader(byteArray.toByteArray())
+            val node = ClassNode()
+            reader.accept(node, ClassReader.SKIP_CODE)
+            classCache[name] = node
         }
         return classCache[name]
     }
 
-    private fun getClassesIf(paths: Collection<Path>, predicate: Predicate<ClassProvider.IClassInfo>): Set<String> {
+    private fun getClassesIf(paths: Collection<Path>, predicate: Predicate<ClassNode>): ClassResult {
         val classes = mutableSetOf<String>()
+        val mixins = mutableMapOf<String, MutableSet<String>>()
         paths.forEach { path ->
             for (foundClass in findClasses(path)) {
                 val info = getClassInfo(foundClass)
                 if (info != null && predicate.test(info)) {
-                    classes.add(info.name)
+                    val mixinAnnotation = Annotations.getInvisible(info, Mixin::class.java)
+                    if (mixinAnnotation != null) {
+                        mixins[info.name] = Annotations.getValue<List<Type>?>(mixinAnnotation, "value")?.map { it.internalName }?.toMutableSet() ?: mutableSetOf()
+                        val targets = Annotations.getValue<List<String>?>(mixinAnnotation, "targets")
+                        if (targets != null) {
+                            mixins[info.name]?.addAll(targets)
+                        }
+                    } else {
+                        classes.add(info.name)
+                    }
                 }
             }
         }
-        return classes
+        return ClassResult(classes, mixins)
     }
 
-    private fun getClassesIf(predicate: Predicate<ClassProvider.IClassInfo>): Set<String> {
-        return setOf(
-            *getClassesIf(listOf(*runBlocking { KiltRemapper.getGameClassPath() }), predicate).toTypedArray(),
-            *getClassesIf(KiltHelper.getKiltPaths(), predicate).toTypedArray(),
-            *getClassesIf(FabricLoader.getInstance().allMods.flatMap { container -> container.rootPaths }, predicate).toTypedArray(),
-            *getClassesIf(KiltLoader.instance.mods.flatMap { it.paths }, predicate).toTypedArray()
+    data class ClassResult(val normalClasses: Set<String>, val mixinClasses: Map<String, Set<String>>) {
+        fun getTargets(): Set<String> {
+            return normalClasses.plus(mixinClasses.values.flatten())
+        }
+    }
+
+    private fun combine(vararg results: ClassResult): ClassResult {
+        return ClassResult(
+            results.flatMap { it.normalClasses }.toSet(),
+            results.flatMap { it.mixinClasses.entries.map { e -> Pair(e.key, e.value) } }.toMap()
+        )
+    }
+
+    private fun getClassesIf(predicate: Predicate<ClassNode>): ClassResult {
+        return combine(
+            getClassesIf(listOf(*runBlocking { KiltRemapper.getGameClassPath() }), predicate),
+            getClassesIf(KiltHelper.getKiltPaths(), predicate),
+            getClassesIf(FabricLoader.getInstance().allMods.flatMap { container -> container.rootPaths }, predicate),
+            getClassesIf(KiltLoader.instance.mods.flatMap { it.paths }, predicate)
         )
     }
 }
