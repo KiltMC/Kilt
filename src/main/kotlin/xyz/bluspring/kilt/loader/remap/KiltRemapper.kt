@@ -619,6 +619,7 @@ object KiltRemapper {
         }
     }
 
+    @JvmOverloads
     fun remapClass(name: String, toIntermediary: Boolean = false, ignoreWorkaround: Boolean = false): String {
         val workaround = if (!ignoreWorkaround)
             kiltWorkaroundTree.classes.firstOrNull { it.getRawName("forge") == name }?.getRawName("kilt")
@@ -789,6 +790,7 @@ object KiltRemapper {
         return mojFile
     }
 
+    @JvmOverloads
     fun remapDescriptor(descriptor: String, reverse: Boolean = false, toIntermediary: Boolean = false): String {
         var formedString = ""
 

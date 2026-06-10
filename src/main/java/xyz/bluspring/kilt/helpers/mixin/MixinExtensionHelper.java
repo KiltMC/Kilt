@@ -1,18 +1,27 @@
 package xyz.bluspring.kilt.helpers.mixin;
 
-import org.jetbrains.annotations.ApiStatus;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
-import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
-import org.spongepowered.asm.util.Annotations;
-import org.spongepowered.asm.util.asm.MethodNodeEx;
-
 import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.jetbrains.annotations.ApiStatus;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import org.spongepowered.asm.util.Annotations;
+import org.spongepowered.asm.util.asm.MethodNodeEx;
+import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 
 public final class MixinExtensionHelper {
     public static final String LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory.class);
@@ -227,6 +236,10 @@ public final class MixinExtensionHelper {
 
                 targetClass.methods.add(method);
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
+                // Comment the stuff below if you want to use this in your own mod. You most likely need to remap stuff still.
+                methodNode.name = KiltRemapper.INSTANCE.getEnhancedRemapper().mapMethodName(KiltRemapper.INSTANCE.remapClass(targetClass.name), methodNode.name, methodNode.desc);
+                methodNode.desc = KiltRemapper.INSTANCE.remapDescriptor(methodNode.desc);
+
                 var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
 
                 if (originalMethods.isEmpty()) {
