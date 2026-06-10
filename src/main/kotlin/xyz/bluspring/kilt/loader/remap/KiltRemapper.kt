@@ -498,42 +498,46 @@ object KiltRemapper {
 
             val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
                 this.collect { (entry, originalNode) ->
-                    val remappedNode = ClassNode(Opcodes.ASM9)
+                    try {
+                        val remappedNode = ClassNode(Opcodes.ASM9)
 
-                    // only do this on mixin classes, please
-                    // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
-                    if (isMixinClass(originalNode)) {
-                        MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
-                        MixinShadowRemapper.remapClass(originalNode, enhancedRemapper, originalMappings)
+                        // only do this on mixin classes, please
+                        // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
+                        if (isMixinClass(originalNode)) {
+                            MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
+                            MixinShadowRemapper.remapClass(originalNode, enhancedRemapper, originalMappings)
+
+                            if (!KiltFlags.DISABLE_FIXERS) {
+                                MixinAdditionalRemapper.remapClass(originalNode)
+                                MixinStaticMethodFixer.fixClass(originalNode)
+                                MixinDirectModifierFixer.fixClass(originalNode)
+                            }
+                        }
+
+                        originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                         if (!KiltFlags.DISABLE_FIXERS) {
-                            MixinAdditionalRemapper.remapClass(originalNode)
-                            MixinStaticMethodFixer.fixClass(originalNode)
-                            MixinDirectModifierFixer.fixClass(originalNode)
+                            ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
+                            EventClassVisibilityFixer.fixClass(remappedNode)
+                            InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
+                            ObjectHolderDefinalizer.processClass(remappedNode)
+                            WorkaroundFixer.fixClass(remappedNode)
+                            ConflictingStaticMethodFixer.fixClass(remappedNode)
+                            EnvironmentRemapper.remapClass(remappedNode)
+                            EnvironmentLambdaFixer.fixClass(remappedNode)
+                            RemoveModulesFixer.fixClass(remappedNode)
                         }
-                    }
 
-                    originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
+                        val writer = ClassWriter(Opcodes.ASM9)
+                        remappedNode.accept(writer)
 
-                    if (!KiltFlags.DISABLE_FIXERS) {
-                        ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
-                        EventClassVisibilityFixer.fixClass(remappedNode)
-                        InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
-                        ObjectHolderDefinalizer.processClass(remappedNode)
-                        WorkaroundFixer.fixClass(remappedNode)
-                        ConflictingStaticMethodFixer.fixClass(remappedNode)
-                        EnvironmentRemapper.remapClass(remappedNode)
-                        EnvironmentLambdaFixer.fixClass(remappedNode)
-                        RemoveModulesFixer.fixClass(remappedNode)
-                    }
-
-                    val writer = ClassWriter(Opcodes.ASM9)
-                    remappedNode.accept(writer)
-
-                    synchronized(jarOutputStream) {
-                        jarOutputStream.putNextEntry(entry)
-                        jarOutputStream.write(writer.toByteArray())
-                        jarOutputStream.closeEntry()
+                        synchronized(jarOutputStream) {
+                            jarOutputStream.putNextEntry(entry)
+                            jarOutputStream.write(writer.toByteArray())
+                            jarOutputStream.closeEntry()
+                        }
+                    } catch (e: Throwable) {
+                        throw RuntimeException("Failed to remap ${entry.name}", e)
                     }
                 }
             }.exceptionOrNull()
