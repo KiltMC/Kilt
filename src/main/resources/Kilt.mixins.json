@@ -118,7 +118,8 @@
         "debug.ClientPacketListenerMixin",
         "debug.PoseStackMixin",
         "workarounds.fix_bundle_noop.ClientPacketListenerMixin",
-        "workarounds.method_remap_workaround.ClientCommonPacketListenerImplMixin"
+        "workarounds.method_remap_workaround.ClientCommonPacketListenerImplMixin",
+        "workarounds.opengl_bump.WindowMixin"
     ],
     "injectors": {
         "defaultRequire": 1

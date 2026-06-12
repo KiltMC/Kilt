@@ -43,6 +43,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
 import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
@@ -64,6 +65,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
+import java.lang.annotation.ElementType
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.*
@@ -838,6 +840,39 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
             }
         }
+    }
+
+    fun getOpenGlVersion(): Pair<Int, Int>? {
+        var glMajor = 3
+        var glMinor = 2
+
+        for (mod in mods) {
+            for (data in mod.scanData.getAnnotatedBy(DetectedGLVersion::class.java, ElementType.TYPE)) {
+                val major = data.annotationData["majorVersion"] as Int
+                val minor = data.annotationData["minorVersion"] as Int
+
+                if (major > glMajor) {
+                    glMajor = major
+                } else if (major == glMajor && minor > glMinor) {
+                    glMinor = minor
+                }
+            }
+        }
+
+        if (glMajor > 3 || glMinor > 2)
+            return glMajor to glMinor
+
+        return null
+    }
+
+    fun getOpenGlVersionString(): String {
+        val version = this.getOpenGlVersion()
+
+        if (version != null) {
+            return "${version.first}.${version.second}"
+        }
+
+        return "3.2"
     }
 
     fun postEvent(ev: Event) {
