@@ -7,6 +7,8 @@ import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.ClassTweakerUpdater
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
+import java.net.HttpURLConnection
+import java.net.URI
 import java.security.MessageDigest
 
 plugins {
@@ -667,6 +669,35 @@ tasks {
             optional("modmenu")
             embeds("porting-lib", "modmenu-badges-lib")
             incompatible("embeddium")
+        }
+    }
+
+    named("publishCurseforge") {
+        onlyIf {
+            try {
+                // this is how CurseForge has it set up? seriously?
+                val connection = URI.create("https://minecraft.curseforge.com/api/maven/kilt/Kilt/${version}/Kilt-${version}.jar").toURL().openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connect()
+
+                connection.responseCode != 200
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    named("publishModrinth") {
+        onlyIf {
+            try {
+                val connection = URI.create("https://api.modrinth.com/v2/project/kilt/version/${version}").toURL().openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connect()
+
+                connection.responseCode != 200
+            } catch (_: Exception) {
+                false
+            }
         }
     }
 }
