@@ -9,8 +9,6 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.fabricmc.loader.DependencyException
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.neoforged.fml.ModLoader
@@ -18,22 +16,11 @@ import net.neoforged.neoforge.client.ClientHooks
 import net.neoforged.neoforge.client.event.ModelEvent
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader
 import net.neoforged.neoforge.event.EventHooks
-import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
-import xyz.bluspring.knit.loader.KnitLoader
 
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
     override fun onInitializeClient() {
-        val loader = Kilt.loader
-        val fabricLoader = FabricLoader.getInstance()
-        val kiltErrorMessage = "Detected Flywheel Forge, please use either Create Fabric or Flywheel Fabric via Vanillin!"
-
-        if ((loader.hasMod("quartz") || loader.hasMod("simpleclouds")) && !fabricLoader.isModLoaded("threatengl")) {
-            KnitLoader.instance.displayErrorGUI(kiltErrorMessage, DependencyException("Mods requiring newer OpenGL detected, please install the ThreatenGL mod to fix this error!"))
-            return
-        }
-
         registerFabricEvents()
 
         hasInitialized = true
