@@ -40,6 +40,9 @@ dependencies {
 
     modCompileOnly("maven.modrinth:automodpack:${property("automodpack_version")}")
     modCompileOnly("maven.modrinth:lodestonelib:${property("lodestone_version")}")
+
+    modCompileOnly("maven.modrinth:sodium:${property("sodium_version")}")
+    modCompileOnly("maven.modrinth:iris:${property("iris_version")}")
 }
 
 tasks {
