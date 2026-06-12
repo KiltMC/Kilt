@@ -31,7 +31,7 @@ class TransferInterop : ModInitializer {
     override fun onInitialize() {
 //        NeoForge.EVENT_BUS.register(this)
 
-        // NeoForge Capabilities -> Fabric Lookups
+        // NeoForge Capabilities inside Fabric Lookups
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)
                 return@registerFallback null
@@ -110,7 +110,7 @@ class TransferInterop : ModInitializer {
             null
         }
 
-        // Fabric Lookups -> NeoForge Capabilities
+        // Fabric Lookups inside NeoForge Capabilities
         Capabilities.ItemHandler.BLOCK.providers = AlternativeCapabilityMap(Capabilities.ItemHandler.BLOCK.providers) {
             mutableListOf(
                 FabricLookupAsSlottedBlockCapabilityProvider(it, ItemStorage.SIDED, { s -> s is NeoForgeSlottedStorage }, ::FabricItemStorageCapability)
