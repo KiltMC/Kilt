@@ -16,7 +16,7 @@ class FabricLookupAsBlockCapabilityProvider<S, T, C>(
 ) : IBlockCapabilityProvider<T, C> {
     val provider = lookup.getProvider(block)
 
-    override fun getCapability(level: Level, pos: BlockPos, state: BlockState, blockEntity: BlockEntity?, context: C & Any): T? {
+    override fun getCapability(level: Level, pos: BlockPos, state: BlockState, blockEntity: BlockEntity?, context: C?): T? {
         val storage = this.provider?.find(level, pos, state, blockEntity, context)
             ?: return null
 
