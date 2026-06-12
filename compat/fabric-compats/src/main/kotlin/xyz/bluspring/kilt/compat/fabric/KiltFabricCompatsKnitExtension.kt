@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.compat.fabric
 
 import net.fabricmc.loader.api.FabricLoader
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
 import xyz.bluspring.kilt.compat.fabric.automodpack.KiltAutoModpackCompat
 import xyz.bluspring.kilt.compat.fabric.sable.SableCompatBridge
 import xyz.bluspring.kilt.compat.fabric.veil.VeilCompatBridge
@@ -41,12 +42,12 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             "VeilShaderCompile"
         ).map { "foundry.veil.forge.event.Forge${it}Event" }
          */
-        KiltModCompatBridgeManager.register("veil") {
-            VeilCompatBridge.init()
+        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json"), strategy = ModBridgeStrategy.RequireBoth) {
+            SableCompatBridge.init()
         }
 
-        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json")) {
-            SableCompatBridge.init()
+        KiltModCompatBridgeManager.register("veil", strategy = ModBridgeStrategy.PreferFabric) {
+            VeilCompatBridge.init()
         }
     }
 }

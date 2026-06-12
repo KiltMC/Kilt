@@ -1,10 +1,12 @@
 package xyz.bluspring.kilt.api.compatibility
 
+import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
+import xyz.bluspring.knit.loader.mod.ModEnvironment
 
 /**
  * Registers mod compatibility bridges into Kilt, for allowing events from the same mod on both Fabric and NeoForge to work together. Kilt will continue to inject the mods into Fabric Loader, but it will not
@@ -18,13 +20,14 @@ object KiltModCompatBridgeManager {
     @ApiStatus.Internal
     internal val entries = mutableMapOf<ModEntry, Runnable>()
 
-    fun register(fabricModId: String, enabledMixinConfigs: Collection<String>, onEnabled: Runnable) {
-        register(fabricModId, fabricModId, enabledMixinConfigs, onEnabled)
+    @JvmOverloads
+    fun register(fabricModId: String, enabledMixinConfigs: Collection<String>, strategy: ModBridgeStrategy = ModBridgeStrategy.PreferEither, environment: ModEnvironment = ModEnvironment.BOTH, onEnabled: Runnable) {
+        register(fabricModId, fabricModId, enabledMixinConfigs, strategy, environment, onEnabled)
     }
 
     @JvmOverloads
-    fun register(fabricModId: String, neoForgeModId: String = fabricModId, enabledMixinConfigs: Collection<String> = emptyList(), onEnabled: Runnable) {
-        this.entries[ModEntry(fabricModId, neoForgeModId, enabledMixinConfigs)] = onEnabled
+    fun register(fabricModId: String, neoForgeModId: String = fabricModId, enabledMixinConfigs: Collection<String> = emptyList(), strategy: ModBridgeStrategy = ModBridgeStrategy.PreferEither, environment: ModEnvironment = ModEnvironment.BOTH, onEnabled: Runnable) {
+        this.entries[ModEntry(fabricModId, neoForgeModId, enabledMixinConfigs, strategy, environment)] = onEnabled
     }
 
     fun isActive(fabricModId: String): Boolean {
@@ -40,6 +43,14 @@ object KiltModCompatBridgeManager {
 
     @ApiStatus.Internal
     fun isActive(entry: ModEntry): Boolean {
+        if (entry.environment != ModEnvironment.BOTH) {
+            if (FabricLoader.getInstance().environmentType == EnvType.CLIENT && entry.environment != ModEnvironment.CLIENT)
+                return false
+
+            if (FabricLoader.getInstance().environmentType == EnvType.SERVER && entry.environment != ModEnvironment.SERVER)
+                return false
+        }
+
         return KiltLoader.instance.hasMod(entry.neoForgeModId) && FabricLoader.getInstance().isModLoaded(entry.fabricModId)
     }
 
@@ -73,5 +84,7 @@ object KiltModCompatBridgeManager {
         val neoForgeModId: String,
         val fabricModId: String,
         val enabledMixinConfigs: Collection<String>,
+        val strategy: ModBridgeStrategy,
+        val environment: ModEnvironment,
     )
 }

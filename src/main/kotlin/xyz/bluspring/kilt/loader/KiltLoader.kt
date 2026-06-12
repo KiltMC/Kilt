@@ -41,6 +41,7 @@ import org.spongepowered.asm.mixin.FabricUtil
 import org.spongepowered.asm.mixin.Mixins
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
+import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader
@@ -538,6 +539,30 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     override fun finishModScanning() {
+        // Validate the compatibility bridges
+        val failedException = RuntimeException("Failed to load mod compatibility bridges between Fabric and NeoForge mods!")
+        for ((entry, _) in KiltModCompatBridgeManager.entries) {
+            // Make sure the environment is valid for these bridges before applying them.
+            if (entry.environment != ModEnvironment.BOTH) {
+                if (FabricLoader.getInstance().environmentType == EnvType.CLIENT && entry.environment != ModEnvironment.CLIENT)
+                    return
+
+                if (FabricLoader.getInstance().environmentType == EnvType.SERVER && entry.environment != ModEnvironment.SERVER)
+                    return
+            }
+
+            try {
+                entry.strategy.checkValid(entry.fabricModId, entry.neoForgeModId)
+            } catch (e: BridgeFailedException) {
+                failedException.addSuppressed(e)
+                Kilt.logger.error("Failed to load mod compatibility bridge between Fabric mod ID ${entry.fabricModId} and NeoForge mod ID ${entry.neoForgeModId}!", e)
+            }
+        }
+
+        if (failedException.suppressed.isNotEmpty()) {
+            KnitLoader.instance.displayError("Kilt: Failed to load mod compatibility bridges!", failedException)
+        }
+
         val graph = this.mods.buildGraph()
         val sorted = TopologicalSort.topologicalSort(graph, getNeoForgeNaturalOrder())
 
