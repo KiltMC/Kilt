@@ -275,7 +275,6 @@ dependencies {
         exclude("org.ow2.asm")
     })
     implementation(include("net.jodah:typetools:0.6.3")!!)
-    api(include("net.minecraftforge:unsafe:0.2.+")!!)
     implementation(include("net.neoforged:mergetool:2.0.0") {
         exclude("org.ow2.asm")
     })
@@ -294,7 +293,6 @@ dependencies {
         exclude("org.ow2.asm")
         exclude("net.sf.jopt-simple") // otherwise prod crashes
     })
-    implementation(include("net.fabricmc:tiny-remapper:${property("tiny_remapper_version")}")!!)
 
     fun modOptional(dependencyNotation: String, shouldRunInRuntime: Boolean, configuration: Action<ExternalModuleDependency> = Action {}) {
         if (shouldRunInRuntime) {
