@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.compat.transfer
 
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorages
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -45,7 +44,7 @@ class TransferInterop : ModInitializer {
             null
         }
 
-        ItemItemStorages.ITEM.registerFallback { stack, context ->
+        ItemStorage.ITEM.registerFallback { stack, context ->
             if (stack == null)
                 return@registerFallback null
 
