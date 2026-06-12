@@ -37,6 +37,7 @@
         "geckolib.GeoRenderEventMixin$ReplacedEntityMixin$PreMixin",
         "geckolib.RenderProviderMixin",
         "invmove.IForgeKeyMappingMixin",
+        "iris.EntityVertexMixin",
         "jei.FabricPluginFinderMixin",
         "jei.FluidStackMixin",
         "jei.TypedIngredientMixin",
@@ -47,6 +48,8 @@
         "pehkui.ScaleTypeMixin",
         "rei.PluginDetectorImplMixin",
         "snowrealmagic.SnowVariantMixin",
+        "sodium.ModelQuadMixin",
+        "sodium.ModelQuadViewMixin",
         "sophisticatedcore.IForgeBlockMixin",
         "sophisticatedcore.IForgeBlockStateMixin",
         "sophisticatedcore.IForgeItemMixin",
@@ -58,7 +61,8 @@
         "amecs_key_modifiers.KeyMappingMixin",
         "amecsapi.KeyBindingUtilsMixin",
         "amecsapi.KeyMappingMixin",
-        "mkb.KeyMappingMixin"
+        "mkb.KeyMappingMixin",
+        "sodium.BakedQuadMixin"
     ],
     "injectors": {
         "defaultRequire": 1
