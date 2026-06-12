@@ -263,6 +263,37 @@ object KiltMixinModifications {
             ),
             remapMethodsTo = listOf($$"neoforge$sendPairingData(Lnet/minecraft/server/level/ServerPlayer;Lnet/neoforged/neoforge/network/bundle/PacketAndPayloadAcceptor;)V")
         ),
+
+        // Fixes TerraFirmaCraft's MinecraftMixin, and probably some others too.
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/Client",
+            methods = listOf($$"*(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V", $$"lambda$new$7", $$"lambda$new$7(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V"),
+            remapMethodsTo = listOf($$"method_29339(Ljava/util/concurrent/CompletableFuture;Lnet/minecraft/client/Minecraft$GameLoadCookie;)V")
+        ),
+
+        // Fixes TerraFirmaCraft's ServerPlayerGameModeMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerPlayerGameMode",
+            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
+                    remap = false
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"
+                        ))
+                    )
+                )
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
