@@ -1,26 +1,28 @@
 package xyz.bluspring.kilt.injects.client;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.KeyboardHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
 
 @Mixin(KeyboardHandler.class)
 public abstract class KeyboardHandlerInject {
     @Shadow @Final private Minecraft minecraft;
 
-    // Kilt: Handled by Architectury, in theory.
-    @Inject(method = "keyPress", at = @At("TAIL"))
-    private void kilt$onKeyPressEvent(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo ci) {
+    @WrapMethod(method = "keyPress")
+    private void kilt$onKeyPressEvent(long windowPointer, int key, int scanCode, int action, int modifiers, Operation<Void> original) {
+        original.call(windowPointer, key, scanCode, action, modifiers);
+
+        // You would think this could be a TAIL injection, but the mixin export disagrees.
         if (windowPointer == this.minecraft.getWindow().getWindow()) {
             ClientHooks.onKeyInput(key, scanCode, action, modifiers);
         }

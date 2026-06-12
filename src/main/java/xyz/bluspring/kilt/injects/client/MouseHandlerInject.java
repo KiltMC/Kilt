@@ -1,15 +1,13 @@
 package xyz.bluspring.kilt.injects.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
-import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.CalculatePlayerTurnEvent;
 import org.objectweb.asm.Opcodes;
@@ -20,6 +18,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.client.MouseHandlerInjection;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.Screen;
 
 @Mixin(MouseHandler.class)
 public abstract class MouseHandlerInject implements MouseHandlerInjection {
@@ -58,8 +60,11 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
         return value;
     }
 
-    @Inject(method = "onPress", at = @At("TAIL"))
-    private void kilt$onMouseButtonPost(long windowPointer, int button, int action, int modifiers, CallbackInfo ci) {
+    @WrapMethod(method = "onPress")
+    private void kilt$onMouseButtonPost(long windowPointer, int button, int action, int modifiers, Operation<Void> original) {
+        original.call(windowPointer, button, action, modifiers);
+
+        // You would think this could be a TAIL injection, but the mixin export disagrees.
         if (windowPointer == this.minecraft.getWindow().getWindow()) {
             ClientHooks.onMouseButtonPost(button, action, modifiers);
         }
