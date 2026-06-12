@@ -245,22 +245,19 @@ object CoreModLoader {
                     // Validate added fields and methods, some Fabric mods provide accessors for already-existing methods,
                     // which then breaks here because they get applied twice.
                     // We're gonna need to remove 'em ourselves.
+                    val existingNamePairs = mutableSetOf<Pair<String, String>>()
                     val fieldsToRemove = mutableListOf<FieldNode>()
                     val methodsToRemove = mutableListOf<MethodNode>()
 
                     for (fieldNode in unmappedClassNode.fields) {
-                        if ((fieldNode.access and Opcodes.ACC_SYNTHETIC != 0) // Just in case, y'know
-                            && unmappedClassNode.fields.any { it.name == fieldNode.name && it.desc == fieldNode.desc && (it.access and Opcodes.ACC_SYNTHETIC == 0) }
-                        ) {
+                        if (!existingNamePairs.add(fieldNode.name to fieldNode.desc)) {
                             fieldsToRemove.add(fieldNode)
                             logger.warn("Found duplicate field ${fieldNode.name}:${fieldNode.desc} in class ${unmappedClassNode.name}, attempting to remove.")
                         }
                     }
 
                     for (methodNode in unmappedClassNode.methods) {
-                        if ((methodNode.access and Opcodes.ACC_SYNTHETIC != 0) // Most accessors should be marked synthetic.
-                            && unmappedClassNode.methods.any { it.name == methodNode.name && it.desc == methodNode.desc && (it.access and Opcodes.ACC_SYNTHETIC == 0) }
-                        ) {
+                        if (!existingNamePairs.add(methodNode.name to methodNode.desc)) {
                             methodsToRemove.add(methodNode)
                             logger.warn("Found duplicate method ${methodNode.name}${methodNode.desc} in class ${unmappedClassNode.name}, attempting to remove.")
                         }
