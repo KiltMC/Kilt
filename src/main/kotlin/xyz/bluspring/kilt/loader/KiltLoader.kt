@@ -54,8 +54,8 @@ import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
-import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.kilt.util.buildGraph
+import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.KnitModLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
@@ -362,8 +362,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 val versionRange = MavenVersionAdapter.createFromVersionSpec(
                     neoDep.getConfigElement<String>("versionRange")
                         .map {
-                            if (depId == "minecraft" && (it == "[1.21,1.21.1)" || it == "[1.21]"))
-                                "[1.21,1.21.2)" // Neo, what the fuck?
+                            if (depId == "minecraft" && (it.startsWith("[1.21,")))
+                                "[1.21,1.21.2)" // Neo, what the fuck? (https://github.com/neoforged/FancyModLoader/blob/1.21.1/loader/src/main/java/net/neoforged/fml/loading/VersionSupportMatrix.java)
                             else it
                         }
                         .orElse("[0,)") // sure
