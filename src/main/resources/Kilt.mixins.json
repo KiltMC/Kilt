@@ -82,6 +82,7 @@
     "resources.RegistryOpsAccessor",
     "server.level.TicketAccessor",
     "workarounds.avoid_feature_cycles.BiomeGenerationSettings$PlainBuilderMixin",
+    "workarounds.datamap_fallbacks.BaseMappedRegistryMixin",
     "workarounds.fluid_type.IClientFluidTypeExtensionsMixin",
     "workarounds.mapped_registry_aliases.MappedRegistryMixin",
     "workarounds.method_remap_workaround.ICommonPacketListenerMixin",

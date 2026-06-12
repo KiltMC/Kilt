@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import net.neoforged.neoforge.registries.BaseMappedRegistry;
 import net.neoforged.neoforge.registries.IRegistryExtension;
+import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -168,5 +169,17 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Override
     public void unfreeze() {
         this.frozen = false;
+    }
+
+    @Mixin(targets = "net.minecraft.core.MappedRegistry$1")
+    public abstract static class InnerRegistryLookupInject<T> {
+        @Shadow
+        @Final
+        private MappedRegistry<T> field_36468;
+
+        //@Override // not sure why this doesn't work. oh well.
+        public <A> @Nullable A getData(DataMapType<T, A> attachment, ResourceKey<T> key) {
+            return field_36468.getData(attachment, key);
+        }
     }
 }
