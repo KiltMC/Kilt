@@ -10,7 +10,7 @@ import xyz.bluspring.kilt.compat.fabric.sodium.ModelQuadViewExtension;
 
 @IfModLoaded("sodium")
 @Mixin(ModelQuad.class)
-public class ModelQuadMixin implements ModelQuadViewExtension {
+public abstract class ModelQuadMixin implements ModelQuadViewExtension {
 
     @Shadow
     @Final

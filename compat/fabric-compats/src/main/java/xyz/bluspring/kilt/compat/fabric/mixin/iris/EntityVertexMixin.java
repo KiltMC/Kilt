@@ -17,12 +17,12 @@ import xyz.bluspring.kilt.compat.fabric.sodium.ModelQuadViewExtension;
 import xyz.bluspring.kilt.compat.fabric.sodium.ModelQuadUtilExtension;
 
 @IfModLoaded("iris")
-@Mixin(EntityVertex.class)
-public class EntityVertexMixin {
+@Mixin(value = EntityVertex.class, remap = false)
+public abstract class EntityVertexMixin {
 
     // Copied from: https://github.com/Asek3/Oculus/blob/1.20.1-new/src/sodiumCompatibility/java/net/irisshaders/iris/compat/sodium/impl/vertex_format/entity_xhfp/EntityVertex.java#L91-L104
     @Unique
-    private static int multARGBInts(int colorA, int colorB) {
+    private static int kilt$iris$multARGBInts(int colorA, int colorB) {
         // Most common case: Either quad coloring or tint-based coloring, but not both
         if (colorA == -1) {
             return colorB;
@@ -30,10 +30,10 @@ public class EntityVertexMixin {
             return colorA;
         }
         // General case (rare): Both colorings, actually perform the multiplication
-        int a = (int)((ColorARGB.unpackAlpha(colorA)/255.0f) * (ColorARGB.unpackAlpha(colorB)/255.0f) * 255.0f);
-        int b = (int)((ColorARGB.unpackBlue(colorA)/255.0f) * (ColorARGB.unpackBlue(colorB)/255.0f) * 255.0f);
-        int g = (int)((ColorARGB.unpackGreen(colorA)/255.0f) * (ColorARGB.unpackGreen(colorB)/255.0f) * 255.0f);
-        int r = (int)((ColorARGB.unpackRed(colorA)/255.0f) * (ColorARGB.unpackRed(colorB)/255.0f) * 255.0f);
+        int a = (int) ((ColorARGB.unpackAlpha(colorA) / 255.0f) * (ColorARGB.unpackAlpha(colorB) / 255.0f) * 255.0f);
+        int b = (int) ((ColorARGB.unpackBlue(colorA) / 255.0f) * (ColorARGB.unpackBlue(colorB) / 255.0f) * 255.0f);
+        int g = (int) ((ColorARGB.unpackGreen(colorA) / 255.0f) * (ColorARGB.unpackGreen(colorB) / 255.0f) * 255.0f);
+        int r = (int) ((ColorARGB.unpackRed(colorA) / 255.0f) * (ColorARGB.unpackRed(colorB) / 255.0f) * 255.0f);
         return ColorARGB.pack(r, g, b, a);
     }
 
@@ -49,7 +49,7 @@ public class EntityVertexMixin {
         int color, @Local(argsOnly = true) ModelQuadView quad,
         @Local(ordinal = 4) int i
     ) {
-        return multARGBInts(quad.getColor(i), color);
+        return kilt$iris$multARGBInts(quad.getColor(i), color);
     }
 
     @ModifyArg(

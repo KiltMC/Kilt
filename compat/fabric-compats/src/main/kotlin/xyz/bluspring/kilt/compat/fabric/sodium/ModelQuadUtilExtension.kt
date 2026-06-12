@@ -8,7 +8,9 @@ object ModelQuadUtilExtension {
     @JvmStatic
     fun mergeBakedLight(packedLight: Int, calcLight: Int): Int {
         // bail early in most cases
-        if (packedLight == 0) return calcLight
+        if (packedLight == 0) {
+            return calcLight
+        }
 
         val psl = (packedLight shr 16) and 0xFF
         val csl = (calcLight shr 16) and 0xFF
