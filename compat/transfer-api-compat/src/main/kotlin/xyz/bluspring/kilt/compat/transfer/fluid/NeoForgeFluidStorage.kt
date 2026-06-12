@@ -10,7 +10,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler
 import xyz.bluspring.kilt.util.neoforge.fluid.FluidTransferUtils.toDroplets
 import xyz.bluspring.kilt.util.neoforge.fluid.FluidTransferUtils.toMillibuckets
 
-class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
+class NeoForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     override fun iterator(): MutableIterator<StorageView<FluidVariant>> {
         // TODO: make this an actually good iterator
         return object : MutableIterator<StorageView<FluidVariant>> {
@@ -21,7 +21,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
             }
 
             override fun next(): StorageView<FluidVariant> {
-                return ForgeFluidTankStorage(currentIndex++)
+                return NeoForgeFluidTankStorage(currentIndex++)
             }
 
             override fun remove() {
@@ -33,7 +33,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
         val fluidStack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets(), resource.components)
 
-        val snapshot = ForgeFluidStackSnapshot(fluidStack, false)
+        val snapshot = NeoForgeFluidStackSnapshot(fluidStack, false)
         snapshot.updateSnapshots(transaction)
         val drained = handler.drain(fluidStack, IFluidHandler.FluidAction.SIMULATE)
 
@@ -43,7 +43,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
     override fun insert(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
         val fluidStack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets(), resource.components)
 
-        val snapshot = ForgeFluidStackSnapshot(fluidStack, true)
+        val snapshot = NeoForgeFluidStackSnapshot(fluidStack, true)
         snapshot.updateSnapshots(transaction)
 
         val filled = handler.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE)
@@ -51,7 +51,7 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
         return filled.toDroplets()
     }
 
-    private inner class ForgeFluidStackSnapshot(var stack: FluidStack, val insert: Boolean) : SnapshotParticipant<FluidStack>() {
+    private inner class NeoForgeFluidStackSnapshot(var stack: FluidStack, val insert: Boolean) : SnapshotParticipant<FluidStack>() {
         override fun createSnapshot(): FluidStack {
             return stack
         }
@@ -69,14 +69,14 @@ class ForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
         }
     }
 
-    private inner class ForgeFluidTankStorage(val tank: Int) : StorageView<FluidVariant> {
+    private inner class NeoForgeFluidTankStorage(val tank: Int) : StorageView<FluidVariant> {
         override fun extract(resource: FluidVariant, maxAmount: Long, transaction: TransactionContext): Long {
             val stack = FluidStack(resource.fluid.builtInRegistryHolder(), maxAmount.toMillibuckets().coerceAtMost(this.amount.toMillibuckets()), resource.components)
 
             if (!handler.isFluidValid(tank, stack))
                 return 0L
 
-            val snapshot = ForgeFluidStackSnapshot(stack, false)
+            val snapshot = NeoForgeFluidStackSnapshot(stack, false)
             snapshot.updateSnapshots(transaction)
 
             val extracted = handler.drain(stack, IFluidHandler.FluidAction.SIMULATE)

@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.compat.transfer
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemItemStorages
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
 import net.minecraft.world.entity.Entity
@@ -11,14 +12,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
 import net.neoforged.neoforge.capabilities.*
 import team.reborn.energy.api.EnergyStorage
+import xyz.bluspring.kilt.compat.transfer.capability.FabricLookupAsBlockCapabilityProvider
+import xyz.bluspring.kilt.compat.transfer.capability.FabricLookupAsItemCapabilityProvider
+import xyz.bluspring.kilt.compat.transfer.capability.FabricLookupAsSlottedBlockCapabilityProvider
+import xyz.bluspring.kilt.compat.transfer.capability.FabricLookupAsSlottedItemCapabilityProvider
 import xyz.bluspring.kilt.compat.transfer.energy.FabricEnergyStorageCapability
-import xyz.bluspring.kilt.compat.transfer.energy.ForgeEnergyStorage
+import xyz.bluspring.kilt.compat.transfer.energy.NeoForgeEnergyStorage
 import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidItemStorageCapability
 import xyz.bluspring.kilt.compat.transfer.fluid.FabricFluidStorageCapability
-import xyz.bluspring.kilt.compat.transfer.fluid.ForgeFluidStorage
+import xyz.bluspring.kilt.compat.transfer.fluid.NeoForgeFluidStorage
 import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapability
-import xyz.bluspring.kilt.compat.transfer.item.FabricItemStorageCapabilityProvider
-import xyz.bluspring.kilt.compat.transfer.item.ForgeSlottedStorage
+import xyz.bluspring.kilt.compat.transfer.item.NeoForgeSlottedStorage
 import xyz.bluspring.kilt.compat.transfer.mixin.BlockCapabilityAccessor
 import xyz.bluspring.kilt.compat.transfer.mixin.EntityCapabilityAccessor
 import xyz.bluspring.kilt.compat.transfer.mixin.ItemCapabilityAccessor
@@ -27,6 +31,7 @@ class TransferInterop : ModInitializer {
     override fun onInitialize() {
 //        NeoForge.EVENT_BUS.register(this)
 
+        // NeoForge Capabilities -> Fabric Lookups
         ItemStorage.SIDED.registerFallback { world, pos, state, blockEntity, direction ->
             if (blockEntity == null)
                 return@registerFallback null
@@ -34,7 +39,7 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.ItemHandler.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
             if (handler != null && handler !is FabricItemStorageCapability) {
-                return@registerFallback ForgeSlottedStorage(handler)
+                return@registerFallback NeoForgeSlottedStorage(handler)
             }
 
             null
@@ -47,7 +52,7 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.ItemHandler.ITEM.getCapability(stack, null)
 
             if (handler != null && handler !is FabricItemStorageCapability) {
-                return@registerFallback ForgeSlottedStorage(handler)
+                return@registerFallback NeoForgeSlottedStorage(handler)
             }
 
             null
@@ -60,7 +65,7 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.FluidHandler.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
             if (handler != null && handler !is FabricFluidStorageCapability) {
-                return@registerFallback ForgeFluidStorage(handler)
+                return@registerFallback NeoForgeFluidStorage(handler)
             }
 
             null
@@ -73,7 +78,7 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.FluidHandler.ITEM.getCapability(itemStack, null)
 
             if (handler != null && handler !is FabricFluidItemStorageCapability) {
-                return@registerFallback ForgeFluidStorage(handler)
+                return@registerFallback NeoForgeFluidStorage(handler)
             }
 
             null
@@ -86,7 +91,7 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.EnergyStorage.BLOCK.getCapability(world, pos, state, blockEntity, direction)
 
             if (handler != null && handler !is FabricEnergyStorageCapability) {
-                return@registerFallback ForgeEnergyStorage(handler)
+                return@registerFallback NeoForgeEnergyStorage(handler)
             }
 
             null
@@ -99,13 +104,45 @@ class TransferInterop : ModInitializer {
             val handler = Capabilities.EnergyStorage.ITEM.getCapability(itemStack, null)
 
             if (handler != null && handler !is FabricEnergyStorageCapability) {
-                return@registerFallback ForgeEnergyStorage(handler)
+                return@registerFallback NeoForgeEnergyStorage(handler)
             }
 
             null
         }
 
-        Capabilities.ItemHandler.BLOCK.providers = AlternativeCapabilityMap(Capabilities.ItemHandler.BLOCK.providers) { mutableListOf(FabricItemStorageCapabilityProvider(it)) }
+        // Fabric Lookups -> NeoForge Capabilities
+        Capabilities.ItemHandler.BLOCK.providers = AlternativeCapabilityMap(Capabilities.ItemHandler.BLOCK.providers) {
+            mutableListOf(
+                FabricLookupAsSlottedBlockCapabilityProvider(it, ItemStorage.SIDED, { s -> s is NeoForgeSlottedStorage }, ::FabricItemStorageCapability)
+            )
+        }
+        Capabilities.ItemHandler.ITEM.providers = AlternativeCapabilityMap(Capabilities.ItemHandler.ITEM.providers) {
+            mutableListOf(
+                FabricLookupAsSlottedItemCapabilityProvider(it, ItemStorage.ITEM, { stack -> ContainerItemContext.withConstant(stack) }, { s -> s is NeoForgeSlottedStorage }) { storage, _ -> FabricItemStorageCapability(storage) }
+            )
+        }
+
+        Capabilities.FluidHandler.BLOCK.providers = AlternativeCapabilityMap(Capabilities.FluidHandler.BLOCK.providers) {
+            mutableListOf(
+                FabricLookupAsSlottedBlockCapabilityProvider(it, FluidStorage.SIDED, { s -> s is NeoForgeFluidStorage }, ::FabricFluidStorageCapability)
+            )
+        }
+        Capabilities.FluidHandler.ITEM.providers = AlternativeCapabilityMap(Capabilities.FluidHandler.ITEM.providers) {
+            mutableListOf(
+                FabricLookupAsSlottedItemCapabilityProvider(it, FluidStorage.ITEM, { stack -> ContainerItemContext.withConstant(stack) }, { s -> s is NeoForgeFluidStorage }, ::FabricFluidItemStorageCapability)
+            )
+        }
+
+        Capabilities.EnergyStorage.BLOCK.providers = AlternativeCapabilityMap(Capabilities.EnergyStorage.BLOCK.providers) {
+            mutableListOf(
+                FabricLookupAsBlockCapabilityProvider(it, EnergyStorage.SIDED, { s -> s is NeoForgeEnergyStorage }, ::FabricEnergyStorageCapability)
+            )
+        }
+        Capabilities.EnergyStorage.ITEM.providers = AlternativeCapabilityMap(Capabilities.EnergyStorage.ITEM.providers) {
+            mutableListOf(
+                FabricLookupAsItemCapabilityProvider(it, EnergyStorage.ITEM, { stack -> ContainerItemContext.withConstant(stack) }, { s -> s is NeoForgeEnergyStorage }) { storage, _ -> FabricEnergyStorageCapability(storage) }
+            )
+        }
     }
 
     private var <T, C> BlockCapability<T, C>.providers: MutableMap<Block, MutableList<IBlockCapabilityProvider<T, C>>>
