@@ -736,10 +736,21 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
     }
 
     // like this
+    @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;onGround()Z", ordinal = 2))
+    private void kilt$handleFluidTypeJump(CallbackInfo ci, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("fluidHeight") LocalDoubleRef fluidHeightRef, @Share("fluidJumpThreshold") LocalDoubleRef fluidJumpThresholdRef) {
+        var fluidType = fluidTypeRef.get();
+        if (fluidType == null)
+            fluidType = this.getMaxHeightFluidType();
+
+        if (!(fluidType.isAir() || this.onGround() && !(fluidHeightRef.get() > fluidJumpThresholdRef.get()))) {
+            this.jumpInFluid(fluidType);
+        }
+    }
+
     @Definition(id = "noJumpDelay", field = "Lnet/minecraft/world/entity/LivingEntity;noJumpDelay:I")
     @Expression("this.noJumpDelay == 0")
     @ModifyExpressionValue(method = "aiStep", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$tryJumpInFluid(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("fluidHeight") LocalDoubleRef fluidHeightRef, @Share("fluidJumpThreshold") LocalDoubleRef fluidJumpThresholdRef) {
+    private boolean kilt$preventJumpGroundIfInFluid(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("fluidHeight") LocalDoubleRef fluidHeightRef, @Share("fluidJumpThreshold") LocalDoubleRef fluidJumpThresholdRef) {
         var fluidType = fluidTypeRef.get();
         if (fluidType == null)
             fluidType = this.getMaxHeightFluidType();
@@ -748,7 +759,6 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
             return original;
         }
 
-        this.jumpInFluid(fluidType);
         return false;
     }
 

@@ -49,6 +49,7 @@ import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 import xyz.bluspring.kilt.workarounds.InterimCalculation;
+import xyz.bluspring.kilt.workarounds.KiltFluidTags;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
@@ -353,13 +354,22 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
 
     // Kilt: hell.
 
+    @Inject(method = "updateInWaterStateAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;updateInWaterStateAndDoWaterCurrentPushing()V", shift = At.Shift.AFTER))
+    private void kilt$handleNonVanillaFluidPushing(CallbackInfoReturnable<Boolean> cir) {
+        this.updateFluidHeightAndDoFluidPushing(KiltFluidTags.EMPTY_NONVANILLA, 1.0);
+    }
+
     public void updateFluidHeightAndDoFluidPushing() {
-        this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 1.0);
+        this.updateFluidHeightAndDoFluidPushing(KiltFluidTags.EMPTY, 1.0);
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
     private boolean kilt$checkIsFluidTypeAir(FluidState instance, TagKey<Fluid> tagKey, Operation<Boolean> original) {
-        return original.call(instance, tagKey) || !instance.neo$getFluidType().isAir();
+        if (KiltFluidTags.isTagForFluidTypePushing(tagKey)) {
+            return !instance.neo$getFluidType().isAir();
+        }
+
+        return original.call(instance, tagKey);
     }
 
     @Definition(id = "bl2", local = @Local(type = boolean.class, ordinal = 1))
@@ -373,6 +383,11 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
         return original;
     }
 
+    @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0))
+    private void kilt$storeFluidType(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Local FluidState fluidState, @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef) {
+        fluidTypeRef.set(fluidState.neo$getFluidType());
+    }
+
     @Definition(id = "max", method = "Ljava/lang/Math;max(DD)D")
     @Definition(id = "e", local = @Local(type = double.class, ordinal = 2))
     @Definition(id = "aABB", local = @Local(type = AABB.class))
@@ -383,15 +398,17 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
                                                    @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs,
                                                    @Local FluidState fluidState,
                                                    @Local(argsOnly = true) TagKey<Fluid> fluidTag,
-                                                   @Share(value = "fluidType", namespace = Kilt.MOD_ID) LocalRef<FluidType> fluidTypeRef,
                                                    @Share("interim") LocalRef<InterimCalculation> interimRef) {
+        if (!KiltFluidTags.isTagForFluidTypePushing(fluidTag)) { // Kilt: Used as a marker for us to actually apply fluid type stuff.
+            return original.call(a, b);
+        }
+
         if (interimCalcs.get() == null) {
             interimCalcs.set(new Object2ObjectArrayMap<>());
         }
 
         InterimCalculation interim = interimCalcs.get().computeIfAbsent(fluidState.neo$getFluidType(), t -> new InterimCalculation());
         interim.setFluidHeight(original.call(a, interim.getFluidHeight()));
-        fluidTypeRef.set(fluidState.neo$getFluidType());
         interimRef.set(interim);
 
         if (fluidState.is(fluidTag))
@@ -412,7 +429,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$tryCheckFluidHeight(double left, double right, Operation<Boolean> original, @Share("interim") LocalRef<InterimCalculation> interimRef) {
         if (interimRef.get() != null) {
-            return original.call(left, right) || original.call(interimRef.get().getFluidHeight(), right);
+            return original.call(interimRef.get().getFluidHeight(), right);
         }
 
         return original.call(left, right);
@@ -424,7 +441,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     @Expression("vec32 = @(vec32.scale(d))")
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private Vec3 kilt$tryScaleWithFluidHeight(Vec3 instance, double d, Operation<Vec3> original, @Share("interim") LocalRef<InterimCalculation> interimRef) {
-        if (interimRef.get() != null && interimRef.get().getFluidHeight() < 0.4) {
+        if (interimRef.get() != null) {
             return original.call(instance, interimRef.get().getFluidHeight());
         }
 
@@ -441,14 +458,12 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
             interimRef.get().setFlowVector(original.call(interimRef.get().getFlowVector(), vec3));
             interimRef.get().setBlockCount(interimRef.get().getBlockCount() + 1);
             interimRef.set(null);
-        }
 
-        if (fluidState.is(fluidTag)) {
-            return original.call(instance, vec3);
-        } else {
             o.set(o.get() - 1); // It's going to get increased, so avoid doing so.
             return instance;
         }
+
+        return original.call(instance, vec3);
     }
 
     @Definition(id = "vec3", local = @Local(type = Vec3.class, ordinal = 0))
@@ -469,9 +484,8 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
         return originalResult;
     }
 
-    @Definition(id = "vec3", local = @Local(type = Vec3.class, ordinal = 0))
-    @Definition(id = "length", method = "Lnet/minecraft/world/phys/Vec3;length()D")
-    @Expression("vec3.length() > 0.0")
+    @Definition(id = "Player", type = Player.class)
+    @Expression("this instanceof Player")
     @Inject(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private void kilt$handleInterimVectorScale(TagKey<Fluid> fluidTag, double motionScale, CallbackInfoReturnable<Boolean> cir, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs) {
         if (interimCalcs.get() != null) {
@@ -485,8 +499,16 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
 
     @Definition(id = "vec3", local = @Local(type = Vec3.class, ordinal = 0))
     @Definition(id = "normalize", method = "Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;")
+    @Definition(id = "scale", method = "Lnet/minecraft/world/phys/Vec3;scale(D)Lnet/minecraft/world/phys/Vec3;")
+    @Definition(id = "vec32", local = @Local(type = Vec3.class, ordinal = 1))
+    @Definition(id = "getDeltaMovement", method = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;")
     @Expression("vec3.normalize()")
-    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @Expression(value = "vec3 = vec3.scale(1.0 / ?)", id = "scale")
+    @Expression(value = "vec32 = this.getDeltaMovement()", id = "deltaMovement")
+    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"), slice = @Slice(
+        from = @At(value = "MIXINEXTRAS:EXPRESSION", id = "scale"),
+        to = @At(value = "MIXINEXTRAS:EXPRESSION", id = "deltaMovement")
+    ))
     private Vec3 kilt$handleNormalizeInterims(Vec3 instance, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs) {
         if (interimCalcs.get() != null) {
             for (InterimCalculation interim : interimCalcs.get().values()) {
@@ -499,7 +521,8 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
 
     @Definition(id = "vec3", local = @Local(type = Vec3.class, ordinal = 0))
     @Definition(id = "scale", method = "Lnet/minecraft/world/phys/Vec3;scale(D)Lnet/minecraft/world/phys/Vec3;")
-    @Expression("vec3.scale(?)")
+    @Definition(id = "motionScale", local = @Local(type = double.class, ordinal = 0, argsOnly = true))
+    @Expression("vec3.scale(motionScale)")
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
     private Vec3 kilt$handleInterimScaleBasedOnMotion(Vec3 instance, double d, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs) {
         if (interimCalcs.get() != null) {
@@ -513,31 +536,25 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
         return original.call(instance, d);
     }
 
-    @Definition(id = "vec3", local = @Local(type = Vec3.class, ordinal = 0))
-    @Definition(id = "length", method = "Lnet/minecraft/world/phys/Vec3;length()D")
-    @Expression("vec3.length() < ?")
+    @Definition(id = "getDeltaMovement", method = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;")
+    @Definition(id = "add", method = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;")
+    @Expression("this.getDeltaMovement().add(?)")
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$checkAnyInterimsMatchScale(double left, double right, Operation<Boolean> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs) {
-        if (interimCalcs.get() != null) {
-            for (InterimCalculation interim : interimCalcs.get().values()) {
-                if (original.call(interim.getFlowVector().length(), right)) {
-                    interim.setFlowVector(interim.getFlowVector().normalize().scale(right));
-                }
-            }
-        }
-
-        return original.call(left, right);
-    }
-
-    @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;"))
-    private Vec3 kilt$addVectorFromInterim(Vec3 instance, Vec3 vec3, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
-        Vec3 current = original.call(instance, vec3);
+    private Vec3 kilt$addVectorFromInterim(Vec3 instance, Vec3 vec, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
+        Vec3 current = original.call(instance, vec);
+        double scaleFactor = 0.0045000000000000005;
 
         if (interimCalcs.get() != null) {
             for (FluidType fluidType : interimCalcs.get().keySet()) {
-                var interim = interimCalcs.get().get(fluidType);
-                if (!fluidType.isVanilla()) {
-                    current = current.add(interim.getFlowVector());
+                if (fluidTag != KiltFluidTags.EMPTY_NONVANILLA || !fluidType.isVanilla()) {
+                    var interim = interimCalcs.get().get(fluidType);
+                    var interimVec = interim.getFlowVector();
+
+                    if (Math.abs(current.x) < 0.003 && Math.abs(current.z) < 0.003 && interimVec.length() < scaleFactor) {
+                        interimVec = interimVec.normalize().scale(scaleFactor);
+                    }
+
+                    current = current.add(interimVec);
                 }
             }
         }
