@@ -200,12 +200,14 @@ object MixinRemapper {
                 val sliceValues = KiltMixinModifications.annotationValuesToMap(sliceValue.values).toMutableMap()
 
                 if (sliceValues.contains("from") && sliceValues["from"] is AnnotationNode) {
-                    sliceValues["from"] = remapAtValue(sliceValues["from"] as AnnotationNode)
+                    remapAtValue(sliceValues["from"] as AnnotationNode)
                 }
 
                 if (sliceValues.contains("to") && sliceValues["to"] is AnnotationNode) {
-                    sliceValues["to"] = remapAtValue(sliceValues["to"] as AnnotationNode)
+                    remapAtValue(sliceValues["to"] as AnnotationNode)
                 }
+
+                sliceValue.values = KiltMixinModifications.mapToAnnotationValues(sliceValues)
             }
 
             val sliceValue = values["slice"]!!
@@ -215,12 +217,12 @@ object MixinRemapper {
             } else if (sliceValue is List<*>) {
                 val newSliceValues = mutableListOf<Any?>()
 
-                for (sliceValue in sliceValue) {
-                    if (sliceValue is AnnotationNode) {
-                        remapSliceValue(sliceValue)
-                    } else {
-                        newSliceValues.add(sliceValue)
+                for (value in sliceValue) {
+                    if (value is AnnotationNode) {
+                        remapSliceValue(value)
                     }
+
+                    newSliceValues.add(value)
                 }
 
                 values["slice"] = newSliceValues
