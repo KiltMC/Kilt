@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -71,24 +70,20 @@ public abstract class MouseHandlerInject implements MouseHandlerInjection {
     }
 
     @WrapOperation(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseScrolled(DDDD)Z"))
-    private boolean kilt$callScreenMouseScrollEvents(Screen instance, double mouseX, double mouseY, double scrollX, double scrollY, Operation<Boolean> original, @Cancellable CallbackInfo ci) {
-        if (ClientHooks.onScreenMouseScrollPre((MouseHandler) (Object) this, instance, scrollX, scrollY)) {
-            ci.cancel();
-            return true;
+    private boolean kilt$callScreenMouseScrollEvents(Screen instance, double mouseX, double mouseY, double scrollX, double scrollY, Operation<Boolean> original) {
+        boolean result = true;
+        if (!ClientHooks.onScreenMouseScrollPre((MouseHandler) (Object) this, instance, scrollX, scrollY)) {
+            if (!original.call(instance, mouseX, mouseY, scrollX, scrollY)) { // is this even correct?
+                result = false;
+                ClientHooks.onScreenMouseScrollPost((MouseHandler) (Object) this, instance, scrollX, scrollY);
+            }
         }
 
-        if (original.call(instance, mouseX, mouseY, scrollX, scrollY)) {
-            ci.cancel();
-            return true;
-        }
-
-        ClientHooks.onScreenMouseScrollPost((MouseHandler) (Object) this, instance, scrollX, scrollY);
-
-        return false;
+        return result;
     }
 
     @Inject(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z"), cancellable = true)
-    private void kilt$callForgeMouseScrollEvent(long windowPointer, double xOffset, double yOffset, CallbackInfo ci, @Local(ordinal = 2) double scrollX, @Local(ordinal = 3) double scrollY) {
+    private void kilt$callForgeMouseScrollEvent(long windowPointer, double xOffset, double yOffset, CallbackInfo ci, @Local(ordinal = 3) double scrollX, @Local(ordinal = 4) double scrollY) {
         if (ClientHooks.onMouseScroll((MouseHandler) (Object) this, scrollX, scrollY))
             ci.cancel();
     }
