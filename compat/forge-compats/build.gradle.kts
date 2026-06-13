@@ -14,14 +14,14 @@ loom {
 version = property("mod_version") as String
 
 dependencies {
-    modCompileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
+    compileOnly("maven.modrinth:immersiveengineering:${property("immersiveengineering_version")}")
     compileOnly("maven.modrinth:quark:${property("quark_version")}")
     compileOnly("org.violetmoon.zeta:Zeta:${property("zeta_version")}")
-    modImplementation("maven.modrinth:sodium:${property("sodium_version")}")
-    modCompileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
+    implementation("maven.modrinth:sodium:${property("sodium_version")}")
+    compileOnly("maven.modrinth:structure-gel-api:${property("structuregelapi_version")}")
     compileOnly("maven.modrinth:thirst-was-taken:${property("thirst_version")}")
     compileOnly("maven.modrinth:ldlib:${property("ldlib_version")}")
-    modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
+    compileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
     compileOnly("thedarkcolour:kfflang-neoforge:${property("kotlinforforge_version")}")
     compileOnly("curse.maven:the-twilight-forest-227639:${property("twilightforest_version")}")
 }

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public interface PlayerInjection extends io.github.fabricators_of_create.porting_lib.blocks.injects.PlayerInjection, io.github.fabricators_of_create.porting_lib.entity.injects.PlayerInjection {
+public interface PlayerInjection /*extends io.github.fabricators_of_create.porting_lib.blocks.injects.PlayerInjection, io.github.fabricators_of_create.porting_lib.entity.injects.PlayerInjection*/ {
     String PERSISTED_NBT_TAG = "PlayerPersisted";
 
     default Collection<MutableComponent> getPrefixes() {

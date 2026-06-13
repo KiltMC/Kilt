@@ -14,8 +14,8 @@ repositories {
 }
 
 dependencies {
-    modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.21.1:${property("flywheel_version")}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:${property("flywheel_version")}")
+    compileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.21.1:${property("flywheel_version")}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:${property("flywheel_version")}")
 }
 
 loom {

@@ -1,4 +1,4 @@
-classTweaker v2 named
+classTweaker v2 official
 
 # Kilt's own injected interfaces, these ones are manually inserted for interfaces
 # that can't be automatically generated, such as inner injections.

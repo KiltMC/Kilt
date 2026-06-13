@@ -2,30 +2,24 @@ package xyz.bluspring.kilt
 
 import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
-import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
-import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.util.EventResult
 import net.minecraft.core.BlockPos
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.minecraft.core.GlobalPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
-import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.state.BlockState
-import net.neoforged.neoforge.common.CommonHooks
+import net.minecraft.world.level.storage.LevelData
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.extensions.IBlockExtension
 import net.neoforged.neoforge.event.EventHooks
@@ -61,51 +55,51 @@ class Kilt : ModInitializer {
                 event.useItem = TriState.of(forgeEvent.useItem.isTrue)
         }*/
 
-        PlayerInteractEvent.RightClickItem.EVENT.register { event ->
-            event.cancellationResult = CommonHooks.onItemRightClick(event.entity, event.hand)
-        }
-
-        PlayerInteractEvent.EntityInteract.EVENT.register { event ->
-            event.cancellationResult = CommonHooks.onInteractEntity(event.entity, event.target, event.hand)
-        }
-
-        PlayerInteractEvent.EntityInteractSpecific.EVENT.register { event ->
-            event.cancellationResult = CommonHooks.onInteractEntityAt(event.entity, event.target, event.localPos, event.hand)
-        }
-
-        PlayerInteractEvent.LeftClickBlock.EVENT.register { event ->
-            val forgeEvent = CommonHooks.onLeftClickBlock(event.entity, event.pos, event.face, when (event.action) {
-                PlayerInteractEvent.LeftClickBlock.Action.START -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
-                PlayerInteractEvent.LeftClickBlock.Action.STOP -> ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK
-                PlayerInteractEvent.LeftClickBlock.Action.ABORT -> ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK
-                else -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
-            })
-
-            if (forgeEvent.isCanceled)
-                event.isCanceled = true
-        }
-
-        CriticalHitEvent.EVENT.register { event ->
-            CommonHooks.fireCriticalHit(event.entity, event.target, event.isVanillaCritical, event.damageMultiplier)
-        }
-
-        PlayerInteractEvent.LeftClickEmpty.EVENT.register { event ->
-            CommonHooks.onEmptyLeftClick(event.entity)
-        }
-
-        CriticalHitEvent.EVENT.register { event ->
-            val forgeEvent = CommonHooks.fireCriticalHit(event.entity, event.entity, event.isVanillaCritical, event.vanillaMultiplier)
-
-            if (forgeEvent.isCriticalHit != event.isCriticalHit)
-                event.isCriticalHit = forgeEvent.isCriticalHit
-
-            if (forgeEvent.damageMultiplier != event.damageMultiplier)
-                event.damageMultiplier = forgeEvent.damageMultiplier
-        }
-
-        PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
-            CommonHooks.onEmptyClick(event.entity, event.hand)
-        }
+//        PlayerInteractEvent.RightClickItem.EVENT.register { event ->
+//            event.cancellationResult = CommonHooks.onItemRightClick(event.entity, event.hand)
+//        }
+//
+//        PlayerInteractEvent.EntityInteract.EVENT.register { event ->
+//            event.cancellationResult = CommonHooks.onInteractEntity(event.entity, event.target, event.hand)
+//        }
+//
+//        PlayerInteractEvent.EntityInteractSpecific.EVENT.register { event ->
+//            event.cancellationResult = CommonHooks.onInteractEntityAt(event.entity, event.target, event.localPos, event.hand)
+//        }
+//
+//        PlayerInteractEvent.LeftClickBlock.EVENT.register { event ->
+//            val forgeEvent = CommonHooks.onLeftClickBlock(event.entity, event.pos, event.face, when (event.action) {
+//                PlayerInteractEvent.LeftClickBlock.Action.START -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
+//                PlayerInteractEvent.LeftClickBlock.Action.STOP -> ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK
+//                PlayerInteractEvent.LeftClickBlock.Action.ABORT -> ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK
+//                else -> ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
+//            })
+//
+//            if (forgeEvent.isCanceled)
+//                event.isCanceled = true
+//        }
+//
+//        CriticalHitEvent.EVENT.register { event ->
+//            CommonHooks.fireCriticalHit(event.entity, event.target, event.isVanillaCritical, event.damageMultiplier)
+//        }
+//
+//        PlayerInteractEvent.LeftClickEmpty.EVENT.register { event ->
+//            CommonHooks.onEmptyLeftClick(event.entity)
+//        }
+//
+//        CriticalHitEvent.EVENT.register { event ->
+//            val forgeEvent = CommonHooks.fireCriticalHit(event.entity, event.entity, event.isVanillaCritical, event.vanillaMultiplier)
+//
+//            if (forgeEvent.isCriticalHit != event.isCriticalHit)
+//                event.isCriticalHit = forgeEvent.isCriticalHit
+//
+//            if (forgeEvent.damageMultiplier != event.damageMultiplier)
+//                event.damageMultiplier = forgeEvent.damageMultiplier
+//        }
+//
+//        PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
+//            CommonHooks.onEmptyClick(event.entity, event.hand)
+//        }
 
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
             if (player !is ServerPlayer) // istg
@@ -137,12 +131,12 @@ class Kilt : ModInitializer {
                 )
             ) {
                 return@register if (state.isBed(entity.level(), pos, entity)) {
-                    InteractionResult.SUCCESS
+                    EventResult.ALLOW
                 } else {
-                    InteractionResult.FAIL
+                    EventResult.DENY
                 }
             }
-            return@register InteractionResult.PASS
+            return@register EventResult.PASS
         }
 
         EntitySleepEvents.MODIFY_SLEEPING_DIRECTION.register { entity, pos, direction ->
@@ -166,7 +160,7 @@ class Kilt : ModInitializer {
         }
 
         EntitySleepEvents.ALLOW_SETTING_SPAWN.register { player, pos ->
-            !EventHooks.onPlayerSpawnSet(player, player.level().dimension(), pos, false)
+            !EventHooks.onPlayerSpawnSet(player, ServerPlayer.RespawnConfig(LevelData.RespawnData(GlobalPos(player.level().dimension(), pos), 0f, 0f), false))
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register {
@@ -182,17 +176,17 @@ class Kilt : ModInitializer {
             ServerLifecycleHooks.handleServerStopped(it)
         }
 
-        ExplosionEvents.START.register { level, explosion ->
-            EventHooks.onExplosionStart(level, explosion)
-        }
-
-        ExplosionEvents.DETONATE.register { level, explosion, entities, diameter ->
-            EventHooks.onExplosionDetonate(level, explosion, entities, diameter)
-        }
-
-        EntityEvents.EnteringSection.EVENT.register { event ->
-            CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
-        }
+//        ExplosionEvents.START.register { level, explosion ->
+//            EventHooks.onExplosionStart(level, explosion)
+//        }
+//
+//        ExplosionEvents.DETONATE.register { level, explosion, entities, diameter ->
+//            EventHooks.onExplosionDetonate(level, explosion, entities, diameter)
+//        }
+//
+//        EntityEvents.EnteringSection.EVENT.register { event ->
+//            CommonHooks.onEntityEnterSection(event.entity, event.packedOldPos, event.packedNewPos)
+//        }
 
         ServerTickEvents.START_SERVER_TICK.register { server ->
             EventHooks.fireServerTickPre((server as MinecraftServerAccessor)::callHaveTime, server)
@@ -202,34 +196,34 @@ class Kilt : ModInitializer {
             EventHooks.fireServerTickPost((server as MinecraftServerAccessor)::callHaveTime, server)
         }
 
-        ServerTickEvents.START_WORLD_TICK.register { level ->
+        ServerTickEvents.START_LEVEL_TICK.register { level ->
             EventHooks.fireLevelTickPre(level, (level.server as MinecraftServerAccessor)::callHaveTime)
         }
 
-        ServerTickEvents.END_WORLD_TICK.register { level ->
+        ServerTickEvents.END_LEVEL_TICK.register { level ->
             EventHooks.fireLevelTickPost(level, (level.server as MinecraftServerAccessor)::callHaveTime)
         }
 
-        PlayerTickEvent.Pre.EVENT.register { event ->
-            EventHooks.firePlayerTickPre(event.entity)
-        }
+//        PlayerTickEvent.Pre.EVENT.register { event ->
+//            EventHooks.firePlayerTickPre(event.entity)
+//        }
+//
+//        PlayerTickEvent.Post.EVENT.register { event ->
+//            EventHooks.firePlayerTickPost(event.entity)
+//        }
 
-        PlayerTickEvent.Post.EVENT.register { event ->
-            EventHooks.firePlayerTickPost(event.entity)
-        }
-
-        ServerWorldEvents.LOAD.register { server, level ->
+        ServerLevelEvents.LOAD.register { server, level ->
             NeoForge.EVENT_BUS.post(LevelEvent.Load(level))
         }
 
-        ServerWorldEvents.UNLOAD.register { server, level ->
+        ServerLevelEvents.UNLOAD.register { server, level ->
             NeoForge.EVENT_BUS.post(LevelEvent.Unload(level))
         }
 
-        LivingDropsEvent.EVENT.register { event ->
-            if (CommonHooks.onLivingDrops(event.entity, event.source, event.drops, event.isRecentlyHit))
-                event.isCanceled = true
-        }
+//        LivingDropsEvent.EVENT.register { event ->
+//            if (CommonHooks.onLivingDrops(event.entity, event.source, event.drops, event.isRecentlyHit))
+//                event.isCanceled = true
+//        }
 
         EntityElytraEvents.CUSTOM.register { entity, tickElytra ->
             val chestPiece = entity.getItemBySlot(EquipmentSlot.CHEST)

@@ -1,4 +1,4 @@
-accessWidener v2 named
+accessWidener v2 official
 
 # Kilt's own access wideners
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I

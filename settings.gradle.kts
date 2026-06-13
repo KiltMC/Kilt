@@ -26,12 +26,12 @@ pluginManagement {
     }
 }
 
-file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
-    include(":compat:${it.name}")
-    project(":compat:${it.name}").apply {
-        this.projectDir = it
-    }
-}
+//file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
+//    include(":compat:${it.name}")
+//    project(":compat:${it.name}").apply {
+//        this.projectDir = it
+//    }
+//}
 
 include(":loader:cichlid")
 include(":loader:fabric")

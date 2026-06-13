@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.gradle
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import net.fabricmc.mappingio.MappingReader
 import net.fabricmc.mappingio.tree.MemoryMappingTree
 import org.gradle.api.Project
 import java.io.File
@@ -33,10 +32,7 @@ object ClassTweakerUpdater {
 
         // Load Mojmap mappings
         val mappingDownloader = MappingDownloader(project.property("minecraft_version") as String, project.layout.buildDirectory.get().asFile)
-        mappingDownloader.downloadFiles()
-
-        val mojmap = MemoryMappingTree() // obf -> moj
-        MappingReader.read(mappingDownloader.mojangMappingsFile.reader(), mojmap)
+        val mappings = mappingDownloader.setupMappings()
 
         // Tweakers
         val kiltGeneratedTweaker = File("${project.projectDir}/tweakers/injections/kilt_generated.classtweaker")
@@ -54,7 +50,7 @@ object ClassTweakerUpdater {
 
             // Access Transformer -> Access Widener Updates
             if (transformerFile.hash() != lastTransformerHash) {
-                convertTransformerToWidener(transformerFile, neoWidenerFile, mojmap)
+                convertTransformerToWidener(transformerFile, neoWidenerFile, mappings)
                 json.getAsJsonObject("wideners").addProperty("neoforge", transformerFile.hash())
             }
 
@@ -79,12 +75,12 @@ object ClassTweakerUpdater {
                 }
 
             // Automatically generate most of our injections.
-            updateKiltInjections(injectionsPath, kiltGeneratedTweaker, mojmap, existingInjections)
+            updateKiltInjections(injectionsPath, kiltGeneratedTweaker, mappings, existingInjections)
         }
 
         // Now, we should combine everything together into one shared class tweaker.
         val classTweakerBuilder = StringBuilder()
-        classTweakerBuilder.append("classTweaker v2 named")
+        classTweakerBuilder.append("classTweaker v2 official")
         classTweakerBuilder.newLine()
 
         // Neo ATs
@@ -127,21 +123,21 @@ object ClassTweakerUpdater {
         lastUpdatedFile.writeText(GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json))
     }
 
-    fun convertTransformerToWidener(transformer: File, output: File, mojmap: MemoryMappingTree) {
+    fun convertTransformerToWidener(transformer: File, output: File, mappings: Map<String, MappingDownloader.ClassMapping>) {
         val fieldDescriptors = mutableMapOf<String, MutableMap<String, String>>()
 
-        for (classMapping in mojmap.classes) {
+        for ((className, classMapping) in mappings) {
             for (field in classMapping.fields) {
-                val mojName = field.srcName
+                val mojName = field.name
 
-                if (field.srcDesc != null)
-                    fieldDescriptors.computeIfAbsent(classMapping.srcName) { mutableMapOf() }[mojName] = field.srcDesc!!
+                if (field.descriptor != null)
+                    fieldDescriptors.computeIfAbsent(className) { mutableMapOf() }[mojName] = field.descriptor!!
             }
         }
 
         val widener = mutableListOf<String>()
 
-        widener += "accessWidener v2 named"
+        widener += "accessWidener v2 official"
         widener += ""
         widener += "# Auto generated access widener from NeoForge's access transformers."
 
@@ -167,17 +163,28 @@ object ClassTweakerUpdater {
                         continue
 
                     val descriptor = split[2].replaceBefore("(", "")
-                    widener += "transitive-accessible method $className $methodName $descriptor"
-                    widener += "transitive-extendable method $className $methodName $descriptor"
+
+                    if (methodName == "*") {
+                        widener += "# wildcard methods for $className"
+                        mappings[className]?.methods?.forEach { mapping ->
+                            if (!mapping.name.startsWith("<") && mapping.descriptor.startsWith(descriptor)) {
+                                widener += "transitive-accessible method $className ${mapping.name} ${mapping.descriptor}"
+                                widener += "transitive-extendable method $className ${mapping.name} ${mapping.descriptor}"
+                            }
+                        }
+                    } else {
+                        widener += "transitive-accessible method $className $methodName $descriptor"
+                        widener += "transitive-extendable method $className $methodName $descriptor"
+                    }
                 } else { // Field
                     val fieldName = split[2]
 
                     // Add every single field
                     if (fieldName == "*") {
                         widener += "# wildcard fields for $className"
-                        mojmap.classes.firstOrNull { it.srcName == className }?.fields?.forEach { mapping ->
-                            widener += "transitive-accessible field $className ${mapping.srcName} ${mapping.srcDesc}"
-                            widener += "transitive-mutable field $className ${mapping.srcName} ${mapping.srcDesc}"
+                        mappings[className]?.fields?.forEach { mapping ->
+                            widener += "transitive-accessible field $className ${mapping.name} ${mapping.descriptor}"
+                            widener += "transitive-mutable field $className ${mapping.name} ${mapping.descriptor}"
                         }
 
                         continue
@@ -213,7 +220,7 @@ object ClassTweakerUpdater {
     fun updateNeoInjections(injections: File, tweaker: File) {
         val neo = JsonParser.parseReader(injections.reader()).asJsonObject
         val classTweakerBuilder = StringBuilder()
-        classTweakerBuilder.append("classTweaker v1 named")
+        classTweakerBuilder.append("classTweaker v1 official")
         classTweakerBuilder.newLine()
         classTweakerBuilder.append("# NeoForge interface injections, automatically generated from their injected-interfaces.json")
         classTweakerBuilder.newLine()
@@ -242,7 +249,7 @@ object ClassTweakerUpdater {
         tweaker.writeText(classTweakerBuilder.toString())
     }
 
-    fun updateKiltInjections(injectionPath: File, tweaker: File, mojmap: MemoryMappingTree, existing: List<String>) {
+    fun updateKiltInjections(injectionPath: File, tweaker: File, mappings: Map<String, MappingDownloader.ClassMapping>, existing: List<String>) {
         val classTweakerBuilder = StringBuilder()
         classTweakerBuilder.append("classTweaker v1 named")
         classTweakerBuilder.newLine()
@@ -268,7 +275,7 @@ object ClassTweakerUpdater {
             if (existing.contains(injected))
                 continue
 
-            if (mojmap.getClass(mcClass) == null) {
+            if (!mappings.containsKey(mcClass)) {
                 println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
                 continue
             }

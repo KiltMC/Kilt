@@ -1,6 +1,5 @@
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
-import net.fabricmc.loom.task.RemapJarTask
 import net.fabricmc.loom.task.prod.ClientProductionRunTask
 import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
@@ -13,11 +12,10 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom")
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
-    id("com.gradleup.shadow") version "9.4.2"
 }
 
 apply<KiltLoomPlugin>()
@@ -42,11 +40,13 @@ sourceSets {
         java.srcDir("src/main/java")
         java.srcDir("src/main/kotlin")
         java.srcDir("forge/src/main/java")
+        java.srcDir("forge/src/client/java")
         java.srcDir("forge/coremods/src/main/java")
         java.srcDir("fml/loader/src/main/java")
 
         resources.srcDir("forge/src/generated/resources")
         resources.srcDir("forge/src/main/resources")
+        resources.srcDir("forge/src/client/resources")
         resources.srcDir("forge/coremods/src/main/resources")
         resources.srcDir("fml/loader/src/main/resources")
 
@@ -198,20 +198,16 @@ allprojects {
     if (project.name == "ap")
         return@allprojects
 
-    apply(plugin = "fabric-loom")
+    apply(plugin = "net.fabricmc.fabric-loom")
 
     dependencies {
         // To change the versions see the gradle.properties file
         minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
-        mappings (loom.layered {
-            mappings(rootProject.file("workarounds/fix_yarn_mapping.tiny")) // for the cases where other mods are making the mistake of using Yarn and having conflicting names
-            officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-${rootProject.property("parchment_version")}:${rootProject.property("parchment_release")}@zip")
-        })
-        modImplementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+
+        implementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
         // Just because I like Kotlin more than Java
-        modImplementation ("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
+        implementation ("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
 
         /*(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
             exclude("org.ow2.asm")
@@ -224,31 +220,29 @@ allprojects {
 
         if (project.parent?.name != "loader") {
             // Fabric API. This is technically optional, but you probably want it anyway.
-            modImplementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
+            implementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
 
             // Cursed Fabric/Mixin stuff
             implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
                 exclude("org.ow2.asm")
             }
-            modImplementation("xyz.bluspring.fork:Fabric-ASM:${rootProject.property("fabric_asm_version")}")
+            implementation("xyz.bluspring.fork:Fabric-ASM:${rootProject.property("fabric_asm_version")}")
             implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
                 exclude("org.ow2.asm")
             })
-            modApi("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}") {
+            api("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}") {
                 exclude("org.ow2.asm")
             }
         }
     }
 }
 
-val shadedDep by configurations.creating
-
 dependencies {
     // Forge Reimplementations
-    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "milk", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
-    portingLibs.forEach { lib ->
-        modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
-    }
+//    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "milk", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
+//    portingLibs.forEach { lib ->
+//        api(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
+//    }
 
     // JiJ'd into main JAR alone
     //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
@@ -259,12 +253,12 @@ dependencies {
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
-    include(modApi("maven.modrinth:modmenu-badges-lib:${rootProject.property("modmenu_badges_version")}")!!)
+    include(api("maven.modrinth:modmenu-badges-lib:${rootProject.property("modmenu_badges_version")}")!!)
 
     // Extra libraries that should be shaded
-    shadedDep(api("xyz.bluspring.fork:fishflakes:${property("fishflakes_version")}")!!)
-    shadedDep(api("xyz.bluspring.fork:tiny-json:${property("tinyjson_version")}")!!)
-    shadedDep(api("xyz.bluspring.fork:tiny-codecs:${property("tinycodecs_version")}")!!)
+    include(api("fish.cichlidmc:fishflakes:${property("fishflakes_version")}")!!)
+    include(api("fish.cichlidmc:tiny-json:${property("tinyjson_version")}")!!)
+    include(api("fish.cichlidmc:tiny-codecs:${property("tinycodecs_version")}")!!)
 
     // Forge stuff
     api(include("net.neoforged:bus:${property("eventbus_version")}") {
@@ -282,46 +276,36 @@ dependencies {
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
-    // Remapping SRG to Intermediary
-    implementation(include("xyz.bluspring:srgutils:${property("srgutils_version")}")!!)
-    implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
-
-    modApi(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
-
-    // Use Kilt's fork of Sinytra Connector's fork of ForgeAutoRenamingTool
-    implementation(include("xyz.bluspring:AutoRenamingTool:${property("forgerenamer_version")}") {
-        exclude("org.ow2.asm")
-        exclude("net.sf.jopt-simple") // otherwise prod crashes
-    })
+    api(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 
     fun modOptional(dependencyNotation: String, shouldRunInRuntime: Boolean, configuration: Action<ExternalModuleDependency> = Action {}) {
         if (shouldRunInRuntime) {
-            modImplementation(dependencyNotation, configuration)
+            implementation(dependencyNotation, configuration)
         } else {
-            modCompileOnly(dependencyNotation, configuration)
+            compileOnly(dependencyNotation, configuration)
         }
     }
 
     val runSodium = true
 
     // Runtime mods for testing
-    modImplementation ("com.terraformersmc:modmenu:11.0.3") {
+    implementation ("com.terraformersmc:modmenu:18.0.0-beta.1") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modRuntimeOnly ("maven.modrinth:ferrite-core:7.0.2-hotfix-fabric") {
+    runtimeOnly ("maven.modrinth:ferrite-core:9.0.0-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     "prodRuntimeDep"("maven.modrinth:sodium:${property("sodium_version")}")
     modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
-    modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.2-fabric") {
+    runtimeOnly ("maven.modrinth:lithium:mc26.1.2-0.24.5-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
 
     // Need this for Iris
-    modRuntimeOnly("io.github.douira:glsl-transformer:2.0.1")
-    modRuntimeOnly("org.antlr:antlr4-runtime:4.13.1")
-    modRuntimeOnly("org.anarres:jcpp:1.4.14")
+    runtimeOnly("io.github.douira:glsl-transformer:2.0.1")
+    runtimeOnly("org.antlr:antlr4-runtime:4.13.1")
+    runtimeOnly("org.anarres:jcpp:1.4.14")
 
     // apparently I need this for Nullable to exist
     implementation("com.google.code.findbugs:jsr305:3.0.2")
@@ -329,16 +313,16 @@ dependencies {
     implementation(include("commons-codec:commons-codec:1.15")!!)
 
     // Compatibility layers
-    listOf(
-        "transfer-api-compat", "forge-compats", "create-compat",
-        "fabric-compats", "forge-config-api"
-    ).forEach { layer ->
-        runtimeOnly(project(":compat:$layer", configuration = "namedElements"))
-    }
+//    listOf(
+//        "transfer-api-compat", "forge-compats", "create-compat",
+//        "fabric-compats", "forge-config-api"
+//    ).forEach { layer ->
+//        runtimeOnly(project(":compat:$layer"))
+//    }
 
     // Knit Loader
     api(project(":loader"))
-    runtimeOnly(project(":loader:fabric", configuration = "namedElements"))
+    runtimeOnly(project(":loader:fabric"))
     include(project(":loader:fabric")) {
         isTransitive = false
     }
@@ -378,7 +362,7 @@ configurations.all {
 sourceSets.getByName("gametest").compileClasspath += sourceSets.getByName("test").compileClasspath
 sourceSets.getByName("gametest").runtimeClasspath += sourceSets.getByName("test").runtimeClasspath
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 
 kotlin {
     jvmToolchain(targetJavaVersion)
@@ -428,7 +412,7 @@ tasks {
             val forgePatchCount = forgePatches.size
 
             val kiltInjects = readDir(File("$projectDir/src/main/java/xyz/bluspring/kilt/injects"))
-            val kiltInjectCount = kiltInjects.size
+            var kiltInjectCount = kiltInjects.size
 
             forgePatches.filter {
                 if (it.startsWith("com/mojang/"))
@@ -446,6 +430,7 @@ tasks {
                     !forgePatches.contains(("net/minecraft/$it").replace("Inject.java", ".java.patch"))
             }.forEach {
                 println("[!] Extra inject: $it")
+                kiltInjectCount--
             }
 
             println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
@@ -566,27 +551,12 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.WARN
     }
 
-    shadowJar {
-        configurations = listOf(shadedDep)
-        archiveClassifier.set("dev-shadow")
-
-        relocate("fish.cichlidmc", "xyz.bluspring.kilt.shaded.cichlidmc")
-    }
-
-    remapJar {
-        dependsOn(shadowJar)
-        inputFile.set(shadowJar.get().archiveFile)
-    }
-
     // configure the maven publication
     publishing {
         publications {
             create<MavenPublication>("mavenJava") {
-                artifact(remapJar) {
-                    builtBy(remapJar)
-                }
-                artifact(kotlinSourcesJar) {
-                    builtBy(remapSourcesJar)
+                artifact(jar) {
+                    builtBy(jar)
                 }
             }
         }
@@ -637,7 +607,7 @@ tasks {
     }
 
     project.extensions.configure<ModPublishExtension>("publishMods") {
-        file = project.tasks.named<RemapJarTask>("remapJar").get().archiveFile
+        file = project.tasks.named<Jar>("jar").get().archiveFile
         displayName = "Kilt v${project.version} (MC ${project.property("minecraft_version")})"
         version = project.version as String
         changelog = System.getenv("RELEASE_DESCRIPTION") ?: ""
@@ -654,7 +624,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting_lib", "modmenu-badges-lib")
+            embeds(/*"porting_lib",*/ "modmenu-badges-lib")
             incompatible("async", "embeddium")
         }
 
@@ -665,7 +635,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds("porting-lib", "modmenu-badges-lib")
+            embeds(/*"porting-lib",*/ "modmenu-badges-lib")
             incompatible("embeddium")
         }
     }

@@ -8,7 +8,7 @@ base {
 version = property("mod_version") as String
 
 dependencies {
-    modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
+    implementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("forgeconfigapiport_version")}")
 }
 
 tasks {
