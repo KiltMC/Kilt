@@ -174,9 +174,8 @@ public abstract class IngredientInject implements IngredientInjection {
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void kilt$initNeoIngredientCodecs(CallbackInfo ci) {
-        // FIXME: I don't know what the fuck is happening, but using this with Supplementaries results in any boat + a chest = an acacia boat with cannon????
-        CODEC = Codec.withAlternative(CraftingHelper.kilt$makeIngredientCodec(CODEC.listOf()), CODEC);
-        CODEC_NONEMPTY = Codec.withAlternative(CraftingHelper.kilt$makeIngredientCodec(CODEC_NONEMPTY.listOf()), CODEC_NONEMPTY);
+        CODEC = Codec.withAlternative(CODEC, CraftingHelper.kilt$makeIngredientCodec(CODEC.listOf()));
+        CODEC_NONEMPTY = Codec.withAlternative(CODEC_NONEMPTY, CraftingHelper.kilt$makeIngredientCodec(CODEC_NONEMPTY.listOf()));
 
         StreamCodec<RegistryFriendlyByteBuf, Ingredient> original = CONTENTS_STREAM_CODEC;
         StreamCodec<RegistryFriendlyByteBuf, ICustomIngredient> customIngredientCodec = ByteBufCodecs.registry(NeoForgeRegistries.Keys.INGREDIENT_TYPES)
