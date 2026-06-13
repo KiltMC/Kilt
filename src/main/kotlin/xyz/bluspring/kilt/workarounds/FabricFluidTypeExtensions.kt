@@ -12,7 +12,7 @@ class FabricFluidTypeExtensions(private val fluid: Fluid) : IClientFluidTypeExte
     private val renderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid)
     private val isInvalid: Boolean
         get() {
-            return renderHandler is ForgeFluidRenderHandler
+            return renderHandler is NeoForgeFluidRenderHandler
         }
 
     override fun getStillTexture(): ResourceLocation? {

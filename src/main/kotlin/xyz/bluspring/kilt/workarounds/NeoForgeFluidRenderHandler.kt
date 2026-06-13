@@ -5,17 +5,16 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.BlockAndTintGetter
 import net.minecraft.world.level.material.FluidState
-import net.neoforged.neoforge.client.ClientHooks
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions
+import net.neoforged.neoforge.client.textures.FluidSpriteCache
 
-class ForgeFluidRenderHandler : FluidRenderHandler {
+class NeoForgeFluidRenderHandler : FluidRenderHandler {
     override fun getFluidSprites(
         view: BlockAndTintGetter?,
         pos: BlockPos?,
         state: FluidState?
     ): Array<TextureAtlasSprite?> {
-        //return ClientHooks.getFluidSprites(view, pos, state).filterNotNull().toTypedArray()
-        return emptyArray()
+        return FluidSpriteCache.getFluidSprites(view, pos, state).filterNotNull().toTypedArray()
     }
 
     override fun getFluidColor(view: BlockAndTintGetter?, pos: BlockPos?, state: FluidState?): Int {

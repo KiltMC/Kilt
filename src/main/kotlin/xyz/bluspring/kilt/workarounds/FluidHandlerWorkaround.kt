@@ -4,9 +4,9 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler
 import net.neoforged.neoforge.fluids.FluidType
 
 object FluidHandlerWorkaround {
-    private val forgeFluidRenderHandler = ForgeFluidRenderHandler()
+    private val neoForgeFluidRenderHandler = NeoForgeFluidRenderHandler()
 
     fun getFluidRenderHandler(fluidType: FluidType): FluidRenderHandler {
-        return forgeFluidRenderHandler
+        return neoForgeFluidRenderHandler
     }
 }
