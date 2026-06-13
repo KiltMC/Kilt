@@ -32,7 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
-@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$"))
+@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(ChunkAccess.class)
 public abstract class ChunkAccessInject implements ChunkAccessInjection, BlockGetter, IAttachmentHolder {
     @Shadow @Final protected ChunkPos chunkPos;

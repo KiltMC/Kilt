@@ -47,7 +47,7 @@ import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 
-@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$"))
+@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccess implements IAttachmentHolder {
     @Shadow @Final private Level level;
