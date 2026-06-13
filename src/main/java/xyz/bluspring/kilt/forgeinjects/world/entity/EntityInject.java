@@ -61,7 +61,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -143,7 +142,16 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
         return original.call(instance, tagKey) || instance.collisionExtendsVertically(this.level(), pos, (Entity) (Object) this);
     }
 
-    // TODO: do we need to implement step height?
+    @WrapOperation(
+        method = "collide",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/Entity;maxUpStep()F"
+        )
+    )
+    private float kilt$collide(Entity instance, Operation<Float> original) {
+        return kilt$getStepHeight(() -> original.call(instance));
+    }
 
     @Unique private final AtomicReference<BlockPos> kilt$primaryPos = new AtomicReference<>(null);
     @Unique private final AtomicReference<BlockPos> kilt$secondaryPos = new AtomicReference<>(null);
