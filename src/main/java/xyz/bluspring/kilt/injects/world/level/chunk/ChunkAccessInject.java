@@ -1,9 +1,28 @@
 // TRACKED HASH: 53c5190929b57765472764e578af300291448097
 package xyz.bluspring.kilt.injects.world.level.chunk;
 
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import xyz.bluspring.kilt.injections.world.level.chunk.ChunkAccessInjection;
+import xyz.bluspring.kilt.workarounds.CommonLevelWorkaround;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -12,18 +31,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.injections.world.level.chunk.ChunkAccessInjection;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-
+@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$"))
 @Mixin(ChunkAccess.class)
 public abstract class ChunkAccessInject implements ChunkAccessInjection, BlockGetter, IAttachmentHolder {
     @Shadow @Final protected ChunkPos chunkPos;
@@ -108,5 +117,10 @@ public abstract class ChunkAccessInject implements ChunkAccessInjection, BlockGe
     @Override
     public Level getLevel() {
         return null;
+    }
+
+    @Intrinsic
+    public Level kilt$i$getLevel() { // that's bullshit
+        return this.getLevel();
     }
 }

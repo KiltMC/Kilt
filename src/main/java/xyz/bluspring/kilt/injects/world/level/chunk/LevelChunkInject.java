@@ -17,6 +17,9 @@ import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
 import net.neoforged.neoforge.common.world.LevelChunkAuxiliaryLightManager;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.CommonLevelWorkaround;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -43,6 +47,7 @@ import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 
+@Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$"))
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccess implements IAttachmentHolder {
     @Shadow @Final private Level level;
@@ -124,4 +129,9 @@ public abstract class LevelChunkInject extends ChunkAccess implements IAttachmen
     }
 
     // Kilt: do we need to do tracking?
+
+    @Intrinsic
+    public Level kilt$i$getLevel() { // that's bullshit
+        return this.getLevel();
+    }
 }
