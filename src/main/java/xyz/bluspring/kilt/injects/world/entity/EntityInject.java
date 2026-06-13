@@ -530,12 +530,15 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     }
 
     @WrapOperation(method = "updateFluidHeightAndDoFluidPushing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;"))
-    private Vec3 kilt$addVectorFromInterim(Vec3 instance, Vec3 vec3, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs) {
+    private Vec3 kilt$addVectorFromInterim(Vec3 instance, Vec3 vec3, Operation<Vec3> original, @Share("interimCalcs") LocalRef<Object2ObjectMap<FluidType, InterimCalculation>> interimCalcs, @Local(argsOnly = true) TagKey<Fluid> fluidTag) {
         Vec3 current = original.call(instance, vec3);
 
         if (interimCalcs.get() != null) {
-            for (InterimCalculation interim : interimCalcs.get().values()) {
-                current = current.add(interim.getFlowVector());
+            for (FluidType fluidType : interimCalcs.get().keySet()) {
+                var interim = interimCalcs.get().get(fluidType);
+                if (!fluidType.isVanilla()) {
+                    current = current.add(interim.getFlowVector());
+                }
             }
         }
 
