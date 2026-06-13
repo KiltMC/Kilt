@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.common.extensions.IItemExtension;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,6 +35,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorMaterial;
@@ -86,7 +88,10 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
 
     @WrapOperation(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/HumanoidModel;ILnet/minecraft/resources/ResourceLocation;)V"))
     private void kilt$tryRenderModel(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, A humanoidModel, int dyeColor, ResourceLocation resourceLocation, Operation<Void> original, @Share(value = "model", namespace = Kilt.MOD_ID) LocalRef<Model> modelRef, @Share(value = "extensions", namespace = Kilt.MOD_ID) LocalRef<IClientItemExtensions> extensionsRef, @Local ItemStack stack, @Local(argsOnly = true) LivingEntity entity, @Local ArmorMaterial.Layer layer, @Local ArmorMaterial material, @Local boolean flag, @Local(argsOnly = true) EquipmentSlot slot) {
-        if (extensionsRef.get() != IClientItemExtensions.DEFAULT || KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), HumanoidArmorLayer.class, "getArmorModelHook", LivingEntity.class, ItemStack.class, EquipmentSlot.class, HumanoidModel.class)) {
+        if (extensionsRef.get() != IClientItemExtensions.DEFAULT
+            || KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), HumanoidArmorLayer.class, "getArmorModelHook", LivingEntity.class, ItemStack.class, EquipmentSlot.class, HumanoidModel.class)
+            || KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(stack.getItem().getClass(), IItemExtension.class, "getArmorTexture", ResourceLocation.class, ItemStack.class, Entity.class, EquipmentSlot.class, ArmorMaterial.Layer.class, boolean.class)
+        ) {
             int color = extensionsRef.get().getArmorLayerTintColor(stack, entity, layer, material.layers().indexOf(layer), dyeColor);
 
             if (color != 0) {
