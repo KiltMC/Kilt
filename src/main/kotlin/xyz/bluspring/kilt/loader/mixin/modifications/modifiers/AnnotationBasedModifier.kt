@@ -3,8 +3,6 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 sealed interface AnnotationBasedModifier : MethodBasedModifier {
     val variables: Map<String, Any>

@@ -5,7 +5,7 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 object CoreModHelper {
     @JvmStatic
     fun remapClass(name: String): String {
-        return KiltRemapper.remapClass(name, ignoreWorkaround = true)
+        return (name)
     }
 
     @JvmStatic

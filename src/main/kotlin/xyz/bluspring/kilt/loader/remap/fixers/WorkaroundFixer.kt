@@ -6,15 +6,15 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.api.remapping.InsnConflictRemapProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import java.util.ServiceLoader
+import java.util.*
 
 object WorkaroundFixer {
     private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java).toList()
 
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
-    private val customSlotMapped = KiltRemapper.remapClass("net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen\$CustomCreativeSlot")
-    private val minecraftMapped = KiltRemapper.remapClass("net/minecraft/client/Minecraft")
+    private val customSlotMapped = ("net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen\$CustomCreativeSlot")
+    private val minecraftMapped = ("net/minecraft/client/Minecraft")
     private val mcGuiMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_310", "field_1705", "Lnet/minecraft/class_329;")
 
     fun fixClass(classNode: ClassNode) {

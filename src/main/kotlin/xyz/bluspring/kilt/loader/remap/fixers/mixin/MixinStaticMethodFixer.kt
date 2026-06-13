@@ -4,7 +4,6 @@ import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
@@ -24,10 +23,10 @@ object MixinStaticMethodFixer {
     fun fixClass(classNode: ClassNode) {
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)
 
-        if (STATIC_METHODS.none { targetClassNames.contains(it.key) || targetClassNames.contains(KiltRemapper.remapClass(it.key)) })
+        if (STATIC_METHODS.none { targetClassNames.contains(it.key) || targetClassNames.contains((it.key)) })
             return
 
-        val staticMethods = STATIC_METHODS.filter { targetClassNames.contains(it.key) || targetClassNames.contains(KiltRemapper.remapClass(it.key)) }.values.first()
+        val staticMethods = STATIC_METHODS.filter { targetClassNames.contains(it.key) || targetClassNames.contains((it.key)) }.values.first()
         val markedAsStatic = mutableListOf<MethodNode>()
 
         for (methodNode in classNode.methods) {
@@ -68,7 +67,7 @@ object MixinStaticMethodFixer {
 
         for (methodNode in markedAsStatic) {
             val newInstructions = InsnList()
-            val thisRemap = THIS_REMAP.filter { targetClassNames.contains(it.key) || targetClassNames.contains(KiltRemapper.remapClass(it.key)) }.values.firstOrNull()
+            val thisRemap = THIS_REMAP.filter { targetClassNames.contains(it.key) || targetClassNames.contains((it.key)) }.values.firstOrNull()
 
             val className = targetClassNames.first() // please tell me people are normal about this
             var firstLabel = LabelNode(Label())

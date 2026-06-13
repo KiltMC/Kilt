@@ -4,21 +4,9 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.FrameNode
-import org.objectweb.asm.tree.InsnNode
-import org.objectweb.asm.tree.InvokeDynamicInsnNode
-import org.objectweb.asm.tree.LabelNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.LocalVariableNode
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TypeInsnNode
-import org.objectweb.asm.tree.VarInsnNode
+import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import kotlin.collections.iterator
 
 object ModifiedCloneWorkaroundLoader {
 
@@ -26,16 +14,16 @@ object ModifiedCloneWorkaroundLoader {
     val TRANSFORMERS = mutableListOf<Runnable>()
 
     init {
-        val monsterType = KiltRemapper.remapClass("net/minecraft/world/entity/monster/Monster")
+        val monsterType = ("net/minecraft/world/entity/monster/Monster")
         val monsterDesc = "L$monsterType;"
-        val mobType = KiltRemapper.remapClass("net/minecraft/world/entity/Mob")
+        val mobType = ("net/minecraft/world/entity/Mob")
         val mobDesc = "L$mobType;"
         val rangedAttackMob = KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/RangedAttackMob;")
         run {
             val bowAttackGoal = "net/minecraft/world/entity/ai/goal/RangedBowAttackGoal"
             val bowAttackGoalClone = "xyz/bluspring/kilt/workarounds/RangedBowAttackGoalWorkaround"
             addTransformedClone(
-                KiltRemapper.remapClass(bowAttackGoal),
+                (bowAttackGoal),
                 bowAttackGoalClone,
             ) { classNode ->
                 replaceType(classNode, monsterType, mobType)
@@ -74,7 +62,7 @@ object ModifiedCloneWorkaroundLoader {
             val crossbowAttackGoal = "net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal"
             val crossbowAttackGoalClone = "xyz/bluspring/kilt/workarounds/RangedCrossbowAttackGoalWorkaround"
             addTransformedClone(
-                KiltRemapper.remapClass(crossbowAttackGoal),
+                (crossbowAttackGoal),
                 crossbowAttackGoalClone,
             ) { classNode ->
                 replaceType(classNode, monsterType, mobType)

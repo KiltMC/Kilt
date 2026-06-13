@@ -5,7 +5,6 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
-import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 class RemappingClassNode(api: Int = Opcodes.ASM9, private val remapper: KiltEnhancedRemapper) : ClassNode(api) {

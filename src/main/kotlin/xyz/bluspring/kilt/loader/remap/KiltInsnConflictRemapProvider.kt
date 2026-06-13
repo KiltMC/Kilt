@@ -6,7 +6,7 @@ import xyz.bluspring.kilt.api.remapping.InsnConflictRemapProvider
 class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
-    private val potionBrewingMapped = KiltRemapper.remapClass("net/minecraft/world/item/alchemy/PotionBrewing\$Mix")
+    private val potionBrewingMapped = ("net/minecraft/world/item/alchemy/PotionBrewing\$Mix")
     private val pbFromMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8962", "Ljava/lang/Object;")
     private val pbToMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_1845\$class_1846", "field_8961", "Ljava/lang/Object;")
 
@@ -18,12 +18,12 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
                     "writeToPacket" -> return $$"forge$writeToPacket"
                 }
 
-            "net/minecraft/world/effect/MobEffectInstance", KiltRemapper.remapClass("net/minecraft/world/effect/MobEffectInstance") ->
+            "net/minecraft/world/effect/MobEffectInstance", ("net/minecraft/world/effect/MobEffectInstance") ->
                 when (name) {
                     "getCures" -> return $$"neoforge$getCures"
                 }
 
-            "net/minecraft/server/level/ServerEntity", KiltRemapper.remapClass("net/minecraft/server/level/ServerEntity") ->
+            "net/minecraft/server/level/ServerEntity", ("net/minecraft/server/level/ServerEntity") ->
                 when (name) {
                     "sendPairingData" -> return $$"neoforge$sendPairingData"
                 }

@@ -66,7 +66,7 @@ class CoreMod(val mod: NeoForgeMod, val id: String, val file: String) {
                     for (target in targets) {
                         logger.debug("Binding $name: Added class $target as target")
 
-                        ClassTinkerers.addTransformation(KiltRemapper.remapClass(target, ignoreWorkaround = true)) {
+                        ClassTinkerers.addTransformation((target)) {
                             try {
                                 NashornHelper.getFunction<ClassNode, ClassNode>(function).apply(it)
                             } catch (e: Throwable) {
@@ -82,7 +82,7 @@ class CoreMod(val mod: NeoForgeMod, val id: String, val file: String) {
                     val mappedFieldName = KiltRemapper.mojMappedFields[fieldName]?.get(className) ?: fieldName
 
                     logger.debug("Binding $name: Added field $fieldName / $mappedFieldName from class $className as target")
-                    ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
+                    ClassTinkerers.addTransformation((className)) { classNode ->
                         val field = classNode.fields.firstOrNull { it.name == mappedFieldName } ?: return@addTransformation
                         try {
                             NashornHelper.getFunction<FieldNode, FieldNode>(function).apply(field)
@@ -101,7 +101,7 @@ class CoreMod(val mod: NeoForgeMod, val id: String, val file: String) {
                     val mappedDescName = KiltRemapper.remapDescriptor(descName)
 
                     logger.debug("Binding $name: Added method $methodName$mappedDescName / $mappedMethodName$mappedDescName from class $className as target")
-                    ClassTinkerers.addTransformation(KiltRemapper.remapClass(className, ignoreWorkaround = true)) { classNode ->
+                    ClassTinkerers.addTransformation((className)) { classNode ->
                         val method = classNode.methods.firstOrNull { it.name == mappedMethodName && it.desc == mappedDescName } ?: return@addTransformation
                         try {
                             NashornHelper.getFunction<MethodNode, MethodNode>(function).apply(method)

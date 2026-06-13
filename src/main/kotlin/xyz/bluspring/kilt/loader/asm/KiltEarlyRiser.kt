@@ -11,7 +11,6 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
@@ -258,9 +257,9 @@ class KiltEarlyRiser : Runnable {
 
         run {
             val biomeSpecialEffectsMapped =
-                KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects")
+                ("net/minecraft/world/level/biome/BiomeSpecialEffects")
             val grassColorModifierMapped =
-                KiltRemapper.remapClass("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
+                ("net/minecraft/world/level/biome/BiomeSpecialEffects\$GrassColorModifier")
             val biomeInjectionName =
                 "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffectsInjection\$GrassColorModifierInjection"
             val colorModifierName = "$grassColorModifierMapped\$ColorModifier"

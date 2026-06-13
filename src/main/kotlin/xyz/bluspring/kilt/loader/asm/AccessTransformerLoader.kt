@@ -306,7 +306,7 @@ object AccessTransformerLoader {
     }
 
     private fun widenAccessForVanillaClasses(split: List<String>, mojClassName: String, classTweaker: ClassTweaker): Boolean {
-        val intermediaryClassName = KiltRemapper.remapClass(mojClassName)
+        val intermediaryClassName = (mojClassName)
         val remapper = KiltRemapper.enhancedRemapper
         val accessWidener = classTweaker.visitAccessWidener(intermediaryClassName)!! // it shouldn't be possible for this to be null.
 

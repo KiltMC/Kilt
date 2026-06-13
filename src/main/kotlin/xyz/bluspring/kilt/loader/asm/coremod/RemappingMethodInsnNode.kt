@@ -5,7 +5,7 @@ import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 open class RemappingMethodInsnNode(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) : MethodInsnNode(opcode,
-    KiltRemapper.remapClass(owner, ignoreWorkaround = true),
+    (owner),
     name,
     KiltRemapper.remapDescriptor(descriptor), isInterface
 ) {

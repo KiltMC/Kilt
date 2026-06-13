@@ -144,7 +144,7 @@ object CoreModLoader {
         for ((className, transformers) in mergedTransformers) {
             val targetedTransformers = transformers.groupBy { it.targetType }
 
-            ClassTinkerers.addPostTransformation(KiltRemapper.remapClass(className)) { classNode ->
+            ClassTinkerers.addPostTransformation((className)) { classNode ->
                 try {
                     val hash by lazy {
                         val digest = MessageDigest.getInstance("SHA-256")

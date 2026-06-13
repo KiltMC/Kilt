@@ -46,7 +46,7 @@ object ASMAPI {
         methodDescriptor: String,
         type: MethodType
     ): MethodInsnNode {
-        return MethodInsnNode(type.toOpcode(), KiltRemapper.remapClass(ownerName), KiltRemapper.enhancedRemapper.mapMethodName(ownerName, methodName, methodDescriptor), KiltRemapper.remapDescriptor(methodDescriptor), type == MethodType.INTERFACE)
+        return MethodInsnNode(type.toOpcode(), (ownerName), KiltRemapper.enhancedRemapper.mapMethodName(ownerName, methodName, methodDescriptor), KiltRemapper.remapDescriptor(methodDescriptor), type == MethodType.INTERFACE)
     }
 
     @JvmStatic
@@ -161,7 +161,7 @@ object ASMAPI {
         owner: String, name: String, descriptor: String,
         startIndex: Int
     ): MethodInsnNode? {
-        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedOwner = (owner)
         val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
         for (i in max(0, startIndex) until method.instructions.size()) {
@@ -195,7 +195,7 @@ object ASMAPI {
         owner: String, name: String, descriptor: String,
         startIndex: Int
     ): MethodInsnNode? {
-        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedOwner = (owner)
         val remappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
         for (i in min((method.instructions.size() - 1), startIndex) downTo 0) {
@@ -232,7 +232,7 @@ object ASMAPI {
         val nodeIterator = method.instructions.iterator()
         val opcode = type.toOpcode()
 
-        val remappedOwner = KiltRemapper.remapClass(owner, ignoreWorkaround = true)
+        val remappedOwner = (owner)
         val remappedDescriptor = KiltRemapper.remapDescriptor(desc)
 
         while (nodeIterator.hasNext()) {

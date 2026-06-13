@@ -29,7 +29,7 @@ object EnumExtensionLoader {
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
         return EnumPrototype(
             prototype.owningMod,
-            KiltRemapper.remapClass(prototype.enumName),
+            (prototype.enumName),
             prototype.fieldName,
             KiltRemapper.remapDescriptor(prototype.ctorDesc),
             KiltRemapper.remapDescriptor(prototype.fullCtorDesc),

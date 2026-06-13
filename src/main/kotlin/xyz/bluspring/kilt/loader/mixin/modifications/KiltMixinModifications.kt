@@ -21,7 +21,6 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
@@ -125,7 +124,7 @@ object KiltMixinModifications {
                         "method" to "renderClouds(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FDDD)V",
                         "at" to at(
                             value = "INVOKE",
-                            target = "Lme/jellysquid/mods/sodium/client/render/immediate/CloudRenderer;render(L${KiltRemapper.remapClass("net/minecraft/client/multiplayer/ClientLevel")};L${KiltRemapper.remapClass("net/minecraft/client/player/LocalPlayer")};L${KiltRemapper.remapClass("com/mojang/blaze3d/vertex/PoseStack")};Lorg/joml/Matrix4f;FFDDD)V",
+                            target = "Lme/jellysquid/mods/sodium/client/render/immediate/CloudRenderer;render(L${("net/minecraft/client/multiplayer/ClientLevel")};L${("net/minecraft/client/player/LocalPlayer")};L${("com/mojang/blaze3d/vertex/PoseStack")};Lorg/joml/Matrix4f;FFDDD)V",
                             remap = false
                         ),
                         "require" to 0,
@@ -613,7 +612,7 @@ object KiltMixinModifications {
     }
 
     fun finalizeModifier(modifier: MixinModifier) {
-        val owner = KiltRemapper.remapClass(modifier.owner)
+        val owner = (modifier.owner)
         MIXIN_CLASSES.add(owner)
         modifier.mappedOwner = owner
 
@@ -666,7 +665,7 @@ object KiltMixinModifications {
         val typeDesc = Type.getDescriptor(type)
 
         for (modifier in accessorModifiers) {
-            val owner = KiltRemapper.remapClass(modifier.owner)
+            val owner = (modifier.owner)
             val desc = KiltRemapper.remapDescriptor(modifier.desc)
             MIXIN_CLASSES.add(owner)
             modifier.mappedOwner = owner
