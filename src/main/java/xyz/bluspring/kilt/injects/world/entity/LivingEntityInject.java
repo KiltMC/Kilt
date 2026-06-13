@@ -1,12 +1,20 @@
 // TRACKED HASH: 0103ffc8bca3b91dd898021eb13bdca66921d3eb
 package xyz.bluspring.kilt.injects.world.entity;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
@@ -16,52 +24,72 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.common.EffectCures;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
+import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
+import net.neoforged.neoforge.event.entity.living.LivingBreatheEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDrownEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
+import net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
+import net.neoforged.neoforge.fluids.FluidType;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.*;
-import net.neoforged.neoforge.common.damagesource.DamageContainer;
-import net.neoforged.neoforge.common.extensions.ILivingEntityExtension;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent;
-import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
-import net.neoforged.neoforge.event.entity.living.LivingSwapItemsEvent;
-import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
-import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.*;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.world.entity.LivingEntityInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityInject extends Entity implements ILivingEntityExtension, LivingEntityInjection {
@@ -82,6 +110,10 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
     @Shadow private Optional<BlockPos> lastClimbablePos;
     @Shadow public abstract ItemStack getMainHandItem();
     @Shadow public abstract boolean isUsingItem();
+    @Shadow public abstract double getAttributeValue(Holder<Attribute> attribute);
+    @Shadow protected int fallFlyTicks;
+    @Shadow protected abstract int increaseAirSupply(int currentAir);
+    @Shadow protected abstract int decreaseAirSupply(int currentAir);
 
     @Nullable
     protected Stack<DamageContainer> damageContainers = new Stack<>();
@@ -105,6 +137,107 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         }
 
         return 0;
+    }
+
+    // Kilt: we're reimplementing onLivingBreathe from scratch here for the sake of mod compatibility
+    @Inject(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z", ordinal = 0))
+    private void kilt$tryHandleLivingBreathe(CallbackInfo ci, @Share("breatheEvent") LocalRef<LivingBreatheEvent> breatheEventRef) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        int airSupply = this.getAirSupply();
+        int consumeAirAmount = airSupply - this.decreaseAirSupply(airSupply);
+        int refillAirAmount = this.increaseAirSupply(airSupply) - airSupply;
+
+        // Check things that vanilla considers to be air - these will cause the air supply to be increased.
+        boolean isAir = entity.getEyeInFluidType().isAir() || entity.level().getBlockState(BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ())).is(Blocks.BUBBLE_COLUMN);
+        boolean canBreathe = isAir;
+        // The following effects cause the entity to not drown, but do not cause the air supply to be increased.
+        if (!isAir && (MobEffectUtil.hasWaterBreathing(entity) || !entity.canDrownInFluidType(entity.getEyeInFluidType()) || (entity instanceof Player player && player.getAbilities().invulnerable))) {
+            canBreathe = true;
+            refillAirAmount = 0;
+        }
+
+        LivingBreatheEvent breatheEvent = new LivingBreatheEvent(entity, canBreathe, consumeAirAmount, refillAirAmount);
+        NeoForge.EVENT_BUS.post(breatheEvent);
+        breatheEventRef.set(breatheEvent);
+
+        if (breatheEvent.kilt$canBreatheModified) {
+            if (breatheEvent.canBreathe()) {
+                entity.setAirSupply(Math.min(entity.getAirSupply() + breatheEvent.getRefillAirAmount(), entity.getMaxAirSupply()));
+            } else {
+                entity.setAirSupply(entity.getAirSupply() - breatheEvent.getConsumeAirAmount());
+            }
+        }
+    }
+
+    @WrapOperation(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"))
+    private boolean kilt$checkIsDrownableFluid(LivingEntity instance, TagKey tagKey, Operation<Boolean> original) {
+        return original.call(instance, tagKey) || instance.canDrownInFluidType(instance.getEyeInFluidType());
+    }
+
+    @WrapOperation(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setAirSupply(I)V", ordinal = 0))
+    private void kilt$tryHandleAirSupplyDecreaseChanges(LivingEntity instance, int i, Operation<Void> original, @Share("breatheEvent") LocalRef<LivingBreatheEvent> breatheEventRef) {
+        var breatheEvent = breatheEventRef.get();
+
+        if (breatheEvent != null && breatheEvent.kilt$isConsumeModified) {
+            original.call(instance, instance.getAirSupply() - breatheEvent.getConsumeAirAmount());
+        } else {
+            original.call(instance, i);
+        }
+    }
+
+    @WrapOperation(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setAirSupply(I)V", ordinal = 2))
+    private void kilt$tryHandleAirSupplyIncreaseChanges(LivingEntity instance, int i, Operation<Void> original, @Share("breatheEvent") LocalRef<LivingBreatheEvent> breatheEventRef) {
+        var breatheEvent = breatheEventRef.get();
+
+        if (breatheEvent != null && breatheEvent.kilt$isRefillModified) {
+            original.call(instance, Math.min(instance.getAirSupply() + breatheEvent.getRefillAirAmount(), instance.getMaxAirSupply()));
+        } else {
+            original.call(instance, i);
+        }
+    }
+
+    @Definition(id = "getAirSupply", method = "Lnet/minecraft/world/entity/LivingEntity;getAirSupply()I")
+    @Expression("this.getAirSupply() == -20")
+    @Inject(method = "baseTick", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private void kilt$initDrownEvent(CallbackInfo ci, @Share("drownEvent") LocalRef<LivingDrownEvent> eventRef) {
+        eventRef.set(new LivingDrownEvent((LivingEntity) (Object) this));
+    }
+
+    @Definition(id = "getAirSupply", method = "Lnet/minecraft/world/entity/LivingEntity;getAirSupply()I")
+    @Expression("this.getAirSupply() == -20")
+    @ModifyExpressionValue(method = "baseTick", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$callDrownEvent(boolean original, @Share("drownEvent") LocalRef<LivingDrownEvent> eventRef) {
+        var drownEvent = eventRef.get();
+        if (drownEvent == null) {
+            drownEvent = new LivingDrownEvent((LivingEntity) (Object) this);
+            eventRef.set(drownEvent);
+        }
+
+        return !NeoForge.EVENT_BUS.post(drownEvent).isCanceled() && drownEvent.isDrowning();
+    }
+
+    @Expression("? < @(8)")
+    @ModifyExpressionValue(method = "baseTick", at = @At("MIXINEXTRAS:EXPRESSION"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;decreaseAirSupply(I)I"), to = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSources;drown()Lnet/minecraft/world/damagesource/DamageSource;")))
+    private int kilt$tryUseEventBubbleCount(int original, @Share("drownEvent") LocalRef<LivingDrownEvent> eventRef) {
+        var drownEvent = eventRef.get();
+        if (drownEvent != null && drownEvent.kilt$bubbleCountModified) {
+            return drownEvent.getBubbleCount();
+        }
+
+        return original;
+    }
+
+    @Definition(id = "hurt", method = "Lnet/minecraft/world/entity/LivingEntity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z")
+    @Definition(id = "drown", method = "Lnet/minecraft/world/damagesource/DamageSources;drown()Lnet/minecraft/world/damagesource/DamageSource;")
+    @Expression("this.hurt(?.drown(), ?)")
+    @WrapOperation(method = "baseTick", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$wrapWithDamageCheck(LivingEntity instance, DamageSource source, float amount, Operation<Boolean> original, @Share("drownEvent") LocalRef<LivingDrownEvent> eventRef) {
+        var drownEvent = eventRef.get();
+        if (drownEvent != null && drownEvent.getDamageAmount() <= 0) {
+            return false;
+        }
+
+        return original.call(instance, source, amount);
     }
 
     @WrapOperation(method = "baseTick", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;isInPowderSnow:Z"))
@@ -531,11 +664,61 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         CommonHooks.onLivingJump((LivingEntity) (Object) this);
     }
 
-    // TODO: implement more patches starting from L404
+    @Definition(id = "add", method = "Lnet/minecraft/world/phys/Vec3;add(DDD)Lnet/minecraft/world/phys/Vec3;")
+    @Expression("?.add(?, @(?), ?)")
+    @ModifyExpressionValue(method = "jumpInLiquid", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private double kilt$adjustWithSwimSpeed(double original) {
+        return original * this.getAttributeValue(NeoForgeMod.SWIM_SPEED);
+    }
+
+    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInWater()Z", ordinal = 0))
+    private boolean kilt$checkIsInNeoFluidType(LivingEntity instance, Operation<Boolean> original, @Local FluidState fluidState) {
+        return original.call(instance) || (instance.isInFluidType(fluidState) && fluidState.neo$getFluidType() != NeoForgeMod.LAVA_TYPE.value());
+    }
+
+    @ModifyVariable(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;moveRelative(FLnet/minecraft/world/phys/Vec3;)V", ordinal = 0), ordinal = 1)
+    private float kilt$adjustMovementToSwimSpeed(float original) {
+        return original * (float) this.getAttributeValue(NeoForgeMod.SWIM_SPEED);
+    }
+
+    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
+    private float kilt$tryUseNeoFriction(Block instance, Operation<Float> original) {
+        var pos = this.getBlockPosBelowThatAffectsMyMovement();
+        var state = this.level().getBlockState(pos);
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(state.getBlock().getClass(), IBlockExtension.class, "getFriction", float.class, BlockState.class, LevelReader.class, BlockPos.class, Entity.class)) {
+            return state.getFriction(this.level(), pos, this);
+        }
+
+        return original.call(instance);
+    }
+
+    @Definition(id = "getInBlockState", method = "Lnet/minecraft/world/entity/LivingEntity;getInBlockState()Lnet/minecraft/world/level/block/state/BlockState;")
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
+    @Definition(id = "SCAFFOLDING", field = "Lnet/minecraft/world/level/block/Blocks;SCAFFOLDING:Lnet/minecraft/world/level/block/Block;")
+    @Expression("this.getInBlockState().is(SCAFFOLDING)")
+    @WrapOperation(method = "handleOnClimbable", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkIsScaffolding(BlockState instance, Block block, Operation<Boolean> original) {
+        return original.call(instance, block) || instance.isScaffolding((LivingEntity) (Object) this);
+    }
+
+    @WrapOperation(method = "collectEquipmentChanges", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;equipmentHasChanged(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
+    private boolean kilt$callEquipmentChangeEvent(LivingEntity instance, ItemStack oldItem, ItemStack newItem, Operation<Boolean> original, @Local EquipmentSlot slot) {
+        var result = original.call(instance, oldItem, newItem);
+        if (result) {
+            NeoForge.EVENT_BUS.post(new LivingEquipmentChangeEvent((LivingEntity) (Object) this, slot, oldItem, newItem));
+        }
+
+        return result;
+    }
+
+    @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInLava()Z", ordinal = 0))
+    private void kilt$storeFluidType(CallbackInfo ci, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
+        fluidTypeRef.set(this.getMaxHeightFluidType());
+    }
 
     @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidHeight(Lnet/minecraft/tags/TagKey;)D", ordinal = 1))
-    private double kilt$tryUseFluidTypeHeight(LivingEntity instance, TagKey tagKey, Operation<Double> original) {
-        var fluidType = instance.getMaxHeightFluidType();
+    private double kilt$tryUseFluidTypeHeight(LivingEntity instance, TagKey tagKey, Operation<Double> original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
+        var fluidType = fluidTypeRef.get();
 
         if (!fluidType.isAir()) {
             return instance.getFluidTypeHeight(fluidType);
@@ -544,38 +727,77 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         return original.call(instance, tagKey);
     }
 
-    // TODO: how do we handle jumpInFluid???
-
-
-    @Override
-    public boolean removeEffectsCuredBy(EffectCure cure) {
-        if (this.level().isClientSide)
-            return false;
-
-        boolean ret = false;
-        Iterator<MobEffectInstance> itr = this.activeEffects.values().iterator();
-
-        while (itr.hasNext()) {
-            MobEffectInstance effect = itr.next();
-
-            if (effect.neoforge$getCures().contains(cure) && !EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, cure)) {
-                this.onEffectRemoved(effect);
-                itr.remove();
-                ret = true;
-                this.effectsDirty = true;
-            }
-        }
-
-        return ret;
+    @Definition(id = "getFluidJumpThreshold", method = "Lnet/minecraft/world/entity/LivingEntity;getFluidJumpThreshold()D")
+    @Expression("? = this.getFluidJumpThreshold()")
+    @Inject(method = "aiStep", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
+    private void kilt$storeFluidHeightAndJumpThresholds(CallbackInfo ci, @Local(ordinal = 3) double d3, @Local(ordinal = 4) double d4, @Share("fluidHeight") LocalDoubleRef fluidHeightRef, @Share("fluidJumpThreshold") LocalDoubleRef fluidJumpThresholdRef) {
+        fluidHeightRef.set(d3);
+        fluidJumpThresholdRef.set(d4);
     }
 
-    // TODO: oh god there's so much
+    // like this
+    @Definition(id = "noJumpDelay", field = "Lnet/minecraft/world/entity/LivingEntity;noJumpDelay:I")
+    @Expression("this.noJumpDelay == 0")
+    @ModifyExpressionValue(method = "aiStep", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$tryJumpInFluid(boolean original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef, @Share("fluidHeight") LocalDoubleRef fluidHeightRef, @Share("fluidJumpThreshold") LocalDoubleRef fluidJumpThresholdRef) {
+        var fluidType = fluidTypeRef.get();
+        if (fluidType == null)
+            fluidType = this.getMaxHeightFluidType();
 
-    // TODO: how do we handle jumpInFluid???
+        if (fluidType.isAir() || this.onGround() && !(fluidHeightRef.get() > fluidJumpThresholdRef.get())) {
+            return original;
+        }
 
-    // TODO: elytra fly
+        this.jumpInFluid(fluidType);
+        return false;
+    }
 
-    // TODO: updatingUsingItem
+    @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;jumpInLiquid(Lnet/minecraft/tags/TagKey;)V"))
+    private void kilt$checkIfFluidTypeIsActuallyType(LivingEntity instance, TagKey<Fluid> fluidTag, Operation<Void> original, @Share("fluidType") LocalRef<FluidType> fluidTypeRef) {
+        if (fluidTag == FluidTags.WATER) {
+            if (instance.getFluidHeight(FluidTags.WATER) > 0) {
+                original.call(instance, fluidTag);
+            } else {
+                instance.jumpInFluid(NeoForgeMod.WATER_TYPE.value());
+            }
+        } else if (fluidTag == FluidTags.LAVA) {
+            if (instance.getFluidHeight(FluidTags.LAVA) > 0) {
+                original.call(instance, fluidTag);
+            } else {
+                instance.jumpInFluid(NeoForgeMod.LAVA_TYPE.value());
+            }
+        } else {
+            original.call(instance, fluidTag);
+        }
+    }
+
+    @Definition(id = "itemStack", local = @Local(type = ItemStack.class))
+    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z")
+    @Definition(id = "ELYTRA", field = "Lnet/minecraft/world/item/Items;ELYTRA:Lnet/minecraft/world/item/Item;")
+    @Expression("itemStack.is(ELYTRA)")
+    @WrapOperation(method = "updateFallFlying", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkCanElytraFly(ItemStack instance, Item item, Operation<Boolean> original) {
+        return original.call(instance, item) || instance.canElytraFly((LivingEntity) (Object) this);
+    }
+
+    @WrapOperation(method = "updateFallFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ElytraItem;isFlyEnabled(Lnet/minecraft/world/item/ItemStack;)Z"))
+    private boolean kilt$tryHandleFly(ItemStack elytraStack, Operation<Boolean> original, @Local LocalBooleanRef flag) {
+        if (elytraStack.getItem() != Items.ELYTRA && elytraStack.canElytraFly((LivingEntity) (Object) this)) {
+            flag.set(elytraStack.elytraFlightTick((LivingEntity) (Object) this, this.fallFlyTicks));
+            return false;
+        }
+
+        return original.call(elytraStack);
+    }
+
+    @ModifyExpressionValue(method = "updatingUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))
+    private ItemStack kilt$tryUseContinueHook(ItemStack original) {
+        if (CommonHooks.canContinueUsing(this.useItem, original)) {
+            this.useItem = original;
+        }
+
+        return original;
+    }
 
     @Inject(method = "updateUsingItem", at = @At("HEAD"))
     private void kilt$callItemUseTickEvent(ItemStack usingItem, CallbackInfo ci) {
@@ -664,6 +886,28 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         }
 
         return original.call(instance, dataComponentType);
+    }
+
+    @Override
+    public boolean removeEffectsCuredBy(EffectCure cure) {
+        if (this.level().isClientSide)
+            return false;
+
+        boolean ret = false;
+        Iterator<MobEffectInstance> itr = this.activeEffects.values().iterator();
+
+        while (itr.hasNext()) {
+            MobEffectInstance effect = itr.next();
+
+            if (effect.neoforge$getCures().contains(cure) && !EventHooks.onEffectRemoved((LivingEntity) (Object) this, effect, cure)) {
+                this.onEffectRemoved(effect);
+                itr.remove();
+                ret = true;
+                this.effectsDirty = true;
+            }
+        }
+
+        return ret;
     }
 
     @Override
