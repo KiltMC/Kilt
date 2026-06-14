@@ -52,6 +52,7 @@ transitive-inject-interface net/minecraft/client/renderer/entity/BoatRenderer xy
 transitive-inject-interface net/minecraft/client/renderer/entity/EntityRenderDispatcher xyz/bluspring/kilt/injections/client/renderer/entity/EntityRenderDispatcherInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/ItemEntityRenderer xyz/bluspring/kilt/injections/client/renderer/entity/ItemEntityRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/layers/ElytraLayer xyz/bluspring/kilt/injections/client/renderer/entity/layers/ElytraLayerInjection
+transitive-inject-interface net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer xyz/bluspring/kilt/injections/client/renderer/entity/layers/HumanoidArmorLayerInjection
 transitive-inject-interface net/minecraft/client/renderer/item/ItemProperties xyz/bluspring/kilt/injections/client/renderer/item/ItemPropertiesInjection
 transitive-inject-interface net/minecraft/client/renderer/ItemBlockRenderTypes xyz/bluspring/kilt/injections/client/renderer/ItemBlockRenderTypesInjection
 transitive-inject-interface net/minecraft/client/renderer/LevelRenderer xyz/bluspring/kilt/injections/client/renderer/LevelRendererInjection

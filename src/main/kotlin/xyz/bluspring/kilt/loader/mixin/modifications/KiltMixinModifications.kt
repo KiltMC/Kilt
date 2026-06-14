@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import com.llamalad7.mixinextras.sugar.Local
 import com.llamalad7.mixinextras.sugar.Share
@@ -394,6 +395,30 @@ object KiltMixinModifications {
                 createAnnotation(WrapOperation::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
                     "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRiderInteract()Z"))
+                ))
+            )
+        )
+    )
+
+    val WRAP_WITH_CONDITION = register(
+        WrapWithCondition::class.java,
+
+        // Fixes Iron's Lib's HumanoidArmorLayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.renderer.entity.layers.HumanoidArmorLayerInject",
+                    "name" to $$"kilt$tryHandleRenderArmorPieceCompatibility",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(WrapWithCondition::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"))
                 ))
             )
         )
