@@ -6,7 +6,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.api.remapping.InsnConflictRemapProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import java.util.ServiceLoader
+import java.util.*
 
 object WorkaroundFixer {
     private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java).toList()

@@ -1,8 +1,6 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
-import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Handle
-import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -10,12 +8,9 @@ import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_CLAS
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_METHOD_DESCRIPTOR
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.util.KiltHelper
-import java.util.*
 
 // Remap shadow and overwrite
 object MixinShadowRemapper {
-    private val targetClassNodeCache = Collections.synchronizedMap<String, ClassNode>(mutableMapOf())
-
     private fun remapField(field: FieldNode, remapper: KiltEnhancedRemapper, targetClassNames: Collection<String>): String? {
         val annotations = KiltHelper.mergeNullableCollections(field.visibleAnnotations, field.invisibleAnnotations)
 
@@ -73,30 +68,9 @@ object MixinShadowRemapper {
         targetClassNames: Collection<String>,
         unmappedParentMixinLookup: Map<String, ClassNode>, renameNodes: Boolean,
     ) {
-        val targetClassNodes = mutableListOf<ClassNode>()
-
         // Need to get the original target class so we can see what the shadow's annotations look like.
         // This is just so we apply an @OnlyIn on the shadow so we don't crash on dedicated server.
-        for (className in targetClassNames) {
-            val normalizedClassName = className.replace(".", "/").removeSurrounding("L", ";")
-
-            synchronized(targetClassNodeCache) {
-                if (targetClassNodeCache.contains(normalizedClassName)) {
-                    targetClassNodes.add(targetClassNodeCache[normalizedClassName]!!)
-                    continue
-                }
-            }
-
-            val targetClassStream = remapper.provider.getClassStream(normalizedClassName)
-                ?: continue
-
-            val classReader = ClassReader(targetClassStream)
-            val classNode = ClassNode(Opcodes.ASM9)
-            classReader.accept(classNode, 0)
-
-            targetClassNodes.add(classNode)
-            this.targetClassNodeCache[normalizedClassName] = classNode
-        }
+        val targetClassNodes = MixinRemapper.getAllTargetClassNodes(remapper, targetClassNames)
 
         // Collect all shadow fields
         for (field in classNode.fields) {
@@ -218,10 +192,6 @@ object MixinShadowRemapper {
                 }
             }
         }
-    }
-
-    fun clearCache() {
-        this.targetClassNodeCache.clear()
     }
 
     private fun isTargeted(node: AnnotationNode): Boolean {

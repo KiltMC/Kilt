@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
 import kotlinx.atomicfu.locks.synchronized
 import net.fabricmc.loader.api.FabricLoader
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
@@ -18,6 +19,8 @@ import java.util.*
 
 // Remaps all mixins and their associated refmaps
 object MixinRemapper {
+    private val targetClassNodeCache = Collections.synchronizedMap<String, ClassNode>(mutableMapOf())
+
     @JvmField val MIXIN_TYPE: Type = Type.getType(Mixin::class.java)
     private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
     private val INVOKER_TYPE = Type.getType(Invoker::class.java)
@@ -496,9 +499,25 @@ object MixinRemapper {
         // So, guesswork time. Hopefully this doesn't come up too often, if at all.
         if (descriptor.isBlank()) {
             if (KiltRemapper.mojMappedMethods.contains(member)) {
-                for ((ownerClass, mappedPair) in KiltRemapper.mojMappedMethods[member]!!) {
-                    if (classTargets.contains(ownerClass))
-                        return "$mappedClassDescriptor${mappedPair.first().first}".breakpoint()
+                for ((ownerClass, mappedPairs) in KiltRemapper.mojMappedMethods[member]!!) {
+                    if (classTargets.contains(ownerClass)) {
+                        val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
+                            ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
+
+                        for ((methodName, methodDesc) in mappedPairs) {
+                            val methodNode = classNode.methods.firstOrNull { it.name == methodName && it.desc == methodDesc }
+                                ?: continue
+
+                            // Ignore all bridge method nodes, just so we don't screw up.
+                            if ((methodNode.access and Opcodes.ACC_BRIDGE) != 0)
+                                continue
+
+                            return "$mappedClassDescriptor$methodName$methodDesc"
+                        }
+
+                        // Fallback time
+                        return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
+                    }
                 }
 
                 if (isTarget) {
@@ -590,5 +609,36 @@ object MixinRemapper {
         }
 
         return targetClassNames
+    }
+
+    fun clearCache() {
+        this.targetClassNodeCache.clear()
+    }
+
+    fun getAllTargetClassNodes(remapper: KiltEnhancedRemapper, targetClassNames: Collection<String>): Collection<ClassNode> {
+        val targetClassNodes = mutableListOf<ClassNode>()
+
+        for (className in targetClassNames) {
+            val normalizedClassName = className.replace(".", "/").removeSurrounding("L", ";")
+
+            kotlin.synchronized(targetClassNodeCache) {
+                if (targetClassNodeCache.contains(normalizedClassName)) {
+                    targetClassNodes.add(targetClassNodeCache[normalizedClassName]!!)
+                    continue
+                }
+            }
+
+            val targetClassStream = remapper.provider.getClassStream(normalizedClassName)
+                ?: continue
+
+            val classReader = ClassReader(targetClassStream)
+            val classNode = ClassNode(Opcodes.ASM9)
+            classReader.accept(classNode, 0)
+
+            targetClassNodes.add(classNode)
+            this.targetClassNodeCache[normalizedClassName] = classNode
+        }
+
+        return targetClassNodes
     }
 }
