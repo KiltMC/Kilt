@@ -316,7 +316,7 @@ dependencies {
     modRuntimeOnly ("maven.modrinth:lithium:mc1.21.1-0.15.2-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
+    modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium && false) // can't test Iris in dev atm
 
     // Need this for Iris
     modRuntimeOnly("io.github.douira:glsl-transformer:2.0.1")

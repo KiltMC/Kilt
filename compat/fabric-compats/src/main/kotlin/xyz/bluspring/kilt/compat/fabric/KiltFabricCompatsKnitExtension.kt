@@ -3,11 +3,14 @@ package xyz.bluspring.kilt.compat.fabric
 import net.fabricmc.loader.api.FabricLoader
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
+import xyz.bluspring.kilt.compat.fabric.architectury.KiltArchitecturyApiCompat
 import xyz.bluspring.kilt.compat.fabric.automodpack.KiltAutoModpackCompat
+import xyz.bluspring.kilt.compat.fabric.geckolib.GeckoLibEvents
 import xyz.bluspring.kilt.compat.fabric.sable.SableCompatBridge
 import xyz.bluspring.kilt.compat.fabric.veil.VeilCompatBridge
 import xyz.bluspring.knit.loader.api.KnitModScanSetupApi
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
+import xyz.bluspring.knit.loader.mod.ModEnvironment
 
 class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
     override fun setupModScanning(api: KnitModScanSetupApi) {
@@ -42,12 +45,20 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             "VeilShaderCompile"
         ).map { "foundry.veil.forge.event.Forge${it}Event" }
          */
-        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json"), strategy = ModBridgeStrategy.RequireBoth) {
+        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json"), strategy = ModBridgeStrategy.PreferFabric) {
             SableCompatBridge.init()
         }
 
         KiltModCompatBridgeManager.register("veil", strategy = ModBridgeStrategy.PreferFabric) {
             VeilCompatBridge.init()
+        }
+
+        KiltModCompatBridgeManager.register("geckolib", strategy = ModBridgeStrategy.PreferFabric, environment = ModEnvironment.CLIENT) {
+            GeckoLibEvents.init()
+        }
+
+        KiltModCompatBridgeManager.register("architectury", strategy = ModBridgeStrategy.PreferFabric) {
+            KiltArchitecturyApiCompat.initCommon()
         }
     }
 }
