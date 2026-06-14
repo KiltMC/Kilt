@@ -16,8 +16,8 @@ import xyz.bluspring.kilt.util.DistUtil
 import java.util.function.Consumer
 
 object EnvironmentRemapper {
-    private val ONLYIN_TYPE = Type.getType(OnlyIn::class.java)
-    private val ONLYINS_TYPE = Type.getType(OnlyIns::class.java)
+    val ONLYIN_TYPE = Type.getType(OnlyIn::class.java)
+    val ONLYINS_TYPE = Type.getType(OnlyIns::class.java)
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
     private val ENVIRONMENT_INTERFACE_TYPE = Type.getType(EnvironmentInterface::class.java)
     private val ENVIRONMENT_INTERFACES_TYPE = Type.getType(EnvironmentInterfaces::class.java)

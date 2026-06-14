@@ -7,7 +7,7 @@ import net.minecraftforge.srgutils.IMappingFile
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class KiltEnhancedRemapper(private val provider: ClassProvider, private val file: IMappingFile, log: Consumer<String>, private val devClassProvider: Supplier<ClassProvider>) : EnhancedRemapper(provider, file, log) {
+class KiltEnhancedRemapper(val provider: ClassProvider, private val file: IMappingFile, log: Consumer<String>, private val devClassProvider: Supplier<ClassProvider>) : EnhancedRemapper(provider, file, log) {
     fun mapMethodNamePrefixDesc(
         owner: String,
         name: String,
