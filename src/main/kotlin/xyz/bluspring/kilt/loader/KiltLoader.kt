@@ -547,10 +547,10 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             // Make sure the environment is valid for these bridges before applying them.
             if (entry.environment != ModEnvironment.BOTH) {
                 if (FabricLoader.getInstance().environmentType == EnvType.CLIENT && entry.environment != ModEnvironment.CLIENT)
-                    return
+                    continue
 
                 if (FabricLoader.getInstance().environmentType == EnvType.SERVER && entry.environment != ModEnvironment.SERVER)
-                    return
+                    continue
             }
 
             try {
