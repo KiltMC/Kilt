@@ -81,18 +81,14 @@ public abstract class GameRendererInject {
 
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "floatValue=21000.0"))
     private float kilt$tryGetGuiFarPlane(float original) {
-        if (original != 21000)
-            return original;
-
-        return ClientHooks.getGuiFarPlane();
+        float diff = 21000 - original; // Kilt: compatibility :D
+        return diff + ClientHooks.getGuiFarPlane();
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "floatValue=-11000.0"))
     private float kilt$tryMoveGuiFarPlane(float original) {
-        if (original != -11000)
-            return original;
-
-        return 10000f - ClientHooks.getGuiFarPlane();
+        float diff = -11000 - original; // Kilt: compatibility :D
+        return diff + (10000f - ClientHooks.getGuiFarPlane());
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;renderWithTooltip(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))

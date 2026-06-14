@@ -14,6 +14,7 @@ transitive-inject-interface net/minecraft/client/gui/components/Button xyz/blusp
 transitive-inject-interface net/minecraft/client/gui/components/EditBox xyz/bluspring/kilt/injections/client/gui/components/EditBoxInjection
 transitive-inject-interface net/minecraft/client/gui/GuiGraphics xyz/bluspring/kilt/injections/client/gui/GuiGraphicsInjection
 transitive-inject-interface net/minecraft/client/gui/Gui xyz/bluspring/kilt/injections/client/gui/GuiInjection
+transitive-inject-interface net/minecraft/client/gui/LayeredDraw xyz/bluspring/kilt/injections/client/gui/LayeredDrawInjection
 transitive-inject-interface net/minecraft/client/gui/screens/advancements/AdvancementTab xyz/bluspring/kilt/injections/client/gui/screens/advancements/AdvancementTabInjection
 transitive-inject-interface net/minecraft/client/gui/screens/advancements/AdvancementTabType xyz/bluspring/kilt/injections/client/gui/screens/advancements/AdvancementTabTypeInjection
 transitive-inject-interface net/minecraft/client/gui/screens/inventory/AbstractContainerScreen xyz/bluspring/kilt/injections/client/gui/screens/inventory/AbstractContainerScreenInjection
