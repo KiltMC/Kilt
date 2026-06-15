@@ -10,6 +10,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.gen.Invoker
+import org.spongepowered.asm.mixin.injection.Inject
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -24,6 +25,7 @@ object MixinRemapper {
     @JvmField val MIXIN_TYPE: Type = Type.getType(Mixin::class.java)
     private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
     private val INVOKER_TYPE = Type.getType(Invoker::class.java)
+    private val INJECT_TYPE = Type.getType(Inject::class.java)
 
     fun remapMixinAnnotation(
         annotationNode: AnnotationNode,
@@ -96,7 +98,8 @@ object MixinRemapper {
 
                 value
             } else {
-                val mapped = remapTargetString(value, classTargets, remapper, isTarget)
+
+                val mapped = remapTargetString(value, classTargets, remapper, isTarget, if (annotationNode.desc == INJECT_TYPE.descriptor) methodDesc else null)
 
                 if (refmap != null) {
                     mixinMapping[value] = mapped
@@ -386,9 +389,19 @@ object MixinRemapper {
     //      - pkg/to/ClassName/methodName(IL/other/descriptor/Stuff;)V // another one?? seriously???
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
-    fun remapTargetString(value: String, classTargets: Collection<String>, remapper: KiltEnhancedRemapper, isTarget: Boolean = true): String {
+    fun remapTargetString(
+        value: String,
+        classTargets: Collection<String>,
+        remapper: KiltEnhancedRemapper,
+        isTarget: Boolean = true,
+        descriptorHint: String? = null // if this is an @Inject, the descriptor of the injector method itself
+    ): String {
         if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !value.startsWith("lambda$"))
             return value
+
+        if (descriptorHint != null) {
+            "".breakpoint()
+        }
 
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";") && !value.contains("(")) {
@@ -504,19 +517,29 @@ object MixinRemapper {
                         val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
                             ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
 
+                        var bestCandidate = "$mappedClassDescriptor${mappedPairs.first().first}"
+
+                        // Assume there's no @Coerce involved
+                        // if there's @Coerce involved, god help us
+                        val descHint = descriptorHint?.split("Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo")?.firstOrNull()
+
                         for ((methodName, methodDesc) in mappedPairs) {
-                            val methodNode = classNode.methods.firstOrNull { it.name == methodName && it.desc == methodDesc }
+                            val methodNode = classNode.methods.firstOrNull { it.name == member && remapper.mapMethodDesc(it.desc) == methodDesc }
                                 ?: continue
 
                             // Ignore all bridge method nodes, just so we don't screw up.
                             if ((methodNode.access and Opcodes.ACC_BRIDGE) != 0)
                                 continue
 
-                            return "$mappedClassDescriptor$methodName$methodDesc"
+                            bestCandidate = "$mappedClassDescriptor$methodName$methodDesc"
+
+                            if (descHint != null && methodNode.desc.startsWith(descHint)) {
+                                // this looks like it'll inject successfully, no better we can do
+                                break
+                            }
                         }
 
-                        // Fallback time
-                        return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
+                        return bestCandidate.breakpoint()
                     }
                 }
 
