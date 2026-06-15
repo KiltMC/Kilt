@@ -399,10 +399,6 @@ object MixinRemapper {
         if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !value.startsWith("lambda$"))
             return value
 
-        if (descriptorHint != null) {
-            "".breakpoint()
-        }
-
         // Class reference, we can just return it directly.
         if (value.contains("/") && !value.startsWith("L") && !value.contains(";") && !value.contains("(")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()
@@ -517,7 +513,7 @@ object MixinRemapper {
                         val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
                             ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
 
-                        var bestCandidate = "$mappedClassDescriptor${mappedPairs.first().first}"
+                        var bestCandidate: String? = null
 
                         // Assume there's no @Coerce involved
                         // if there's @Coerce involved, god help us
@@ -531,12 +527,19 @@ object MixinRemapper {
                             if ((methodNode.access and Opcodes.ACC_BRIDGE) != 0)
                                 continue
 
-                            bestCandidate = "$mappedClassDescriptor$methodName$methodDesc"
+                            if (bestCandidate == null) {
+                                bestCandidate = "$mappedClassDescriptor$methodName"
+                            }
 
                             if (descHint != null && methodNode.desc.startsWith(descHint)) {
                                 // this looks like it'll inject successfully, no better we can do
+                                bestCandidate = "$mappedClassDescriptor$methodName"
                                 break
                             }
+                        }
+
+                        if (bestCandidate == null) {
+                            bestCandidate = "$mappedClassDescriptor${mappedPairs.first().first}"
                         }
 
                         return bestCandidate.breakpoint()
