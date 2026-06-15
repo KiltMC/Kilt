@@ -16,6 +16,9 @@ repositories {
 dependencies {
     modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.21.1:${property("flywheel_version")}")
     modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:${property("flywheel_version")}")
+
+    modCompileOnly("maven.modrinth:colorwheel:${property("colorwheel_version")}-fabric,1.21.1")
+    modCompileOnly("maven.modrinth:BzHgFoGz:${property("colorwheel_version")}-neoforge,1.21.1") // Colorwheel Neo
 }
 
 loom {

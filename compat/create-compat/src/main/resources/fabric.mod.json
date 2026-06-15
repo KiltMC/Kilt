@@ -17,6 +17,9 @@
     "entrypoints": {
         "client": [
             "xyz.bluspring.kilt.compat.create.KiltCreateCompat"
+        ],
+        "mixinsquared": [
+            "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinCanceller"
         ]
     },
     "mixins": [
