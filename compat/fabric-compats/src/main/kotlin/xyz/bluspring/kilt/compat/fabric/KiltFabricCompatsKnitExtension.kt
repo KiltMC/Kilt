@@ -60,5 +60,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
         KiltModCompatBridgeManager.register("architectury", strategy = ModBridgeStrategy.PreferFabric) {
             KiltArchitecturyApiCompat.initCommon()
         }
+
+        KiltModCompatBridgeManager.register("resourcefullib", strategy = ModBridgeStrategy.PreferNeoForge("Due to a workaround used in Kilt, you are required to have both ResourcefulLib Fabric and NeoForge installed.")) {}
     }
 }

@@ -102,7 +102,8 @@ sealed class ModBridgeStrategy {
     }
 
     companion object {
-        private fun checkFabricExists(modId: String): Boolean {
+        @JvmStatic
+        fun checkFabricExists(modId: String): Boolean {
             return FabricLoader.getInstance().isModLoaded(modId)
                 && FabricLoader.getInstance().getModContainer(modId).orElse(null)?.metadata?.type?.lowercase() != "neoforge"
         }
