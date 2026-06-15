@@ -22,6 +22,10 @@ public interface LayeredDrawInjection {
         throw KiltHelper.createMixinException(LayeredDrawInjection.class, "kilt$getNamedLayers");
     }
 
+    default void kilt$add(ResourceLocation id) {
+        this.kilt$addVanilla(id, GuiLayerManager.KILT_EMPTY_LAYER);
+    }
+
     default void kilt$addVanilla(ResourceLocation id, LayeredDraw.Layer layer) {
         throw KiltHelper.createMixinException(LayeredDrawInjection.class, "kilt$addVanilla");
     }

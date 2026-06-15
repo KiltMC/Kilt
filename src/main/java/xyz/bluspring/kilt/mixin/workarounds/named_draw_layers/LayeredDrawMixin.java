@@ -48,6 +48,15 @@ public abstract class LayeredDrawMixin implements LayeredDrawInjection {
     }
 
     @Override
+    public void kilt$add(ResourceLocation id) {
+        var layer = GuiLayerManager.KILT_EMPTY_LAYER;
+        this.kilt$orderedLayerIds.add(id);
+        this.kilt$layerManager.kilt$addVanilla(id, layer);
+        this.kilt$layerMap.put(id, layer);
+        this.layers.add(layer);
+    }
+
+    @Override
     public Collection<LayeredDraw> kilt$getInnerDraws() {
         return this.kilt$innerDraws;
     }
@@ -102,6 +111,7 @@ public abstract class LayeredDrawMixin implements LayeredDrawInjection {
         this.kilt$layerMap.putAll(layeredDraw.kilt$getNamedLayers());
         this.kilt$innerDraws.addAll(layeredDraw.kilt$getInnerDraws());
         this.kilt$innerDraws.add(layeredDraw);
+        this.kilt$orderedLayerIds.addAll(layeredDraw.kilt$getOrderedLayerIds());
     }
 
     @Unique
