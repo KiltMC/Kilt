@@ -562,6 +562,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         }
 
         if (failedException.suppressed.isNotEmpty()) {
+            failedException.stackTrace = arrayOf() // We don't want to overwhelm the user with a stack trace.
             KnitLoader.instance.displayError("Kilt: Failed to load mod compatibility bridges!", failedException)
         }
 
