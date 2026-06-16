@@ -44,15 +44,11 @@ import net.minecraft.world.level.storage.ServerLevelData;
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerInject implements MinecraftServerInjection {
     @Shadow private MinecraftServer.ReloadableResources resources;
-    @Shadow
-    public abstract RegistryAccess.Frozen registryAccess();
+    @Shadow public abstract RegistryAccess.Frozen registryAccess();
     @Shadow public abstract PlayerList getPlayerList();
     @Shadow private int tickCount;
 
-    @Shadow
-    @Final
-    @Mutable
-    private Map<ResourceKey<Level>, ServerLevel> levels;
+    @Shadow @Final @Mutable private Map<ResourceKey<Level>, ServerLevel> levels;
 
     @Redirect(method = "spin", at = @At(value = "NEW", target = "java/lang/Thread"))
     private static Thread kilt$setThreadGroup(Runnable target, String name) {
@@ -150,13 +146,17 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
         return perWorldTickTimes.get(dim);
     }
 
+    @Override
     public synchronized Map<ResourceKey<Level>, ServerLevel> forgeGetWorldMap() {
         return this.levels;
     }
 
-    @Unique private int worldArrayMarker = 0;
-    @Unique private int worldArrayLast = -1;
-    @Unique private ServerLevel[] worldArray;
+    @Unique
+    private int worldArrayMarker = 0;
+    @Unique
+    private int worldArrayLast = -1;
+    @Unique
+    private ServerLevel[] worldArray;
 
     public synchronized void markWorldsDirty() {
         worldArrayMarker++;
