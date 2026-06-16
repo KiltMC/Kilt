@@ -1,15 +1,12 @@
 // TRACKED HASH: 0a24b5b7aafa1b5d82426467010c877512d3e484
 package xyz.bluspring.kilt.forgeinjects.server;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -21,40 +18,31 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.*;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
+import net.minecraftforge.gametest.ForgeGameTestHooks;
 import net.minecraftforge.network.ServerStatusPing;
+import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.server.MinecraftServerInjection;
-import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingInjection;
 
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
-import net.minecraft.network.protocol.status.ServerStatus;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.level.ForcedChunksSavedData;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ServerLevelData;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerInject implements MinecraftServerInjection {
     @Shadow private MinecraftServer.ReloadableResources resources;
-    @Shadow public abstract RegistryAccess.Frozen registryAccess();
+    @Shadow
+    public abstract RegistryAccess.Frozen registryAccess();
     @Shadow public abstract PlayerList getPlayerList();
     @Shadow private int tickCount;
 
@@ -67,33 +55,16 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
         return new Thread(SidedThreadGroups.SERVER, target, name);
     }
 
-    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/alchemy/PotionBrewing;bootstrap(Lnet/minecraft/world/flag/FeatureFlagSet;)Lnet/minecraft/world/item/alchemy/PotionBrewing;"))
-    private PotionBrewing kilt$addRegistryAccessToBrewingBootstrap(FeatureFlagSet enabledFeatures, Operation<PotionBrewing> original) {
-        try {
-            PotionBrewingInjection.kilt$registryAccess.set(this.registryAccess());
-            return original.call(enabledFeatures);
-        } finally {
-            PotionBrewingInjection.kilt$registryAccess.set(RegistryAccess.EMPTY);
-        }
-    }
-
     // Load Events implemented via Fabric API
 
     @Inject(method = "setInitialSpawn", at = @At(value = "NEW", target = "(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/ChunkPos;", ordinal = 0), cancellable = true)
     private static void kilt$checkCreateWorldSpawn(ServerLevel level, ServerLevelData levelData, boolean generateBonusChest, boolean debug, CallbackInfo ci) {
-        if (EventHooks.onCreateWorldSpawn(level, levelData)) {
+        if (ForgeEventFactory.onCreateWorldSpawn(level, levelData)) {
             ci.cancel();
         }
     }
 
-    @ModifyExpressionValue(method = "prepareLevels", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/LongIterator;hasNext()Z"))
-    private boolean kilt$tryReinstatePersistentChunks(boolean original, @Local(ordinal = 1) ServerLevel level, @Local ForcedChunksSavedData savedData) {
-        if (!original) {
-            ForcedChunkManager.reinstatePersistentChunks(level, savedData);
-        }
-
-        return original;
-    }
+    // ForgeChunkManager::reinstatePersistentChunks handled via Porting Lib
 
     // Kilt: unload and server lifecycle and tick events handled via Fabric API
 
@@ -118,12 +89,6 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
     @ModifyReturnValue(method = "buildServerStatus", at = @At("RETURN"))
     private ServerStatus kilt$appendServerPing(ServerStatus original) {
         original.setForgeData(Optional.of(new ServerStatusPing()));
-        return original;
-    }
-    
-    @ModifyReturnValue(method = "buildServerStatus", at = @At("RETURN"))
-    private ServerStatus kilt$applyModdedServerToStatus(ServerStatus original) {
-        original.kilt$setModded(true);
         return original;
     }
 
@@ -151,36 +116,12 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
 
     @ModifyExpressionValue(method = "tickChildren", at = @At(value = "FIELD", target = "Lnet/minecraft/SharedConstants;IS_RUNNING_IN_IDE:Z", opcode = Opcodes.GETSTATIC))
     private boolean kilt$checkIsGameTestEnabled(boolean original) {
-        return original || GameTestHooks.isGametestEnabled();
-    }
-
-    @WrapOperation(method = "synchronizeTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/resources/ResourceKey;)V"))
-    private void kilt$trySynchronizeWithNeoPacket(PlayerList instance, Packet<?> packet, ResourceKey<Level> dimension, Operation<Void> original, @Local(argsOnly = true) ServerLevel level) {
-        if (packet instanceof ClientboundSetTimePacket originalPacket) {
-            var neoPacket = new ClientboundCustomSetTimePayload(originalPacket.getGameTime(), originalPacket.getDayTime(), level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT), level.getDayTimeFraction(), level.getDayTimePerTick());
-            for (ServerPlayer player : this.getPlayerList().getPlayers()) {
-                if (player.level().dimension() == dimension) {
-                    if (player.connection.hasChannel(ClientboundCustomSetTimePayload.TYPE)) {
-                        player.connection.send(neoPacket);
-                    } else {
-                        player.connection.send(originalPacket);
-                    }
-                }
-            }
-        } else {
-            original.call(instance, packet, dimension);
-        }
+        return original || ForgeGameTestHooks.isGametestEnabled();
     }
 
     @ModifyReturnValue(method = "getServerModName", at = @At("RETURN"), remap = false)
     private String kilt$appendKiltToServerBranding(String original) {
         return original + " + kilt";
-    }
-
-    @ModifyReceiver(method = "method_29442", at = @At(value = "INVOKE", target = "Ljava/util/Collection;stream()Ljava/util/stream/Stream;"))
-    private Collection<?> kilt$tryRebuildSelected(Collection<?> instance) {
-        // Kilt TODO: do we need this?
-        return instance;
     }
 
     @Inject(method = "method_29440", at = @At("TAIL"))
