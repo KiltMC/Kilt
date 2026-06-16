@@ -45,7 +45,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             "VeilShaderCompile"
         ).map { "foundry.veil.forge.event.Forge${it}Event" }
          */
-        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json"), strategy = ModBridgeStrategy.PreferFabric) {
+        KiltModCompatBridgeManager.register("sable", listOf("sable-neoforge.mixins.json"), strategy = ModBridgeStrategy.RequireBoth) {
             SableCompatBridge.init()
         }
 
@@ -61,6 +61,6 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             KiltArchitecturyApiCompat.initCommon()
         }
 
-        KiltModCompatBridgeManager.register("resourcefullib", strategy = ModBridgeStrategy.PreferNeoForge("Due to a workaround used in Kilt, you are required to have both ResourcefulLib Fabric and NeoForge installed.")) {}
+        KiltModCompatBridgeManager.register("resourcefullib", strategy = ModBridgeStrategy.RequireBoth("Due to a workaround used in Kilt, you are required to have both ResourcefulLib Fabric and NeoForge installed.")) {}
     }
 }
