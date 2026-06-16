@@ -74,9 +74,12 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
         return original;
     }
 
-    @Unique private static final Gson GSON = new Gson();
-    @Unique private String cachedServerStatus;
-    @Unique private void resetStatusCache(ServerStatus status) {
+    @Unique
+    private static final Gson GSON = new Gson();
+    @Unique
+    private String cachedServerStatus;
+    @Unique
+    private void resetStatusCache(ServerStatus status) {
         this.cachedServerStatus = GSON.toJson(ServerStatus.CODEC.encodeStart(JsonOps.INSTANCE, status)
             .result().orElseThrow());
     }
@@ -139,7 +142,8 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
 
     // Kilt TODO: do we need pack stuff?
 
-    @Unique private Map<ResourceKey<Level>, long[]> perWorldTickTimes = Maps.newIdentityHashMap();
+    @Unique
+    private Map<ResourceKey<Level>, long[]> perWorldTickTimes = Maps.newIdentityHashMap();
 
     @Override
     public long[] getTickTime(ResourceKey<Level> dim) {
