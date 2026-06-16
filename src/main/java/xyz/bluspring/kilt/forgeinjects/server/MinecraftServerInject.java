@@ -1,6 +1,7 @@
 // TRACKED HASH: 0a24b5b7aafa1b5d82426467010c877512d3e484
 package xyz.bluspring.kilt.forgeinjects.server;
 
+import java.net.Proxy;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 
@@ -8,28 +9,30 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalLongRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.Services;
+import net.minecraft.server.WorldStem;
+import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.gametest.ForgeGameTestHooks;
 import net.minecraftforge.network.ServerStatusPing;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.helpers.MarkDirtyMap;
 import xyz.bluspring.kilt.injections.server.MinecraftServerInjection;
 
 import net.minecraft.Util;
@@ -48,6 +51,7 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
 
     @Shadow
     @Final
+    @Mutable
     private Map<ResourceKey<Level>, ServerLevel> levels;
 
     @Redirect(method = "spin", at = @At(value = "NEW", target = "java/lang/Thread"))
@@ -92,13 +96,21 @@ public abstract class MinecraftServerInject implements MinecraftServerInjection 
         return original;
     }
 
-    @WrapOperation(method = "tickChildren", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;"))
-    private Iterable<ServerLevel> kilt$tryGetAllLevelsFromArray(MinecraftServer instance, Operation<Iterable<ServerLevel>> original) {
-        if (this.worldArrayLast != -1) { // Kilt: This path will only appear if a mod calls markWorldsDirty once at some point.
-            return Arrays.asList(this.getWorldArray());
-        }
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void kilt$prepareAutomaticDirtyMarker(Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer fixerUpper, Services services, ChunkProgressListenerFactory progressListenerFactory, CallbackInfo ci) {
+        levels = new MarkDirtyMap<>(levels, this::markWorldsDirty);
+    }
 
-        return original.call(instance);
+    @Inject(method = "tickChildren", at = @At("HEAD"))
+    private void kilt$checkAutomaticDirtyMarker(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
+        if (!(levels instanceof MarkDirtyMap<ResourceKey<Level>, ServerLevel>)) {
+            levels = new MarkDirtyMap<>(levels, this::markWorldsDirty);
+        }
+    }
+
+    @Redirect(method = "tickChildren", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;"))
+    private Iterable<ServerLevel> kilt$tryGetAllLevelsFromArray(MinecraftServer instance) {
+        return Arrays.asList(this.getWorldArray());
     }
 
     @Inject(method = "tickChildren", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/util/function/Supplier;)V", ordinal = 0))
