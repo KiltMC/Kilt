@@ -11,57 +11,11 @@ import java.util.stream.Stream;
 public class MarkDirtyMap<K, V> implements Map<K, V> {
 
     private final Map<K, V> parent;
-    private final Runnable markDirtyFunction;
+    private final MarkDirtyContainer mdf;
 
-    public MarkDirtyMap(Map<K, V> parent, Runnable markDirtyFunction) {
+    public MarkDirtyMap(Map<K, V> parent, Runnable mdf) {
         this.parent = parent;
-        this.markDirtyFunction = markDirtyFunction;
-    }
-
-    public void markDirty() {
-        this.markDirtyFunction.run();
-    }
-
-    private <T> T markDirtyAfter(Supplier<T> runner, T newValue) {
-        return markDirtyAfter(runner, newValue, true);
-    }
-
-    private <T> T markDirtyAfter(Supplier<T> runner, T newValue, boolean extraCondition) {
-        var oldValue = runner.get();
-        if (newValue != oldValue && extraCondition) {
-            markDirty();
-        }
-        return oldValue;
-    }
-
-    private <T> T markDirtyAfter(Supplier<T> runner) {
-        var oldValue = runner.get();
-        markDirty();
-        return oldValue;
-    }
-
-    private boolean markDirtyAfter(BooleanSupplier runner) {
-        if (runner.getAsBoolean()) {
-            markDirty();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private void markDirtyIf(Runnable runner, boolean shouldMarkDirty) {
-        runner.run();
-        if (shouldMarkDirty) {
-            markDirty();
-        }
-    }
-
-    private <T> T markDirtyIf(Supplier<T> runner, boolean shouldMarkDirty) {
-        var result = runner.get();
-        if (shouldMarkDirty) {
-            markDirty();
-        }
-        return result;
+        this.mdf = new MarkDirtyContainer(mdf);
     }
 
     @Override
@@ -91,37 +45,37 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
     @Override
     public @Nullable V put(K key, V value) {
-        return markDirtyAfter(() -> parent.put(key, value), value);
+        return mdf.markDirtyAfter(() -> parent.put(key, value), value);
     }
 
     @Override
     public V remove(Object key) {
-        return markDirtyAfter(() -> parent.remove(key), null);
+        return mdf.markDirtyAfter(() -> parent.remove(key), null);
     }
 
     @Override
     public void putAll(@NotNull Map<? extends K, ? extends V> m) {
-        markDirtyIf(() -> parent.putAll(m), !m.isEmpty());
+        mdf.markDirtyIf(() -> parent.putAll(m), !m.isEmpty());
     }
 
     @Override
     public void clear() {
-        markDirtyIf(parent::clear, !isEmpty());
+        mdf.markDirtyIf(parent::clear, !isEmpty());
     }
 
     @Override
     public @NotNull Set<K> keySet() {
-        return new MarkDirtySet<>(parent.keySet());
+        return new MarkDirtySet<>(parent.keySet(), mdf);
     }
 
     @Override
     public @NotNull Collection<V> values() {
-        return new MarkDirtyCollection<>(parent.values());
+        return new MarkDirtyCollection<>(parent.values(), mdf);
     }
 
     @Override
     public @NotNull Set<Entry<K, V>> entrySet() {
-        return new MarkDirtyEntrySet(parent.entrySet());
+        return new MarkDirtyEntrySet<>(parent.entrySet(), mdf);
     }
 
     @Override
@@ -137,55 +91,107 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
     @Override
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
         parent.replaceAll(function);
-        markDirty();
+        mdf.markDirty();
     }
 
     @Override
     public @Nullable V putIfAbsent(K key, V value) {
-        return markDirtyAfter(() -> putIfAbsent(key, value), value, !containsKey(key));
+        return mdf.markDirtyAfter(() -> putIfAbsent(key, value), value, !containsKey(key));
     }
 
     @Override
     public boolean remove(Object key, Object value) {
-        return markDirtyAfter(() -> parent.remove(key, value));
+        return mdf.markDirtyAfter(() -> parent.remove(key, value));
     }
 
     @Override
     public boolean replace(K key, V oldValue, V newValue) {
-        return markDirtyAfter(() -> parent.replace(key, oldValue, newValue));
+        return mdf.markDirtyAfter(() -> parent.replace(key, oldValue, newValue));
     }
 
     @Override
     public @Nullable V replace(K key, V value) {
-        return markDirtyAfter(() -> parent.replace(key, value), value, containsKey(key));
+        return mdf.markDirtyAfter(() -> parent.replace(key, value), value, containsKey(key));
     }
 
     @Override
     public V computeIfAbsent(K key, @NotNull Function<? super K, ? extends V> mappingFunction) {
-        return markDirtyIf(() -> parent.computeIfAbsent(key, mappingFunction), !containsKey(key));
+        return mdf.markDirtyIf(() -> parent.computeIfAbsent(key, mappingFunction), !containsKey(key));
     }
 
     @Override
     public V computeIfPresent(K key, @NotNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return markDirtyIf(() -> parent.computeIfPresent(key, remappingFunction), containsKey(key));
+        return mdf.markDirtyIf(() -> parent.computeIfPresent(key, remappingFunction), containsKey(key));
     }
 
     @Override
     public V compute(K key, @NotNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return markDirtyAfter(() -> parent.compute(key, remappingFunction));
+        return mdf.markDirtyAfter(() -> parent.compute(key, remappingFunction));
     }
 
     @Override
     public V merge(K key, @NotNull V value, @NotNull BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        return markDirtyAfter(() -> parent.merge(key, value, remappingFunction));
+        return mdf.markDirtyAfter(() -> parent.merge(key, value, remappingFunction));
     }
 
-    public class MarkDirtyIterator<T> implements Iterator<T> {
+    public record MarkDirtyContainer(Runnable markDirtyFunction) {
+
+        public void markDirty() {
+            this.markDirtyFunction.run();
+        }
+
+        private <T> T markDirtyAfter(Supplier<T> runner, T newValue) {
+            return markDirtyAfter(runner, newValue, true);
+        }
+
+        private <T> T markDirtyAfter(Supplier<T> runner, T newValue, boolean extraCondition) {
+            var oldValue = runner.get();
+            if (newValue != oldValue && extraCondition) {
+                markDirty();
+            }
+            return oldValue;
+        }
+
+        private <T> T markDirtyAfter(Supplier<T> runner) {
+            var oldValue = runner.get();
+            markDirty();
+            return oldValue;
+        }
+
+        private boolean markDirtyAfter(BooleanSupplier runner) {
+            if (runner.getAsBoolean()) {
+                markDirty();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private void markDirtyIf(Runnable runner, boolean shouldMarkDirty) {
+            runner.run();
+            if (shouldMarkDirty) {
+                markDirty();
+            }
+        }
+
+        private <T> T markDirtyIf(Supplier<T> runner, boolean shouldMarkDirty) {
+            var result = runner.get();
+            if (shouldMarkDirty) {
+                markDirty();
+            }
+            return result;
+        }
+
+    }
+
+    public static class MarkDirtyIterator<T> implements Iterator<T> {
 
         private final Iterator<T> parent;
+        private final MarkDirtyContainer mdf;
 
-        private MarkDirtyIterator(Iterator<T> parent) {
+        private MarkDirtyIterator(Iterator<T> parent, MarkDirtyContainer mdf) {
             this.parent = parent;
+            this.mdf = mdf;
         }
 
         @Override
@@ -201,7 +207,7 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
         @Override
         public void remove() {
             parent.remove();
-            markDirty();
+            mdf.markDirty();
         }
 
         @Override
@@ -210,12 +216,14 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
         }
     }
 
-    public class MarkDirtyCollection<T> implements Collection<T> {
+    public static class MarkDirtyCollection<T> implements Collection<T> {
 
         protected final Collection<T> parent;
+        protected final MarkDirtyContainer mdf;
 
-        public MarkDirtyCollection(Collection<T> parent) {
+        public MarkDirtyCollection(Collection<T> parent, MarkDirtyContainer mdf) {
             this.parent = parent;
+            this.mdf = mdf;
         }
 
         @Override
@@ -235,7 +243,7 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public @NotNull Iterator<T> iterator() {
-            return new MarkDirtyIterator<>(parent.iterator());
+            return new MarkDirtyIterator<>(parent.iterator(), mdf);
         }
 
         @Override
@@ -260,12 +268,12 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public boolean add(T t) {
-            return markDirtyAfter(() -> parent.add(t));
+            return mdf.markDirtyAfter(() -> parent.add(t));
         }
 
         @Override
         public boolean remove(Object o) {
-            return markDirtyAfter(() -> parent.remove(o));
+            return mdf.markDirtyAfter(() -> parent.remove(o));
         }
 
         @Override
@@ -275,27 +283,27 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public boolean addAll(@NotNull Collection<? extends T> c) {
-            return markDirtyAfter(() -> parent.addAll(c));
+            return mdf.markDirtyAfter(() -> parent.addAll(c));
         }
 
         @Override
         public boolean removeAll(@NotNull Collection<?> c) {
-            return markDirtyAfter(() -> parent.removeAll(c));
+            return mdf.markDirtyAfter(() -> parent.removeAll(c));
         }
 
         @Override
         public boolean removeIf(@NotNull Predicate<? super T> filter) {
-            return markDirtyAfter(() -> parent.removeIf(filter));
+            return mdf.markDirtyAfter(() -> parent.removeIf(filter));
         }
 
         @Override
         public boolean retainAll(@NotNull Collection<?> c) {
-            return markDirtyAfter(() -> parent.retainAll(c));
+            return mdf.markDirtyAfter(() -> parent.retainAll(c));
         }
 
         @Override
         public void clear() {
-            markDirtyIf(parent::clear, !isEmpty());
+            mdf.markDirtyIf(parent::clear, !isEmpty());
         }
 
         @Override
@@ -314,18 +322,20 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
         }
     }
 
-    public class MarkDirtySet<T> extends MarkDirtyCollection<T> implements Set<T> {
-        public MarkDirtySet(Set<T> parent) {
-            super(parent);
+    public static class MarkDirtySet<T> extends MarkDirtyCollection<T> implements Set<T> {
+        public MarkDirtySet(Set<T> parent, MarkDirtyContainer mdf) {
+            super(parent, mdf);
         }
     }
 
-    public class MarkDirtyEntry implements Entry<K, V> {
+    public static class MarkDirtyEntry<K ,V> implements Entry<K, V> {
 
         private final Entry<K, V> parent;
+        private final MarkDirtyContainer mdf;
 
-        public MarkDirtyEntry(Entry<K, V> parent) {
+        public MarkDirtyEntry(Entry<K, V> parent, MarkDirtyContainer mdf) {
             this.parent = parent;
+            this.mdf = mdf;
         }
 
         @Override
@@ -340,22 +350,24 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public V setValue(V value) {
-            return markDirtyAfter(() -> parent.setValue(value), value);
+            return mdf.markDirtyAfter(() -> parent.setValue(value), value);
         }
     }
 
-    public class MarkDirtyEntrySet extends MarkDirtySet<Entry<K, V>> {
+    public static class MarkDirtyEntrySet<K, V> extends MarkDirtySet<Entry<K, V>> {
 
-        public MarkDirtyEntrySet(Set<Entry<K, V>> parent) {
-            super(parent);
+        public MarkDirtyEntrySet(Set<Entry<K, V>> parent, MarkDirtyContainer mdf) {
+            super(parent, mdf);
         }
 
-        public class MarkDirtyEntrySetIterator implements Iterator<Entry<K, V>> {
+        public static class MarkDirtyEntrySetIterator<K, V> implements Iterator<Entry<K, V>> {
 
             private final Iterator<Entry<K, V>> parent;
+            private final MarkDirtyContainer mdf;
 
-            public MarkDirtyEntrySetIterator(Iterator<Entry<K, V>> parent) {
+            public MarkDirtyEntrySetIterator(Iterator<Entry<K, V>> parent, MarkDirtyContainer mdf) {
                 this.parent = parent;
+                this.mdf = mdf;
             }
 
             @Override
@@ -367,7 +379,7 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
             public Entry<K, V> next() {
                 var next = parent.next();
                 if (next == null) return null;
-                return new MarkDirtyEntry(next);
+                return new MarkDirtyEntry<>(next, mdf);
             }
 
             @Override
@@ -377,25 +389,25 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
             @Override
             public void forEachRemaining(Consumer<? super Entry<K, V>> action) {
-                parent.forEachRemaining(e -> action.accept(new MarkDirtyEntry(e)));
+                parent.forEachRemaining(e -> action.accept(new MarkDirtyEntry<>(e, mdf)));
             }
         }
 
         @Override
         public @NotNull Iterator<Entry<K, V>> iterator() {
-            return new MarkDirtyEntrySetIterator(super.iterator());
+            return new MarkDirtyEntrySetIterator<>(super.iterator(), mdf);
         }
 
         @Override
         public void forEach(Consumer<? super Entry<K, V>> action) {
-            super.forEach(e -> action.accept(new MarkDirtyEntry(e)));
+            super.forEach(e -> action.accept(new MarkDirtyEntry<>(e, mdf)));
         }
 
         private void fixArray(Object[] array) {
             for (int i = 0; i < array.length; i++) {
-                if (array[i] instanceof Map.Entry<?,?> entry && !(array[i] instanceof MarkDirtyMap<?,?>.MarkDirtyEntry)) {
+                if (array[i] instanceof Map.Entry<?,?> entry && !(array[i] instanceof MarkDirtyMap.MarkDirtyEntry<?,?>)) {
                     //noinspection unchecked
-                    array[i] = new MarkDirtyEntry((Map.Entry<K,V>) entry);
+                    array[i] = new MarkDirtyEntry<>((Map.Entry<K,V>) entry, mdf);
                 }
             }
         }
@@ -423,10 +435,10 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public boolean removeIf(@NotNull Predicate<? super Entry<K, V>> filter) {
-            return super.removeIf(e -> filter.test(new MarkDirtyEntry(e)));
+            return super.removeIf(e -> filter.test(new MarkDirtyEntry<>(e, mdf)));
         }
 
-        public class MarkDirtyEntrySetSpliterator implements Spliterator<Entry<K, V>> {
+        private class MarkDirtyEntrySetSpliterator implements Spliterator<Entry<K, V>> {
 
             private final Spliterator<Entry<K, V>> parent;
 
@@ -436,12 +448,12 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
             @Override
             public boolean tryAdvance(Consumer<? super Entry<K, V>> action) {
-                return parent.tryAdvance(e -> action.accept(new MarkDirtyEntry(e)));
+                return parent.tryAdvance(e -> action.accept(new MarkDirtyEntry<>(e, mdf)));
             }
 
             @Override
             public void forEachRemaining(Consumer<? super Entry<K, V>> action) {
-                parent.forEachRemaining(e -> action.accept(new MarkDirtyEntry(e)));
+                parent.forEachRemaining(e -> action.accept(new MarkDirtyEntry<>(e, mdf)));
             }
 
             @Override
@@ -482,12 +494,12 @@ public class MarkDirtyMap<K, V> implements Map<K, V> {
 
         @Override
         public @NotNull Stream<Entry<K, V>> stream() {
-            return super.stream().map(MarkDirtyEntry::new);
+            return super.stream().map(e -> new MarkDirtyEntry<>(e, mdf));
         }
 
         @Override
         public @NotNull Stream<Entry<K, V>> parallelStream() {
-            return super.parallelStream().map(MarkDirtyEntry::new);
+            return super.parallelStream().map(e -> new MarkDirtyEntry<>(e, mdf));
         }
     }
 
