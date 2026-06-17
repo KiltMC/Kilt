@@ -50,6 +50,8 @@ dependencies {
 
     modCompileOnly("maven.modrinth:resourceful-lib:${property("resourcefullib_version")}-fabric,1.21.1")
     modCompileOnly("maven.modrinth:G1hIVOrD:${property("resourcefullib_version")}-neoforge,1.21.1") // and ResourcefulLib
+
+    modCompileOnly("maven.modrinth:jade:${property("jade_version")}")
 }
 
 tasks {

@@ -20,6 +20,7 @@
         "geckolib.GeoRenderEventMixin$ReplacedEntityMixin",
         "geckolib.GeoRenderEventMixin$ReplacedEntityMixin$PreMixin",
         "invmove.IForgeKeyMappingMixin",
+        "jade.CommonProxyMixin",
         "jei.FabricPluginFinderMixin",
         "jei.FluidStackMixin",
         "jei.TypedIngredientMixin",
