@@ -13,7 +13,7 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom-remap")
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
