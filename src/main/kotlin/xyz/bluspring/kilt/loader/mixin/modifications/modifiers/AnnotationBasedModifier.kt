@@ -22,7 +22,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override lateinit var mappedMethods: List<String>
 
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
-            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
+            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor || annotation.desc == KiltMixinModifications.FACTORY_REDIRECT_WRAPPER.descriptor) {
                 val list = this.replaceWith
 
                 if (list.size == 1) {
@@ -69,7 +69,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
                     })
             }
 
-            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor) {
+            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor || annotation.desc == KiltMixinModifications.FACTORY_REDIRECT_WRAPPER.descriptor) {
                 val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
                 map["original"] = newAnnotation
                 annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
