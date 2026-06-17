@@ -1,13 +1,19 @@
 package xyz.bluspring.kilt.gradle
 
+import agency.highlysuspect.minivan.MinivanExt
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import net.fabricmc.mappingio.MappingReader
 import net.fabricmc.mappingio.tree.MemoryMappingTree
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.getByName
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.ClassNode
 import java.io.File
 import java.security.MessageDigest
 import java.util.*
+import java.util.zip.ZipFile
 import kotlin.io.path.name
 
 object ClassTweakerUpdater {
@@ -17,6 +23,15 @@ object ClassTweakerUpdater {
         val digest = MessageDigest.getInstance(algorithm)
         val hash = digest.digest(this.readBytes())
         return HexFormat.of().formatHex(hash).lowercase()
+    }
+
+    private fun ZipFile.findClass(name: String): ClassNode? {
+        val entry = this.getEntry("$name.class") ?: return null
+        val inputStream = this.getInputStream(entry)
+        val classReader = ClassReader(inputStream)
+        val classNode = ClassNode(Opcodes.ASM9)
+        classReader.accept(classNode, 0)
+        return classNode
     }
 
     fun updateTweakers(project: Project) {
@@ -31,12 +46,15 @@ object ClassTweakerUpdater {
             json.getAsJsonObject("injections").get("neoforge").asString
         else null
 
-        // Load Mojmap mappings
-        val mappingDownloader = MappingDownloader(project.property("minecraft_version") as String, project.layout.buildDirectory.get().asFile)
-        mappingDownloader.downloadFiles()
+        // Load unobfuscated Minecraft jar and mojmap
+        // We can't use Loom's jar for this, since that already has the previous AWs applied
+        // Solution: use another gradle plugin to get a remapped jar without any AWs
+        val minivanMinecraft = project.extensions.getByName<MinivanExt>("minivan").getMinecraft(project.property("minecraft_version") as String);
 
         val mojmap = MemoryMappingTree() // obf -> moj
-        MappingReader.read(mappingDownloader.mojangMappingsFile.reader(), mojmap)
+        MappingReader.read(minivanMinecraft.vanilla.clientMappings, mojmap)
+
+        val minecraftJar = ZipFile(minivanMinecraft.minecraft.toFile());
 
         // Tweakers
         val kiltGeneratedTweaker = File("${project.projectDir}/tweakers/injections/kilt_generated.classtweaker")
@@ -54,7 +72,7 @@ object ClassTweakerUpdater {
 
             // Access Transformer -> Access Widener Updates
             if (transformerFile.hash() != lastTransformerHash) {
-                convertTransformerToWidener(transformerFile, neoWidenerFile, mojmap)
+                convertTransformerToWidener(transformerFile, neoWidenerFile, mojmap, minecraftJar)
                 json.getAsJsonObject("wideners").addProperty("neoforge", transformerFile.hash())
             }
 
@@ -127,7 +145,7 @@ object ClassTweakerUpdater {
         lastUpdatedFile.writeText(GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json))
     }
 
-    fun convertTransformerToWidener(transformer: File, output: File, mojmap: MemoryMappingTree) {
+    fun convertTransformerToWidener(transformer: File, output: File, mojmap: MemoryMappingTree, classes: ZipFile) {
         val fieldDescriptors = mutableMapOf<String, MutableMap<String, String>>()
 
         for (classMapping in mojmap.classes) {
@@ -140,6 +158,23 @@ object ClassTweakerUpdater {
         }
 
         val widener = mutableListOf<String>()
+        val extensibleClasses = mutableSetOf<String>()
+
+        for (line in transformer.readLines()) {
+            val trimmed = line.replaceAfter("#", "").replace("#", "").trim()
+
+            if (trimmed.isBlank())
+                continue
+
+            val split = trimmed.split(" ")
+
+            if (split.size != 2)
+                continue
+
+            val className = split[1].replace(".", "/")
+
+            extensibleClasses.add(className)
+        }
 
         widener += "accessWidener v2 named"
         widener += ""
@@ -155,7 +190,7 @@ object ClassTweakerUpdater {
 
             val className = split[1].replace(".", "/")
 
-            if (split.size == 2) { // Class
+            if (split.size == 2) {
                 widener += "transitive-accessible class $className"
                 widener += "transitive-extendable class $className"
             } else {
@@ -167,8 +202,19 @@ object ClassTweakerUpdater {
                         continue
 
                     val descriptor = split[2].replaceBefore("(", "")
+                    val needsDefinalizing = run {
+                        val clazz = classes.findClass(className) ?: return@run true
+                        if ((clazz.access and Opcodes.ACC_FINAL) != 0 && !extensibleClasses.contains(className)) {
+                            return@run false
+                        }
+                        val method = clazz.methods.find { method -> method.name == methodName && method.desc == descriptor} ?: return@run true
+                        ((method.access and Opcodes.ACC_STATIC) == 0) && ((method.access and Opcodes.ACC_FINAL) == 0)
+                    }
+
                     widener += "transitive-accessible method $className $methodName $descriptor"
-                    widener += "transitive-extendable method $className $methodName $descriptor"
+                    if (needsDefinalizing) {
+                        widener += "transitive-extendable method $className $methodName $descriptor"
+                    }
                 } else { // Field
                     val fieldName = split[2]
 
