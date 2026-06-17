@@ -16,6 +16,14 @@ repositories {
     }
 }
 
+// CC:T Forge defines classes with the same name as CC:T Fabric.
+// This forces CC:T Forge to be deprioritized in classpath.
+val compileOnlyLater by configurations.creating
+
+configurations {
+    sourceSets.main.get().compileClasspath += compileOnlyLater
+}
+
 dependencies {
     modImplementation("maven.modrinth:modernfix:${property("modernfix_version")}")
     modImplementation("software.bernie.geckolib:geckolib-fabric-${property("minecraft_version")}:${property("geckolib_version")}")
@@ -63,7 +71,7 @@ dependencies {
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-core-api:${property("cc_tweaked_version")}")
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-core:${property("cc_tweaked_version")}")
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge-api:${property("cc_tweaked_version")}")
-//    compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge:${property("cc_tweaked_version")}") // overwrites CC:T fabric in classpath
+    compileOnlyLater("cc.tweaked:cc-tweaked-1.21.1-forge:${property("cc_tweaked_version")}")
 }
 
 tasks {
