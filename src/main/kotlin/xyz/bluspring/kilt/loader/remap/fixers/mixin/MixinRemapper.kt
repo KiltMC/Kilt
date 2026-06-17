@@ -564,7 +564,7 @@ object MixinRemapper {
                         val declaringClass = method.declaringClass
                         if (method.name == member && currentClass == declaringClass) {
                             // oh hey look, we found one
-                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}${KiltRemapper.remapDescriptor(method.descriptor)}".breakpoint()
+                            return "$mappedClassDescriptor${remapper.mapMethodName(target, method.name, method.descriptor)}".breakpoint()
                         }
                     }
                 }
