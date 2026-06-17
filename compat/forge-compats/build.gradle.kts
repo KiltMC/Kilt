@@ -20,6 +20,7 @@ dependencies {
     compileOnly("maven.modrinth:ldlib:${property("ldlib_version")}")
     compileOnly("maven.modrinth:littletiles:${property("littletiles_version")}")
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
+    compileOnly("curse.maven:apothic-attributes-898963:${property("apothic_attributes_version")}")
 }
 
 tasks {
