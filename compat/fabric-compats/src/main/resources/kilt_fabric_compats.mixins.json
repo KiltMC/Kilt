@@ -5,6 +5,10 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "architectury.RegistrarManagerImplMixin",
+        "cctweaked.ComponentAccessImplMixin",
+        "cctweaked.ComputerCraftAPIImplMixin",
+        "cctweaked.ComputerCraftMixin",
+        "cctweaked.PlatformHelperImplMixin",
         "emi.EmiAgnosFabricMixin",
         "geckolib.GeoRenderEventMixin",
         "geckolib.GeoRenderEventMixin$ArmorMixin",
@@ -47,6 +51,7 @@
         "amecs_key_modifiers.KeyMappingMixin",
         "amecsapi.KeyBindingUtilsMixin",
         "amecsapi.KeyMappingMixin",
+        "cctweaked.ExtraModelsMixin",
         "mkb.KeyMappingMixin"
     ],
     "injectors": {

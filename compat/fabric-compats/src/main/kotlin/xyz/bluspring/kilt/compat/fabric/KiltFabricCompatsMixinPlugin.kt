@@ -32,6 +32,10 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
                     && KiltLoader.instance.hasMod("cclayer")
         }
 
+        if (modId == "cctweaked") {
+            return KiltLoader.instance.hasMod("computercraft")
+        }
+
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
     }
 
