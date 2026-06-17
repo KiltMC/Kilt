@@ -2,8 +2,10 @@ package xyz.bluspring.kilt.loader.asm.coremod
 
 import com.google.gson.JsonParser
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
+import xyz.bluspring.kilt.event.LoadCoreModEvent
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.ForgeMod
+import java.util.ServiceLoader
 
 
 // A reimplementation of Forge's coremodding system.
@@ -67,6 +69,12 @@ object CoreModLoader {
     val loadedCoreMods = mutableListOf<CoreMod>()
     val enableCoreMods = KiltFlags.DISABLE_COREMODS
 
+    val loadEvent = LoadCoreModEvent {
+        coremod: CoreMod -> ServiceLoader.load(LoadCoreModEvent::class.java).toList().all { event ->
+            event.loadCoreMod(coremod)
+        }
+    }
+
     fun scanAndLoadCoreMods(mod: ForgeMod) {
         if (!enableCoreMods)
             return
@@ -82,6 +90,8 @@ object CoreModLoader {
                 for (key in json.keySet()) {
                     val filePath = json.get(key).asString
                     val coreMod = CoreMod(mod, key, filePath)
+
+                    if (!loadEvent.loadCoreMod(coreMod)) continue
 
                     coreMod.init()
 
