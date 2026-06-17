@@ -12,6 +12,7 @@
         "thirst.PotionItemMixin"
     ],
     "client": [
+        "attributeslib.EffectRenderingInventoryScreenMixin",
         "immersiveengineering.ChunkBuilderMeshingTaskMixin",
         "immersiveengineering.SodiumWorldRendererAccessor",
         "ldlib.BlockRenderDispatcherMixin",
