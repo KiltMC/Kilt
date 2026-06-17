@@ -11,6 +11,9 @@ version = property("mod_version") as String
 
 repositories {
     maven("https://maven.siphalor.de/")
+    maven("https://maven.squiddev.cc") {
+        content { includeGroup("cc.tweaked") }
+    }
 }
 
 dependencies {
@@ -52,6 +55,15 @@ dependencies {
     modCompileOnly("maven.modrinth:G1hIVOrD:${property("resourcefullib_version")}-neoforge,1.21.1") // and ResourcefulLib
 
     modCompileOnly("maven.modrinth:jade:${property("jade_version")}")
+
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-common-api:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-common:${property("cc_tweaked_version")}")
+    modCompileOnly("cc.tweaked:cc-tweaked-1.21.1-fabric-api:${property("cc_tweaked_version")}")
+    modCompileOnly("cc.tweaked:cc-tweaked-1.21.1-fabric:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-core-api:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-core:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge-api:${property("cc_tweaked_version")}")
+//    compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge:${property("cc_tweaked_version")}") // overwrites CC:T fabric in classpath
 }
 
 tasks {
