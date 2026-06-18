@@ -1,6 +1,10 @@
 // TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.injects.world.item;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -10,14 +14,37 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.ItemAbility;
+import net.neoforged.neoforge.common.MutableDataComponentHolder;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.IItemStackExtension;
+import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.world.item.ItemStackInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
@@ -27,24 +54,6 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.common.MutableDataComponentHolder;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.extensions.IItemStackExtension;
-import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.world.item.ItemStackInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 @Mixin(value = ItemStack.class, priority = 1050)
 public abstract class ItemStackInject implements MutableDataComponentHolder, IItemStackExtension, ItemStackInjection {
@@ -62,6 +71,9 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
 
     @Shadow
     public abstract Rarity getRarity();
+
+    @Shadow
+    public abstract void hurtAndBreak(int damage, ServerLevel level, @org.jspecify.annotations.Nullable ServerPlayer player, Consumer<Item> onBreak);
 
     public ItemStackInject(ItemLike item, int count) {}
 
@@ -112,6 +124,8 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
         return original.call(instance, context);
     }
 
+    // Kilt: Ignore wrapEncodingExceptions
+
     @WrapOperation(method = "getMaxStackSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getOrDefault(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;"))
     private Object tryUseForgeMaxStackSize(ItemStack instance, DataComponentType<Integer> type, Object fallback, Operation<Object> original) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), Item.class, "getMaxStackSize", ItemStack.class)) {
@@ -155,6 +169,53 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
             return getItem().getMaxDamage((ItemStack) (Object) this);
         }
         return original;
+    }
+
+    @Unique private LivingEntity kilt$currentEntity = null;
+
+    @Override
+    public void hurtAndBreak(int damage, ServerLevel level, @Nullable LivingEntity entity, Consumer<Item> onBreak) {
+        try {
+            this.kilt$currentEntity = entity;
+            this.hurtAndBreak(damage, level, null, onBreak);
+        } finally {
+            this.kilt$currentEntity = null;
+        }
+    }
+
+    @Definition(id = "player", local = @Local(type = ServerPlayer.class, argsOnly = true))
+    @Expression("player == null")
+    @ModifyVariable(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0), argsOnly = true)
+    private int kilt$tryHandleDamageItem(int damage, @Local(argsOnly = true) Consumer<Item> onBroken, @Local(argsOnly = true) ServerPlayer player) {
+        var entity = this.kilt$currentEntity != null ? this.kilt$currentEntity : player;
+        return this.getItem().damageItem((ItemStack) (Object) this, damage, entity, onBroken);
+    }
+
+    @Definition(id = "player", local = @Local(type = ServerPlayer.class, argsOnly = true))
+    @Expression("player != null")
+    @ModifyExpressionValue(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0))
+    private boolean kilt$tryHandleCurrentEntityAsServerPlayer(boolean original) {
+        return original || this.kilt$currentEntity instanceof ServerPlayer;
+    }
+
+    @ModifyArg(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/critereon/ItemDurabilityTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/item/ItemStack;I)V"))
+    private ServerPlayer kilt$tryUseCurrentEntityServerPlayer(ServerPlayer player) {
+        if (this.kilt$currentEntity instanceof ServerPlayer p)
+            return p;
+
+        return player;
+    }
+
+    @WrapOperation(method = "hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V"))
+    private void kilt$tryUseNeoHurtAndBreak(ItemStack instance, int damage, ServerLevel level, ServerPlayer player, Consumer<Item> onBreak, Operation<Void> original, @Local(argsOnly = true) LivingEntity entity) {
+        try {
+            if (player == null && entity != null)
+                this.kilt$currentEntity = entity;
+
+            original.call(instance, damage, level, player, onBreak);
+        } finally {
+            this.kilt$currentEntity = null;
+        }
     }
 
     @Definition(id = "withStyle", method = "Lnet/minecraft/network/chat/MutableComponent;withStyle(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")
@@ -221,5 +282,11 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
         if (forgeToolAction != null && this.canPerformAction(forgeToolAction)) {
             cir.setReturnValue(true);
         }
+    }
+
+    @Inject(method = "canBeHurtBy", at = @At("HEAD"), cancellable = true)
+    private void kilt$checkCanBeHurtBy(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.getItem().canBeHurtBy((ItemStack) (Object) this, damageSource))
+            cir.setReturnValue(false);
     }
 }
