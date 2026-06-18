@@ -43,7 +43,7 @@ import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
 import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-@Mixin(ClientPacketListener.class)
+@Mixin(value = ClientPacketListener.class, priority = 1000) // Kilt: Otherwise we break Fabric Networking API, don't do that
 public abstract class ClientPacketListenerInject {
     @Shadow @Final private Minecraft minecraft;
 
