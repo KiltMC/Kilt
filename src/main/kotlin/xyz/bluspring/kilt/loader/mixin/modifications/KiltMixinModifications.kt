@@ -788,7 +788,7 @@ object KiltMixinModifications {
         return list
     }
 
-    init {
-        KiltRemapper.discardMojangMappings()
-    }
+//    init { // FIXME: This can result in a remapping deadlock.
+//        KiltRemapper.discardMojangMappings()
+//    }
 }
