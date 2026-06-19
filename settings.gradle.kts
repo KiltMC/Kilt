@@ -13,6 +13,7 @@ pluginManagement {
         maven("https://mvn.devos.one/snapshots") {
             name = "devOS Releases"
         }
+        maven("https://repo.sleeping.town/")
         mavenCentral()
         gradlePluginPortal()
     }

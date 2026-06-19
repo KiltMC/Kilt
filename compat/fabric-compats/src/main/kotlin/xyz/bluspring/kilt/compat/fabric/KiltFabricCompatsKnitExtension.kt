@@ -3,11 +3,14 @@ package xyz.bluspring.kilt.compat.fabric
 import net.fabricmc.loader.api.FabricLoader
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
+import xyz.bluspring.kilt.compat.fabric.architectury.KiltArchitecturyApiCompat
 import xyz.bluspring.kilt.compat.fabric.automodpack.KiltAutoModpackCompat
+import xyz.bluspring.kilt.compat.fabric.geckolib.GeckoLibEvents
 import xyz.bluspring.kilt.compat.fabric.sable.SableCompatBridge
 import xyz.bluspring.kilt.compat.fabric.veil.VeilCompatBridge
 import xyz.bluspring.knit.loader.api.KnitModScanSetupApi
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
+import xyz.bluspring.knit.loader.mod.ModEnvironment
 
 class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
     override fun setupModScanning(api: KnitModScanSetupApi) {
@@ -49,5 +52,17 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
         KiltModCompatBridgeManager.register("veil", strategy = ModBridgeStrategy.PreferFabric) {
             VeilCompatBridge.init()
         }
+
+        KiltModCompatBridgeManager.register("geckolib", strategy = ModBridgeStrategy.PreferFabric, environment = ModEnvironment.CLIENT) {
+            GeckoLibEvents.init()
+        }
+
+        KiltModCompatBridgeManager.register("architectury", strategy = ModBridgeStrategy.PreferFabric) {
+            KiltArchitecturyApiCompat.initCommon()
+        }
+
+        KiltModCompatBridgeManager.register("computercraft", strategy = ModBridgeStrategy.PreferFabric) {}
+
+        KiltModCompatBridgeManager.register("resourcefullib", strategy = ModBridgeStrategy.RequireBoth("Due to a workaround used in Kilt, you are required to have both ResourcefulLib Fabric and NeoForge installed.")) {}
     }
 }

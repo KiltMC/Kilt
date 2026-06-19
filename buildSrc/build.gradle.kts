@@ -10,6 +10,7 @@ repositories {
     maven("https://maven.fabricmc.net")
     maven("https://maven.neoforged.net/releases")
     maven("https://mvn.devos.one/releases")
+    maven("https://repo.sleeping.town/")
 }
 
 dependencies {
@@ -20,6 +21,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     implementation("net.fabricmc:fabric-loom:${readLoomVersion()}")
     implementation("net.neoforged:accesstransformers:11.0.1")
+    implementation("agency.highlysuspect:minivan:0.5")
 }
 
 fun readLoomVersion(): String {

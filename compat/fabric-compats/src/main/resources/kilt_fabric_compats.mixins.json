@@ -5,6 +5,10 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "architectury.RegistrarManagerImplMixin",
+        "cctweaked.ComponentAccessImplMixin",
+        "cctweaked.ComputerCraftAPIImplMixin",
+        "cctweaked.ComputerCraftMixin",
+        "cctweaked.PlatformHelperImplMixin",
         "emi.EmiAgnosFabricMixin",
         "geckolib.GeoRenderEventMixin",
         "geckolib.GeoRenderEventMixin$ArmorMixin",
@@ -20,6 +24,7 @@
         "geckolib.GeoRenderEventMixin$ReplacedEntityMixin",
         "geckolib.GeoRenderEventMixin$ReplacedEntityMixin$PreMixin",
         "invmove.IForgeKeyMappingMixin",
+        "jade.CommonProxyMixin",
         "jei.FabricPluginFinderMixin",
         "jei.FluidStackMixin",
         "jei.TypedIngredientMixin",
@@ -28,7 +33,7 @@
         "mkb.KeyConflictContextMixin",
         "pehkui.ScaleTypeMixin",
         "rei.PluginDetectorImplMixin",
-        "resourcefullib.FabricRegistryEntryMixin",
+        "resourcefullib.FabricResourcefulRegistryMixin",
         "sable.BlockEntityPropellerMixin",
         "sable.BlockEntitySubLevelReactionWheelMixin",
         "sable.SableSubLevelRenderPlatformImplMixin",
@@ -46,6 +51,7 @@
         "amecs_key_modifiers.KeyMappingMixin",
         "amecsapi.KeyBindingUtilsMixin",
         "amecsapi.KeyMappingMixin",
+        "cctweaked.ExtraModelsMixin",
         "mkb.KeyMappingMixin"
     ],
     "injectors": {

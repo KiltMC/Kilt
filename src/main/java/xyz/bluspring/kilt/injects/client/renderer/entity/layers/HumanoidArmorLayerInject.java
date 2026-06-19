@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.injects.client.renderer.entity.layers;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -12,6 +14,8 @@ import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.Kilt;
+import xyz.bluspring.kilt.injections.client.renderer.entity.layers.HumanoidArmorLayerInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.RenderLayerData;
 import xyz.bluspring.kilt.workarounds.WrappedModelAsHumanoid;
@@ -42,17 +47,35 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 
+@Implements(@Interface(iface = HumanoidArmorLayerInjection.class, prefix = "kilt$i$"))
 @Mixin(HumanoidArmorLayer.class)
 public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends HumanoidModel<T>, A extends HumanoidModel<T>> {
-    @Shadow
-    @Final
-    private TextureAtlas armorTrimAtlas;
+    @Shadow @Final private TextureAtlas armorTrimAtlas;
+    @Shadow protected abstract void renderArmorPiece(PoseStack poseStack, MultiBufferSource bufferSource, T livingEntity, EquipmentSlot slot, int packedLight, A model);
+
     @Unique private final RenderLayerData kilt$renderLayerData = new RenderLayerData();
     @Unique private final WrappedModelAsHumanoid kilt$wrappedHumanoidModel = new WrappedModelAsHumanoid();
+    @Unique private final AtomicBoolean kilt$isRunningCompatibility = new AtomicBoolean(false);
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At("HEAD"))
     private void kilt$updateRenderLayerData(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         this.kilt$renderLayerData.update(limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch);
+    }
+
+    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V"))
+    private void kilt$tryHandleRenderArmorPieceCompatibility(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource bufferSource, T livingEntity, EquipmentSlot slot, int packedLight, A model, Operation<Void> original) {
+        this.kilt$isRunningCompatibility.set(true);
+        var renderData = this.kilt$renderLayerData;
+
+        // this is probably one of the dumber things I've done but hey I mean, it works
+        ((HumanoidArmorLayer<T, M, A>) (Object) this).renderArmorPiece(poseStack, bufferSource, livingEntity, slot, packedLight, model, renderData.getLimbSwing(), renderData.getLimbSwingAmount(), renderData.getPartialTicks(), renderData.getAgeInTicks(), renderData.getNetHeadYaw(), renderData.getHeadPitch());
+
+        // Kilt: If this passes, that means it never got to run, which means we should cancel it.
+        if (this.kilt$isRunningCompatibility.getAndSet(false)) {
+            return;
+        }
+
+        original.call(instance, poseStack, bufferSource, livingEntity, slot, packedLight, model);
     }
 
     @Inject(method = "renderArmorPiece", at = @At("HEAD"))
@@ -126,6 +149,15 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
 
     protected Model getArmorModelHook(T entity, ItemStack stack, EquipmentSlot slot, A model) {
         return ClientHooks.getArmorModel(entity, stack, slot, model);
+    }
+
+    public void kilt$i$renderArmorPiece(PoseStack poseStack, MultiBufferSource bufferSource, T livingEntity, EquipmentSlot slot, int packedLight, A model, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
+        if (this.kilt$isRunningCompatibility.getAndSet(false)) {
+            return;
+        }
+
+        this.kilt$renderLayerData.update(limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch);
+        this.renderArmorPiece(poseStack, bufferSource, livingEntity, slot, packedLight, model);
     }
 
     // Kilt: let's just. copy these. Mowzie's Mobs needs these.

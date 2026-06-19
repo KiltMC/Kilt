@@ -9,8 +9,6 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.ParamPair
@@ -268,9 +266,6 @@ data class InjectedShareAccessModifier(
     }
 
     companion object {
-        val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
-        val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
-
         val LOCAL_REF = Type.getType(LocalRef::class.java)
         val LOCAL_INT_REF = Type.getType(LocalIntRef::class.java)
         val LOCAL_BYTE_REF = Type.getType(LocalByteRef::class.java)

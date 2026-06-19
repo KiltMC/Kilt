@@ -36,13 +36,13 @@ sealed class ModBridgeStrategy {
 
         companion object : PreferFabric("") {
             override fun throwException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" is also required to use NeoForge mod ID \"$neoForgeModId\"!")
+                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" also needs to be installed to use NeoForge mod ID \"$neoForgeModId\"!")
             }
         }
     }
 
     /**
-     * Throws a failure if only the NeoForge variant of a mod is available. Will bridge if both sides exist, and will not fail if only the NeoForge variant is available.
+     * Throws a failure if only the Fabric variant of a mod is available. Will bridge if both sides exist, and will not fail if only the NeoForge variant is available.
      */
     open class PreferNeoForge(private val message: String) : ModBridgeStrategy() {
         override fun checkValid(fabricModId: String, neoForgeModId: String) {
@@ -60,7 +60,7 @@ sealed class ModBridgeStrategy {
 
         companion object : PreferNeoForge("") {
             override fun throwException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" is also required to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)!")
+                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" also needs to be installed to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)!")
             }
         }
     }
@@ -102,7 +102,8 @@ sealed class ModBridgeStrategy {
     }
 
     companion object {
-        private fun checkFabricExists(modId: String): Boolean {
+        @JvmStatic
+        fun checkFabricExists(modId: String): Boolean {
             return FabricLoader.getInstance().isModLoaded(modId)
                 && FabricLoader.getInstance().getModContainer(modId).orElse(null)?.metadata?.type?.lowercase() != "neoforge"
         }

@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import com.llamalad7.mixinextras.sugar.Local
 import com.llamalad7.mixinextras.sugar.Share
@@ -28,6 +29,7 @@ object KiltMixinModifications {
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
 
     val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
+    val FACTORY_REDIRECT_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/wrapper/factory/FactoryRedirectWrapper;")
     val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
     val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
 
@@ -72,6 +74,14 @@ object KiltMixinModifications {
                 "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V",
                 "renderNameTag(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V"
             )
+        ),
+
+        // Fixes KubeJS's MinecraftServerMixin
+        // https://github.com/KubeJS-Mods/KubeJS/blob/8f62bc159b7132f43570b0e55713177eb382a220/src/main/java/dev/latvian/mods/kubejs/core/mixin/MinecraftServerMixin.java#L144-L147
+        NameRemappingAnnotationModifier(
+            "net/minecraft/server/MinecraftServer",
+            methods = listOf($$"lambda$reloadResources$29", $$"lambda$reloadResources$29(Lcom/google/common/collect/ImmutableList;)Ljava/util/concurrent/CompletionStage;"),
+            remapMethodsTo = listOf($$"lambda$reloadResources$28(Lcom/google/common/collect/ImmutableList;)Ljava/util/concurrent/CompletionStage;")
         )
     )
 
@@ -398,6 +408,30 @@ object KiltMixinModifications {
         )
     )
 
+    val WRAP_WITH_CONDITION = register(
+        WrapWithCondition::class.java,
+
+        // Fixes Iron's Lib's HumanoidArmorLayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.renderer.entity.layers.HumanoidArmorLayerInject",
+                    "name" to $$"kilt$tryHandleRenderArmorPieceCompatibility",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(WrapWithCondition::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"))
+                ))
+            )
+        )
+    )
+
     val REDIRECT = register(
         Redirect::class.java,
 
@@ -411,7 +445,7 @@ object KiltMixinModifications {
 
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
-        if (annotation.desc == SUGAR_WRAPPER.descriptor) {
+        if (annotation.desc == SUGAR_WRAPPER.descriptor || annotation.desc == FACTORY_REDIRECT_WRAPPER.descriptor) {
             val map = annotationValuesToMap(annotation.values)
 
             if (map.containsKey("original")) {

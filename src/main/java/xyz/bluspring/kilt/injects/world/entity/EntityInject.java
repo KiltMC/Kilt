@@ -78,7 +78,7 @@ import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-@Mixin(value = Entity.class, priority = 1100)
+@Mixin(value = Entity.class, priority = 900)
 @Extends(AttachmentHolder.class)
 public abstract class EntityInject implements IEntityExtension, EntityInjection, AttachmentHolderWorkaround {
     @Shadow protected abstract void unsetRemoved();
