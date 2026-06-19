@@ -71,5 +71,10 @@ public abstract class BrewingStandMenuInject {
             kilt$potionBrewing.remove();
             return result;
         }
+
+        @Override
+        public void kilt$setPotionBrewing(PotionBrewing brewing) {
+            potionBrewing = brewing;
+        }
     }
 }
