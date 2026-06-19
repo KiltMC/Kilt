@@ -8,11 +8,11 @@
         "cyclopscore.ModBaseMixin",
         "kubejs.KubeJSMixin",
         "quark.ConcretePowderBlockMixin",
+        "quark.ProjectileUtilMixin",
         "structure_gel.StructureTemplateMixin",
         "thirst.PotionItemMixin"
     ],
     "client": [
-        "quark.LevelRendererMixin",
         "twilightforest.ElytraLayerMixin",
         "twilightforest.HumanoidArmorLayerMixin"
     ],

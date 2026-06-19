@@ -8,7 +8,7 @@ class KiltMixinCanceller : MixinCanceller {
         "committee.nova.mkb.mixin.MixinStickyKeyBinding",
         "org.violetmoon.quark.mixin.mixins.client.accessor.AccessorCustomCreativeSlot",
         "org.violetmoon.quark.mixin.mixins.ConcretePowderBlockMixin",
-        "org.violetmoon.quark.mixin.mixins.client.LevelRendererMixin",
+        "org.violetmoon.quark.mixin.mixins.ProjectileUtilMixin",
         "dev.ghen.thirst.foundation.mixin.MixinPotionItem",
         "com.lowdragmc.lowdraglib.forge.core.mixins.BlockRenderDispatcherMixin",
         "fuzs.nightconfigfixes.mixin.ConfigParserFabricMixin", // Replaced by ConfigParserTransform in Kilt
