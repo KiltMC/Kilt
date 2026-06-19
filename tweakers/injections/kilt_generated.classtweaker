@@ -1,4 +1,4 @@
-classTweaker v1 named
+classTweaker v1 official
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
 transitive-inject-interface com/mojang/blaze3d/systems/RenderSystem xyz/bluspring/kilt/injections/blaze3d/systems/RenderSystemInjection
@@ -39,6 +39,7 @@ transitive-inject-interface net/minecraft/client/renderer/chunk/SectionRenderDis
 transitive-inject-interface net/minecraft/client/renderer/entity/BoatRenderer xyz/bluspring/kilt/injections/client/renderer/entity/BoatRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/EntityRenderDispatcher xyz/bluspring/kilt/injections/client/renderer/entity/EntityRenderDispatcherInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/ItemEntityRenderer xyz/bluspring/kilt/injections/client/renderer/entity/ItemEntityRendererInjection
+transitive-inject-interface net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer xyz/bluspring/kilt/injections/client/renderer/entity/layers/HumanoidArmorLayerInjection
 transitive-inject-interface net/minecraft/client/renderer/LevelRenderer xyz/bluspring/kilt/injections/client/renderer/LevelRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/renderer/ScreenEffectRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/Sheets xyz/bluspring/kilt/injections/client/renderer/SheetsInjection

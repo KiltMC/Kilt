@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.gradle
 
 import com.google.gson.JsonParser
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import java.io.File
 import java.net.URL
@@ -12,7 +13,8 @@ class MappingDownloader(private val version: String, private val tempDir: File) 
 
     data class NamedPair(
         val name: String,
-        val descriptor: String
+        val descriptor: String,
+        val isFinal: Boolean
     )
 
     data class ClassMapping(
@@ -39,11 +41,11 @@ class MappingDownloader(private val version: String, private val tempDir: File) 
                 val methods = mutableListOf<NamedPair>()
 
                 for (fieldNode in classNode.fields) {
-                    fields.add(NamedPair(fieldNode.name, fieldNode.desc))
+                    fields.add(NamedPair(fieldNode.name, fieldNode.desc, fieldNode.access and Opcodes.ACC_FINAL != 0))
                 }
 
                 for (methodNode in classNode.methods) {
-                    methods.add(NamedPair(methodNode.name, methodNode.desc))
+                    methods.add(NamedPair(methodNode.name, methodNode.desc, (methodNode.access and Opcodes.ACC_FINAL != 0) || (methodNode.access and Opcodes.ACC_STATIC != 0)))
                 }
 
                 classMappings[classNode.name] = ClassMapping(fields, methods)

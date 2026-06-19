@@ -169,12 +169,16 @@ object ClassTweakerUpdater {
                         mappings[className]?.methods?.forEach { mapping ->
                             if (!mapping.name.startsWith("<") && mapping.descriptor.startsWith(descriptor)) {
                                 widener += "transitive-accessible method $className ${mapping.name} ${mapping.descriptor}"
-                                widener += "transitive-extendable method $className ${mapping.name} ${mapping.descriptor}"
+
+                                if (!mapping.isFinal)
+                                    widener += "transitive-extendable method $className ${mapping.name} ${mapping.descriptor}"
                             }
                         }
                     } else {
                         widener += "transitive-accessible method $className $methodName $descriptor"
-                        widener += "transitive-extendable method $className $methodName $descriptor"
+
+                        if (mappings[className]?.methods?.firstOrNull { it.name == methodName && it.descriptor == descriptor }?.isFinal != true)
+                            widener += "transitive-extendable method $className $methodName $descriptor"
                     }
                 } else { // Field
                     val fieldName = split[2]
@@ -184,7 +188,9 @@ object ClassTweakerUpdater {
                         widener += "# wildcard fields for $className"
                         mappings[className]?.fields?.forEach { mapping ->
                             widener += "transitive-accessible field $className ${mapping.name} ${mapping.descriptor}"
-                            widener += "transitive-mutable field $className ${mapping.name} ${mapping.descriptor}"
+
+                            if (!mapping.isFinal)
+                                widener += "transitive-mutable field $className ${mapping.name} ${mapping.descriptor}"
                         }
 
                         continue
@@ -194,7 +200,9 @@ object ClassTweakerUpdater {
 
                     val prefix = if (descriptor.contains("# TODO: ")) "# " else ""
                     widener += "${prefix}transitive-accessible field $className $fieldName $descriptor"
-                    widener += "${prefix}transitive-mutable field $className $fieldName $descriptor"
+
+                    if (mappings[className]?.methods?.firstOrNull { it.name == fieldName && it.descriptor == descriptor }?.isFinal != true)
+                        widener += "${prefix}transitive-mutable field $className $fieldName $descriptor"
                 }
             }
         }
@@ -251,7 +259,7 @@ object ClassTweakerUpdater {
 
     fun updateKiltInjections(injectionPath: File, tweaker: File, mappings: Map<String, MappingDownloader.ClassMapping>, existing: List<String>) {
         val classTweakerBuilder = StringBuilder()
-        classTweakerBuilder.append("classTweaker v1 named")
+        classTweakerBuilder.append("classTweaker v1 official")
         classTweakerBuilder.newLine()
         classTweakerBuilder.append("")
 
