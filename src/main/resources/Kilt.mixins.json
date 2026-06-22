@@ -98,6 +98,8 @@
     "resources.RegistryOpsAccessor",
     "server.level.TicketAccessor",
     "workarounds.avoid_feature_cycles.BiomeGenerationSettings$PlainBuilderMixin",
+    "workarounds.crafting_remainders.FabricItemMixin",
+    "workarounds.crafting_remainders.IForgeItemMixin",
     "workarounds.finalize_spawn.ForgeEventFactoryMixin$Early",
     "workarounds.finalize_spawn.ForgeEventFactoryMixin$Late",
     "workarounds.fluid_stack_droplets.FluidStackMixin",
