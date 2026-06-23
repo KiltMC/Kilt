@@ -62,7 +62,8 @@ dependencies {
     modCompileOnly("maven.modrinth:resourceful-lib:${property("resourcefullib_version")}-fabric,1.21.1")
     modCompileOnly("maven.modrinth:G1hIVOrD:${property("resourcefullib_version")}-neoforge,1.21.1") // and ResourcefulLib
 
-    modCompileOnly("maven.modrinth:jade:${property("jade_version")}")
+    modCompileOnly("maven.modrinth:jade:${property("jade_version")}+fabric")
+    compileOnlyLater("maven.modrinth:nvQzSEkH:${property("jade_version")}+neoforge")
 
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-common-api:${property("cc_tweaked_version")}")
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-common:${property("cc_tweaked_version")}")
