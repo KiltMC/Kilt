@@ -103,6 +103,7 @@
     "client.sounds.ChannelAccessHandleMixin",
     "compat.fabric_api.FluidRenderHandlerRegistryImplMixin",
     "compat.fabric_api.rendering.FabricBakedModelMixin",
+    "compat.fabric_api.rendering.ForwardingBakedModelMixin",
     "compat.fabric_api.rendering.VanillaModelEncoderMixin",
     "compat.lodestone.ShaderInstanceMixin",
     "compat.modmenu.ModListEntryMixin",
