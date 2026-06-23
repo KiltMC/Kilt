@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
+import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper
 import xyz.bluspring.kilt.loader.KiltLoader
 
@@ -24,6 +25,10 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
 
         if (modId == "sophisticatedcore" || modId == "creativecore") {
             return FabricLoader.getInstance().isModLoaded(modId) && !KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
+        }
+
+        if (modId == "everycompat") {
+            return KiltModCompatBridgeManager.isActive("everycomp") && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
         }
 
         if (modId == "accessories") {

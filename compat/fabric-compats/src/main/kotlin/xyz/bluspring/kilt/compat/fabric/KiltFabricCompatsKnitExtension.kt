@@ -5,6 +5,7 @@ import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
 import xyz.bluspring.kilt.compat.fabric.architectury.KiltArchitecturyApiCompat
 import xyz.bluspring.kilt.compat.fabric.automodpack.KiltAutoModpackCompat
+import xyz.bluspring.kilt.compat.fabric.everycompat.EveryCompatBridge
 import xyz.bluspring.kilt.compat.fabric.geckolib.GeckoLibEvents
 import xyz.bluspring.kilt.compat.fabric.sable.SableCompatBridge
 import xyz.bluspring.kilt.compat.fabric.veil.VeilCompatBridge
@@ -64,5 +65,9 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
         KiltModCompatBridgeManager.register("computercraft", strategy = ModBridgeStrategy.PreferFabric) {}
 
         KiltModCompatBridgeManager.register("resourcefullib", strategy = ModBridgeStrategy.RequireBoth("Due to a workaround used in Kilt, you are required to have both ResourcefulLib Fabric and NeoForge installed.")) {}
+
+        KiltModCompatBridgeManager.register("everycomp", strategy = ModBridgeStrategy.PreferFabric) {
+            EveryCompatBridge.init()
+        }
     }
 }
