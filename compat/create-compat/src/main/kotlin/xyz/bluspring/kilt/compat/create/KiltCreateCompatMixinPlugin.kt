@@ -6,6 +6,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
 import xyz.bluspring.kilt.loader.KiltLoader
 
 class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
@@ -35,7 +36,7 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
         }
 
         if (packageName == "ponder_bridged") {
-            return FabricLoader.getInstance().isModLoaded("ponder") && KiltLoader.instance.hasMod("ponder") && MixinConstraints.shouldApplyMixin(mixinClassName)
+            return ModBridgeStrategy.checkFabricExists("ponder") && KiltLoader.instance.hasMod("ponder") && MixinConstraints.shouldApplyMixin(mixinClassName)
         }
 
         return MixinConstraints.shouldApplyMixin(mixinClassName)
