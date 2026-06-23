@@ -32,7 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 @Pseudo
 @Mixin(BakedModelBuffererImpl.class)
 public abstract class BakedModelBuffererImplMixin {
-    @Dynamic
     @Inject(method = "bufferModel(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/createmod/catnip/client/render/model/ShadeSeparatedBufferSource;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
     private static void kilt$flywheel$tryLoadModelDataSingle(CallbackInfo ci, @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
                                                              @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
@@ -46,7 +45,6 @@ public abstract class BakedModelBuffererImplMixin {
         renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
     }
 
-    @Dynamic
     @Inject(method = "bufferBlocks(Ljava/util/Iterator;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/PoseStack;ZLnet/createmod/catnip/client/render/model/ShadeSeparatedBufferSource;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
     private static void kilt$flywheel$tryLoadModelData(CallbackInfo ci, @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
                                                        @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
@@ -60,14 +58,13 @@ public abstract class BakedModelBuffererImplMixin {
         renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
     }
 
-    @Dynamic
     @WrapOperation(method = {"bufferBlocks(Ljava/util/Iterator;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/PoseStack;ZLnet/createmod/catnip/client/render/model/ShadeSeparatedBufferSource;)V", "bufferModel(Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/createmod/catnip/client/render/model/ShadeSeparatedBufferSource;)V"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/ModelBlockRenderer;tesselateBlock(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLnet/minecraft/util/RandomSource;JI)V"))
-    private static void kilt$flywheel$tryAddModelDataToTesselate(ModelBlockRenderer instance, BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int packedOverlay, Operation<Void> original, @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes, @Local RenderType originalRenderType, @Local(name = "universalEmitter") @Coerce Object universalMeshEmitter, @Local ShadeSeparatedBufferSource bufferSource) {
+    private static void kilt$flywheel$tryAddModelDataToTesselate(ModelBlockRenderer instance, BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int packedOverlay, Operation<Void> original, @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes, @Local RenderType originalRenderType, @Local ShadeSeparatedBufferSource bufferSource) {
         if (renderTypes.get().contains(originalRenderType) && renderTypes.get().asList().size() == 1 && modelData.get() == ModelData.EMPTY) {
             original.call(instance, level, model, state, pos, poseStack, consumer, checkSides, random, seed, packedOverlay);
         } else {
             for (RenderType renderType : renderTypes.get()) {
-                ((UniversalMeshEmitterAccessor) universalMeshEmitter).kilt$invokePrepare(bufferSource, renderType);
+                ((UniversalMeshEmitterAccessor) consumer).kilt$invokePrepare(bufferSource, renderType);
                 poseStack.pushPose();
                 instance.tesselateBlock(level, model, state, pos, poseStack, consumer, checkSides, random, seed, packedOverlay, modelData.get(), renderType);
                 poseStack.popPose();
