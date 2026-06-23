@@ -38,7 +38,7 @@ object KiltModCompatBridgeManager {
     @ApiStatus.Internal
     internal fun canMakeActive(neoForgeModId: String): Boolean {
         val entry = getModEntryNeo(neoForgeModId) ?: return false
-        return FabricLoader.getInstance().isModLoaded(entry.fabricModId)
+        return ModBridgeStrategy.checkFabricExists(entry.fabricModId)
     }
 
     @ApiStatus.Internal
@@ -51,7 +51,7 @@ object KiltModCompatBridgeManager {
                 return false
         }
 
-        return KiltLoader.instance.hasMod(entry.neoForgeModId) && FabricLoader.getInstance().isModLoaded(entry.fabricModId)
+        return KiltLoader.instance.hasMod(entry.neoForgeModId) && ModBridgeStrategy.checkFabricExists(entry.fabricModId)
     }
 
     @ApiStatus.Internal
