@@ -1,7 +1,6 @@
 package xyz.bluspring.kilt.compat.create.mixin.ponder;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import net.createmod.catnip.client.render.model.ShadeSeparatedBufferSource;
 import org.jetbrains.annotations.UnknownNullability;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.renderer.RenderType;
 
-@IfModLoaded("ponder")
 @Mixin(targets = "net.createmod.catnip.impl.client.render.model.UniversalMeshEmitter")
 public abstract class UniversalMeshEmitterMixin implements VertexConsumer {
     @Shadow private @UnknownNullability ShadeSeparatedBufferSource bufferSource;

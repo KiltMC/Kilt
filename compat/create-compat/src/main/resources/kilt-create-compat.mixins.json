@@ -1,19 +1,24 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "xyz.bluspring.kilt.compat.create.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "colorwheel.ColorwheelMixin",
-    "flywheel.BakedModelBuffererMixin",
-    "flywheel.FabricMeshEmitterManagerAccessor",
-    "flywheel.FlywheelBackendXplatImplMixin",
-    "ponder.UniversalMeshEmitterMixin"
-  ],
-  "client": [
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.kilt.compat.create.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "colorwheel.ColorwheelMixin",
+        "flywheel.BakedModelBuffererMixin",
+        "flywheel.FabricMeshEmitterManagerAccessor",
+        "flywheel.FlywheelBackendXplatImplMixin",
+        "ponder.UniversalMeshEmitterMixin",
+        "ponder_bridged.FluidRenderHelperMixin",
+        "ponder_bridged.NeoForgeCatnipServicesMixin",
+        "ponder_fabric.BakedModelBuffererImplMixin",
+        "ponder_fabric.FabricPonderClientMixin",
+        "ponder_fabric.UniversalMeshEmitterAccessor"
+    ],
+    "client": [
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "plugin": "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinPlugin"
 }
