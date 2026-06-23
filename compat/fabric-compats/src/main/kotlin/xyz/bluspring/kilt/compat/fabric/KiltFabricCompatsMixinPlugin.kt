@@ -41,6 +41,10 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
             return KiltLoader.instance.hasMod("computercraft")
         }
 
+        if (modId == "jade_forge") {
+            return KiltLoader.instance.hasMod("jade")
+        }
+
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
     }
 
