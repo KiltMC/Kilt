@@ -50,7 +50,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
             SableCompatBridge.init()
         }
 
-        KiltModCompatBridgeManager.register("veil", strategy = ModBridgeStrategy.PreferFabric) {
+        KiltModCompatBridgeManager.register("veil", environment = ModEnvironment.CLIENT, strategy = ModBridgeStrategy.PreferFabric) {
             VeilCompatBridge.init()
         }
 
