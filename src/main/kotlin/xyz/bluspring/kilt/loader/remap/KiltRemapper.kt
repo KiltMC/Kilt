@@ -412,7 +412,13 @@ object KiltRemapper {
             }
 
             withContext(Dispatchers.IO) {
+                val seen = HashSet<String>()
                 jar.stream().consumeAsFlow().collect { entry ->
+                    // Ars Nouveau's jar has duplicate entries. wtf?????
+                    if (!seen.add(entry.name)) {
+                        logger.warn("Mod ${mod.displayName} (${mod.id})'s jar file is malformed; saw duplicate of ${entry.name}!")
+                        return@collect
+                    }
                     // Transform some specific files
                     for (remapper in resourceRemappers) {
                         if (remapper.canTransform(entry.name)) {
