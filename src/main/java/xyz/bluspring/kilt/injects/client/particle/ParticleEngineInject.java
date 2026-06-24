@@ -6,6 +6,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Camera;
@@ -30,10 +32,12 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineInject implements ParticleEngineInjection {
@@ -73,6 +77,14 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
         this.kilt$clippingHelper = clippingHelper;
         this.render(lightTexture, camera, tickDelta);
         this.kilt$clippingHelper = null;
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void kilt$initShareData(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci,
+                                    @Share(value = "frustum", namespace = Kilt.MOD_ID) LocalRef<Frustum> frustum,
+                                    @Share(value = "renderTypePredicate", namespace = Kilt.MOD_ID) LocalRef<Predicate<ParticleRenderType>> renderTypePredicate) {
+        frustum.set(this.kilt$clippingHelper);
+        renderTypePredicate.set(type -> true); // Kilt TODO: our render() has the wrong signature
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;enableDepthTest()V", shift = At.Shift.AFTER, ordinal = 0, remap = false))
