@@ -1,11 +1,19 @@
 package xyz.bluspring.kilt.util.neoforge.fluid
 
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil
-
 object FluidTransferUtils {
     @JvmStatic
+    fun truncateLong(long: Long): Int {
+        if (long > Int.MAX_VALUE) {
+            return Int.MAX_VALUE
+        } else if (long < Int.MIN_VALUE) {
+            return Int.MIN_VALUE
+        }
+        return long.toInt()
+    }
+
+    @JvmStatic
     fun Long.toMillibuckets(): Int {
-        return TransferUtil.truncateLong(this / 81)
+        return truncateLong(this / 81)
     }
 
     @JvmStatic

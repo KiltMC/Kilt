@@ -21,7 +21,6 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
@@ -324,7 +323,7 @@ object KiltMixinModifications {
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
-                    "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
+                    "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")
                 ))
             )
         ),
@@ -537,9 +536,8 @@ object KiltMixinModifications {
 
                     for ((paramPair, _) in modifier.paramToShareMapping) {
                         val (param, ordinal) = paramPair
-                        val mappedParam = KiltRemapper.remapDescriptor(param)
 
-                        if (descriptor.count { it.descriptor == param || it.descriptor == mappedParam || KiltRemapper.remapDescriptor(it.descriptor) == param || KiltRemapper.remapDescriptor(it.descriptor) == mappedParam } < ordinal + 1) {
+                        if (descriptor.count { it.descriptor == param || it.descriptor == param } < ordinal + 1) {
                             continue@modifierSearch
                         }
                     }
@@ -570,7 +568,7 @@ object KiltMixinModifications {
             if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
                 continue
 
-            if (methodNode.desc != KiltRemapper.remapDescriptor(modifier.desc))
+            if (methodNode.desc != modifier.desc)
                 continue
 
             return modifier
@@ -674,7 +672,7 @@ object KiltMixinModifications {
             "value" to value
         ).apply {
             if (target != null)
-                this["target"] = MixinRemapper.remapTargetString(target, emptyList(), KiltRemapper.enhancedRemapper)
+                this["target"] = target
 
             if (ordinal != null)
                 this["ordinal"] = ordinal
@@ -699,35 +697,6 @@ object KiltMixinModifications {
         val owner = (modifier.owner)
         MIXIN_CLASSES.add(owner)
         modifier.mappedOwner = owner
-
-        if (modifier is MethodBasedModifier) {
-            modifier.mappedMethods = modifier.methods.map {
-                (if (it.contains("(")) {
-                    val name = it.replaceAfter("(", "").removeSuffix("(")
-                    val descriptor = it.removePrefix(name)
-                    val mappedDesc = KiltRemapper.remapDescriptor(descriptor)
-
-                    "${KiltRemapper.mojMappedMethods[name]?.get(modifier.owner)?.firstOrNull { m -> m.second == mappedDesc }?.first ?: name}$mappedDesc"
-                } else KiltRemapper.mojMappedMethods[it]?.get(modifier.owner)?.firstOrNull()?.first ?: it)
-            }
-        }
-
-        if (modifier is NameRemappingAnnotationModifier) {
-            modifier.remapMethodsTo = modifier.remapMethodsTo.map {
-                MixinRemapper.remapTargetString(
-                    it, listOf(KiltRemapper.unmapClass(modifier.owner)),
-                    KiltRemapper.enhancedRemapper
-                )
-            }
-        }
-        if (modifier is ReplacedAnnotationsModifier) {
-            val mutableList = modifier.replaceWith.toMutableList()
-            MixinRemapper.remapMixinAnnotations(
-                mutableList, KiltRemapper.enhancedRemapper,
-                listOf(modifier.owner), modifier.owner
-            )
-            modifier.replaceWith = mutableList
-        }
     }
 
     fun register(type: Class<*>, vararg mixinModifiers: MixinModifier): List<MixinModifier> {
@@ -750,7 +719,7 @@ object KiltMixinModifications {
 
         for (modifier in accessorModifiers) {
             val owner = (modifier.owner)
-            val desc = KiltRemapper.remapDescriptor(modifier.desc)
+            val desc = (modifier.desc)
             MIXIN_CLASSES.add(owner)
             modifier.mappedOwner = owner
             modifier.mappedDesc = desc

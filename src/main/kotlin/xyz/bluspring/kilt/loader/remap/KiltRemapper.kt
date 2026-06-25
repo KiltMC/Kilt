@@ -402,9 +402,6 @@ object KiltRemapper {
                 }.launchIn(this).join()
         }
 
-        // Clear any caches stored in the fixers
-        MixinRemapper.clearCache()
-
         logger.info("Finished remapping mods!")
 
         if (exception.suppressed.isNotEmpty()) {

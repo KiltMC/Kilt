@@ -3,11 +3,10 @@ package xyz.bluspring.kilt.loader.remap.fixers
 import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureWriter
 import org.objectweb.asm.tree.ClassNode
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object ConditionalInterfaceInjectionFixer {
-    private val forgeMethodLookup = mapOf(
-        ("getLightEmission" to KiltRemapper.remapDescriptor("(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)I")) to "io/github/fabricators_of_create/porting_lib/blocks/extensions/LightEmissiveBlock"
+    private val forgeMethodLookup = mapOf<Pair<String, String>, String>(
+//        ("getLightEmission" to "(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)I") to "io/github/fabricators_of_create/porting_lib/blocks/extensions/LightEmissiveBlock"
     )
 
     fun fixClass(classNode: ClassNode) {

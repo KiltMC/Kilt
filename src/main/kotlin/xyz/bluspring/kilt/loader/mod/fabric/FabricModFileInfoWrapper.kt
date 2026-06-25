@@ -31,10 +31,6 @@ class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
         return mod.metadata.license.joinToString(",")
     }
 
-    override fun moduleName(): String? {
-        return mod.metadata.id
-    }
-
     override fun versionString(): String? {
         return mod.metadata.version.friendlyString
     }

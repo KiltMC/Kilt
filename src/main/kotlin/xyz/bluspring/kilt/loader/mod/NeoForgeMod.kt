@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.mod
 
-import cpw.mods.jarhandling.SecureJar
 import net.neoforged.bus.EventBusErrorMessage
 import net.neoforged.bus.api.BusBuilder
 import net.neoforged.bus.api.Event
@@ -9,6 +8,7 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.event.IModBusEvent
+import net.neoforged.fml.jarcontents.JarContents
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.neoforgespi.language.*
 import net.neoforged.neoforgespi.locating.ForgeFeature
@@ -18,7 +18,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import org.spongepowered.asm.mixin.connect.IMixinConnector
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
 import xyz.bluspring.kilt.util.fallback
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
@@ -44,6 +43,7 @@ class NeoForgeMod(
     private val updateURL: URL? = null,
 
     val shouldScan: Boolean = true,
+    val accessTransformers: List<String> = listOf(),
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
@@ -63,27 +63,25 @@ class NeoForgeMod(
 
     val loader = definition.additionalData["loader"] as? String? ?: "javafml"
 
-    private lateinit var secureJar: SecureJar
+    private lateinit var jarContents: JarContents
 
     val jar: JarFile
         get() {
             return JarFile(modFile)
         }
 
-    val coreMods = mutableListOf<CoreMod>()
-
     val paths: MutableList<Path>
         get() = mutableListOf<Path>().apply {
             this.add(this@NeoForgeMod.modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath())
         }
 
-    fun getSecureJar(): Supplier<SecureJar> {
+    fun getJarContents(): Supplier<JarContents> {
         return Supplier {
-            if (!this@NeoForgeMod::secureJar.isInitialized) {
-                secureJar = SecureJar.from((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
+            if (!this@NeoForgeMod::jarContents.isInitialized) {
+                jarContents = JarContents.ofPath((modFile?.toPath() ?: Kilt::class.java.protectionDomain.codeSource.location.toURI().toPath()))
             }
 
-            return@Supplier secureJar
+            return@Supplier jarContents
         }
     }
 

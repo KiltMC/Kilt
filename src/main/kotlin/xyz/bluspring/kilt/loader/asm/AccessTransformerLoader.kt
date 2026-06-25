@@ -1,13 +1,20 @@
 package xyz.bluspring.kilt.loader.asm
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.classtweaker.api.ClassTweaker
 import net.fabricmc.loader.impl.lib.classtweaker.api.visitor.AccessWidenerVisitor
+import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import java.lang.reflect.Modifier
+import java.util.jar.JarFile
 import java.util.regex.Pattern
 
 // A reimplementation of NeoForge's Access Transformers.
@@ -20,6 +27,40 @@ object AccessTransformerLoader {
     private val classTransformInfo = mutableMapOf<String, ClassTransformInfo>()
 
     private val whitespace = Pattern.compile("[ \t]+")
+
+    private val minecraftClassData: MutableMap<String, ClassNode> by lazy {
+        val map = mutableMapOf<String, ClassNode>()
+
+        for (builtinMod in FabricLoaderImpl.INSTANCE.gameProvider.builtinMods) {
+            if (builtinMod.metadata.id == "minecraft") {
+                for (path in builtinMod.paths) {
+                    val jarFile = JarFile(path.toFile())
+
+                    runBlocking {
+                        jarFile.entries().asIterator().asFlow()
+                            .collect { entry ->
+                                val stream = withContext(Dispatchers.IO) {
+                                    jarFile.getInputStream(entry)
+                                }
+                                val classNode = ClassNode(Opcodes.ASM9)
+                                val classReader = ClassReader(stream)
+                                classReader.accept(classNode, 0)
+
+                                synchronized(map) {
+                                    map[classNode.name] = classNode
+                                }
+
+                                withContext(Dispatchers.IO) {
+                                    stream.close()
+                                }
+                            }
+                    }
+                }
+            }
+        }
+
+        map
+    }
 
     private fun println(info: String) {
         if (debug)
@@ -306,43 +347,25 @@ object AccessTransformerLoader {
     }
 
     private fun widenAccessForVanillaClasses(split: List<String>, mojClassName: String, classTweaker: ClassTweaker): Boolean {
-        val intermediaryClassName = (mojClassName)
-        val remapper = KiltRemapper.enhancedRemapper
-        val accessWidener = classTweaker.visitAccessWidener(intermediaryClassName)!! // it shouldn't be possible for this to be null.
+        val accessWidener = classTweaker.visitAccessWidener(mojClassName)!! // it shouldn't be possible for this to be null.
+        val classInfo = this.minecraftClassData[mojClassName.replace(".", "/")] ?: return false
 
         // field / method
         if (split.size > 2 && !split[2].startsWith("#")) {
             if (split[2] == "*") { // Handle all of them
-                val classInfo = remapper.getClass(mojClassName).orElse(null)
+                for (field in classInfo.fields) {
+                    println("widening field: className=$mojClassName, fieldName=${field.name}, descriptor=${field.desc}")
+                    accessWidener.visitField(field.name, field.desc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
 
-                if (classInfo == null) {
-                    logger.warn("Missing class reference (Mojang: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
-                    return false
-                }
-
-                for (fieldOpt in classInfo.fields) {
-                    val field = fieldOpt.orElse(null) ?: continue
-
-                    val mappedDesc = remapper.mapDesc(field.descriptor)
-                    println("widening field: intermediaryClassName=$intermediaryClassName, fieldName=${field.mapped}, descriptor=$mappedDesc")
-                    accessWidener.visitField(field.mapped, mappedDesc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitField(field.mapped, mappedDesc, AccessWidenerVisitor.AccessType.MUTABLE, true)
+                    if (!Modifier.isFinal(field.access))
+                        accessWidener.visitField(field.name, field.desc, AccessWidenerVisitor.AccessType.MUTABLE, true)
                 }
             } else if (split[2] == "*()") {
+                for (method in classInfo.methods) {
+                    accessWidener.visitMethod(method.name, method.desc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
 
-                val classInfo = remapper.getClass(mojClassName).orElse(null)
-
-                if (classInfo == null) {
-                    logger.warn("Missing class reference (Mojang: $mojClassName, Intermediary: $intermediaryClassName) for access transform, skipping.")
-                    return false
-                }
-
-                for (methodOpt in classInfo.methods) {
-                    val method = methodOpt.orElse(null) ?: continue
-
-                    val mappedMethodDesc = remapper.mapMethodDesc(method.descriptor)
-                    accessWidener.visitMethod(method.mapped, mappedMethodDesc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
-                    accessWidener.visitMethod(method.mapped, mappedMethodDesc, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
+                    if (!Modifier.isFinal(method.access))
+                        accessWidener.visitMethod(method.name, method.desc, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
                 }
             } else if (split[2].contains("(")) { // method
                 var name = ""
@@ -362,44 +385,40 @@ object AccessTransformerLoader {
                     }
                 }
 
-                val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
-
                 if (name == "*") {
-                    val cls = remapper.getClass(intermediaryClassName).orElse(null) ?: return false
+                    for (method in classInfo.methods) {
+                        if (descriptor != "()" && method.desc != descriptor)
+                            continue
 
-                    for (methodOpt in cls.methods) {
-                        methodOpt.ifPresent {
-                            if (descriptor != "()" && it.descriptor != mappedDescriptor)
-                                return@ifPresent
-
-                            // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                            accessWidener.visitMethod(it.mapped, it.descriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
-                            // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                            accessWidener.visitMethod(it.mapped, it.descriptor, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
-                        }
+                        // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
+                        accessWidener.visitMethod(method.name, method.desc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+                        // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
+                        if (!Modifier.isFinal(method.access))
+                            accessWidener.visitMethod(method.name, method.desc, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
                     }
 
                     return true
                 }
 
-                val methodName = remapper.mapMethodName(mojClassName.replace(".", "/"), name, descriptor)
-
                 // write it into Fabric, as otherwise, @Overwrite mixins will not map correctly.
-                accessWidener.visitMethod(methodName, mappedDescriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+                accessWidener.visitMethod(name, descriptor, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
                 // make sure it's made extendable by default too, as Fabric automatically marks methods as final when made accessible.
-                accessWidener.visitMethod(methodName, mappedDescriptor, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
+                accessWidener.visitMethod(name, descriptor, AccessWidenerVisitor.AccessType.EXTENDABLE, true)
             } else { // field
                 val name = split[2]
 
-                val fieldInfo = KiltRemapper.mojIntermediaryMapping.getClass(mojClassName)?.fields?.firstOrNull { it.original == name } ?: return false
-                val fieldName = KiltRemapper.enhancedRemapper.mapFieldName(mojClassName.replace(".", "/"), name, fieldInfo.descriptor ?: return false)
+                val fieldInfo = classInfo.fields.firstOrNull { it.name == name } ?: return false
 
-                accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
-                accessWidener.visitField(fieldName, KiltRemapper.remapDescriptor(fieldInfo.descriptor!!), AccessWidenerVisitor.AccessType.MUTABLE, true)
+                accessWidener.visitField(name, fieldInfo.desc, AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
+
+                if (!Modifier.isFinal(fieldInfo.access))
+                    accessWidener.visitField(name, fieldInfo.desc, AccessWidenerVisitor.AccessType.MUTABLE, true)
             }
         } else { // class
             accessWidener.visitClass(AccessWidenerVisitor.AccessType.ACCESSIBLE, true)
-            accessWidener.visitClass(AccessWidenerVisitor.AccessType.EXTENDABLE, true)
+
+            if (!Modifier.isFinal(classInfo.access))
+                accessWidener.visitClass(AccessWidenerVisitor.AccessType.EXTENDABLE, true)
         }
 
         return true

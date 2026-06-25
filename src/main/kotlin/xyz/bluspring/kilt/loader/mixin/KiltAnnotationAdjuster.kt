@@ -10,7 +10,6 @@ import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyArg
 import org.spongepowered.asm.mixin.injection.ModifyVariable
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
     override fun adjust(
@@ -21,8 +20,8 @@ class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
     ): AdjustableAnnotationNode? {
         if (mixinClassName == "org.violetmoon.quark.mixin.mixins.client.ContainerScreenMixin" && annotationNode.`is`(ModifyVariable::class.java)) {
             val variableNode = annotationNode.`as`(AdjustableModifyVariableNode::class.java)
-            val mouseClickedName = KiltRemapper.enhancedRemapper.mapMethodName("net/minecraft/client/gui/screens/inventory/AbstractContainerScreen", "mouseClicked", "(DDI)Z")
-            val mouseReleasedName = KiltRemapper.enhancedRemapper.mapMethodName("net/minecraft/client/gui/screens/inventory/AbstractContainerScreen", "mouseReleased", "(DDI)Z")
+            val mouseClickedName = "mouseClicked"
+            val mouseReleasedName = "mouseReleased"
             if (variableNode.method[0].equals("$mouseClickedName(DDI)Z"))
                 return variableNode.withIndex({ 14 })
             else if (variableNode.method[0].equals("$mouseReleasedName(DDI)Z"))

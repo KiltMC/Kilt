@@ -6,7 +6,6 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object ModifiedCloneWorkaroundLoader {
 
@@ -18,7 +17,7 @@ object ModifiedCloneWorkaroundLoader {
         val monsterDesc = "L$monsterType;"
         val mobType = ("net/minecraft/world/entity/Mob")
         val mobDesc = "L$mobType;"
-        val rangedAttackMob = KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/RangedAttackMob;")
+        val rangedAttackMob = "Lnet/minecraft/world/entity/monster/RangedAttackMob;"
         run {
             val bowAttackGoal = "net/minecraft/world/entity/ai/goal/RangedBowAttackGoal"
             val bowAttackGoalClone = "xyz/bluspring/kilt/workarounds/RangedBowAttackGoalWorkaround"
@@ -71,7 +70,7 @@ object ModifiedCloneWorkaroundLoader {
 					Opcodes.ACC_PUBLIC,
 	                "<init>",
 	                "(${monsterDesc}DF)V",
-					"<M:$monsterDesc:$rangedAttackMob:${KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/CrossbowAttackMob;")}>(TM;DF)V",
+					"<M:$monsterDesc:$rangedAttackMob:Lnet/minecraft/world/entity/monster/CrossbowAttackMob;>(TM;DF)V",
 	                null
 				).apply {
                     val startLabel = LabelNode()

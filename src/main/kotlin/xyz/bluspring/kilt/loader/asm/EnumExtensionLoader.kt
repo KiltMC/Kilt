@@ -11,8 +11,6 @@ import org.objectweb.asm.tree.*
 import org.spongepowered.asm.util.Annotations
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import java.nio.file.Files
 import java.util.*
 import java.util.function.Consumer
 
@@ -29,10 +27,10 @@ object EnumExtensionLoader {
     private fun remapPrototype(prototype: EnumPrototype): EnumPrototype {
         return EnumPrototype(
             prototype.owningMod,
-            (prototype.enumName),
+            prototype.enumName,
             prototype.fieldName,
-            KiltRemapper.remapDescriptor(prototype.ctorDesc),
-            KiltRemapper.remapDescriptor(prototype.fullCtorDesc),
+            prototype.ctorDesc,
+            prototype.fullCtorDesc,
             prototype.ctorParams
         )
     }
@@ -46,8 +44,8 @@ object EnumExtensionLoader {
             }
 
             config.getConfigElement<String>("enumExtensions").ifPresent { file ->
-                val path = mod.owningFile.getFile().findResource(file)
-                if (Files.isRegularFile(path)) {
+                val path = mod.owningFile.getFile().contents.get(file)
+                if (path != null) {
                     EnumPrototype.load(mod, path).forEach { prototype ->
                         val usablePrototype = remapPrototype(prototype)
                         enumExtensions.add(usablePrototype)
@@ -246,11 +244,7 @@ object EnumExtensionLoader {
                     newIndex++
                 }
 
-                val valuesName = KiltRemapper.enhancedRemapper.mapFieldName(
-                    KiltRemapper.unmapClass(targetClass.name),
-                    $$"$VALUES",
-                    "[L${KiltRemapper.unmapClass(targetClass.name)};"
-                )
+                val valuesName = $$"$VALUES"
 
                 // Sort the $VALUES array based on the ordinal after it has been set for the last time.
                 val fixValuesOrder = InsnList()

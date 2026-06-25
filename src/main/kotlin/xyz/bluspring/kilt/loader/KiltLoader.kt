@@ -13,11 +13,9 @@ import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.ModContainerImpl
-import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.neoforged.bus.api.Event
 import net.neoforged.fml.common.Mod
-import net.neoforged.fml.loading.FMLLoader
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
 import net.neoforged.fml.loading.modscan.ModClassVisitor
@@ -577,20 +575,13 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         for (mod in mods) {
             loadTransformers(mod)
             EnumExtensionLoader.loadEnumExtension(mod)
-            CoreModLoader.scanAndLoadCoreMods(mod)
+//            CoreModLoader.scanAndLoadCoreMods(mod)
         }
 
         EnumExtensionLoader.applyEnumExtensions()
     }
 
     override suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<NeoForgeMod> {
-        // First we want to set up Union.
-        try {
-            KiltUnionFileSystemHelper.directlyLoadIntoClassLoader(FabricLauncherBase.getLauncher().targetClassLoader)
-        } catch (e: Throwable) {
-            throw RuntimeException(e)
-        }
-
         val remappedModsDir = (kiltCacheDir / "remappedMods").apply {
             runCatching { createDirectories() }
         }
@@ -629,7 +620,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 },
                 // Some JiJ'd mods don't have TOML files, but we need to check if they have the "GAMELIBRARY" attribute,
                 // because then that verifies that we need to scan it.
-                shouldScan = definition.additionalData["isJiJ"] != true || (definition.additionalData["manifest"] as? Manifest?)?.mainAttributes?.getValue("FMLModType") == "GAMELIBRARY"
+                shouldScan = definition.additionalData["isJiJ"] != true || (definition.additionalData["manifest"] as? Manifest?)?.mainAttributes?.getValue("FMLModType") == "GAMELIBRARY",
+                accessTransformers = definition.additionalData["accessTransformers"] as? List<String>? ?: listOf()
             ))
         }
 
@@ -742,10 +734,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     fun loadMods() {
         Kilt.logger.info("Starting initialization of NeoForge mods...")
 
-        // Needed by Twilight Forest
-        FMLLoader.progressWindowTick = {}
-        FMLLoader.beforeStart(ModuleLayer.boot())
-
         val exception = RuntimeException("Failed to load NeoForge mods in Kilt!")
 
         // Initialize any compatibility bridges that have been registered
@@ -791,30 +779,14 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     private fun loadTransformers(mod: NeoForgeMod) {
-        if (mod.modFile == null || mod.definition.isBuiltin) {
-            val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
+        val accessTransformers = mod.accessTransformers
 
-            if (accessTransformer != null) {
-                Kilt.logger.info("Found access transformer for Forge")
-                AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
-            }
-
-            return
-        }
-
-        try {
-            val accessTransformer = mod.jar.getEntry("META-INF/accesstransformer.cfg")
+        for (atPath in accessTransformers) {
+            val accessTransformer = mod.getFile(atPath)
 
             if (accessTransformer != null) {
                 Kilt.logger.info("Found access transformer for ${mod.modId}")
-                AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
-            }
-        } catch (e: UninitializedPropertyAccessException) { // Forge special case
-            val accessTransformer = KiltLoader::class.java.getResource("META-INF/accesstransformer.cfg")
-
-            if (accessTransformer != null) {
-                Kilt.logger.info("Found access transformer for ${mod.modId}")
-                AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
+                AccessTransformerLoader.convertTransformers(accessTransformer.readAllBytes())
             }
         }
     }

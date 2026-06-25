@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.loader.mod.fabric
 
 import net.fabricmc.loader.api.ModContainer
+import net.neoforged.fml.jarcontents.JarContents
 import net.neoforged.neoforgespi.language.IModFileInfo
 import net.neoforged.neoforgespi.language.IModInfo
 import net.neoforged.neoforgespi.language.ModFileScanData
@@ -11,8 +12,12 @@ import java.util.function.Supplier
 import kotlin.io.path.name
 
 class FabricModFileWrapper(val mod: ModContainer, private val fileInfo: FabricModFileInfoWrapper) : IModFile {
-    override fun findResource(vararg pathName: String): Path? {
-        return mod.findPath(pathName.joinToString("/")).orElse(null)
+    override fun getId(): String {
+        return this.mod.metadata.id
+    }
+
+    override fun getContents(): JarContents? {
+        return JarContents.ofPaths(this.mod.rootPaths)
     }
 
     override fun getSubstitutionMap(): Supplier<Map<String, Any>> {
