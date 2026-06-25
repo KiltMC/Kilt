@@ -3,9 +3,6 @@ package xyz.bluspring.kilt.loader
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import com.google.gson.JsonParser
-import cpw.mods.modlauncher.Launcher
-import cpw.mods.modlauncher.api.IEnvironment
-import cpw.mods.niofs.union.KiltUnionFileSystemHelper
 import fish.cichlidmc.tinyjson.TinyJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
@@ -15,20 +12,16 @@ import kotlinx.coroutines.stream.consumeAsFlow
 import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.util.FileSystemUtil
-import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.Event
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.loading.FMLLoader
-import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo
 import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper
 import net.neoforged.fml.loading.modscan.ModClassVisitor
 import net.neoforged.fml.loading.toposort.TopologicalSort
-import net.neoforged.neoforgespi.Environment
 import net.neoforged.neoforgespi.language.IModInfo
 import net.neoforged.neoforgespi.language.IModLanguageLoader
 import net.neoforged.neoforgespi.language.MavenVersionAdapter
@@ -47,14 +40,12 @@ import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
-import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.mod.NeoForgeModVersion
 import xyz.bluspring.kilt.loader.mod.NeoForgeVersionConstraint
 import xyz.bluspring.kilt.loader.mod.fabric.WrappedFabricModContainer
 import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
 import xyz.bluspring.kilt.util.buildGraph
 import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
@@ -80,7 +71,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
     private val bridgedModDefinitions = mutableListOf<ModDefinition>()
 
-    private val environment = KiltEnvironment()
     var config = KiltLoaderConfig()
 
     val languageLoaders: Collection<IModLanguageLoader> by lazy {
@@ -647,20 +637,6 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     }
 
     override fun preInitialize() {
-        // DON'T TRY TO MAKE THIS USE "Environment.Keys".
-        // OTHERWISE THE BUILD WILL FAIL.
-        environment.computePropertyIfAbsent(IEnvironment.buildKey("FORGEDIST", Dist::class.java).get()) { DistUtil.envTypeToDist(FabricLoader.getInstance().environmentType) }
-        //environment.computePropertyIfAbsent(IEnvironment.buildKey("MODFILEFACTORY", ModFileFactory::class.java).get()) { KiltModFileFactory() }
-
-        environment.computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
-        Launcher.INSTANCE.environment().computePropertyIfAbsent(IEnvironment.Keys.VERSION.get()) { MC_VERSION.friendlyString }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.GAMEDIR.get()) { FabricLoader.getInstance().gameDir }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.ASSETSDIR.get()) { Path(FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("assetsDir", FabricLoader.getInstance().gameDir.absolutePathString())) }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
-        environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
-        Environment.build(environment) // Use Kilt's environment
-        FMLPaths.setup(environment) // jesus christ
-
         // Load Java coremods, this should be handled before access transformers so we don't mess with access modifier stuff.
         // Although, people probably shouldn't be relying on that.
         CoreModLoader.loadJavaCoreMods()

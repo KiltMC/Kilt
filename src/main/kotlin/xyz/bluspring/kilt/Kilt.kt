@@ -3,7 +3,6 @@ package xyz.bluspring.kilt
 import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -13,7 +12,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.GlobalPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
-import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
@@ -224,11 +222,6 @@ class Kilt : ModInitializer {
 //            if (CommonHooks.onLivingDrops(event.entity, event.source, event.drops, event.isRecentlyHit))
 //                event.isCanceled = true
 //        }
-
-        EntityElytraEvents.CUSTOM.register { entity, tickElytra ->
-            val chestPiece = entity.getItemBySlot(EquipmentSlot.CHEST)
-            chestPiece.canElytraFly(entity) && chestPiece.elytraFlightTick(entity, entity.fallFlyingTicks)
-        }
     }
 
     companion object {

@@ -1,16 +1,7 @@
 package xyz.bluspring.kilt.loader.asm.coremod
 
 import com.google.gson.JsonParser
-import cpw.mods.modlauncher.VoteDeadlockException
-import cpw.mods.modlauncher.VoteRejectedException
-import cpw.mods.modlauncher.api.ITransformer
-import cpw.mods.modlauncher.api.ITransformerActivity
-import cpw.mods.modlauncher.api.TargetType
-import cpw.mods.modlauncher.api.TransformerVoteResult
 import net.fabricmc.loader.impl.gui.FabricGuiEntry
-import net.minecraftforge.fart.internal.EnhancedClassRemapper
-import net.minecraftforge.fart.internal.RenamingTransformer
-import net.neoforged.neoforgespi.coremod.ICoreMod
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.signature.SignatureReader
@@ -23,7 +14,6 @@ import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.KiltRemapper.enhancedRemapper
 import java.security.MessageDigest
 import java.util.*
 

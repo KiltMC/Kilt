@@ -265,16 +265,14 @@ dependencies {
         exclude("org.ow2.asm")
     })
     implementation(include("org.apache.maven:maven-artifact:3.8.5")!!)
-    api(include("cpw.mods:securejarhandler:${property("securejarhandler_version")}") {
-        exclude("org.ow2.asm")
-    })
     implementation(include("net.jodah:typetools:0.6.3")!!)
     implementation(include("net.neoforged:mergetool:2.0.0") {
         exclude("org.ow2.asm")
     })
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
-    implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
+    implementation(include("com.electronwill.night-config:core:${property("nightconfig_version")}")!!)
+    implementation(include("com.electronwill.night-config:toml:${property("nightconfig_version")}")!!)
 
     api(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 

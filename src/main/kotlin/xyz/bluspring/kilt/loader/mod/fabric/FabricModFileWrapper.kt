@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.loader.mod.fabric
 
-import cpw.mods.jarhandling.SecureJar
 import net.fabricmc.loader.api.ModContainer
 import net.neoforged.neoforgespi.language.IModFileInfo
 import net.neoforged.neoforgespi.language.IModInfo
@@ -26,13 +25,6 @@ class FabricModFileWrapper(val mod: ModContainer, private val fileInfo: FabricMo
 
     override fun getFilePath(): Path? {
         return mod.rootPaths.first()
-    }
-
-    override fun getSecureJar(): SecureJar? {
-        return null
-    }
-
-    override fun setSecurityStatus(status: SecureJar.Status) {
     }
 
     override fun getModInfos(): List<IModInfo> {

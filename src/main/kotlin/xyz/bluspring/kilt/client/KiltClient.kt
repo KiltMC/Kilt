@@ -1,8 +1,5 @@
 package xyz.bluspring.kilt.client
 
-import com.google.common.collect.ImmutableMap
-import io.github.fabricators_of_create.porting_lib.event.client.TextureAtlasStitchedEvent
-import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
@@ -10,13 +7,8 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.ResourceLocation
-import net.neoforged.fml.ModLoader
 import net.neoforged.neoforge.client.ClientHooks
-import net.neoforged.neoforge.client.event.ModelEvent
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader
 import net.neoforged.neoforge.event.EventHooks
-import xyz.bluspring.kilt.mixin.GeometryLoaderManagerAccessor
 
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
@@ -37,60 +29,61 @@ class KiltClient : ClientModInitializer {
             EventHooks.onItemTooltip(stack, null, components, flags, context)
         }
 
-        TextureAtlasStitchedEvent.EVENT.register { event ->
-            val forgeEvent = net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent(event.atlas)
-            ModLoader.postEventWrapContainerInModOrder(forgeEvent)
-        }
-
-        RegisterGeometryLoadersCallback.EVENT.register { map ->
-            shouldPostGeoLoaders = true
-
-            val neoMap = mutableMapOf<ResourceLocation, IGeometryLoader<*>>()
-            ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
-
-            // Convert, because it just works.
-            map.putAll(neoMap)
-        }
+//        TextureAtlasStitchedEvent.EVENT.register { event ->
+//            val forgeEvent = net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent(event.atlas)
+//            ModLoader.postEventWrapContainerInModOrder(forgeEvent)
+//        }
+//
+//        RegisterGeometryLoadersCallback.EVENT.register { map ->
+//            shouldPostGeoLoaders = true
+//
+//            val neoMap = mutableMapOf<ResourceLocation, IGeometryLoader<*>>()
+//            ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
+//
+//            // Convert, because it just works.
+//            map.putAll(neoMap)
+//        }
 
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
-            ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
-                !ClientHooks.onScreenMouseClickedPre(screen, mouseX, mouseY, button)
+            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+                !ClientHooks.onScreenMouseClickedPre(screen, event, false) // TODO: set double click
             }
 
-            ScreenMouseEvents.afterMouseClick(screen).register { _, mouseX, mouseY, button ->
-                ClientHooks.onScreenMouseClickedPost(screen, mouseX, mouseY, button, true) // TODO: set handled
+            ScreenMouseEvents.afterMouseClick(screen).register { _, event, handled ->
+                ClientHooks.onScreenMouseClickedPost(screen, event, false, handled) // TODO: set double click
             }
 
-            ScreenMouseEvents.allowMouseRelease(screen).register { _, mouseX, mouseY, button ->
-                !ClientHooks.onScreenMouseReleasedPre(screen, mouseX, mouseY, button)
+            ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
+                !ClientHooks.onScreenMouseReleasedPre(screen, event)
             }
 
-            ScreenMouseEvents.afterMouseRelease(screen).register { _, mouseX, mouseY, button ->
-                ClientHooks.onScreenMouseReleasedPost(screen, mouseX, mouseY, button, true) // TODO: set handled
+            ScreenMouseEvents.afterMouseRelease(screen).register { _, event, handled ->
+                ClientHooks.onScreenMouseReleasedPost(screen, event, handled)
             }
 
             ScreenMouseEvents.allowMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
                 !ClientHooks.onScreenMouseScrollPre(Minecraft.getInstance().mouseHandler, screen, scrollX, scrollY)
             }
 
-            ScreenMouseEvents.afterMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
+            ScreenMouseEvents.afterMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY, handled ->
                 ClientHooks.onScreenMouseScrollPost(Minecraft.getInstance().mouseHandler, screen, scrollX, scrollY)
+                handled
             }
 
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, key, scanCode, modifiers ->
-                !ClientHooks.onScreenKeyPressedPre(screen, key, scanCode, modifiers)
+            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+                !ClientHooks.onScreenKeyPressedPre(screen, event)
             }
 
-            ScreenKeyboardEvents.afterKeyPress(screen).register { _, key, scanCode, modifiers ->
-                ClientHooks.onScreenKeyPressedPost(screen, key, scanCode, modifiers)
+            ScreenKeyboardEvents.afterKeyPress(screen).register { _, event ->
+                ClientHooks.onScreenKeyPressedPost(screen, event)
             }
 
-            ScreenKeyboardEvents.allowKeyRelease(screen).register { _, key, scanCode, modifiers ->
-                !ClientHooks.onScreenKeyReleasedPre(screen, key, scanCode, modifiers)
+            ScreenKeyboardEvents.allowKeyRelease(screen).register { _, event ->
+                !ClientHooks.onScreenKeyReleasedPre(screen, event)
             }
 
-            ScreenKeyboardEvents.afterKeyRelease(screen).register { _, key, scanCode, modifiers ->
-                ClientHooks.onScreenKeyReleasedPost(screen, key, scanCode, modifiers)
+            ScreenKeyboardEvents.afterKeyRelease(screen).register { _, event ->
+                ClientHooks.onScreenKeyReleasedPost(screen, event)
             }
         }
 
@@ -110,11 +103,11 @@ class KiltClient : ClientModInitializer {
             ClientHooks.fireClientTickPost()
         }
 
-        ClientTickEvents.START_WORLD_TICK.register {
+        ClientTickEvents.START_LEVEL_TICK.register {
             EventHooks.fireLevelTickPre(it) { true }
         }
 
-        ClientTickEvents.END_WORLD_TICK.register {
+        ClientTickEvents.END_LEVEL_TICK.register {
             EventHooks.fireLevelTickPost(it) { true }
         }
 
@@ -134,15 +127,15 @@ class KiltClient : ClientModInitializer {
         private var shouldPostGeoLoaders = false
 
         fun lateRegisterEvents() {
-            if (shouldPostGeoLoaders) {
-                val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
-                val neoMap = mutableMapOf<ResourceLocation, IGeometryLoader<*>>()
-                ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
-
-                map.putAll(neoMap)
-                GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
-                GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })
-            }
+//            if (shouldPostGeoLoaders) {
+//                val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
+//                val neoMap = mutableMapOf<Identifier, IGeometryLoader<*>>()
+//                ModLoader.postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(neoMap))
+//
+//                map.putAll(neoMap)
+//                GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
+//                GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })
+//            }
         }
     }
 }

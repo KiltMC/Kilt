@@ -21,7 +21,6 @@
     "DyeColorAccessor",
     "EntityAccessor",
     "FluidTypeAccessor",
-    "GeometryLoaderManagerAccessor",
     "GrassColorModifierAccessor",
     "InvertedLootItemConditionAccessor",
     "ItemBlockRenderTypesAccessor",

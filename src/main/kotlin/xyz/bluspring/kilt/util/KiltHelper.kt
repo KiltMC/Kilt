@@ -1,6 +1,5 @@
 package xyz.bluspring.kilt.util
 
-import cpw.mods.util.Lazy
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.neoforged.fml.ModLoadingContext
@@ -20,7 +19,7 @@ import java.util.jar.JarFile
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
 
-    private val cachedForgeClassNodes = Lazy.of { getForgeClassNodesInternal() }
+    private val cachedForgeClassNodes by lazy { getForgeClassNodesInternal() }
     private var isForgeClassNodesCleared = false
 
     // normally I'd expect a synchronized map to be faster, but in our case I guess concurrent hash map is faster?
@@ -96,11 +95,11 @@ object KiltHelper {
             throw IllegalStateException("NeoForge class nodes have already been cleared!")
         }
 
-        return cachedForgeClassNodes.get()
+        return cachedForgeClassNodes
     }
 
     fun clearForgeClassNodes() {
-        cachedForgeClassNodes.get().clear()
+        cachedForgeClassNodes.clear()
         isForgeClassNodesCleared = true
     }
 
