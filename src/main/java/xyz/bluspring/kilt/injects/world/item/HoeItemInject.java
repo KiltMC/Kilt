@@ -1,33 +1,31 @@
 package xyz.bluspring.kilt.injects.world.item;
 
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.BlockPos;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(HoeItem.class)
-public abstract class HoeItemInject extends DiggerItem {
-    public HoeItemInject(Tier tier, TagKey<Block> blocks, Properties properties) {
-        super(tier, blocks, properties);
+public abstract class HoeItemInject extends Item {
+    public HoeItemInject(Properties properties) {
+        super(properties);
     }
 
     @Shadow public static Consumer<UseOnContext> changeIntoState(BlockState state) {
@@ -42,7 +40,7 @@ public abstract class HoeItemInject extends DiggerItem {
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+    public boolean canPerformAction(ItemInstance stack, ItemAbility toolAction) {
         return ItemAbilities.DEFAULT_HOE_ACTIONS.contains(toolAction);
     }
 }

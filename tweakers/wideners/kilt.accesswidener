@@ -58,3 +58,10 @@ accessible field net/minecraft/client/renderer/chunk/SectionRenderDispatcher lev
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask
 accessible method net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection updateGlobalBlockEntities (Ljava/util/Collection;)V
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$SectionTaskResult
+
+accessible class net/minecraft/world/item/alchemy/PotionBrewing$Mix
+accessible class net/minecraft/world/level/lighting/BlockLightSectionStorage$BlockDataLayerStorageMap
+accessible class net/minecraft/world/level/entity/TransientEntitySectionManager$Callback
+accessible class net/minecraft/world/level/entity/PersistentEntitySectionManager$Callback
+accessible field net/minecraft/world/item/ShovelItem FLATTENABLES Ljava/util/Map;
+accessible field net/minecraft/world/item/AxeItem STRIPPABLES Ljava/util/Map;

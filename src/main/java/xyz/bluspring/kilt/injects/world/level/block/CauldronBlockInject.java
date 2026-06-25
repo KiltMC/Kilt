@@ -20,7 +20,7 @@ public abstract class CauldronBlockInject extends Block {
 
     @Inject(method = "receiveStalactiteDrip", at = @At("HEAD"), cancellable = true)
     private void kilt$checkHandleCauldronDrip(BlockState state, Level level, BlockPos pos, Fluid fluid, CallbackInfo ci) {
-        if (fluid.neo$getFluidType().handleCauldronDrip(fluid, level, pos))
+        if (fluid.getFluidType().handleCauldronDrip(fluid, level, pos))
             ci.cancel();
     }
 }

@@ -1,6 +1,15 @@
 package xyz.bluspring.kilt.injects.server.network;
 
 import com.mojang.authlib.GameProfile;
+import net.neoforged.neoforge.network.connection.ConnectionType;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
@@ -9,21 +18,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
-import net.minecraft.util.thread.ReentrantBlockableEventLoop;
-import net.neoforged.neoforge.network.connection.ConnectionType;
-import net.neoforged.neoforge.network.payload.CommonRegisterPayload;
-import net.neoforged.neoforge.network.payload.CommonVersionPayload;
-import net.neoforged.neoforge.network.payload.MinecraftRegisterPayload;
-import net.neoforged.neoforge.network.payload.MinecraftUnregisterPayload;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.server.network.CommonListenerCookieInjection;
 
 @Mixin(ServerCommonPacketListenerImpl.class)
 public abstract class ServerCommonPacketListenerImplInject implements ServerCommonPacketListener {
@@ -101,11 +95,6 @@ public abstract class ServerCommonPacketListenerImplInject implements ServerComm
     @Override
     public Connection getConnection() {
         return this.connection;
-    }
-
-    @Override
-    public ReentrantBlockableEventLoop<?> getMainThreadEventLoop() {
-        return this.server;
     }
 
     @Override

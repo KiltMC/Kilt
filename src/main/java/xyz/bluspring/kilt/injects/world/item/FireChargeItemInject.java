@@ -18,7 +18,7 @@ import xyz.bluspring.kilt.util.KiltHelper;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.FireChargeItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -58,7 +58,7 @@ public abstract class FireChargeItemInject extends Item {
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+    public boolean canPerformAction(ItemInstance stack, ItemAbility itemAbility) {
         return ItemAbilities.DEFAULT_FIRECHARGE_ACTIONS.contains(itemAbility);
     }
 }

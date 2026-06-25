@@ -9,8 +9,8 @@ import xyz.bluspring.kilt.mixin.world.item.CreativeModeTabBuilderAccessor;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ItemLike;
 
@@ -28,9 +28,9 @@ public interface CreativeModeTabInjection {
 
     // Helper method for both create() here and <init> in the mixin
     default void kilt$assignValues(CreativeModeTab.Builder builder) {}
-    default void kilt$setScrollerSprite(ResourceLocation location) {}
+    default void kilt$setScrollerSprite(Identifier location) {}
 
-    default ResourceLocation getScrollerSprite() {
+    default Identifier getScrollerSprite() {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "getScrollerSprite");
     }
 
@@ -42,7 +42,7 @@ public interface CreativeModeTabInjection {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "getSearchBarWidth");
     }
 
-    default ResourceLocation getTabsImage() {
+    default Identifier getTabsImage() {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "getTabsImage");
     }
 
@@ -54,16 +54,16 @@ public interface CreativeModeTabInjection {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "");
     }
 
-    default List<ResourceLocation> kilt$getTabsBefore() {
+    default List<Identifier> kilt$getTabsBefore() {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "kilt$getTabsBefore");
     }
 
-    default List<ResourceLocation> kilt$getTabsAfter() {
+    default List<Identifier> kilt$getTabsAfter() {
         throw KiltHelper.createMixinException(CreativeModeTabInjection.class, "kilt$getTabsAfter");
     }
 
     interface BuilderInjection {
-        default CreativeModeTab.Builder withScrollBarSpriteLocation(ResourceLocation location) {
+        default CreativeModeTab.Builder withScrollBarSpriteLocation(Identifier location) {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withScrollBarSpriteLocation");
         }
 
@@ -75,7 +75,7 @@ public interface CreativeModeTabInjection {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withSearchBar");
         }
 
-        default CreativeModeTab.Builder withTabsImage(ResourceLocation tabsImage) {
+        default CreativeModeTab.Builder withTabsImage(Identifier tabsImage) {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withTabsImage");
         }
 
@@ -99,11 +99,11 @@ public interface CreativeModeTabInjection {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withTabsAfter");
         }
 
-        default CreativeModeTab.Builder withTabsBefore(ResourceLocation... tabs) {
+        default CreativeModeTab.Builder withTabsBefore(Identifier... tabs) {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withTabsBefore");
         }
 
-        default CreativeModeTab.Builder withTabsAfter(ResourceLocation... tabs) {
+        default CreativeModeTab.Builder withTabsAfter(Identifier... tabs) {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "withTabsAfter");
         }
 
@@ -119,7 +119,7 @@ public interface CreativeModeTabInjection {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$searchBarWidth");
         }
 
-        default ResourceLocation kilt$getTabsImage() {
+        default Identifier kilt$getTabsImage() {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$getTabsImage");
         }
 
@@ -135,15 +135,15 @@ public interface CreativeModeTabInjection {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$getTabFactory");
         }
 
-        default List<ResourceLocation> kilt$getTabsBefore() {
+        default List<Identifier> kilt$getTabsBefore() {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$getTabsBefore");
         }
 
-        default List<ResourceLocation> kilt$getTabsAfter() {
+        default List<Identifier> kilt$getTabsAfter() {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$getTabsAfter");
         }
 
-        default ResourceLocation kilt$scrollerSpriteLocation() {
+        default Identifier kilt$scrollerSpriteLocation() {
             throw KiltHelper.createMixinException(CreativeModeTabInjection.BuilderInjection.class, "kilt$scrollerSpriteLocation");
         }
     }

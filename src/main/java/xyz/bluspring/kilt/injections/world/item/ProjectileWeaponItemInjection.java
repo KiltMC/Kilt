@@ -1,12 +1,13 @@
 package xyz.bluspring.kilt.injections.world.item;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.ItemStack;
+import java.util.function.Predicate;
+
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.function.Predicate;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
 
 public interface ProjectileWeaponItemInjection {
     default Predicate<ItemStack> getSupportedHeldProjectiles(ItemStack stack) {

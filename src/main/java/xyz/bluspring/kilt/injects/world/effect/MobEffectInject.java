@@ -19,7 +19,7 @@ import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.effect.MobEffectInjection;
 
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -29,7 +29,7 @@ public abstract class MobEffectInject implements MobEffectInjection, IMobEffectE
     @Shadow @Final private Map<Holder<Attribute>, MobEffect.AttributeTemplate> attributeModifiers;
 
     @Override
-    public MobEffect addAttributeModifier(Holder<Attribute> attribute, ResourceLocation id, AttributeModifier.Operation operation, Int2DoubleFunction curve) {
+    public MobEffect addAttributeModifier(Holder<Attribute> attribute, Identifier id, AttributeModifier.Operation operation, Int2DoubleFunction curve) {
         var template = new MobEffect.AttributeTemplate(id, curve.apply(0), operation);
         ((MobEffectInjection.AttributeTemplateInjection) template).kilt$setAttributeCurve(curve);
         this.attributeModifiers.put(attribute, template);
@@ -42,10 +42,10 @@ public abstract class MobEffectInject implements MobEffectInjection, IMobEffectE
 
     @Mixin(MobEffect.AttributeTemplate.class)
     public abstract static class AttributeTemplateInject implements MobEffectInjection.AttributeTemplateInjection {
-        public AttributeTemplateInject(ResourceLocation id, double amount, AttributeModifier.Operation operation) {}
+        public AttributeTemplateInject(Identifier id, double amount, AttributeModifier.Operation operation) {}
 
         @CreateInitializer
-        public AttributeTemplateInject(ResourceLocation id, double amount, AttributeModifier.Operation operation, @Nullable Int2DoubleFunction curve) {
+        public AttributeTemplateInject(Identifier id, double amount, AttributeModifier.Operation operation, @Nullable Int2DoubleFunction curve) {
             this(id, amount, operation);
             this.kilt$setAttributeCurve(curve);
         }
@@ -64,7 +64,7 @@ public abstract class MobEffectInject implements MobEffectInjection, IMobEffectE
             RecordMixinRefMaps.EXTENDED_ATTRIBUTE_TEMPLATE.put((MobEffect.AttributeTemplate) (Object) this, new RecordMixinRefMaps.ExtendedAttributeTemplate(curve));
         }
 
-        @ModifyArg(method = "create", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;<init>(Lnet/minecraft/resources/ResourceLocation;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V"))
+        @ModifyArg(method = "create", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;<init>(Lnet/minecraft/resources/Identifier;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V"))
         private double kilt$useNeoAttributeCurve(double original, @Local(argsOnly = true) int level) {
             if (this.curve() != null) {
                 return this.curve().apply(level);

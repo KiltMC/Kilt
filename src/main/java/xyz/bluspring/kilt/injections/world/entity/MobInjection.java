@@ -1,10 +1,10 @@
 package xyz.bluspring.kilt.injections.world.entity;
 
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 
 public interface MobInjection {
     boolean isSpawnCancelled();
     void setSpawnCancelled(boolean cancel);
 
-    MobSpawnType getSpawnType();
+    EntitySpawnReason getSpawnType();
 }

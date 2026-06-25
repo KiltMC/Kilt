@@ -1,20 +1,21 @@
 package xyz.bluspring.kilt.injects.tags;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagEntry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.injections.tags.TagEntryInjection;
 
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagEntry;
+
 @Mixin(TagEntry.class)
 public abstract class TagEntryInject implements TagEntryInjection {
-    @Shadow @Final private ResourceLocation id;
+    @Shadow @Final private Identifier id;
     @Shadow @Final private boolean required;
     @Shadow @Final private boolean tag;
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

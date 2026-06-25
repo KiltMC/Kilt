@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -36,9 +36,9 @@ public abstract class TrialSpawnerInject implements IOwnedSpawner {
         return true;
     }
 
-    @WrapOperation(method = "spawnMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;finalizeSpawn(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;"))
-    private SpawnGroupData kilt$handleMobSpawnEvent(Mob instance, ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, SpawnGroupData spawnGroupData, Operation<SpawnGroupData> original, @Local boolean flag) {
-        return EventHooks.kilt$finalizeMobSpawnSpawner(instance, level, difficulty, spawnType, spawnGroupData, this, flag, original);
+    @WrapOperation(method = "spawnMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;finalizeSpawn(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;"))
+    private SpawnGroupData kilt$handleMobSpawnEvent(Mob instance, ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, SpawnGroupData groupData, Operation<SpawnGroupData> original, @Local boolean flag) {
+        return EventHooks.kilt$finalizeMobSpawnSpawner(instance, level, difficulty, spawnReason, groupData, this, flag, original);
     }
 
     @Override

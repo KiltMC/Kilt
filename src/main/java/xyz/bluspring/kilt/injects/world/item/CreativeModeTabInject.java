@@ -28,8 +28,8 @@ import xyz.bluspring.kilt.mixin.world.item.CreativeModeTabBuilderAccessor;
 
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,17 +40,17 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     @Shadow
     public abstract boolean canScroll();
 
-    @Unique private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
-    @Unique private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller_disabled");
+    @Unique private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller");
+    @Unique private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
 
-    @Unique private ResourceLocation scrollerSpriteLocation;
+    @Unique private Identifier scrollerSpriteLocation;
     @Unique private boolean hasSearchBar;
     @Unique private int searchBarWidth;
-    @Unique private ResourceLocation tabImage;
+    @Unique private Identifier tabImage;
     @Unique private int labelColor = Integer.MIN_VALUE;
     @Unique private int slotColor = Integer.MIN_VALUE;
-    @Unique private List<ResourceLocation> tabsBefore = new ArrayList<>();
-    @Unique private List<ResourceLocation> tabsAfter = new ArrayList<>();
+    @Unique private List<Identifier> tabsBefore = new ArrayList<>();
+    @Unique private List<Identifier> tabsAfter = new ArrayList<>();
 
     CreativeModeTabInject(CreativeModeTab.Row row, int column, CreativeModeTab.Type type, Component displayName, Supplier<ItemStack> iconGenerator, CreativeModeTab.DisplayItemsGenerator displayItemGenerator) {
     }
@@ -87,17 +87,17 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     }
 
     @WrapOperation(method = "buildContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;accept(Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;Lnet/minecraft/world/item/CreativeModeTab$Output;)V"))
-    private void kilt$buildContentsWithNeoForge(CreativeModeTab.DisplayItemsGenerator instance, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output output, Operation<Void> original, @Local ResourceKey<CreativeModeTab> resourceKey) {
-        EventHooks.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, resourceKey, (params, out) -> original.call(instance, params, out), parameters, output);
+    private void kilt$buildContentsWithNeoForge(CreativeModeTab.DisplayItemsGenerator instance, CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output output, Operation<Void> original) {
+        EventHooks.onCreativeModeTabBuildContents((CreativeModeTab) (Object) this, (params, out) -> original.call(instance, params, out), parameters, output);
     }
 
     @Override
-    public void kilt$setScrollerSprite(ResourceLocation location) {
+    public void kilt$setScrollerSprite(Identifier location) {
         this.scrollerSpriteLocation = location;
     }
 
     @Override
-    public ResourceLocation getScrollerSprite() {
+    public Identifier getScrollerSprite() {
         if (this.scrollerSpriteLocation == null)
             return this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
 
@@ -115,7 +115,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     }
 
     @Override
-    public ResourceLocation getTabsImage() {
+    public Identifier getTabsImage() {
         return tabImage;
     }
 
@@ -130,38 +130,38 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     }
 
     @Override
-    public List<ResourceLocation> kilt$getTabsBefore() {
+    public List<Identifier> kilt$getTabsBefore() {
         return this.tabsBefore;
     }
 
     @Override
-    public List<ResourceLocation> kilt$getTabsAfter() {
+    public List<Identifier> kilt$getTabsAfter() {
         return this.tabsAfter;
     }
 
     @Mixin(CreativeModeTab.Builder.class)
     public static abstract class BuilderInject implements CreativeModeTabInjection.BuilderInjection {
         @Shadow
-        private ResourceLocation backgroundTexture;
+        private Identifier backgroundTexture;
 
         @Shadow
-        public abstract CreativeModeTab.Builder backgroundTexture(ResourceLocation resourceLocation);
+        public abstract CreativeModeTab.Builder backgroundTexture(Identifier resourceLocation);
 
         @Shadow
         public abstract CreativeModeTab.Builder displayItems(CreativeModeTab.DisplayItemsGenerator displayItemsGenerator);
 
-        @Unique private static final ResourceLocation CREATIVE_INVENTORY_TABS_IMAGE = ResourceLocation.withDefaultNamespace("textures/gui/container/creative_inventory/tabs.png");
-        @Unique private static final ResourceLocation CREATIVE_ITEM_SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
+        @Unique private static final Identifier CREATIVE_INVENTORY_TABS_IMAGE = Identifier.withDefaultNamespace("textures/gui/container/creative_inventory/tabs.png");
+        @Unique private static final Identifier CREATIVE_ITEM_SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
 
-        @Unique @Nullable private ResourceLocation spriteScrollerLocation;
+        @Unique @Nullable private Identifier spriteScrollerLocation;
         @Unique private boolean hasSearchBar = false;
         @Unique private int searchBarWidth = 89;
-        @Unique private ResourceLocation tabsImage = CREATIVE_INVENTORY_TABS_IMAGE;
+        @Unique private Identifier tabsImage = CREATIVE_INVENTORY_TABS_IMAGE;
         @Unique private int labelColor = 4210752;
         @Unique private int slotColor = -2130706433;
         @Unique private Function<CreativeModeTab.Builder, CreativeModeTab> tabFactory = CreativeModeTabInjection::create;
-        @Unique private final List<ResourceLocation> tabsBefore = new ArrayList<>();
-        @Unique private final List<ResourceLocation> tabsAfter = new ArrayList<>();
+        @Unique private final List<Identifier> tabsBefore = new ArrayList<>();
+        @Unique private final List<Identifier> tabsAfter = new ArrayList<>();
 
         @Unique
         private CreativeModeTab.Builder self() {
@@ -169,7 +169,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public CreativeModeTab.Builder withScrollBarSpriteLocation(ResourceLocation background) {
+        public CreativeModeTab.Builder withScrollBarSpriteLocation(Identifier background) {
             this.spriteScrollerLocation = background;
             return self();
         }
@@ -190,7 +190,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public CreativeModeTab.Builder withTabsImage(ResourceLocation tabsImage) {
+        public CreativeModeTab.Builder withTabsImage(Identifier tabsImage) {
             this.tabsImage = tabsImage;
             return self();
         }
@@ -215,13 +215,13 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
 
         @Override
         public CreativeModeTab.Builder withTabsBefore(ResourceKey<CreativeModeTab>... tabs) {
-            Stream.of(tabs).map(ResourceKey::location).forEach(this.tabsBefore::add);
+            Stream.of(tabs).map(ResourceKey::identifier).forEach(this.tabsBefore::add);
             return self();
         }
 
         @Override
         public CreativeModeTab.Builder withTabsAfter(ResourceKey<CreativeModeTab>... tabs) {
-            Stream.of(tabs).map(ResourceKey::location).forEach(this.tabsAfter::add);
+            Stream.of(tabs).map(ResourceKey::identifier).forEach(this.tabsAfter::add);
             return self();
         }
 
@@ -237,13 +237,13 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public CreativeModeTab.Builder withTabsBefore(ResourceLocation... tabs) {
+        public CreativeModeTab.Builder withTabsBefore(Identifier... tabs) {
             this.tabsBefore.addAll(List.of(tabs));
             return self();
         }
 
         @Override
-        public CreativeModeTab.Builder withTabsAfter(ResourceLocation... tabs) {
+        public CreativeModeTab.Builder withTabsAfter(Identifier... tabs) {
             this.tabsAfter.addAll(List.of(tabs));
             return self();
         }
@@ -259,7 +259,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public ResourceLocation kilt$getTabsImage() {
+        public Identifier kilt$getTabsImage() {
             return tabsImage;
         }
 
@@ -279,12 +279,12 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public List<ResourceLocation> kilt$getTabsBefore() {
+        public List<Identifier> kilt$getTabsBefore() {
             return tabsBefore;
         }
 
         @Override
-        public List<ResourceLocation> kilt$getTabsAfter() {
+        public List<Identifier> kilt$getTabsAfter() {
             return tabsAfter;
         }
 
@@ -302,7 +302,7 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
         }
 
         @Override
-        public ResourceLocation kilt$scrollerSpriteLocation() {
+        public Identifier kilt$scrollerSpriteLocation() {
             return this.spriteScrollerLocation;
         }
     }

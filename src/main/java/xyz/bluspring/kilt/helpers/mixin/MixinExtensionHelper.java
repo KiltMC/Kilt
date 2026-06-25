@@ -21,7 +21,6 @@ import org.objectweb.asm.tree.MethodNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
 import org.spongepowered.asm.util.asm.MethodNodeEx;
-import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 
 public final class MixinExtensionHelper {
     public static final String LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory.class);
@@ -236,10 +235,6 @@ public final class MixinExtensionHelper {
 
                 targetClass.methods.add(method);
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
-                // Comment the stuff below if you want to use this in your own mod. You most likely need to remap stuff still.
-                methodNode.name = KiltRemapper.INSTANCE.getEnhancedRemapper().mapMethodName(KiltRemapper.INSTANCE.remapClass(targetClass.name), methodNode.name, methodNode.desc);
-                methodNode.desc = KiltRemapper.INSTANCE.remapDescriptor(methodNode.desc);
-
                 var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
 
                 if (originalMethods.isEmpty()) {

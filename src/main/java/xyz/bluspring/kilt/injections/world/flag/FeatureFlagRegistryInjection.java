@@ -1,17 +1,18 @@
 package xyz.bluspring.kilt.injections.world.flag;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlag;
-import xyz.bluspring.kilt.util.KiltHelper;
-
 import java.util.Map;
 
+import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.flag.FeatureFlag;
+
 public interface FeatureFlagRegistryInjection {
-    default FeatureFlag getFlag(ResourceLocation id) {
+    default FeatureFlag getFlag(Identifier id) {
         throw KiltHelper.createMixinException(FeatureFlagInjection.class, "getFlag");
     }
 
-    default Map<ResourceLocation, FeatureFlag> getAllFlags() {
+    default Map<Identifier, FeatureFlag> getAllFlags() {
         throw KiltHelper.createMixinException(FeatureFlagInjection.class, "getAllFlags");
     }
 
@@ -20,7 +21,7 @@ public interface FeatureFlagRegistryInjection {
     }
 
     interface BuilderInjection {
-        default FeatureFlag create(ResourceLocation id, boolean modded) {
+        default FeatureFlag create(Identifier id, boolean modded) {
             throw KiltHelper.createMixinException(FeatureFlagRegistryInjection.BuilderInjection.class, "create");
         }
     }

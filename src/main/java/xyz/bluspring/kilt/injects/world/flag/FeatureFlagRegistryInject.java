@@ -1,16 +1,13 @@
 package xyz.bluspring.kilt.injects.world.flag;
 
+import java.util.Map;
+
 import com.google.common.base.Preconditions;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlag;
-import net.minecraft.world.flag.FeatureFlagRegistry;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlagUniverse;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,19 +16,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.injections.world.flag.FeatureFlagInjection;
 import xyz.bluspring.kilt.injections.world.flag.FeatureFlagRegistryInjection;
 
-import java.util.Map;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagRegistry;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlagUniverse;
 
 @Mixin(FeatureFlagRegistry.class)
 public abstract class FeatureFlagRegistryInject implements FeatureFlagRegistryInjection {
-    @Shadow @Final private Map<ResourceLocation, FeatureFlag> names;
+    @Shadow @Final private Map<Identifier, FeatureFlag> names;
 
     @Override
-    public FeatureFlag getFlag(ResourceLocation id) {
+    public FeatureFlag getFlag(Identifier id) {
         return Preconditions.checkNotNull(this.names.get(id), "Flag %s was not registered", id);
     }
 
     @Override
-    public Map<ResourceLocation, FeatureFlag> getAllFlags() {
+    public Map<Identifier, FeatureFlag> getAllFlags() {
         return this.names;
     }
 
@@ -43,12 +44,12 @@ public abstract class FeatureFlagRegistryInject implements FeatureFlagRegistryIn
     @Mixin(FeatureFlagRegistry.Builder.class)
     public static abstract class BuilderInject implements FeatureFlagRegistryInjection.BuilderInjection {
         @Shadow
-        public abstract FeatureFlag create(ResourceLocation resourceLocation);
+        public abstract FeatureFlag create(Identifier identifier);
 
         @Unique private boolean kilt$isModded = false;
 
         @Override
-        public FeatureFlag create(ResourceLocation id, boolean modded) {
+        public FeatureFlag create(Identifier id, boolean modded) {
             this.kilt$isModded = modded;
             FeatureFlag flag = this.create(id);
             this.kilt$isModded = false;

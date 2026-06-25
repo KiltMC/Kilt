@@ -1,14 +1,15 @@
 package xyz.bluspring.kilt.mixin;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
+import java.util.function.Supplier;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import java.util.function.Supplier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 
 @Mixin(CreativeModeTab.class)
 public interface CreativeModeTabAccessor {
@@ -18,7 +19,7 @@ public interface CreativeModeTabAccessor {
     }
 
     @Accessor("DEFAULT_BACKGROUND")
-    static ResourceLocation getDefaultBackground() {
+    static Identifier getDefaultBackground() {
         throw new UnsupportedOperationException();
     }
 }

@@ -1,19 +1,20 @@
 package xyz.bluspring.kilt.injections.world.inventory;
 
-import io.github.fabricators_of_create.porting_lib.extensions.common.SlotExtension;
-import net.minecraft.resources.ResourceLocation;
+import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.Slot;
 
-public interface SlotInjection extends SlotExtension {
+public interface SlotInjection {
     default int getSlotIndex() {
-        return port_lib$getSlotIndex();
+        throw KiltHelper.createMixinException(SlotInjection.class, "getSlotIndex");
     }
 
     default boolean isSameInventory(Slot other) {
-        return port_lib$isSameInventory(other);
+        throw KiltHelper.createMixinException(SlotInjection.class, "isSameInventory");
     }
 
-    default Slot setBackground(ResourceLocation atlas, ResourceLocation sprite) {
-        return port_lib$setBackground(atlas, sprite);
+    default Slot setBackground(Identifier atlas, Identifier sprite) {
+        throw KiltHelper.createMixinException(SlotInjection.class, "setBackground");
     }
 }

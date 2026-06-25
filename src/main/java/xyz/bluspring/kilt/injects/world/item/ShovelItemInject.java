@@ -4,14 +4,6 @@ package xyz.bluspring.kilt.injects.world.item;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,10 +13,17 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.ShovelItemInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+
 @Mixin(ShovelItem.class)
-public abstract class ShovelItemInject extends DiggerItem implements ShovelItemInjection {
-    public ShovelItemInject(Tier tier, TagKey<Block> blocks, Properties properties) {
-        super(tier, blocks, properties);
+public abstract class ShovelItemInject extends Item implements ShovelItemInjection {
+    public ShovelItemInject(Properties properties) {
+        super(properties);
     }
 
     @Definition(id = "blockState2", local = @Local(type = BlockState.class, ordinal = 1))
@@ -55,7 +54,7 @@ public abstract class ShovelItemInject extends DiggerItem implements ShovelItemI
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+    public boolean canPerformAction(ItemInstance stack, ItemAbility toolAction) {
         return ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(toolAction);
     }
 }

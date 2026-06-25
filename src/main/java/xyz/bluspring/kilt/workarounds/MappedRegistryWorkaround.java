@@ -1,9 +1,9 @@
 package xyz.bluspring.kilt.workarounds;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface MappedRegistryWorkaround {
 
-    void addAlias(ResourceLocation old, ResourceLocation newId);
+    void addAlias(Identifier old, Identifier newId);
 
 }

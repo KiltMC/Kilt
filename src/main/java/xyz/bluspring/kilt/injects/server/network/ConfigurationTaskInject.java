@@ -1,9 +1,10 @@
 package xyz.bluspring.kilt.injects.server.network;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.network.ConfigurationTask;
 import org.spongepowered.asm.mixin.Mixin;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.network.ConfigurationTask;
 
 @Mixin(ConfigurationTask.class)
 public interface ConfigurationTaskInject {
@@ -12,7 +13,7 @@ public interface ConfigurationTaskInject {
         public TypeInject(String id) {}
 
         @CreateInitializer
-        public TypeInject(ResourceLocation id) {
+        public TypeInject(Identifier id) {
             this(id.toString());
         }
     }

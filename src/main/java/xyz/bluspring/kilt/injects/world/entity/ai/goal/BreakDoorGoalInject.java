@@ -1,12 +1,16 @@
 package xyz.bluspring.kilt.injects.world.entity.ai.goal;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
-import net.minecraft.world.entity.ai.goal.DoorInteractGoal;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
+import net.minecraft.world.entity.ai.goal.DoorInteractGoal;
 
 @Mixin(BreakDoorGoal.class)
 public abstract class BreakDoorGoalInject extends DoorInteractGoal {
@@ -14,8 +18,12 @@ public abstract class BreakDoorGoalInject extends DoorInteractGoal {
         super(mob);
     }
 
-    @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
-    private boolean kilt$checkCanEntityDestroy(boolean original) {
-        return original || CommonHooks.canEntityDestroy(this.mob.level(), this.doorPos, this.mob);
+    @Definition(id = "Boolean", type = Boolean.class)
+    @Definition(id = "get", method = "Lnet/minecraft/world/level/gamerules/GameRules;get(Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;")
+    @Definition(id = "MOB_GRIEFING", field = "Lnet/minecraft/world/level/gamerules/GameRules;MOB_GRIEFING:Lnet/minecraft/world/level/gamerules/GameRule;")
+    @Expression("(Boolean) ?.get(MOB_GRIEFING)")
+    @ModifyExpressionValue(method = "canUse", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private Boolean kilt$checkCanEntityDestroy(Boolean original) {
+        return original || CommonHooks.canEntityDestroy((ServerLevel) this.mob.level(), this.doorPos, this.mob);
     }
 }

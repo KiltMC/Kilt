@@ -1,7 +1,9 @@
 package xyz.bluspring.kilt.injections.network.protocol.common;
 
 import com.google.common.collect.Lists;
-import net.minecraft.Util;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
+import xyz.bluspring.kilt.injections.network.protocol.common.custom.CustomPacketPayloadInjection;
+
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,8 +12,7 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
-import xyz.bluspring.kilt.injections.network.protocol.common.custom.CustomPacketPayloadInjection;
+import net.minecraft.util.Util;
 
 public interface ServerboundCustomPayloadPacketInjection {
     StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayloadInjection.codec(
@@ -27,7 +28,7 @@ public interface ServerboundCustomPayloadPacketInjection {
             public ServerboundCustomPayloadPacket decode(FriendlyByteBuf buf) {
                 var currentIndex = buf.readerIndex();
                 // We want to try to get at least some mod compatibility...
-                var result = NetworkRegistry.getCodec(buf.readResourceLocation(), ConnectionProtocol.CONFIGURATION, PacketFlow.SERVERBOUND);
+                var result = NetworkRegistry.getCodec(buf.readIdentifier(), ConnectionProtocol.CONFIGURATION, PacketFlow.SERVERBOUND);
 
                 if (result != null) {
                     return new ServerboundCustomPayloadPacket(result.decode(buf));
@@ -46,7 +47,7 @@ public interface ServerboundCustomPayloadPacketInjection {
 
                 // We want to try to get at least some mod compatibility...
                 if (result != null) {
-                    buf.writeResourceLocation(packet.type().id());
+                    buf.writeIdentifier(packet.type().id());
                     result.encode(buf, packet.payload());
                     return;
                 }

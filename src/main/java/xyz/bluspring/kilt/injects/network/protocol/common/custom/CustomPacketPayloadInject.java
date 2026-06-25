@@ -16,7 +16,7 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @Mixin(CustomPacketPayload.class)
 public interface CustomPacketPayloadInject extends CustomPacketPayloadInjection {
@@ -25,8 +25,8 @@ public interface CustomPacketPayloadInject extends CustomPacketPayloadInjection 
         @Unique private final ConnectionProtocol kilt$protocol = StupidWorkarounds.kilt$protocol.get();
         @Unique private final PacketFlow kilt$packetFlow = StupidWorkarounds.kilt$packetFlow.get();
 
-        @WrapOperation(method = "findCodec", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload$FallbackProvider;create(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/network/codec/StreamCodec;"))
-        private <B extends FriendlyByteBuf> StreamCodec<? super B, ? extends CustomPacketPayload> kilt$tryCreateNeoCodecIfPossible(CustomPacketPayload.FallbackProvider<B> instance, ResourceLocation resourceLocation, Operation<StreamCodec<B, ? extends CustomPacketPayload>> original) {
+        @WrapOperation(method = "findCodec", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload$FallbackProvider;create(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/network/codec/StreamCodec;"))
+        private <B extends FriendlyByteBuf> StreamCodec<? super B, ? extends CustomPacketPayload> kilt$tryCreateNeoCodecIfPossible(CustomPacketPayload.FallbackProvider<B> instance, Identifier resourceLocation, Operation<StreamCodec<B, ? extends CustomPacketPayload>> original) {
             if (kilt$protocol == null || kilt$packetFlow == null)
                 return original.call(instance, resourceLocation);
 

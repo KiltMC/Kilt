@@ -1,16 +1,16 @@
 package xyz.bluspring.kilt.injects.resources;
 
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+
 @Mixin(ResourceKey.class)
 public abstract class ResourceKeyInject implements Comparable<ResourceKey<?>> {
-    @Shadow public abstract ResourceLocation location();
-
-    @Shadow public abstract ResourceLocation registry();
+    @Shadow public abstract Identifier identifier();
+    @Shadow public abstract Identifier registry();
 
     @Override
     public boolean equals(Object obj) {
@@ -20,14 +20,14 @@ public abstract class ResourceKeyInject implements Comparable<ResourceKey<?>> {
         if (obj == null || this.getClass() != obj.getClass())
             return false;
 
-        return this.location().equals(((ResourceKey<?>) obj).location()) && this.registry().equals(((ResourceKey<?>) obj).registry());
+        return this.identifier().equals(((ResourceKey<?>) obj).identifier()) && this.registry().equals(((ResourceKey<?>) obj).registry());
     }
 
     @Override
     public int compareTo(@NotNull ResourceKey<?> o) {
         int ret = this.registry().compareTo(o.registry());
         if (ret == 0)
-            ret = this.location().compareTo(o.location());
+            ret = this.identifier().compareTo(o.identifier());
 
         return ret;
     }

@@ -1,12 +1,10 @@
 package xyz.bluspring.kilt.injections.world.level.storage.loot;
 
-import io.github.fabricators_of_create.porting_lib.loot.extensions.LootTableExtensions;
-import net.minecraft.world.level.storage.loot.LootPool;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.List;
+import net.minecraft.world.level.storage.loot.LootPool;
 
-public interface LootTableInjection extends LootTableExtensions {
+public interface LootTableInjection {
     default void freeze() {
         throw KiltHelper.createMixinException(LootTableInjection.class, "freeze");
     }

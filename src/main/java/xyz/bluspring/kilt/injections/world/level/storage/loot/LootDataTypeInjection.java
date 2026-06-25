@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface LootDataTypeInjection<T> {
     default @Nullable T defaultValue() {
@@ -18,7 +18,7 @@ public interface LootDataTypeInjection<T> {
         throw KiltHelper.createMixinException(LootDataTypeInjection.class, "conditionalCodec");
     }
 
-    default BiConsumer<T, ResourceLocation> idSetter() {
+    default BiConsumer<T, Identifier> idSetter() {
         throw KiltHelper.createMixinException(LootDataTypeInjection.class, "idSetter");
     }
 }

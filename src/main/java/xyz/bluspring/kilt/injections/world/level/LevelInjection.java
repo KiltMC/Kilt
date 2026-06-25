@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.extensions.common.LevelExtensions;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import xyz.bluspring.kilt.util.KiltHelper;
 
@@ -56,7 +55,7 @@ public interface LevelInjection {
     }
 
     default void markAndNotifyBlock(BlockPos pos, @Nullable LevelChunk levelchunk, BlockState oldState, BlockState newState, int flags, int p_46608_) {
-        ((LevelExtensions) this).port_lib$markAndNotifyBlock(pos, levelchunk, oldState, newState, flags, p_46608_);
+        throw KiltHelper.createMixinException(LevelInjection.class, "markAndNotifyBlock");
     }
 
     default void addFreshBlockEntities(Collection<BlockEntity> list) {

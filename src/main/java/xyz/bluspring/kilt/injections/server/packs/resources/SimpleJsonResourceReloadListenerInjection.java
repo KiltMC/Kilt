@@ -1,10 +1,11 @@
 package xyz.bluspring.kilt.injections.server.packs.resources;
 
-import net.minecraft.resources.ResourceLocation;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.resources.Identifier;
+
 public interface SimpleJsonResourceReloadListenerInjection {
-    default ResourceLocation getPreparedPath(ResourceLocation loc) {
+    default Identifier getPreparedPath(Identifier loc) {
         throw KiltHelper.createMixinException(SimpleJsonResourceReloadListenerInjection.class, "getPreparedPath");
     }
 }
