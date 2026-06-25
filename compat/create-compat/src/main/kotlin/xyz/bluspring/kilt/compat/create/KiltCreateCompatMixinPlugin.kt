@@ -5,6 +5,8 @@ import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
+import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.api.compatibility.ModBridgeStrategy
 import xyz.bluspring.kilt.loader.KiltLoader
 
 class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
@@ -23,6 +25,18 @@ class KiltCreateCompatMixinPlugin : IMixinConfigPlugin {
 
         if (packageName == "create_fabric") {
             return FabricLoader.getInstance().isModLoaded("create") && !KiltLoader.instance.hasMod("create") && MixinConstraints.shouldApplyMixin(mixinClassName)
+        }
+
+        if (packageName == "ponder") {
+            return KiltLoader.instance.hasMod("ponder") && !KiltModCompatBridgeManager.isActive("ponder") && MixinConstraints.shouldApplyMixin(mixinClassName)
+        }
+
+        if (packageName == "ponder_fabric") {
+            return FabricLoader.getInstance().isModLoaded("ponder") && (!KiltLoader.instance.hasMod("ponder") || KiltModCompatBridgeManager.isActive("ponder")) && MixinConstraints.shouldApplyMixin(mixinClassName)
+        }
+
+        if (packageName == "ponder_bridged") {
+            return ModBridgeStrategy.checkFabricExists("ponder") && KiltLoader.instance.hasMod("ponder") && MixinConstraints.shouldApplyMixin(mixinClassName)
         }
 
         return MixinConstraints.shouldApplyMixin(mixinClassName)

@@ -14,14 +14,19 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import dev.engine_room.flywheel.lib.model.SimpleModel;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
+import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
+import net.neoforged.neoforge.common.util.TriState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.resources.model.BakedModel;
@@ -71,9 +76,29 @@ public abstract class BakedModelBuffererMixin {
         } else {
             for (Map.Entry<RenderType, Supplier<BakedModel>> entry : modelsRef.get().entrySet()) {
                 poseStack.pushPose();
-                instance.tesselateBlock(level, entry.getValue().get(), state, pos, poseStack, consumer, checkSides, random, seed, packedOverlay, modelData.get(), entry.getKey());
+                TriState useAo = model.useAmbientOcclusion(state, modelData.get(), entry.getKey());
+                instance.tesselateBlock(level, entry.getValue().get(), state, pos, poseStack, consumer, Minecraft.useAmbientOcclusion() && state.getLightEmission(level, pos) == 0 && (useAo.isTrue() || (useAo.isDefault() && checkSides)), random, seed, packedOverlay, modelData.get(), entry.getKey());
                 poseStack.popPose();
             }
         }
+    }
+
+    @WrapOperation(method = {"bufferModel", "bufferBlocks"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getLightEmission()I"))
+    private static int kilt$flywheel$tryCheckNeoLightEmission(BlockState instance, Operation<Integer> original, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockPos pos) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(instance.getBlock().getClass(), IBlockExtension.class, "getLightEmission", int.class, BlockState.class, BlockAndTintGetter.class, BlockPos.class)) {
+            return instance.getLightEmission(level, pos);
+        }
+
+        return original.call(instance);
+    }
+
+    @WrapOperation(method = {"bufferModel", "bufferBlocks"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;useAmbientOcclusion()Z"))
+    private static boolean kilt$flywheel$tryCheckNeoAo(BakedModel instance, Operation<Boolean> original, @Local BlockState state, @Local RenderType renderType, @Share("modelData") LocalRef<ModelData> modelData) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(instance.getClass(), IBakedModelExtension.class, "useAmbientOcclusion", boolean.class, BlockState.class, ModelData.class, RenderType.class)) {
+            TriState useAo = instance.useAmbientOcclusion(state, modelData.get(), renderType);
+            return !useAo.isFalse();
+        }
+
+        return original.call(instance);
     }
 }

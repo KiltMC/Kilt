@@ -7,6 +7,12 @@ base {
     archivesName.set("Kilt-Create-Compat")
 }
 
+val compileOnlyLater by configurations.creating
+
+configurations {
+    sourceSets.main.get().compileClasspath += compileOnlyLater
+}
+
 version = property("mod_version") as String
 
 repositories {
@@ -16,6 +22,12 @@ repositories {
 dependencies {
     compileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.21.1:${property("flywheel_version")}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:${property("flywheel_version")}")
+
+    compileOnly("maven.modrinth:colorwheel:${property("colorwheel_version")}-fabric,1.21.1")
+    compileOnly("maven.modrinth:BzHgFoGz:${property("colorwheel_version")}-neoforge,1.21.1") // Colorwheel Neo
+
+    compileOnly("net.createmod.ponder:ponder-fabric:${property("ponder_version")}")
+    compileOnlyLater("net.createmod.ponder:ponder-neoforge:${property("ponder_version")}")
 }
 
 loom {

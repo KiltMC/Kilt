@@ -10,6 +10,7 @@ import net.caffeinemc.mods.sodium.client.services.SodiumModelData;
 import net.caffeinemc.mods.sodium.client.services.SodiumModelDataContainer;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import net.caffeinemc.mods.sodium.fabric.model.FabricModelAccess;
+import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -34,14 +35,14 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class FabricModelAccessMixin {
     @Inject(method = "getModelRenderTypes", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoRenderTypes(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, RandomSource random, SodiumModelData modelData, CallbackInfoReturnable<Iterable<RenderType>> cir) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
             cir.setReturnValue(model.getRenderTypes(state, random, (ModelData) (Object) modelData));
         }
     }
 
     @Inject(method = "getQuads", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoQuads(BlockAndTintGetter level, BlockPos pos, BakedModel model, BlockState state, Direction face, RandomSource random, RenderType renderType, SodiumModelData modelData, CallbackInfoReturnable<List<BakedQuad>> cir) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
             cir.setReturnValue(model.getQuads(state, face, random, (ModelData) (Object) modelData, renderType));
         }
     }
@@ -64,7 +65,7 @@ public abstract class FabricModelAccessMixin {
 
     @Inject(method = "getModelData", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoModelData(LevelSlice slice, BakedModel model, BlockState state, BlockPos pos, SodiumModelData originalData, CallbackInfoReturnable<SodiumModelData> cir) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), BakedModel.class, "getModelData", BlockAndTintGetter.class, BlockPos.class, BlockState.class, ModelData.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getModelData", BlockAndTintGetter.class, BlockPos.class, BlockState.class, ModelData.class)) {
             cir.setReturnValue((SodiumModelData) (Object) model.getModelData(slice, pos, state, (ModelData) (Object) originalData));
         }
     }

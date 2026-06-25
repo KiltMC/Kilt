@@ -405,6 +405,56 @@ object KiltMixinModifications {
                     "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRiderInteract()Z"))
                 ))
             )
+        ),
+
+        // Fixes Quark's EnchantmentHelperMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/item/enchantment/EnchantmentHelper",
+            methods = listOf($$"runIterationOnItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = $$"Lnet/minecraft/world/item/ItemStack;getAllEnchantments(Lnet/minecraft/core/HolderLookup$RegistryLookup;)Lnet/minecraft/world/item/enchantment/ItemEnchantments;"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.item.enchantment.EnchantmentHelperInject",
+                    "name" to $$"kilt$tryGetAllEnchantmentsFromLookup"
+                )),
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = $$"Lnet/minecraft/world/item/ItemStack;getAllEnchantments(Lnet/minecraft/core/HolderLookup$RegistryLookup;)Lnet/minecraft/world/item/enchantment/ItemEnchantments;"
+                    ))
+                ))
+            )
+        ),
+
+        // Fixes Quark's EnchantmentHelperMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/item/enchantment/EnchantmentHelper",
+            methods = listOf($$"runIterationOnItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = $$"Lnet/minecraft/world/item/ItemStack;getAllEnchantments(Lnet/minecraft/core/HolderLookup$RegistryLookup;)Lnet/minecraft/world/item/enchantment/ItemEnchantments;"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.item.enchantment.EnchantmentHelperInject",
+                    "name" to $$"kilt$tryGetAllEnchantments"
+                )),
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = $$"Lnet/minecraft/world/item/ItemStack;getAllEnchantments(Lnet/minecraft/core/HolderLookup$RegistryLookup;)Lnet/minecraft/world/item/enchantment/ItemEnchantments;"
+                    ))
+                ))
+            )
         )
     )
 

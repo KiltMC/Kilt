@@ -2,6 +2,7 @@
 package xyz.bluspring.kilt.injects.core;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -88,6 +89,19 @@ public abstract class MappedRegistryInject<T> implements MappedRegistryInjection
     @Inject(method = "register", at = @At("TAIL"))
     private void kilt$callNeoAddCallbacks(ResourceKey<T> key, T value, RegistrationInfo registrationInfo, CallbackInfoReturnable<Holder.Reference<T>> cir, @Local int id) {
         ((BaseMappedRegistry<T>) (Object) this).addCallbacks.forEach(callback -> callback.onAdd(this, id, key, value));
+    }
+
+    // Kilt: Mods like WorldWeaver have broken code and are passing null here, but we need to support them anyway, unfortunately.
+    @Inject(method = "get(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;", at = @At("HEAD"), order = 900, cancellable = true)
+    private void kilt$resolveAsNullWhenEmpty(ResourceKey<T> key, CallbackInfoReturnable<T> cir) {
+        if (key == null)
+            cir.setReturnValue(null);
+    }
+
+    @Inject(method = "getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;", at = @At("HEAD"), order = 900, cancellable = true)
+    private void kilt$resolveAsEmptyWhenEmpty(ResourceKey<T> key, CallbackInfoReturnable<Optional<Holder.Reference<T>>> cir) {
+        if (key == null)
+            cir.setReturnValue(Optional.empty());
     }
 
     @ModifyVariable(method = {"get(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;", "getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;", "getOrCreateHolderOrThrow"}, at = @At("HEAD"), argsOnly = true)

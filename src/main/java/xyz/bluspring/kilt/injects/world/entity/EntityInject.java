@@ -608,7 +608,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     }
 
     protected Object2DoubleMap<FluidType> forgeFluidTypeHeight = new Object2DoubleArrayMap<>(FluidType.SIZE.get());
-    private FluidType forgeFluidTypeOnEyes = NeoForgeMod.EMPTY_TYPE.value();
+    private FluidType forgeFluidTypeOnEyes = NeoForgeMod.KILT_EMPTY_TYPE_DIRECT;
 
     protected final void setFluidTypeHeight(FluidType type, double height) {
         this.forgeFluidTypeHeight.put(type, height);

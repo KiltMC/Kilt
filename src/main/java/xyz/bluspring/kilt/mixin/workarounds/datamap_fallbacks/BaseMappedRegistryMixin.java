@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceKey;
 public abstract class BaseMappedRegistryMixin<T> implements Registry<T> {
     @ModifyReturnValue(method = "getData", at = @At("RETURN"))
     private <A> A kilt$tryUseFallback(@Nullable A original, @Local(argsOnly = true) DataMapType<T, A> type, @Local(argsOnly = true) ResourceKey<T> key) {
-        if (original != null) {
+        if (original == null) {
             var value = this.get(key);
             if (value != null) {
                 return type.kilt$getFallbackFor(value);

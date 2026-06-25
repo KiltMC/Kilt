@@ -145,7 +145,7 @@ public abstract class ServerPlayerGameModeInject {
 	}
 
 	@Definition(id = "bl2", local = @Local(type = boolean.class, ordinal = 1))
-	@Expression("bl2 != 0")
+	@Expression("bl2 == 0")
 	@ModifyExpressionValue(method = "useItemOn", at = @At("MIXINEXTRAS:EXPRESSION"))
 	private boolean kilt$checkCanUse(boolean original, @Share("event") LocalRef<PlayerInteractEvent.RightClickBlock> eventRef) {
 		return eventRef.get().getUseBlock() == TriState.TRUE || (eventRef.get().getUseBlock().isDefault() && original);

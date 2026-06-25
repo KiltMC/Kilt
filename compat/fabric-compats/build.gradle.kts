@@ -49,6 +49,15 @@ dependencies {
     compileOnly("maven.modrinth:T9PomCSv:${property("sable_version")}-neoforge,1.21.1") // same for Sable Neo
 
     compileOnly("maven.modrinth:resourceful-lib:${property("resourcefullib_version")}-fabric,1.21.1")
+
+    compileOnly("cc.tweaked:cc-tweaked-26.1.2-common-api:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-26.1.2-common:${property("cc_tweaked_version")}")
+    modCompileOnly("cc.tweaked:cc-tweaked-26.1.2-fabric-api:${property("cc_tweaked_version")}")
+    modCompileOnly("cc.tweaked:cc-tweaked-26.1.2-fabric:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-26.1.2-core-api:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-26.1.2-core:${property("cc_tweaked_version")}")
+    compileOnly("cc.tweaked:cc-tweaked-26.1.2-forge-api:${property("cc_tweaked_version")}")
+    compileOnlyLater("cc.tweaked:cc-tweaked-26.1.2-forge:${property("cc_tweaked_version")}")
 }
 
 tasks {

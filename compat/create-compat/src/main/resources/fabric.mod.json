@@ -20,6 +20,9 @@
         ],
         "mixinsquared": [
             "xyz.bluspring.kilt.compat.create.KiltCreateCompatMixinCanceller"
+        ],
+        "kilt:mod_container": [
+            "xyz.bluspring.kilt.compat.create.KiltCreateCompatWrappedNeoContainer"
         ]
     },
     "mixins": [

@@ -46,8 +46,11 @@ data class InjectedShareAccessModifier(
         val shareIndices = mutableListOf<Int>()
         val pairToShareIndex = mutableMapOf<ParamPair, Int>()
 
-        val splitSignature = KiltMixinModifier.splitSignature((methodNode.signature ?: methodNode.desc).removePrefix("(").replaceAfter(")", "").removeSuffix(")"))
-        val modifiedSplitSignature = splitSignature.toMutableList()
+        val methodSignature = KiltMixinModifier.splitSignature((methodNode.signature ?: methodNode.desc).removePrefix("(").replaceAfter(")", "").removeSuffix(")"))
+        val modifiedMethodSignature = methodSignature.toMutableList()
+
+        val paramsSignatures = methodNode.localVariables.map { it.signature }
+        val modifiedParamsSignatures = paramsSignatures.toMutableList()
 
         val descriptorOrder = modifiedSplitDescriptor.indices.toMutableList()
         val callbackInfoIndex = run {
@@ -112,8 +115,11 @@ data class InjectedShareAccessModifier(
                 val old = splitDescriptor[oldIndex]
                 modifiedSplitDescriptor[newIndex] = old
 
-                val oldSig = splitSignature[oldIndex]
-                modifiedSplitSignature[newIndex] = oldSig
+                val oldSig = methodSignature[oldIndex]
+                modifiedMethodSignature[newIndex] = oldSig
+
+                val oldParamSig = paramsSignatures[oldIndex]
+                modifiedParamsSignatures[newIndex] = oldParamSig
 
                 val oldAnnotations = oldParamAnnotations[oldIndex]
                 paramAnnotations[newIndex] = oldAnnotations
@@ -142,7 +148,7 @@ data class InjectedShareAccessModifier(
                 else -> LOCAL_REF
             }
 
-            modifiedSplitSignature[foundIndex] = when (desc) {
+            modifiedMethodSignature[foundIndex] = when (desc) {
                 "I" -> LOCAL_INT_REF.descriptor
                 "Z" -> LOCAL_BOOLEAN_REF.descriptor
                 "B" -> LOCAL_BYTE_REF.descriptor
@@ -154,6 +160,8 @@ data class InjectedShareAccessModifier(
 
                 else -> "${LOCAL_REF.descriptor.removeSuffix(";")}<${desc}>;"
             }
+
+            modifiedParamsSignatures[foundIndex] = modifiedMethodSignature[foundIndex]
 
             paramAnnotations[foundIndex].add(KiltMixinModifications.createAnnotation(Share::class.java, mutableMapOf<String, Any>(
                 "value" to share.value,
@@ -185,7 +193,7 @@ data class InjectedShareAccessModifier(
         newMethod.invisibleParameterAnnotations = paramAnnotations
 
         newMethod.desc = "(${modifiedSplitDescriptor.joinToString("")})${returnType}"
-        newMethod.signature = "(${modifiedSplitSignature.joinToString("")})${returnType}"
+        newMethod.signature = "(${modifiedMethodSignature.joinToString("")})${returnType}"
 
         newMethod.visitCode()
 
@@ -253,9 +261,9 @@ data class InjectedShareAccessModifier(
 
             if (shareIndices.contains(actualIndex)) {
                 val localRefDesc = modifiedSplitDescriptor[actualIndex]
-                newMethod.visitLocalVariable("var${actualIndex}", localRefDesc.descriptor, modifiedSplitSignature[actualIndex], label0, label2, actualIndex + indexOffset)
+                newMethod.visitLocalVariable("var${actualIndex}", localRefDesc.descriptor, modifiedParamsSignatures[actualIndex], label0, label2, actualIndex + indexOffset)
             } else {
-                newMethod.visitLocalVariable("var${actualIndex}", descPart.descriptor, modifiedSplitSignature[actualIndex], label0, label2, actualIndex + indexOffset)
+                newMethod.visitLocalVariable("var${actualIndex}", descPart.descriptor, modifiedParamsSignatures[actualIndex], label0, label2, actualIndex + indexOffset)
             }
         }
 

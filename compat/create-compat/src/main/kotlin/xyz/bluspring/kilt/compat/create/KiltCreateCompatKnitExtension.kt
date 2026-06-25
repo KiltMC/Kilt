@@ -15,5 +15,9 @@ class KiltCreateCompatKnitExtension : KnitNativeModCompatExtension {
 
         KiltModCompatBridgeManager.register("colorwheel", enabledMixinConfigs = listOf("colorwheel.neoforge.mixins.json"), environment = ModEnvironment.CLIENT, strategy = ModBridgeStrategy.RequireBoth("Both Colorwheel Fabric and NeoForge need to be installed to work correctly with Kilt!")) {
         }
+
+        KiltModCompatBridgeManager.register("ponder", strategy = ModBridgeStrategy.PreferEither) { // To be honest, most Neo mods using Ponder are bundling it either way.
+            
+        }
     }
 }
