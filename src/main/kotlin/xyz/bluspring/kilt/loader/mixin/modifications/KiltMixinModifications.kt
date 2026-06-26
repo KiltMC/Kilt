@@ -83,6 +83,13 @@ object KiltMixinModifications {
             "net/minecraft/server/MinecraftServer",
             methods = listOf($$"lambda$reloadResources$29", $$"lambda$reloadResources$29(Lcom/google/common/collect/ImmutableList;)Ljava/util/concurrent/CompletionStage;"),
             remapMethodsTo = listOf($$"lambda$reloadResources$28(Lcom/google/common/collect/ImmutableList;)Ljava/util/concurrent/CompletionStage;")
+        ),
+
+        // Fixes Lodestone's GuiMixin
+        NameRemappingAnnotationModifier(
+            "net/minecraft/client/gui/Gui",
+            methods = listOf("renderHotbar", "renderHotbar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"),
+            remapMethodsTo = listOf("renderHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V") // good enough tm
         )
     )
 
@@ -304,6 +311,24 @@ object KiltMixinModifications {
                 )
             )
         ),
+
+        // Fixes Lodestone's ShaderInstanceMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/renderer/ShaderInstance",
+            methods = listOf("<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lcom/mojang/blaze3d/vertex/VertexFormat;", 0) to Share("vertexFormat", namespace = Kilt.MOD_ID),
+                ParamPair("Lnet/minecraft/resources/ResourceLocation;", 0) to Share("shaderLocation", namespace = Kilt.MOD_ID),
+                ParamPair("Lnet/minecraft/server/packs/resources/ResourceProvider;", 0) to Share("resourceProvider", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Goes along with the above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/renderer/ShaderInstance",
+            methods = listOf("<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V"),
+            remapMethodsTo = listOf("<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")
+        ),
     )
 
     val MODIFY_VARIABLE = register(
@@ -353,7 +378,30 @@ object KiltMixinModifications {
                     "index" to 23
                 ))
             )
-        )
+        ),
+
+        // Fixes Lodestone's BlockItemMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/item/BlockItem",
+            methods = listOf("place", "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/BlockItem;getPlaceSound(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/sounds/SoundEvent;"
+                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    ModifyVariable::class.java, mapOf(
+                        "method" to listOf("place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/item/BlockItem;getPlaceSound(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/sounds/SoundEvent;"
+                        ))
+                    )
+                )
+            )
+        ),
     )
 
     val ACCESSOR = registerAccessor(
