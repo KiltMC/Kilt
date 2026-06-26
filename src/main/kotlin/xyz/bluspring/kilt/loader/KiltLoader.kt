@@ -434,6 +434,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 dependencies.addAll(modifiedDependencies.values)
             }
 
+            val accessTransformerFiles = mutableSetOf<String>()
+            for (accessTransformer in mainConfig.getConfigList("accessTransformers")) {
+                accessTransformerFiles.add(accessTransformer.getConfigElement<String>("file").orElse(null) ?: continue)
+            }
+
             val definition = ModDefinition(
                 id = modId,
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
@@ -466,7 +471,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 additionalData = mapOf(
                     "manifest" to manifest,
                     "config" to mainConfig,
-                    "loader" to modLoader
+                    "loader" to modLoader,
+                    "accessTransformers" to accessTransformerFiles.toList(),
                 ),
 
                 loaderCustomData = mapOf(
@@ -831,6 +837,17 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
 
             if (accessTransformer != null) {
                 Kilt.logger.info("Found access transformer for ${mod.modId}")
+                AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
+            }
+
+            val extraATs = mod.definition.additionalData["accessTransformers"] as? List<*>? ?: listOf<String>();
+            for (accessTransformerPath in extraATs) {
+                val accessTransformerPath = accessTransformerPath as? String ?: continue
+                val accessTransformer = mod.jar.getEntry(accessTransformerPath)
+                if (accessTransformer == null) {
+                    Kilt.logger.warn("Could not find explicitly-specified access transformer $accessTransformerPath for ${mod.modId}")
+                    continue
+                }
                 AccessTransformerLoader.convertTransformers(mod.jar.getInputStream(accessTransformer).readAllBytes())
             }
         } catch (e: UninitializedPropertyAccessException) { // Forge special case

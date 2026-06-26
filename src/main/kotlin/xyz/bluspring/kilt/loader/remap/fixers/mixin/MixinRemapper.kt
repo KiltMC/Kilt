@@ -387,6 +387,7 @@ object MixinRemapper {
     //      - Lpkg/to/ClassName;methodName(ILother/descriptor/Stuff;)V
     //      - pkg/to/ClassName.methodName(IL/other/descriptor/Stuff;)V // this is the cursed one.
     //      - pkg/to/ClassName/methodName(IL/other/descriptor/Stuff;)V // another one?? seriously???
+    //      - pkg.to.ClassName.methodName(IL/other/descriptor/Stuff;)V // oh goodie more cursed ones
     // however, some mods also completely disregard this format, so we have to keep that in mind.
     // i cannot remember what cursed formats they used though, is the problem....
     fun remapTargetString(
@@ -414,7 +415,7 @@ object MixinRemapper {
         val classDescriptor = if (value.startsWith("L") && value.contains(";"))
             value.replaceAfter(';', "")
         else if (value.contains(".")) // ah, here's the cursed format.
-            "L${value.replaceAfter(".", "").removeSuffix(".")};"
+            "L${value.replaceAfterLast(".", "").removeSuffix(".").replace('.', '/')};"
         else if (value.contains("/")) { // oh no, there's another cursed format in town.
             val split = value.split("/")
             if (split.last().contains("("))
@@ -428,7 +429,7 @@ object MixinRemapper {
 
         // Member + descriptor is pretty easy to get
         val memberWithDescriptor = if (value.contains("."))
-            value.removePrefix("$className.")
+            value.replaceBeforeLast(".", "").removePrefix(".")
         else
             value.removePrefix(classDescriptor)
         val isField = memberWithDescriptor.contains(":") // Full field targets consist of a : - fieldName:Ldescriptor/Here;
