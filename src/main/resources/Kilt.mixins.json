@@ -5,6 +5,7 @@
   "plugin": "xyz.bluspring.kilt.KiltMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AbstractHorseAccessor",
     "AbstractSelectionListAccessor",
     "ArgumentTypeInfosAccessor",
     "ArmPoseAccessor",
