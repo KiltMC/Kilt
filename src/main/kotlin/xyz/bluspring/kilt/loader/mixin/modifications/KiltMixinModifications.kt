@@ -329,6 +329,27 @@ object KiltMixinModifications {
             methods = listOf("<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V"),
             remapMethodsTo = listOf("<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")
         ),
+
+        // Fixes Hexerei's KeyboardHandlerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/KeyboardHandler",
+            methods = listOf("keyPress", "keyPress(JIIII)V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/ClientHooks;onKeyInput(IIII)V")),
+                "cancellable" to true
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.KeyboardHandlerInject",
+                    "name" to $$"kilt$workaround$handleKeyPressInject"
+                )),
+                createAnnotation(Inject::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to at("HEAD"),
+                    "cancellable" to true
+                ))
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
