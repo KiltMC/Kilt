@@ -1,0 +1,38 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  add-version-label:
+    name: Add version label for issue
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add label
+      shell: bash
+      run: |
+        third_line="$(echo "$ISSUE_BODY" | head -n 3 | tail -n 1)"
+        if [[ $third_line == *"20.1."* ]]; then
+            mc_version="1.20.1"
+        elif [[ $third_line == *"1.20.1"* ]]; then
+            mc_version="1.20.1"
+        elif [[ $third_line == *"21.1."* ]]; then
+            mc_version="1.21.1"
+        elif [[ $third_line == *"1.21.1"* ]]; then
+            mc_version="1.21.1"
+        fi
+        if [[ -n "$mc_version" ]]; then
+            curl -L \
+                -X POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${{ github.token }}" \
+                -H "X-GitHub-Api-Version: 2026-03-10" \
+                https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels \
+                -d "{\"labels\":[\"version: $mc_version\"]}"
+        fi
+      env:
+        ISSUE_BODY: ${{ github.event.issue.body }}
