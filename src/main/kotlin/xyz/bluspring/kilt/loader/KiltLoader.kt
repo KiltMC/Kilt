@@ -365,7 +365,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 val versionRange = MavenVersionAdapter.createFromVersionSpec(
                     neoDep.getConfigElement<String>("versionRange")
                         .map {
-                            if (depId == "minecraft" && (it.startsWith("[1.21,")))
+                            if (depId == "minecraft" && (it.startsWith("[1.21,") || it == "[1.21]"))
                                 "[1.21,1.21.2)" // Neo, what the fuck? (https://github.com/neoforged/FancyModLoader/blob/1.21.1/loader/src/main/java/net/neoforged/fml/loading/VersionSupportMatrix.java)
                             else it
                         }
