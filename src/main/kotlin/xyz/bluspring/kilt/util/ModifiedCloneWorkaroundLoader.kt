@@ -10,7 +10,10 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 object ModifiedCloneWorkaroundLoader {
 
-    fun init() {
+    val REMAPPED_TYPES = mutableMapOf<String, String>()
+    val TRANSFORMERS = mutableListOf<() -> Unit>()
+
+    init {
         val monsterType = KiltRemapper.remapClass("net/minecraft/world/entity/monster/Monster")
         val monsterDesc = "L$monsterType;"
         val mobType = KiltRemapper.remapClass("net/minecraft/world/entity/Mob")
@@ -142,6 +145,11 @@ object ModifiedCloneWorkaroundLoader {
         }
     }
 
+    fun load() {
+        TRANSFORMERS.forEach { it() }
+        TRANSFORMERS.clear()
+    }
+
     private fun mapType(type: Type, oldTypeName: String, newTypeDesc: String): Type {
         when (type.sort) {
             Type.OBJECT -> {
@@ -185,74 +193,38 @@ object ModifiedCloneWorkaroundLoader {
     }
 
     private fun setClassName(node: ClassNode, oldOwnerName: String, newOwnerName: String) {
-        val oldOwnerDesc = "L$oldOwnerName;"
-        val newOwnerDesc = "L$newOwnerName;"
         node.name = newOwnerName
-        for (method in node.methods) {
-            for (insn in method.instructions) {
-                when (insn) {
-                    is FieldInsnNode -> if (insn.owner == oldOwnerName) insn.owner = newOwnerName
-                    is MethodInsnNode -> if (insn.owner == oldOwnerName) insn.owner = newOwnerName
-                    is LdcInsnNode -> {
-                        val type = insn.cst
-                        if (type is Type) {
-                            insn.cst = mapType(type, oldOwnerName, newOwnerDesc)
-                        }
-                    }
-                    is TypeInsnNode -> if (insn.desc == oldOwnerName) insn.desc = newOwnerName
-                    is InvokeDynamicInsnNode -> {
-                        for (i in insn.bsmArgs.indices) {
-                            val arg = insn.bsmArgs[i]
-                            when (arg) {
-                                is Type -> insn.bsmArgs[i] = mapType(arg, oldOwnerName, newOwnerDesc)
-                                is Handle -> insn.bsmArgs[i] = mapHandle(arg, oldOwnerName, newOwnerName)
-                            }
-                        }
-                    }
-                    is FrameNode -> {
-                        insn.local = mapFrameTypes(insn.local, oldOwnerName, newOwnerName)
-                        insn.stack = mapFrameTypes(insn.stack, oldOwnerName, newOwnerName)
-                    }
-                }
-            }
-            for (local in method.localVariables) {
-                if (local.desc == oldOwnerDesc) {
-                    local.desc = newOwnerDesc
-                }
-                local.signature = local.signature?.replace(oldOwnerName, newOwnerName)
-            }
-            method.signature = method.signature?.replace(oldOwnerName, newOwnerName)
-        }
-        for (field in node.fields) {
-            field.signature = field.signature?.replace(oldOwnerName, newOwnerName)
-        }
+        replaceType(node, oldOwnerName, newOwnerName)
     }
 
     fun addTransformedClone(
         targetClass: String, cloneClass: String,
         transformer: (ClassNode) -> Unit
     ) {
-        var originalNode: ClassNode? = null
-        ClassTinkerers.addPostTransformation(targetClass) { classNode ->
-            originalNode = classNode
-        }
-        val cw = ClassWriter(0)
-        cw.visit(
-            52,
-            Opcodes.ACC_PUBLIC,
-            cloneClass,
-            null,
-            "java/lang/Object",
-            null
-        )
-        ClassTinkerers.define(cloneClass, cw.toByteArray())
-        ClassTinkerers.addPostTransformation(cloneClass) { classNode ->
-            Class.forName(targetClass.replace("/", ".")) // Classload it somehow so the transform always runs first
-            originalNode?.accept(classNode)
+        REMAPPED_TYPES[targetClass] = cloneClass
+        TRANSFORMERS.add {
+            var originalNode: ClassNode? = null
+            ClassTinkerers.addPostTransformation(targetClass) { classNode ->
+                originalNode = classNode
+            }
+            val cw = ClassWriter(0)
+            cw.visit(
+                52,
+                Opcodes.ACC_PUBLIC,
+                cloneClass,
+                null,
+                "java/lang/Object",
+                null
+            )
+            ClassTinkerers.define(cloneClass, cw.toByteArray())
+            ClassTinkerers.addPostTransformation(cloneClass) { classNode ->
+                Class.forName(targetClass.replace("/", ".")) // Classload it somehow so the transform always runs first
+                originalNode?.accept(classNode)
 
-            setClassName(classNode, targetClass, cloneClass)
+                setClassName(classNode, targetClass, cloneClass)
 
-            transformer(classNode)
+                transformer(classNode)
+            }
         }
     }
 
@@ -264,6 +236,16 @@ object ModifiedCloneWorkaroundLoader {
         val oldDescriptor = "L$oldType;"
         val newDescriptor = "L$newType;"
         classNode.signature = classNode.signature?.replace(oldDescriptor, newDescriptor)
+        if (classNode.superName == oldType) {
+            classNode.superName = newType
+        }
+
+        classNode.interfaces = classNode.interfaces.map {
+            if (it == oldType) {
+                return@map newType
+            }
+            return@map it
+        }
 
         for (field in classNode.fields) {
             if (field.desc == oldDescriptor) {
@@ -292,14 +274,44 @@ object ModifiedCloneWorkaroundLoader {
                         }
                         insn.desc = insn.desc.replace(oldDescriptor, newDescriptor)
                     }
+                    is LdcInsnNode -> {
+                        val type = insn.cst
+                        if (type is Type) {
+                            insn.cst = mapType(type, oldType, newDescriptor)
+                        }
+                    }
+                    is TypeInsnNode -> if (insn.desc == oldType) insn.desc = newType
+                    is InvokeDynamicInsnNode -> {
+                        for (i in insn.bsmArgs.indices) {
+                            val arg = insn.bsmArgs[i]
+                            when (arg) {
+                                is Type -> insn.bsmArgs[i] = mapType(arg, oldType, newDescriptor)
+                                is Handle -> insn.bsmArgs[i] = mapHandle(arg, oldType, newType)
+                            }
+                        }
+                    }
+                    is FrameNode -> {
+                        insn.local = mapFrameTypes(insn.local, oldType, newDescriptor)
+                        insn.stack = mapFrameTypes(insn.stack, oldType, newDescriptor)
+                    }
                 }
             }
-            for (local in method.localVariables) {
-                if (local.desc == oldDescriptor) {
-                    local.desc = newDescriptor
+            if (method.localVariables != null) {
+                for (local in method.localVariables) {
+                    if (local.desc == oldDescriptor) {
+                        local.desc = newDescriptor
+                    }
+                    local.signature = local.signature?.replace(oldType, newType)
                 }
             }
+            method.signature = method.signature?.replace(oldType, newType)
         }
+
     }
 
+    fun fixClass(classNode: ClassNode) {
+        for ((from, to) in REMAPPED_TYPES) {
+            replaceType(classNode, from, to)
+        }
+    }
 }

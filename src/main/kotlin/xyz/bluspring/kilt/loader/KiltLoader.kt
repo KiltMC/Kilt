@@ -572,7 +572,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
 
-        ModifiedCloneWorkaroundLoader.init() // Run at same time as 1.21.1 for consistency.
+        ModifiedCloneWorkaroundLoader.load() // Run at same time as 1.21.1 for consistency.
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
