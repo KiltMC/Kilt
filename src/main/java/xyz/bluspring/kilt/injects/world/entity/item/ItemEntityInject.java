@@ -54,6 +54,8 @@ public abstract class ItemEntityInject extends Entity implements ItemEntityInjec
     @Shadow
     @Nullable
     private UUID target;
+    @Shadow
+    private int age;
     public int lifespan = LIFETIME;
 
     @Override
@@ -119,11 +121,10 @@ public abstract class ItemEntityInject extends Entity implements ItemEntityInjec
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/item/ItemEntity;discard()V", ordinal = 1))
     private void kilt$checkItemExpireEvent(ItemEntity instance, Operation<Void> original) {
-        int hook = EventHooks.onItemExpire(instance);
-        if (hook < 0) {
+        this.lifespan = Mth.clamp(this.lifespan + EventHooks.onItemExpire(instance), 0, Short.MAX_VALUE - 1);
+
+        if (this.age >= this.lifespan) {
             original.call(instance);
-        } else {
-            this.lifespan = Mth.clamp(this.lifespan + hook, 0, Short.MAX_VALUE - 1);
         }
     }
 
