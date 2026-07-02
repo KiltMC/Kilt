@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.compat.transfer
 
+import io.github.fabricators_of_create.porting_lib.transfer.MutableContainerItemContext
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage
@@ -128,7 +129,7 @@ class TransferInterop : ModInitializer {
         }
         Capabilities.FluidHandler.ITEM.providers = AlternativeCapabilityMap(Capabilities.FluidHandler.ITEM.providers) {
             mutableListOf(
-                FabricLookupAsSlottedItemCapabilityProvider(it, FluidStorage.ITEM, { stack -> ContainerItemContext.withConstant(stack) }, { s -> s is NeoForgeFluidStorage }, ::FabricFluidItemStorageCapability)
+                FabricLookupAsItemCapabilityProvider(it, FluidStorage.ITEM, { stack -> MutableContainerItemContext(stack) }, { s -> s is NeoForgeFluidStorage }, ::FabricFluidItemStorageCapability)
             )
         }
 
