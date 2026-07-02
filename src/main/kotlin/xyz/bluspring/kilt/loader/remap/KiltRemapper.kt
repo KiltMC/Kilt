@@ -525,18 +525,34 @@ object KiltRemapper {
                 }
             }
 
+            fun isMixinClass(node: ClassNode): Boolean {
+                return node.name in mixinClasses ||
+                    // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
+                    // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
+                    KiltHelper.mergeNullableCollections(node.visibleAnnotations, node.invisibleAnnotations)
+                        .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
+            }
+
+            // Make copies of the original ClassNode objects so we can use them as reference to remap inherited shadows.
+            val originalMappings = mutableMapOf<String, ClassNode>()
+            for (node in entryToClassNodes.values) {
+                if (isMixinClass(node)) {
+                    val writer = ClassWriter(0)
+                    node.accept(writer)
+                    val nodeCopy = ClassReader(writer.toByteArray())
+                    val newNode = ClassNode()
+                    nodeCopy.accept(newNode, 0)
+                    originalMappings[node.name] = newNode
+                }
+            }
+
             val throwable = entryToClassNodes.entries.asFlow().concurrent().runCatching {
                 this.collect { (entry, originalNode) ->
                     // only do this on mixin classes, please
                     // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
-                    if (originalNode.name in mixinClasses ||
-                        // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
-                        // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
-                        KiltHelper.mergeNullableCollections(originalNode.visibleAnnotations, originalNode.invisibleAnnotations)
-                            .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
-                    ) {
+                    if (isMixinClass(originalNode)) {
                         MixinRemapper.remapClass(originalNode, enhancedSrgRemapper, mixinRefmaps.values)
-                        MixinShadowRemapper.remapClass(originalNode, enhancedSrgRemapper)
+                        MixinShadowRemapper.remapClass(originalNode, enhancedSrgRemapper, originalMappings)
 
                         if (!KiltFlags.DISABLE_FIXERS) {
                             MixinAdditionalRemapper.remapClass(originalNode)
