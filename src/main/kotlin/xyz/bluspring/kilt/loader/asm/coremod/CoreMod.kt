@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.loader.asm.coremod
 
-import com.chocohead.mm.api.ClassTinkerers
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import net.minecraftforge.coremod.api.TargetType
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode

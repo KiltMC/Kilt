@@ -1,6 +1,6 @@
 package xyz.bluspring.kilt.compat.create
 
-import com.chocohead.mm.api.ClassTinkerers
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes

@@ -51,6 +51,7 @@ import xyz.bluspring.kilt.loader.mod.*
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.kilt.util.buildGraph
 import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.KnitModLoader
@@ -570,6 +571,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         environment.computePropertyIfAbsent(IEnvironment.Keys.LAUNCHTARGET.get()) { FabricLoader.getInstance().environmentType.name.lowercase() }
         environment.computePropertyIfAbsent(IEnvironment.Keys.UUID.get()) { FabricLoaderImpl.INSTANCE.gameProvider.arguments.getOrDefault("uuid", "00000000-00000000-00000000-00000000") }
         Environment.build(environment) // Use Kilt's environment
+
+        ModifiedCloneWorkaroundLoader.load() // Run at same time as 1.21.1 for consistency.
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()

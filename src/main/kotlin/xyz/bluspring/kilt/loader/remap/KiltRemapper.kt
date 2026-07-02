@@ -45,6 +45,7 @@ import xyz.bluspring.kilt.loader.remap.resource.ManifestResourceRemapper
 import xyz.bluspring.kilt.util.CaseInsensitiveStringHashSet
 import xyz.bluspring.kilt.util.ClassNameHashSet
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.util.*
 import java.io.File
@@ -558,6 +559,7 @@ object KiltRemapper {
                         ConflictingStaticMethodFixer.fixClass(remappedNode)
                         EnvironmentRemapper.remapClass(remappedNode)
                         EnvironmentLambdaFixer.fixClass(remappedNode)
+                        ModifiedCloneWorkaroundLoader.fixClass(remappedNode)
                     }
 
                     val writer = ClassWriter(Opcodes.ASM9)
