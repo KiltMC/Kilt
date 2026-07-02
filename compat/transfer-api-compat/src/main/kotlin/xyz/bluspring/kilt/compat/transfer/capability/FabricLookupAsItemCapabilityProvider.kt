@@ -10,18 +10,19 @@ class FabricLookupAsItemCapabilityProvider<S, T, C>(
 
     val context: (ItemStack) -> C,
     val isSelfStorage: (S) -> Boolean,
-    val capability: (S, ItemStack) -> T,
+    val capability: (S, C) -> T,
 ) : ICapabilityProvider<ItemStack, Void?, T> {
     val provider = lookup.getProvider(item)
 
     override fun getCapability(stack: ItemStack, context: Void?): T? {
-        val storage = this.provider?.find(stack, this.context.invoke(stack))
+        val ctx = this.context.invoke(stack)
+        val storage = this.provider?.find(stack, ctx)
             ?: return null
 
         // Ignore our own storage
         if (this.isSelfStorage.invoke(storage))
             return null
 
-        return this.capability.invoke(storage, stack)
+        return this.capability.invoke(storage, ctx)
     }
 }
