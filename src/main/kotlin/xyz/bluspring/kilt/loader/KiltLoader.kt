@@ -51,7 +51,7 @@ import xyz.bluspring.kilt.loader.mod.*
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
-import xyz.bluspring.kilt.util.ModifiedCloneWorkaroundLoader
+import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.kilt.util.buildGraph
 import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.KnitModLoader

@@ -1,17 +1,29 @@
-package xyz.bluspring.kilt.util
+package xyz.bluspring.kilt.workarounds
 
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.*
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.FrameNode
+import org.objectweb.asm.tree.InsnNode
+import org.objectweb.asm.tree.InvokeDynamicInsnNode
+import org.objectweb.asm.tree.LabelNode
+import org.objectweb.asm.tree.LdcInsnNode
+import org.objectweb.asm.tree.LocalVariableNode
+import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.TypeInsnNode
+import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import kotlin.collections.iterator
 
 object ModifiedCloneWorkaroundLoader {
 
     val REMAPPED_TYPES = mutableMapOf<String, String>()
-    val TRANSFORMERS = mutableListOf<() -> Unit>()
+    val TRANSFORMERS = mutableListOf<Runnable>()
 
     init {
         val monsterType = KiltRemapper.remapClass("net/minecraft/world/entity/monster/Monster")
@@ -29,9 +41,9 @@ object ModifiedCloneWorkaroundLoader {
                 replaceType(classNode, monsterType, mobType)
 
                 val fallbackConstructor = MethodNode(
-                    Opcodes.ACC_PUBLIC, "<init>", "(${monsterDesc}DIF)V",
-                    "<M:$monsterDesc:$rangedAttackMob>(TM;DIF)V", null
-                ).apply {
+					Opcodes.ACC_PUBLIC, "<init>", "(${monsterDesc}DIF)V",
+					"<M:$monsterDesc:$rangedAttackMob>(TM;DIF)V", null
+				).apply {
                     val startLabel = LabelNode()
                     this.instructions.add(startLabel)
                     this.instructions.add(VarInsnNode(Opcodes.ALOAD, 0))
@@ -39,47 +51,20 @@ object ModifiedCloneWorkaroundLoader {
                     this.instructions.add(VarInsnNode(Opcodes.DLOAD, 2)) // Fun fact, double parameters take 2 variable slots.
                     this.instructions.add(VarInsnNode(Opcodes.ILOAD, 4))
                     this.instructions.add(VarInsnNode(Opcodes.FLOAD, 5))
-                    this.instructions.add(
-                        MethodInsnNode(
-                            Opcodes.INVOKESPECIAL, bowAttackGoalClone,
-                            "<init>", "(${mobDesc}DIF)V"
-                        )
-                    )
+                    this.instructions.add(MethodInsnNode(
+                        Opcodes.INVOKESPECIAL, bowAttackGoalClone,
+                        "<init>", "(${mobDesc}DIF)V"
+                    ))
                     this.instructions.add(LabelNode())
                     this.instructions.add(InsnNode(Opcodes.RETURN))
                     val endLabel = LabelNode()
                     this.instructions.add(endLabel)
 
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "this", "L$bowAttackGoalClone;", "L$bowAttackGoalClone<TT;>;",
-                            startLabel, endLabel, 0
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "mob", monsterDesc, "TM;",
-                            startLabel, endLabel, 1
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "speedModifier", "D", null,
-                            startLabel, endLabel, 2
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "attackIntervalMin", "I", null,
-                            startLabel, endLabel, 4
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "attackRadius", "F", null,
-                            startLabel, endLabel, 5
-                        )
-                    )
+                    this.localVariables.add(LocalVariableNode("this", "L$bowAttackGoalClone;", "L$bowAttackGoalClone<TT;>;", startLabel, endLabel, 0))
+                    this.localVariables.add(LocalVariableNode("mob", monsterDesc, "TM;", startLabel, endLabel, 1))
+                    this.localVariables.add(LocalVariableNode("speedModifier", "D", null, startLabel, endLabel, 2))
+                    this.localVariables.add(LocalVariableNode("attackIntervalMin", "I", null, startLabel, endLabel, 4))
+                    this.localVariables.add(LocalVariableNode("attackRadius", "F", null, startLabel, endLabel, 5))
                 }
                 classNode.methods.add(fallbackConstructor)
             }
@@ -95,50 +80,31 @@ object ModifiedCloneWorkaroundLoader {
                 replaceType(classNode, monsterType, mobType)
 
                 val fallbackConstructor = MethodNode(
-                    Opcodes.ACC_PUBLIC, "<init>", "(${monsterDesc}DF)V",
-                    "<M:$monsterDesc:$rangedAttackMob:${KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/CrossbowAttackMob;")}>(TM;DF)V", null
-                ).apply {
+					Opcodes.ACC_PUBLIC,
+	                "<init>",
+	                "(${monsterDesc}DF)V",
+					"<M:$monsterDesc:$rangedAttackMob:${KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/CrossbowAttackMob;")}>(TM;DF)V",
+	                null
+				).apply {
                     val startLabel = LabelNode()
                     this.instructions.add(startLabel)
                     this.instructions.add(VarInsnNode(Opcodes.ALOAD, 0))
                     this.instructions.add(VarInsnNode(Opcodes.ALOAD, 1))
                     this.instructions.add(VarInsnNode(Opcodes.DLOAD, 2)) // Fun fact, double parameters take 2 variable slots.
                     this.instructions.add(VarInsnNode(Opcodes.FLOAD, 4))
-                    this.instructions.add(
-                        MethodInsnNode(
-                            Opcodes.INVOKESPECIAL, crossbowAttackGoalClone,
-                            "<init>", "(${mobDesc}DF)V"
-                        )
-                    )
+                    this.instructions.add(MethodInsnNode(
+                        Opcodes.INVOKESPECIAL, crossbowAttackGoalClone,
+                        "<init>", "(${mobDesc}DF)V"
+                    ))
                     this.instructions.add(LabelNode())
                     this.instructions.add(InsnNode(Opcodes.RETURN))
                     val endLabel = LabelNode()
                     this.instructions.add(endLabel)
 
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "this", "L$crossbowAttackGoalClone;", "L$crossbowAttackGoalClone<TT;>;",
-                            startLabel, endLabel, 0
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "mob", monsterDesc, "TM;",
-                            startLabel, endLabel, 1
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "speedModifier", "D", null,
-                            startLabel, endLabel, 2
-                        )
-                    )
-                    this.localVariables.add(
-                        LocalVariableNode(
-                            "attackRadius", "F", null,
-                            startLabel, endLabel, 4
-                        )
-                    )
+                    this.localVariables.add(LocalVariableNode("this", "L$crossbowAttackGoalClone;", "L$crossbowAttackGoalClone<TT;>;", startLabel, endLabel, 0))
+                    this.localVariables.add(LocalVariableNode("mob", monsterDesc, "TM;", startLabel, endLabel, 1))
+                    this.localVariables.add(LocalVariableNode("speedModifier", "D", null, startLabel, endLabel, 2))
+                    this.localVariables.add(LocalVariableNode("attackRadius", "F", null, startLabel, endLabel, 4))
                 }
                 classNode.methods.add(fallbackConstructor)
             }
@@ -146,7 +112,7 @@ object ModifiedCloneWorkaroundLoader {
     }
 
     fun load() {
-        TRANSFORMERS.forEach { it() }
+        TRANSFORMERS.forEach(Runnable::run)
         TRANSFORMERS.clear()
     }
 
@@ -170,9 +136,7 @@ object ModifiedCloneWorkaroundLoader {
 
     private fun mapHandle(handle: Handle, oldTypeName: String, newTypeName: String): Handle {
         if (handle.owner == oldTypeName) {
-            return Handle(
-                handle.tag, newTypeName, handle.name, handle.desc, handle.isInterface
-            )
+            return Handle(handle.tag, newTypeName, handle.name, handle.desc, handle.isInterface)
         }
         return handle
     }
@@ -207,16 +171,14 @@ object ModifiedCloneWorkaroundLoader {
             ClassTinkerers.addPostTransformation(targetClass) { classNode ->
                 originalNode = classNode
             }
+
+            // Create an empty class so we don't get ClassNotFoundException when classloading.
+            // Only the class name actually matters, they will all be overwritten during classloading.
+            // 52 is the class version used by Java 8: https://docs.oracle.com/javase/specs/jvms/se26/html/jvms-1.html#jvms-1.2-220
             val cw = ClassWriter(0)
-            cw.visit(
-                52,
-                Opcodes.ACC_PUBLIC,
-                cloneClass,
-                null,
-                "java/lang/Object",
-                null
-            )
+            cw.visit(52, Opcodes.ACC_PUBLIC, cloneClass, null, "java/lang/Object", null)
             ClassTinkerers.define(cloneClass, cw.toByteArray())
+
             ClassTinkerers.addPostTransformation(cloneClass) { classNode ->
                 Class.forName(targetClass.replace("/", ".")) // Classload it somehow so the transform always runs first
                 originalNode?.accept(classNode)
@@ -229,9 +191,9 @@ object ModifiedCloneWorkaroundLoader {
     }
 
     fun replaceType(
-        classNode: ClassNode,
-        oldType: String,
-        newType: String
+		classNode: ClassNode,
+	    oldType: String,
+	    newType: String
     ) {
         val oldDescriptor = "L$oldType;"
         val newDescriptor = "L$newType;"
