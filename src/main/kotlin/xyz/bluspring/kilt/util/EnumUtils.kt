@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.util
 
-import com.chocohead.mm.CasualStreamHandler
-import com.chocohead.mm.api.ClassTinkerers
+import xyz.bluspring.fork.mm.CasualStreamHandler
+import xyz.bluspring.fork.mm.api.ClassTinkerers
 import com.mojang.serialization.Codec
 import net.minecraftforge.common.IExtensibleEnum
 import net.minecraftforge.fml.unsafe.UnsafeHacks
