@@ -4,21 +4,12 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.FrameNode
-import org.objectweb.asm.tree.InsnNode
-import org.objectweb.asm.tree.InvokeDynamicInsnNode
-import org.objectweb.asm.tree.LabelNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.LocalVariableNode
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TypeInsnNode
-import org.objectweb.asm.tree.VarInsnNode
+import org.objectweb.asm.tree.*
+import org.spongepowered.asm.mixin.Mixin
+import org.spongepowered.asm.util.Annotations
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import kotlin.collections.iterator
+import xyz.bluspring.kilt.util.AnnotationHelper
 
 object ModifiedCloneWorkaroundLoader {
 
@@ -190,6 +181,15 @@ object ModifiedCloneWorkaroundLoader {
         }
     }
 
+    fun isVanillaMixin(classNode: ClassNode): Boolean {
+        val mixinAnnotation = Annotations.getInvisible(classNode, Mixin::class.java)
+        return if (mixinAnnotation != null) {
+            AnnotationHelper.getTargets(mixinAnnotation).any { it.startsWith("net/minecraft") || it.startsWith("com/mojang") }
+        } else {
+            false
+        }
+    }
+
     fun replaceType(
 		classNode: ClassNode,
 	    oldType: String,
@@ -272,6 +272,7 @@ object ModifiedCloneWorkaroundLoader {
     }
 
     fun fixClass(classNode: ClassNode) {
+        if (isVanillaMixin(classNode)) return
         for ((from, to) in REMAPPED_TYPES) {
             replaceType(classNode, from, to)
         }

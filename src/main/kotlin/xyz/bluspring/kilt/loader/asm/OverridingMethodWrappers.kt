@@ -14,6 +14,7 @@ import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
+import xyz.bluspring.kilt.util.AnnotationHelper
 import xyz.bluspring.kilt.util.KiltHelper
 import java.io.ByteArrayOutputStream
 import java.nio.file.*
@@ -202,18 +203,14 @@ object OverridingMethodWrappers {
 
     private fun getClassesIf(paths: Collection<Path>, predicate: Predicate<ClassNode>): ClassResult {
         val classes = mutableSetOf<String>()
-        val mixins = mutableMapOf<String, MutableSet<String>>()
+        val mixins = mutableMapOf<String, Set<String>>()
         paths.forEach { path ->
             for (foundClass in findClasses(path)) {
                 val info = getClassInfo(foundClass)
                 if (info != null && predicate.test(info)) {
                     val mixinAnnotation = Annotations.getInvisible(info, Mixin::class.java)
                     if (mixinAnnotation != null) {
-                        mixins[info.name] = Annotations.getValue<List<Type>?>(mixinAnnotation, "value")?.map { it.internalName }?.toMutableSet() ?: mutableSetOf()
-                        val targets = Annotations.getValue<List<String>?>(mixinAnnotation, "targets")
-                        if (targets != null) {
-                            mixins[info.name]?.addAll(targets)
-                        }
+                        mixins[info.name] = AnnotationHelper.getTargets(mixinAnnotation)
                     } else {
                         classes.add(info.name)
                     }
