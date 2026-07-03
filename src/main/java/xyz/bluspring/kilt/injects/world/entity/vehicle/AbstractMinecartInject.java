@@ -1,6 +1,9 @@
 // TRACKED HASH: 53d4aac2577bd786b144c351ddc7feaa321cb795
 package xyz.bluspring.kilt.injects.world.entity.vehicle;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.entity.vehicle.AbstractMinecartInjection;
@@ -46,7 +50,20 @@ public abstract class AbstractMinecartInject extends Entity implements AbstractM
         }
     }
 
-    // TODO: onMinecartPass, need to figure out how to add a mixin there
+    @Definition(id = "bl", local = @Local(type = boolean.class, ordinal = 0))
+    @Expression("bl != 0")
+    @Inject(method = "moveAlongTrack",
+        at = @At("MIXINEXTRAS:EXPRESSION"),
+        slice = @Slice(
+            from = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/AbstractMinecart;setDeltaMovement(DDD)V", ordinal = 0),
+            to = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/AbstractMinecart;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;", ordinal = 9)
+        )
+    )
+    public void kilt$onMinecartPass(BlockPos blockPos, BlockState blockState, CallbackInfo ci) {
+        if (shouldDoRailFunctions() && blockState.getBlock() instanceof IBaseRailBlockExtension handler) {
+            handler.onMinecartPass(blockState, level(), blockPos, (AbstractMinecart) (Object) this);
+        }
+    }
 
     @Inject(method = "moveAlongTrack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/AbstractMinecart;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;", ordinal = 9), cancellable = true)
     public void kilt$checkIfShouldDoRailFunctions(BlockPos pos, BlockState state, CallbackInfo ci) {
