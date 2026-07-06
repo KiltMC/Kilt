@@ -14,6 +14,7 @@ pluginManagement {
             name = "devOS Releases"
         }
         maven("https://repo.sleeping.town/")
+        maven("https://maven.neoforged.net/releases")
         mavenCentral()
         gradlePluginPortal()
     }
@@ -26,6 +27,8 @@ pluginManagement {
                     .split("+")[0] // Ensures sentences like `+build.1` are ignored
     }
 }
+
+includeBuild("build-logic")
 
 file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
     include(":compat:${it.name}")

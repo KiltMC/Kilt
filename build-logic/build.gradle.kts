@@ -1,5 +1,3 @@
-import java.util.*
-
 plugins {
     `kotlin-dsl`
     kotlin("jvm") version "2.4.0"
@@ -19,15 +17,7 @@ dependencies {
     implementation("net.fabricmc:mapping-io:0.7.1")
     implementation("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("net.fabricmc:fabric-loom:${readLoomVersion()}")
+    implementation("net.fabricmc:fabric-loom:${libs.versions.fabric.loom.get()}")
     implementation("net.neoforged:accesstransformers:11.0.1")
-    implementation("agency.highlysuspect:minivan:0.5")
-}
-
-fun readLoomVersion(): String {
-    // cannot access directly during buildSrc configuration
-    val properties = Properties()
-    // also can't use rootProject, it's buildSrc some reason
-    properties.load(project.file("../gradle.properties").reader())
-    return properties.get("loom_version") as String
+    implementation("agency.highlysuspect:minivan:${libs.versions.minivan.get()}")
 }
