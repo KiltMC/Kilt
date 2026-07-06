@@ -19,5 +19,4 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     implementation("net.fabricmc:fabric-loom:${libs.versions.fabric.loom.get()}")
     implementation("net.neoforged:accesstransformers:11.0.1")
-    implementation("agency.highlysuspect:minivan:${libs.versions.minivan.get()}")
 }

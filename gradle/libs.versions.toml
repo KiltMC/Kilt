@@ -1,8 +1,6 @@
 # TODO: move everything here
 [versions]
 fabric-loom = "1.17.+"
-minivan = "0.5"
 
 [plugins]
-fabric-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "fabric-loom" }
-minivan = { id = "agency.highlysuspect.minivan", version.ref = "minivan" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
