@@ -1,5 +1,11 @@
 # Contribution Guidelines
 
+## Generative AI
+No generative AI ("vibe coding") may be used for writing code within Kilt's codebase. It may be used to assist
+(i.e. explaining concepts to you), but the code has to come from you. You may not use generative AI
+in creating pull requests either, even if you may not understand English, you may write the information
+for your pull request in your native language instead.
+
 ## Mixins
 
 ### `@Overwrite`
@@ -19,5 +25,8 @@ with a custom mixin extension.
 Where possible, try to use `@WrapOperation` instead for better mod compatibility. If not, you are
 well able to use `@Redirect`. The mixin requirements for `@Redirect` are much more loose compared
 to `@Overwrite`, but still slightly strict.
+
+When it comes to implementing patches that are effectively `@Redirect` calls, use `KiltHelper.INSTANCE.hasMethodOverride`
+to make the patch a `@WrapOperation` instead, allowing both paths to still go through.
 
 There are still many `@Redirect` calls in Kilt that I need to rewrite as `@WrapOperation` calls.

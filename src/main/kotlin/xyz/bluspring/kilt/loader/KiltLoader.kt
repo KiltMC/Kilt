@@ -353,7 +353,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 val versionRange = MavenVersionAdapter.createFromVersionSpec(
                     neoDep.getConfigElement<String>("versionRange")
                         .map {
-                            if (depId == "minecraft" && (it.startsWith("[1.21,")))
+                            if (depId == "minecraft" && (it.startsWith("[1.21,") || it == "[1.21]"))
                                 "[1.21,1.21.2)" // Neo, what the fuck? (https://github.com/neoforged/FancyModLoader/blob/1.21.1/loader/src/main/java/net/neoforged/fml/loading/VersionSupportMatrix.java)
                             else it
                         }
@@ -422,6 +422,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 dependencies.addAll(modifiedDependencies.values)
             }
 
+            val accessTransformerFiles = mutableSetOf<String>()
+            for (accessTransformer in mainConfig.getConfigList("accessTransformers")) {
+                accessTransformerFiles.add(accessTransformer.getConfigElement<String>("file").orElse(null) ?: continue)
+            }
+
             val definition = ModDefinition(
                 id = modId,
                 displayName = metadata.getConfigElement<String>("displayName").orElse(modId),
@@ -454,7 +459,8 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
                 additionalData = mapOf(
                     "manifest" to manifest,
                     "config" to mainConfig,
-                    "loader" to modLoader
+                    "loader" to modLoader,
+                    "accessTransformers" to accessTransformerFiles.toList(),
                 ),
 
                 loaderCustomData = mapOf(

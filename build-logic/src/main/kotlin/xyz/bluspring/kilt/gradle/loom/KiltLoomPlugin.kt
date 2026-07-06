@@ -4,7 +4,6 @@ import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginAware
-import xyz.bluspring.kilt.gradle.loom.processor.AccessTransformerProcessor
 
 class KiltLoomPlugin : Plugin<PluginAware> {
     override fun apply(target: PluginAware) {

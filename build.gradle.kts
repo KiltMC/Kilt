@@ -12,10 +12,12 @@ import java.security.MessageDigest
 
 plugins {
     kotlin("jvm")
-    id("net.fabricmc.fabric-loom")
+    alias(libs.plugins.fabric.loom)
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
+    id("com.gradleup.shadow") version "9.4.2"
+    id("xyz.bluspring.kilt.gradle.kilt-plugin")
 }
 
 apply<KiltLoomPlugin>()
