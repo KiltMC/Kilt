@@ -19,6 +19,9 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
 import org.slf4j.LoggerFactory
+import org.spongepowered.asm.mixin.gen.Accessor
+import org.spongepowered.asm.mixin.gen.Invoker
+import org.spongepowered.asm.util.Annotations
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
@@ -256,7 +259,17 @@ object CoreModLoader {
                         }
                     }
 
+                    fun isAccessor(methodNode: MethodNode): Boolean {
+                        if (Annotations.getVisible(methodNode, Accessor::class.java) != null) return true
+                        if (Annotations.getVisible(methodNode, Invoker::class.java) != null) return true
+                        return false
+                    }
+
                     for (methodNode in unmappedClassNode.methods) {
+                        // Unmap accessor if it was accidentally remapped to intermediary.
+                        if (isAccessor(methodNode) && methodNode.name.startsWith("method_")) {
+                            methodNode.name = KiltRemapper.enhancedInverseRemapper.mapMethodName(unmappedClassNode.name, methodNode.name, methodNode.desc)
+                        }
                         if (!existingNamePairs.add(methodNode.name to methodNode.desc)) {
                             methodsToRemove.add(methodNode)
                             logger.warn("Found duplicate method ${methodNode.name}${methodNode.desc} in class ${unmappedClassNode.name}, attempting to remove.")
