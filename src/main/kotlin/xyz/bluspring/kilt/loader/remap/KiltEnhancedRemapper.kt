@@ -142,7 +142,7 @@ class KiltEnhancedRemapper(val provider: ClassProvider, private val file: IMappi
         return name
     }
 
-    private fun getClassHierarchy(name: String): List<ClassProvider.IClassInfo> {
+    fun getClassHierarchy(name: String): List<ClassProvider.IClassInfo> {
         val hierarchy = mutableListOf<ClassProvider.IClassInfo>()
 
         var currentClass = provider.getClass(mapToMojang(name)).orElse(null) ?: return emptyList()

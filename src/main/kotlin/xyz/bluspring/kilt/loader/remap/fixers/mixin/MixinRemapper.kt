@@ -509,8 +509,52 @@ object MixinRemapper {
         // So, guesswork time. Hopefully this doesn't come up too often, if at all.
         if (descriptor.isBlank()) {
             if (KiltRemapper.mojMappedMethods.contains(member)) {
-                for ((ownerClass, mappedPairs) in KiltRemapper.mojMappedMethods[member]!!) {
+                val mappedMethods = KiltRemapper.mojMappedMethods[member]!!
+
+                for ((ownerClass, mappedPairs) in mappedMethods) {
                     if (classTargets.contains(ownerClass)) {
+                        val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
+                            ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
+
+                        var bestCandidate: String? = null
+
+                        // Assume there's no @Coerce involved
+                        // if there's @Coerce involved, god help us
+                        val descHint = descriptorHint?.split("Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo")?.firstOrNull()
+
+                        for ((methodName, methodDesc) in mappedPairs) {
+                            val methodNode = classNode.methods.firstOrNull { it.name == member && remapper.mapMethodDesc(it.desc) == methodDesc }
+                                ?: continue
+
+                            // Ignore all bridge method nodes, just so we don't screw up.
+                            if ((methodNode.access and Opcodes.ACC_BRIDGE) != 0)
+                                continue
+
+                            if (bestCandidate == null) {
+                                bestCandidate = "$mappedClassDescriptor$methodName"
+                            }
+
+                            if (descHint != null && methodNode.desc.startsWith(descHint)) {
+                                // this looks like it'll inject successfully, no better we can do
+                                bestCandidate = "$mappedClassDescriptor$methodName"
+                                break
+                            }
+                        }
+
+                        if (bestCandidate == null) {
+                            bestCandidate = "$mappedClassDescriptor${mappedPairs.first().first}"
+                        }
+
+                        return bestCandidate.breakpoint()
+                    }
+                }
+
+                val hierarchy = classTargets.map { remapper.getClassHierarchy(it) }
+                val matching = hierarchy.flatMap { classInfo -> classInfo.filter { mappedMethods.contains(it.name) } }
+                if (matching.isNotEmpty()) {
+                    for (classInfo in matching) {
+                        val ownerClass = classInfo.name
+                        val mappedPairs = mappedMethods[ownerClass]!!
                         val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
                             ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
 
