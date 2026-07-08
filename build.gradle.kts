@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import me.modmuss50.mpp.ModPublishExtension
 import me.modmuss50.mpp.ReleaseType
 import net.fabricmc.loom.task.RemapJarTask
@@ -243,7 +244,16 @@ allprojects {
     }
 }
 
-val shadedDep by configurations.creating
+val cichlidDep by configurations.creating
+
+val relocateCichlid = tasks.register<ShadowJar>("relocateCichlid") {
+    description = "Relocates the shaded CichlidMC dependencies so we don't conflict with anyone."
+
+    configurations = listOf(cichlidDep)
+    archiveClassifier.set("cichlid-libs")
+
+    relocate("fish.cichlidmc", "xyz.bluspring.kilt.shaded.cichlidmc")
+}
 
 dependencies {
     // Forge Reimplementations
@@ -264,9 +274,11 @@ dependencies {
     include(modApi("maven.modrinth:modmenu-badges-lib:${rootProject.property("modmenu_badges_version")}")!!)
 
     // Extra libraries that should be shaded
-    shadedDep(api("xyz.bluspring.fork:fishflakes:${property("fishflakes_version")}")!!)
-    shadedDep(api("xyz.bluspring.fork:tiny-json:${property("tinyjson_version")}")!!)
-    shadedDep(api("xyz.bluspring.fork:tiny-codecs:${property("tinycodecs_version")}")!!)
+    cichlidDep("xyz.bluspring.fork:fishflakes:${property("fishflakes_version")}")
+    cichlidDep("xyz.bluspring.fork:tiny-json:${property("tinyjson_version")}")
+    cichlidDep("xyz.bluspring.fork:tiny-codecs:${property("tinycodecs_version")}")
+
+    api(relocateCichlid.get().outputs.files)
 
     // Forge stuff
     api(include("net.neoforged:bus:${property("eventbus_version")}") {
@@ -562,22 +574,13 @@ tasks {
         from("LICENSE") {
             rename { "${it}_${archiveBaseName.get()}" }
         }
+
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from(zipTree(relocateCichlid.get().archiveFile))
     }
 
     named<Jar>("sourcesJar") {
         duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-
-    shadowJar {
-        configurations = listOf(shadedDep)
-        archiveClassifier.set("dev-shadow")
-
-        relocate("fish.cichlidmc", "xyz.bluspring.kilt.shaded.cichlidmc")
-    }
-
-    remapJar {
-        dependsOn(shadowJar)
-        inputFile.set(shadowJar.get().archiveFile)
     }
 
     // configure the maven publication

@@ -1,10 +1,10 @@
 package xyz.bluspring.kilt.loader
 
-import fish.cichlidmc.tinycodecs.api.codec.Codec
-import fish.cichlidmc.tinycodecs.api.codec.CompositeCodec
 import net.fabricmc.loader.api.FabricLoader
 import net.neoforged.neoforgespi.language.IModInfo
 import org.apache.maven.artifact.versioning.VersionRange
+import xyz.bluspring.kilt.shaded.cichlidmc.tinycodecs.api.codec.Codec
+import xyz.bluspring.kilt.shaded.cichlidmc.tinycodecs.api.codec.CompositeCodec
 import xyz.bluspring.kilt.util.enumThrowingFallbackCodec
 import xyz.bluspring.kilt.util.unboundedMap
 import xyz.bluspring.knit.loader.mod.ModDependency.Type

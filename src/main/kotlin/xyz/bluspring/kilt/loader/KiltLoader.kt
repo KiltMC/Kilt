@@ -6,7 +6,6 @@ import com.google.gson.JsonParser
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
 import cpw.mods.niofs.union.KiltUnionFileSystemHelper
-import fish.cichlidmc.tinyjson.TinyJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
@@ -54,6 +53,7 @@ import xyz.bluspring.kilt.loader.mod.NeoForgeVersionConstraint
 import xyz.bluspring.kilt.loader.mod.fabric.WrappedFabricModContainer
 import xyz.bluspring.kilt.loader.provider.NoopLanguageLoader
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.shaded.cichlidmc.tinyjson.TinyJson
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
 import xyz.bluspring.kilt.util.buildGraph

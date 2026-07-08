@@ -73,7 +73,7 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
     public abstract Rarity getRarity();
 
     @Shadow
-    public abstract void hurtAndBreak(int damage, ServerLevel level, @org.jspecify.annotations.Nullable ServerPlayer player, Consumer<Item> onBreak);
+    public abstract void hurtAndBreak(int damage, ServerLevel level, @Nullable ServerPlayer player, Consumer<Item> onBreak);
 
     public ItemStackInject(ItemLike item, int count) {}
 
