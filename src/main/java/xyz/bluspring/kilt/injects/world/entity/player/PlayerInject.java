@@ -395,10 +395,14 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
         xplevelsRef.set(event.getLevels());
     }
 
+    @Unique private Component kilt$lastPlayerName = null;
+
     @WrapOperation(method = "getDisplayName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/PlayerTeam;formatNameForTeam(Lnet/minecraft/world/scores/Team;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;"))
     private MutableComponent kilt$tryUseCustomDisplayName(Team playerTeam, Component playerName, Operation<MutableComponent> original) {
-        if (this.displayname == null)
+        if (this.displayname == null || !playerName.equals(kilt$lastPlayerName)) {
+            this.kilt$lastPlayerName = playerName;
             this.displayname = EventHooks.getPlayerDisplayName((Player) (Object) this, playerName);
+        }
 
         MutableComponent component = Component.empty();
         component = this.prefixes.stream().reduce(component, MutableComponent::append);
@@ -472,7 +476,9 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
 
     @Override
     public void refreshDisplayName() {
-        this.displayname = EventHooks.getPlayerDisplayName((Player) (Object) this, this.getName());
+        Component playerName = this.getName();
+        this.kilt$lastPlayerName = playerName;
+        this.displayname = EventHooks.getPlayerDisplayName((Player) (Object) this, playerName);
     }
 
     @Override
