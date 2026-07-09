@@ -549,13 +549,15 @@ object MixinRemapper {
                     }
                 }
 
-                val hierarchy = classTargets.map { remapper.getClassHierarchy(it) }
-                val matching = hierarchy.flatMap { classInfo -> classInfo.filter { mappedMethods.contains(it.name) } }
+                val hierarchy = classTargets.map { remapper.getClassHierarchy(it).map { parent -> parent to it } }
+                val matching = hierarchy.flatMap { classInfo -> classInfo.filter { mappedMethods.contains(it.first.name) } }
                 if (matching.isNotEmpty()) {
-                    for (classInfo in matching) {
+                    for ((classInfo, injectingClass) in matching) {
                         val ownerClass = classInfo.name
                         val mappedPairs = mappedMethods[ownerClass]!!
                         val classNode = this.getAllTargetClassNodes(remapper, listOf(ownerClass)).firstOrNull()
+                            ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
+                        val injectingClassNode = this.getAllTargetClassNodes(remapper, listOf(injectingClass)).firstOrNull()
                             ?: return "$mappedClassDescriptor${mappedPairs.first().first}".breakpoint()
 
                         var bestCandidate: String? = null
@@ -570,6 +572,10 @@ object MixinRemapper {
 
                             // Ignore all bridge method nodes, just so we don't screw up.
                             if ((methodNode.access and Opcodes.ACC_BRIDGE) != 0)
+                                continue
+
+                            // Ignore methods that don't exist in the child we're actually injecting to
+                            if (!injectingClassNode.methods.any { it.name == member && remapper.mapMethodDesc(it.desc) == methodDesc })
                                 continue
 
                             if (bestCandidate == null) {
