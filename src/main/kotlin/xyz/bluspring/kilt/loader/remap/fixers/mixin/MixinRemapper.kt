@@ -7,25 +7,13 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
-import org.spongepowered.asm.mixin.Mixin
-import org.spongepowered.asm.mixin.gen.Accessor
-import org.spongepowered.asm.mixin.gen.Invoker
-import org.spongepowered.asm.mixin.injection.Inject
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.MixinRefmap
+import xyz.bluspring.kilt.loader.remap.*
 import xyz.bluspring.kilt.util.KiltHelper
 import java.util.*
 
 // Remaps all mixins and their associated refmaps
 object MixinRemapper {
     private val targetClassNodeCache = Collections.synchronizedMap<String, ClassNode>(mutableMapOf())
-
-    @JvmField val MIXIN_TYPE: Type = Type.getType(Mixin::class.java)
-    private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
-    private val INVOKER_TYPE = Type.getType(Invoker::class.java)
-    private val INJECT_TYPE = Type.getType(Inject::class.java)
 
     fun remapMixinAnnotation(
         annotationNode: AnnotationNode,
@@ -37,10 +25,10 @@ object MixinRemapper {
         alreadyRefmapped: MutableSet<String> = Collections.synchronizedSet(mutableSetOf<String>()),
         refmap: MixinRefmap? = null
     ): AnnotationNode {
-        val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values ?: emptyList()).toMutableMap()
+        val values = MixinHelpers.annotationValuesToMap(annotationNode.values ?: emptyList()).toMutableMap()
 
         // Remap accessor/invoker
-        if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
+        if (annotationNode.desc == MixinTypes.ACCESSOR.descriptor || annotationNode.desc == MixinTypes.INVOKER.descriptor) {
             val value = (values["value"] as? String ?: methodName.run {
                 val value = (if (this.startsWith("get"))
                     this.removePrefix("get")
@@ -59,7 +47,7 @@ object MixinRemapper {
                     value
                 else
                     value.replaceFirstChar { it.lowercaseChar() }
-            }) + (if (annotationNode.desc == ACCESSOR_TYPE.descriptor)
+            }) + (if (annotationNode.desc == MixinTypes.ACCESSOR.descriptor)
                 ":${if (methodDesc.endsWith(")V"))
                     methodDesc.removePrefix("(").removeSuffix(")V")
                 else
@@ -76,7 +64,7 @@ object MixinRemapper {
                 mixinMapping[value] = mapped.replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
             } else {
                 values["value"] = remapTargetString(value, classTargets, remapper).replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
-                annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+                annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
             }
 
             return annotationNode
@@ -99,7 +87,7 @@ object MixinRemapper {
                 value
             } else {
 
-                val mapped = remapTargetString(value, classTargets, remapper, isTarget, if (annotationNode.desc == INJECT_TYPE.descriptor) methodDesc else null)
+                val mapped = remapTargetString(value, classTargets, remapper, isTarget, if (annotationNode.desc == MixinTypes.INJECT.descriptor) methodDesc else null)
 
                 if (refmap != null) {
                     mixinMapping[value] = mapped
@@ -158,7 +146,7 @@ object MixinRemapper {
             if (atValue.values == null)
                 return
 
-            val atValues = KiltMixinModifications.annotationValuesToMap(atValue.values).toMutableMap()
+            val atValues = MixinHelpers.annotationValuesToMap(atValue.values).toMutableMap()
 
             // Remap targets
             if (atValues.contains("target")) {
@@ -174,7 +162,7 @@ object MixinRemapper {
                 KiltRemapper.logger.error("!! Tell BluSpring to stop being lazy. $mixinClassName")
             }
 
-            atValue.values = KiltMixinModifications.mapToAnnotationValues(atValues)
+            atValue.values = MixinHelpers.mapToAnnotationValues(atValues)
         }
 
         // This can also be a very good indicator, but it's a little weird
@@ -203,7 +191,7 @@ object MixinRemapper {
                 if (sliceValue.values == null)
                     return
 
-                val sliceValues = KiltMixinModifications.annotationValuesToMap(sliceValue.values).toMutableMap()
+                val sliceValues = MixinHelpers.annotationValuesToMap(sliceValue.values).toMutableMap()
 
                 if (sliceValues.contains("from") && sliceValues["from"] is AnnotationNode) {
                     remapAtValue(sliceValues["from"] as AnnotationNode)
@@ -213,7 +201,7 @@ object MixinRemapper {
                     remapAtValue(sliceValues["to"] as AnnotationNode)
                 }
 
-                sliceValue.values = KiltMixinModifications.mapToAnnotationValues(sliceValues)
+                sliceValue.values = MixinHelpers.mapToAnnotationValues(sliceValues)
             }
 
             val sliceValue = values["slice"]!!
@@ -236,7 +224,7 @@ object MixinRemapper {
         }
 
         // Now to change the values list
-        annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+        annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
         return annotationNode
     }
 
@@ -262,21 +250,21 @@ object MixinRemapper {
         val updated = mutableListOf<AnnotationNode>()
 
         for (annotationNode in annotations) {
-            if (annotationNode.desc == MIXIN_TYPE.descriptor) {
-                val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+            if (annotationNode.desc == MixinTypes.MIXIN.descriptor) {
+                val values = MixinHelpers.annotationValuesToMap(annotationNode.values).toMutableMap()
                 if (values.contains("targets")) {
                     val targets = values["targets"]!!
 
                     if (targets is String) {
                         values["targets"] = KiltRemapper.remapClass(targets.replace(".", "/").removeSurrounding("L", ";"))
-                        updated.add(AnnotationNode(Opcodes.ASM9, MIXIN_TYPE.descriptor).apply {
-                            this.values = KiltMixinModifications.mapToAnnotationValues(values)
+                        updated.add(AnnotationNode(Opcodes.ASM9, MixinTypes.MIXIN.descriptor).apply {
+                            this.values = MixinHelpers.mapToAnnotationValues(values)
                         })
                         continue
                     } else if (targets is List<*>) {
                         values["targets"] = targets.map { KiltRemapper.remapClass((it as String).replace(".", "/").removeSurrounding("L", ";")) }
-                        updated.add(AnnotationNode(Opcodes.ASM9, MIXIN_TYPE.descriptor).apply {
-                            this.values = KiltMixinModifications.mapToAnnotationValues(values)
+                        updated.add(AnnotationNode(Opcodes.ASM9, MixinTypes.MIXIN.descriptor).apply {
+                            this.values = MixinHelpers.mapToAnnotationValues(values)
                         })
                         continue
                     }
@@ -663,9 +651,9 @@ object MixinRemapper {
     fun getMixinClassTargets(
         classNode: ClassNode,
         mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
-            .firstOrNull { it.desc == MIXIN_TYPE.descriptor }
+            .firstOrNull { it.desc == MixinTypes.MIXIN.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!"),
-        values: Map<String, Any> = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+        values: Map<String, Any> = MixinHelpers.annotationValuesToMap(mixinAnnotation.values)
     ): Collection<String> {
         val targetClassNames = mutableListOf<String>()
 

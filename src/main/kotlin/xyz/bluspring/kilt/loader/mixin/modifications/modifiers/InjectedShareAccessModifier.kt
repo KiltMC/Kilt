@@ -10,8 +10,9 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.ParamPair
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 import java.lang.reflect.Modifier
 
 data class InjectedShareAccessModifier(
@@ -46,7 +47,7 @@ data class InjectedShareAccessModifier(
         val shareIndices = mutableListOf<Int>()
         val pairToShareIndex = mutableMapOf<ParamPair, Int>()
 
-        val methodSignature = KiltMixinModifier.splitSignature((methodNode.signature ?: methodNode.desc).removePrefix("(").replaceAfter(")", "").removeSuffix(")"))
+        val methodSignature = MixinHelpers.splitSignature((methodNode.signature ?: methodNode.desc).removePrefix("(").replaceAfter(")", "").removeSuffix(")"))
         val modifiedMethodSignature = methodSignature.toMutableList()
 
         val paramsSignatures = methodNode.localVariables.map { it.signature }
@@ -54,8 +55,8 @@ data class InjectedShareAccessModifier(
 
         val descriptorOrder = modifiedSplitDescriptor.indices.toMutableList()
         val callbackInfoIndex = run {
-            val ci = splitDescriptor.indexOf(KiltMixinModifications.CALLBACK_INFO)
-            val cir = splitDescriptor.indexOf(KiltMixinModifications.CALLBACK_INFO_RETURNABLE)
+            val ci = splitDescriptor.indexOf(MixinTypes.CALLBACK_INFO)
+            val cir = splitDescriptor.indexOf(MixinTypes.CALLBACK_INFO_RETURNABLE)
 
             if (cir != -1 && ci > cir)
                 ci

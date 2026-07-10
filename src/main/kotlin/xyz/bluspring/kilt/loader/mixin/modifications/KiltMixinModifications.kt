@@ -14,25 +14,20 @@ import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.injection.Redirect
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
     private val MODIFIERS = mutableMapOf<String, List<MixinModifier>>()
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
-
-    val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
-    val FACTORY_REDIRECT_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/wrapper/factory/FactoryRedirectWrapper;")
-    val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
-    val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
 
     val GLOBAL_MODIFIERS = listOf<MixinModifier>(
         RetargetingLocalModifier(
@@ -565,8 +560,8 @@ object KiltMixinModifications {
 
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
-        if (annotation.desc == SUGAR_WRAPPER.descriptor || annotation.desc == FACTORY_REDIRECT_WRAPPER.descriptor) {
-            val map = annotationValuesToMap(annotation.values)
+        if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
+            val map = MixinHelpers.annotationValuesToMap(annotation.values)
 
             if (map.containsKey("original")) {
                 annotation = map["original"] as AnnotationNode
@@ -581,7 +576,7 @@ object KiltMixinModifications {
 
         val modifiers = (MODIFIERS[annotation.desc] ?: emptyList()) + GLOBAL_MODIFIERS
         val foundModifiers = mutableListOf<MixinModifier>()
-        val map = annotationValuesToMap(annotation.values ?: emptyList())
+        val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
         modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
             when (modifier) {
@@ -635,7 +630,7 @@ object KiltMixinModifications {
         val modifiers = ACCESSORS[annotation.desc] ?: return null
 
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
-            val map = annotationValuesToMap(annotation.values ?: emptyList())
+            val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
             if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
                 continue
@@ -659,24 +654,24 @@ object KiltMixinModifications {
                     if (value is List<*>)
                         value.any { b ->
                             if (b is AnnotationNode && a is AnnotationNode)
-                                checkAllConditionsMatch(annotationValuesToMap(b.values), annotationValuesToMap(a.values))
+                                checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(b.values), MixinHelpers.annotationValuesToMap(a.values))
                             else
                                 b == a
                         }
                     else if (value is AnnotationNode)
                         if (a is AnnotationNode)
-                            checkAllConditionsMatch(annotationValuesToMap(value.values), annotationValuesToMap(a.values))
+                            checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), MixinHelpers.annotationValuesToMap(a.values))
                         else if (a is Map<*, *>)
-                            checkAllConditionsMatch(annotationValuesToMap(value.values), a as Map<String, Any>)
+                            checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), a as Map<String, Any>)
                         else false
                     else
                         a == value
                 }
             else if (it.value is AnnotationNode)
                 if (value is AnnotationNode)
-                    checkAllConditionsMatch(annotationValuesToMap((it.value as AnnotationNode).values), annotationValuesToMap(value.values))
+                    checkAllConditionsMatch(MixinHelpers.annotationValuesToMap((it.value as AnnotationNode).values), MixinHelpers.annotationValuesToMap(value.values))
                 else if (value is Map<*, *>)
-                    checkAllConditionsMatch(annotationValuesToMap((it.value as AnnotationNode).values), value as Map<String, Any>)
+                    checkAllConditionsMatch(MixinHelpers.annotationValuesToMap((it.value as AnnotationNode).values), value as Map<String, Any>)
                 else false
             else
                 // check if values != equal and value is not list
@@ -696,7 +691,7 @@ object KiltMixinModifications {
                     current
                 } else if (value is AnnotationNode)
                     if (it.value is Map<*, *>)
-                        checkAllConditionsMatch(annotationValuesToMap(value.values), it.value as Map<String, Any>)
+                        checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), it.value as Map<String, Any>)
                     else false
                 else
                     value == it.value
@@ -709,34 +704,8 @@ object KiltMixinModifications {
 
     fun createAnnotation(annotationType: String, variables: Map<String, Any>): AnnotationNode {
         return AnnotationNode(annotationType).apply {
-            this.values = mapToAnnotationValues(variables)
+            this.values = MixinHelpers.mapToAnnotationValues(variables)
         }
-    }
-
-    fun mapToAnnotationValues(map: Map<String, Any>): List<Any> {
-        val values = mutableListOf<Any>()
-
-        for ((key, v) in map) {
-            values.add(key)
-            values.add(v)
-        }
-
-        return values
-    }
-
-    fun annotationValuesToMap(values: List<Any>): Map<String, Any> {
-        val map = mutableMapOf<String, Any>()
-
-        var currentKey = ""
-        for ((index, value) in values.withIndex()) {
-            if ((index and 1) == 0) {
-                currentKey = value as String
-            } else {
-                map[currentKey] = value
-            }
-        }
-
-        return map
     }
 
     private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null, shift: At.Shift? = null): AnnotationNode {
@@ -753,7 +722,7 @@ object KiltMixinModifications {
                 this["remap"] = remap
 
             if (shift != null)
-                this["shift"] = arrayOf("Lorg/spongepowered/asm/mixin/injection/At\$Shift;", shift.name)
+                this["shift"] = arrayOf(MixinTypes.AT_SHIFT.descriptor, shift.name)
 
             this.putAll(variables)
         })

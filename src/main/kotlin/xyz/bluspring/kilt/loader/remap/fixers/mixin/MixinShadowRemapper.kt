@@ -4,6 +4,7 @@ import org.objectweb.asm.Handle
 import org.objectweb.asm.tree.*
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_CLASS_NAME
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentLambdaFixer.LAMBDA_METHOD_DESCRIPTOR
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
@@ -195,6 +196,6 @@ object MixinShadowRemapper {
     }
 
     private fun isTargeted(node: AnnotationNode): Boolean {
-        return node.desc.contains("org/spongepowered/asm/mixin/Shadow") || node.desc.contains("org/spongepowered/asm/mixin/Overwrite")
+        return node.desc.contains(MixinTypes.SHADOW.internalName) || node.desc.contains(MixinTypes.OVERWRITE.internalName)
     }
 }

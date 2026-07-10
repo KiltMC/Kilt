@@ -3,8 +3,8 @@ package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 
 sealed interface AnnotationBasedModifier : MethodBasedModifier {
     val variables: Map<String, Any>
@@ -22,16 +22,16 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override lateinit var mappedMethods: List<String>
 
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
-            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor || annotation.desc == KiltMixinModifications.FACTORY_REDIRECT_WRAPPER.descriptor) {
+            if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
                 val list = this.replaceWith
 
                 if (list.size == 1) {
-                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+                    val map = MixinHelpers.annotationValuesToMap(annotation.values).toMutableMap()
                     map["original"] = list[0]
-                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                    annotation.values = MixinHelpers.mapToAnnotationValues(map)
                     newAnnotations.add(annotation)
                 } else {
-                    val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+                    val map = MixinHelpers.annotationValuesToMap(annotation.values).toMutableMap()
 
                     for (node in list) {
                         if (node.desc.contains("mixinsquared"))
@@ -40,7 +40,7 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
                             map["original"] = node
                     }
 
-                    annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                    annotation.values = MixinHelpers.mapToAnnotationValues(map)
                     newAnnotations.add(annotation)
                 }
             } else {
@@ -64,15 +64,15 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
                 val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
 
                 KiltMixinModifications.createAnnotation(annotation.desc,
-                    KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap().apply {
+                    MixinHelpers.annotationValuesToMap(annotation.values).toMutableMap().apply {
                         this["method"] = remapMethodsTo
                     })
             }
 
-            if (annotation.desc == KiltMixinModifications.SUGAR_WRAPPER.descriptor || annotation.desc == KiltMixinModifications.FACTORY_REDIRECT_WRAPPER.descriptor) {
-                val map = KiltMixinModifications.annotationValuesToMap(annotation.values).toMutableMap()
+            if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
+                val map = MixinHelpers.annotationValuesToMap(annotation.values).toMutableMap()
                 map["original"] = newAnnotation
-                annotation.values = KiltMixinModifications.mapToAnnotationValues(map)
+                annotation.values = MixinHelpers.mapToAnnotationValues(map)
 
                 newAnnotations.add(annotation)
             } else {

@@ -1,13 +1,13 @@
 package xyz.bluspring.kilt.loader.mixin.modifications.modifiers
 
 import com.llamalad7.mixinextras.sugar.Local
-import com.llamalad7.mixinextras.sugar.ref.*
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.mixin.modifications.LocalPair
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 import kotlin.math.max
 
 // Used for retargeting any local targets that were messed up by Neo's recompiling.
@@ -16,10 +16,6 @@ data class RetargetingLocalModifier(
     override val methods: List<String>,
     val paramToLocalMapping: Map<LocalPair, Local>
 ) : MethodBasedModifier {
-    companion object {
-        val LOCAL = Type.getType(Local::class.java)
-    }
-
     override lateinit var mappedOwner: String
     override lateinit var mappedMethods: List<String>
 
@@ -44,29 +40,19 @@ data class RetargetingLocalModifier(
         return value == target
     }
 
-    private val boolRefType = Type.getType(LocalBooleanRef::class.java)
-    private val charRefType = Type.getType(LocalCharRef::class.java)
-    private val byteRefType = Type.getType(LocalByteRef::class.java)
-    private val shortRefType = Type.getType( LocalShortRef::class.java)
-    private val intRefType = Type.getType(LocalIntRef::class.java)
-    private val longRefType = Type.getType(LocalLongRef::class.java)
-    private val doubleRefType = Type.getType(LocalDoubleRef::class.java)
-    private val floatRefType = Type.getType(LocalFloatRef::class.java)
-    private val objectRefType = Type.getType(LocalRef::class.java)
-
     fun unboxRefDescriptor(localDescriptor: Type, localSignature: String?): Type {
         return when (localDescriptor.internalName) {
-            boolRefType.internalName -> Type.BOOLEAN_TYPE
-            charRefType.internalName -> Type.CHAR_TYPE
-            byteRefType.internalName -> Type.BYTE_TYPE
-            shortRefType.internalName -> Type.SHORT_TYPE
-            intRefType.internalName -> Type.INT_TYPE
-            longRefType.internalName -> Type.LONG_TYPE
-            doubleRefType.internalName -> Type.DOUBLE_TYPE
-            floatRefType.internalName -> Type.FLOAT_TYPE
-            objectRefType.internalName -> {
-                if (localSignature?.startsWith("L${objectRefType.internalName}<") == true && localSignature.endsWith(">;")) {
-                    val unboxedSignature = localSignature.substring(objectRefType.descriptor.length, localSignature.length-1)
+            MixinTypes.LOCAL_BOOLEAN_REF.internalName -> Type.BOOLEAN_TYPE
+            MixinTypes.LOCAL_CHAR_REF.internalName -> Type.CHAR_TYPE
+            MixinTypes.LOCAL_BYTE_REF.internalName -> Type.BYTE_TYPE
+            MixinTypes.LOCAL_SHORT_REF.internalName -> Type.SHORT_TYPE
+            MixinTypes.LOCAL_INT_REF.internalName -> Type.INT_TYPE
+            MixinTypes.LOCAL_LONG_REF.internalName -> Type.LONG_TYPE
+            MixinTypes.LOCAL_DOUBLE_REF.internalName -> Type.DOUBLE_TYPE
+            MixinTypes.LOCAL_FLOAT_REF.internalName -> Type.FLOAT_TYPE
+            MixinTypes.LOCAL_REF.internalName -> {
+                if (localSignature?.startsWith("L${MixinTypes.LOCAL_REF.internalName}<") == true && localSignature.endsWith(">;")) {
+                    val unboxedSignature = localSignature.substring(MixinTypes.LOCAL_REF.descriptor.length, localSignature.length-1)
                     if (unboxedSignature.contains("<")) {
                         Type.getType("${unboxedSignature.substring(0, unboxedSignature.indexOf("<"))};")
                     } else {
@@ -131,8 +117,8 @@ data class RetargetingLocalModifier(
             val newAnnotations = annotations.toMutableList()
 
             for ((j, annotation) in annotations.withIndex()) {
-                if (annotation.desc == LOCAL.descriptor) {
-                    val values = KiltMixinModifications.annotationValuesToMap(annotation.values ?: listOf())
+                if (annotation.desc == MixinTypes.LOCAL.descriptor) {
+                    val values = MixinHelpers.annotationValuesToMap(annotation.values ?: listOf())
                     val ordinal = values["ordinal"]
                     val print = values["print"]
                     val index = values["index"]
@@ -153,7 +139,7 @@ data class RetargetingLocalModifier(
                     val remap = mapping.values.firstOrNull() ?: continue
 
                     newAnnotations[j] = AnnotationNode(Opcodes.ASM9, annotation.desc).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(
+                        this.values = MixinHelpers.mapToAnnotationValues(
                             mapOf(
                                 "ordinal" to remap.ordinal,
                             )

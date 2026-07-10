@@ -487,7 +487,7 @@ object KiltRemapper {
                     // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
                     // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
                     KiltHelper.mergeNullableCollections(node.visibleAnnotations, node.invisibleAnnotations)
-                        .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
+                        .any { it.desc == MixinTypes.MIXIN.descriptor }
             }
 
             // Make copies of the original ClassNode objects so we can use them as reference to remap inherited shadows.
