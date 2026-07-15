@@ -6,6 +6,8 @@ import com.bawnorton.mixinsquared.adjuster.tools.AdjustableModifyArgNode
 import com.bawnorton.mixinsquared.adjuster.tools.AdjustableModifyVariableNode
 import com.bawnorton.mixinsquared.api.MixinAnnotationAdjuster
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.Version
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyArg
@@ -33,6 +35,22 @@ class KiltAnnotationAdjuster : MixinAnnotationAdjuster {
             val injectNode = annotationNode.`as`(AdjustableInjectNode::class.java)
             // seriously wtf why
             injectNode.cancellable = false
+        }
+
+        // otherwise I legitimately cannot fucking load into my dev env.
+        if (FabricLoader.getInstance().isDevelopmentEnvironment && FabricLoader.getInstance().isModLoaded("iris")
+            // only happens in 1.8.14+
+            && FabricLoader.getInstance().getModContainer("iris").orElseThrow().metadata.version >= Version.parse("1.8.14-")
+        ) {
+            if (mixinClassName.endsWith(".entity_render_context.MixinHumanoidArmorLayer") && handlerNode.name == "changeId") {
+                val injectNode = annotationNode.`as`(AdjustableInjectNode::class.java)
+                injectNode.method = listOf("Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V")
+            }
+
+            if (mixinClassName.endsWith(".MixinLevelRenderer") && handlerNode.name == $$"iris$writeRainAndSnowToDepthBuffer") {
+                val modifyArgNode = annotationNode.`as`(AdjustableModifyArgNode::class.java)
+                modifyArgNode.method = listOf("Lnet/minecraft/client/renderer/LevelRenderer;renderSnowAndRain(Lnet/minecraft/client/renderer/LightTexture;FDDD)V")
+            }
         }
 
         // Optifine based moment
