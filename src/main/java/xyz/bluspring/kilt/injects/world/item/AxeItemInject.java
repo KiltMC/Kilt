@@ -1,9 +1,20 @@
 // TRACKED HASH: a21056576fc73d9bb232df2f44147986d9f61768
 package xyz.bluspring.kilt.injects.world.item;
 
+import java.util.Optional;
+
+import com.llamalad7.mixinextras.expression.Definition;import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+import xyz.bluspring.kilt.injections.world.item.AxeItemInjection;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
@@ -15,14 +26,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.world.item.AxeItemInjection;
-
-import java.util.Optional;
 
 @Mixin(AxeItem.class)
 public abstract class AxeItemInject extends DiggerItem implements AxeItemInjection {
@@ -59,11 +62,13 @@ public abstract class AxeItemInject extends DiggerItem implements AxeItemInjecti
         return Optional.ofNullable(state.getToolModifiedState(kilt$useOnContext.get(), ItemAbilities.AXE_SCRAPE, false));
     }
 
-    @WrapOperation(method = "evaluateNewBlockState", at = @At(value = "INVOKE", target = "Ljava/util/Optional;ofNullable(Ljava/lang/Object;)Ljava/util/Optional;"))
-    private Optional<BlockState> tryToUseWaxOffAbility(Object o, Operation<Optional<BlockState>> original, @Local(argsOnly = true) BlockState state) {
-        var optional = original.call(o);
-        if (optional.isPresent())
-            return optional;
+    @Definition(id = "ofNullable", method = "Ljava/util/Optional;ofNullable(Ljava/lang/Object;)Ljava/util/Optional;")
+    @Definition(id = "map", method = "Ljava/util/Optional;map(Ljava/util/function/Function;)Ljava/util/Optional;")
+    @Expression("ofNullable(?).map(?)")
+    @ModifyExpressionValue(method = "evaluateNewBlockState", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private Optional<BlockState> tryToUseWaxOffAbility(Optional<BlockState> original, @Local(argsOnly = true) BlockState state) {
+        if (original.isPresent())
+            return original;
 
         return Optional.ofNullable(state.getToolModifiedState(kilt$useOnContext.get(), ItemAbilities.AXE_WAX_OFF, false));
     }
