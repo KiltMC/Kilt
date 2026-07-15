@@ -17,6 +17,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import fr.catcore.cursedmixinextensions.annotations.ChangeSuperClass;
+import fr.catcore.cursedmixinextensions.annotations.ShadowSuper;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -44,7 +46,6 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
-import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
@@ -79,7 +80,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 @Mixin(value = Entity.class, priority = 900)
-@Extends(AttachmentHolder.class)
+@ChangeSuperClass(AttachmentHolder.class)
 public abstract class EntityInject implements IEntityExtension, EntityInjection, AttachmentHolderWorkaround {
     @Shadow protected abstract void unsetRemoved();
     @Shadow private EntityDimensions dimensions;
@@ -94,6 +95,9 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     @Shadow public abstract float getBbHeight();
     @Shadow public abstract EntityType<?> getType();
     @Shadow public abstract boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> tagKey, double d);
+
+    @ShadowSuper("setData")
+    public abstract <T> @Nullable T kilt$super$setData(AttachmentType<T> type, T data);
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;setPos(DDD)V", shift = At.Shift.AFTER))
     private void kilt$setDimensionsFromSizeEvent(EntityType<?> entityType, Level level, CallbackInfo ci, @Share(value = "sizeEvent", namespace = "kilt") LocalRef<EntityEvent.Size> sizeEvent) {
@@ -648,7 +652,10 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
             .orElseGet(NeoForgeMod.EMPTY_TYPE::value);
     }
 
-    // Kilt TODO: Do we need to implement setData?
+    // Kilt: the answer was yes. thanks Expanded Combat.
+    public final <T> T setData(AttachmentType<T> type, T data) {
+        return kilt$super$setData(type, data);
+    }
 
     public final void syncData(AttachmentType<?> type) {
         AttachmentSync.syncEntityUpdate((Entity) (Object) this, type);
