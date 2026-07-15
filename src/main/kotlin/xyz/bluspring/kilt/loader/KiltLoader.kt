@@ -300,22 +300,11 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         val fileName = path.fileName
         val modLoader = toml.get<String>("modLoader")
 
-        // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
-        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
-            throw IncompatibleModException("NeoForge mod file $fileName is not a supported FML mod! (got: $modLoader)")
-        }
-
         val loaderVersionRange = MavenVersionAdapter.createFromVersionSpec(toml.get("loaderVersion"))
         when (modLoader) {
-            "kotlinforforge" -> {
-                if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
-                    throw IncompatibleModException("NeoForge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
-                }
-            }
-
             "javafml", "lowcodefml" -> {
                 if (!loaderVersionRange.containsVersion(SUPPORTED_FML_VERSION)) {
-                    throw IncompatibleModException("NeoForge mod file $fileName does not support Forge loader version ${SUPPORTED_FML_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                    throw IncompatibleModException("NeoForge mod file $fileName does not support FML version ${SUPPORTED_FML_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
         }
