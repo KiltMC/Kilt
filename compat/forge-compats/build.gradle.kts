@@ -24,6 +24,7 @@ dependencies {
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
     compileOnly("thedarkcolour:kfflang-neoforge:${property("kotlinforforge_version")}")
     compileOnly("curse.maven:the-twilight-forest-227639:${property("twilightforest_version")}")
+    compileOnly("maven.modrinth:sophisticated-core:${property("sophisticatedcore_version")}")
 }
 
 tasks {

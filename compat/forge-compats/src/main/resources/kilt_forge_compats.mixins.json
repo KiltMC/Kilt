@@ -9,6 +9,7 @@
         "kubejs.KubeJSMixin",
         "quark.ConcretePowderBlockMixin",
         "quark.ProjectileUtilMixin",
+        "sophisticatedcore.CompatInfoMixin",
         "structure_gel.StructureTemplateMixin",
         "thirst.PotionItemMixin"
     ],
