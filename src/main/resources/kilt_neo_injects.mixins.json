@@ -432,7 +432,6 @@
         "world.item.StandingAndWallBlockItemInject",
         "world.item.SwordItemInject",
         "world.item.TiersInject",
-        "world.item.TooltipFlagInject",
         "world.item.TridentItemInject",
         "world.item.UseAnimInject",
         "world.item.alchemy.PotionBrewingInject",

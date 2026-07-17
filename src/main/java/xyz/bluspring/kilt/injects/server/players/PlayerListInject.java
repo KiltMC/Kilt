@@ -1,28 +1,15 @@
 // TRACKED HASH: 2bb3ae15b22cc5132705ea07857cbe14b92c3de6
 package xyz.bluspring.kilt.injects.server.players;
 
+import java.nio.file.Path;
+import java.util.function.Function;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerAdvancements;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.server.players.PlayerList;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.portal.DimensionTransition;
-import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.EventHooks;
@@ -39,7 +26,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.network.RegistryFriendlyByteBufInjection;
 
-import java.util.function.Function;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.PlayerDataStorage;
 
 @Mixin(PlayerList.class)
 public abstract class PlayerListInject {
@@ -119,9 +121,12 @@ public abstract class PlayerListInject {
         return original;
     }
 
-    @WrapWithCondition(method = "getPlayerAdvancements", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerAdvancements;setPlayer(Lnet/minecraft/server/level/ServerPlayer;)V"))
-    private boolean kilt$avoidSetPlayerIfFake(PlayerAdvancements instance, ServerPlayer player) {
-        return !(player instanceof FakePlayer);
+    @Inject(method = "getPlayerAdvancements", at = @At("HEAD"), cancellable = true)
+    private void kilt$avoidSetPlayerIfFake(ServerPlayer player, CallbackInfoReturnable<PlayerAdvancements> cir) {
+        if (player.isFakePlayer()) {
+            Path path = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).resolve("_fake.json");
+            cir.setReturnValue(new FakePlayer.FakePlayerAdvancements(this.server.getFixerUpper(), (PlayerList) (Object) this, this.server.getAdvancements(), path, player));
+        }
     }
 
     @Inject(method = "reloadResources", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;)V"))
