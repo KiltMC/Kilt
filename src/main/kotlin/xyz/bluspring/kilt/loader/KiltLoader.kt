@@ -280,7 +280,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         val modLoader = toml.get<String>("modLoader")
 
         // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
-        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge") {
+        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge" && modLoader != "kotori_scala") {
             throw IncompatibleModException("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
         }
 
@@ -289,6 +289,19 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             "kotlinforforge" -> {
                 if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
                     throw IncompatibleModException("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                }
+            }
+
+            "kotori_scala" -> {
+                val scala = FabricLoader.getInstance().getModContainer("kotori_scala")
+                if (scala.isPresent) {
+                    val version = DefaultArtifactVersion(scala.get().metadata.version.friendlyString)
+                    if (!loaderVersionRange.containsVersion(version)) {
+                        // Some mods like OpenComputers might have a strict check, but we probably want to allow users to use the Fabric version which is probably more recent.
+                        KnitLoader.logger.warn("Forge mod file $fileName does not declare support for Scalable Cat's Force version ${version}! (mod supports versions between [$loaderVersionRange])")
+                    }
+                } else {
+                    throw IncompatibleModException("Kilt: You are missing Scalable Cat's Force! Please install the Fabric version of Scalable Cat's Force.")
                 }
             }
 

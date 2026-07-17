@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.mod
 
+import com.kotori316.scala_lib.ScalaModContainer
 import cpw.mods.jarhandling.SecureJar
 import net.minecraftforge.eventbus.EventBusErrorMessage
 import net.minecraftforge.eventbus.api.BusBuilder
@@ -49,10 +50,12 @@ class ForgeMod(
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    val container = if (definition.additionalData["loader"] == "kotlinforforge")
-        KotlinModContainer(this)
-    else
-        KiltModContainer(this)
+    val container = when (definition.additionalData["loader"]) {
+        "kotlinforforge" -> KotlinModContainer(this)
+        "kotori_scala" -> ScalaModContainer(this)
+        else -> KiltModContainer(this)
+    }
+
 
     lateinit var scanData: ModFileScanData
     lateinit var modObject: Any
