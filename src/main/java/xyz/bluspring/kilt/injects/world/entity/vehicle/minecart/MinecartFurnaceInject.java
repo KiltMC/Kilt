@@ -27,9 +27,4 @@ public abstract class MinecartFurnaceInject extends AbstractMinecart {
         if (ret.consumesAction())
             cir.setReturnValue(ret);
     }
-
-    @Override
-    public float getMaxCartSpeedOnRail() {
-        return 0.2f;
-    }
 }

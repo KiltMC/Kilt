@@ -2,7 +2,6 @@ package xyz.bluspring.kilt.gradle
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import net.fabricmc.mappingio.tree.MemoryMappingTree
 import org.gradle.api.Project
 import java.io.File
 import java.security.MessageDigest
@@ -26,6 +25,10 @@ object ClassTweakerUpdater {
             json.getAsJsonObject("wideners").get("neoforge").asString
         else null
 
+        val lastGeneratedTransformerHash = if (json.has("wideners") && json.getAsJsonObject("wideners").has("neoforge_generated"))
+            json.getAsJsonObject("wideners").get("neoforge_generated").asString
+        else null
+
         val lastInjectionHash = if (json.has("injections") && json.getAsJsonObject("injections").has("neoforge"))
             json.getAsJsonObject("injections").get("neoforge").asString
         else null
@@ -40,18 +43,25 @@ object ClassTweakerUpdater {
         val kiltWidenerFile = File("${project.projectDir}/tweakers/wideners/kilt.accesswidener")
         val neoInjectionTweakerFile = File("${project.projectDir}/tweakers/injections/neoforge.classtweaker")
         val neoWidenerFile = File("${project.projectDir}/tweakers/wideners/neoforge.accesswidener")
+        val neoGeneratedWidenerFile = File("${project.projectDir}/tweakers/wideners/neoforge_generated.accesswidener")
 
         val finalTweakerFile = File("${project.projectDir}/src/main/resources/kilt.classtweaker")
 
         // Neo-specific files
         run {
             val transformerFile = File("${project.projectDir}/forge/src/main/resources/META-INF/accesstransformer.cfg")
+            val generatedTransformerFile = File("${project.projectDir}/forge/src/main/resources/META-INF/accesstransformergenerated.cfg")
             val injectionsFile = File("${project.projectDir}/forge/src/main/resources/META-INF/injected-interfaces.json")
 
             // Access Transformer -> Access Widener Updates
             if (transformerFile.hash() != lastTransformerHash) {
                 convertTransformerToWidener(transformerFile, neoWidenerFile, mappings)
                 json.getAsJsonObject("wideners").addProperty("neoforge", transformerFile.hash())
+            }
+
+            if (generatedTransformerFile.hash() != lastGeneratedTransformerHash) {
+                convertTransformerToWidener(generatedTransformerFile, neoGeneratedWidenerFile, mappings)
+                json.getAsJsonObject("wideners").addProperty("neoforge_generated", transformerFile.hash())
             }
 
             // Injected Interface Updates
@@ -85,6 +95,11 @@ object ClassTweakerUpdater {
 
         // Neo ATs
         neoWidenerFile.forEachLine {
+            if (it.startsWith("accessWidener")) return@forEachLine
+            classTweakerBuilder.append(it).newLine()
+        }
+
+        neoGeneratedWidenerFile.forEachLine {
             if (it.startsWith("accessWidener")) return@forEachLine
             classTweakerBuilder.append(it).newLine()
         }

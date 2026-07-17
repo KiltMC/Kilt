@@ -1,21 +1,12 @@
 package xyz.bluspring.kilt.injects.world.entity.monster;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.monster.EnderMan;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
@@ -26,6 +17,17 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
 @Mixin(EnderMan.class)
 public abstract class EnderManInject extends Monster {
     protected EnderManInject(EntityType<? extends Monster> entityType, Level level) {
@@ -34,9 +36,9 @@ public abstract class EnderManInject extends Monster {
 
     // TODO: do we need to worry about data manager issues?
 
-    @ModifyExpressionValue(method = "isLookingAtMe", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z", ordinal = 0))
-    private boolean kilt$checkShouldSuppressAnger(boolean original, @Local(argsOnly = true) Player player, @Local ItemStack stack) {
-        return original || CommonHooks.shouldSuppressEnderManAnger((EnderMan) (Object) this, player, stack);
+    @ModifyExpressionValue(method = "isBeingStaredBy", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/EnderMan;isLookingAtMe(Lnet/minecraft/world/entity/LivingEntity;DZZ[D)Z"))
+    private boolean kilt$checkShouldSuppressAnger(boolean original, @Local(argsOnly = true) Player player) {
+        return original && !CommonHooks.shouldSuppressEnderManAnger((EnderMan) (Object) this, player);
     }
 
     @WrapOperation(method = "teleport(DDD)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/EnderMan;randomTeleport(DDDZ)Z"))
@@ -55,9 +57,13 @@ public abstract class EnderManInject extends Monster {
     public abstract static class EndermanLeaveBlockGoalInject extends Goal {
         @Shadow @Final private EnderMan enderman;
 
-        @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
-        private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.canEntityGrief(this.enderman.level(), this.enderman);
+        @Definition(id = "Boolean", type = Boolean.class)
+        @Definition(id = "get", method = "Lnet/minecraft/world/level/gamerules/GameRules;get(Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;")
+        @Definition(id = "MOB_GRIEFING", field = "Lnet/minecraft/world/level/gamerules/GameRules;MOB_GRIEFING:Lnet/minecraft/world/level/gamerules/GameRule;")
+        @Expression("(Boolean) ?.get(MOB_GRIEFING)")
+        @ModifyExpressionValue(method = "canUse", at = @At("MIXINEXTRAS:EXPRESSION"))
+        private Boolean kilt$checkMobGriefing(Boolean original) {
+            return original || EventHooks.canEntityGrief(getServerLevel(this.enderman.level()), this.enderman);
         }
 
         @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/EnderMan$EndermanLeaveBlockGoal;canPlaceBlock(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Z"))
@@ -75,9 +81,13 @@ public abstract class EnderManInject extends Monster {
     public abstract static class EndermanTakeBlockGoalInject extends Goal {
         @Shadow @Final private EnderMan enderman;
 
-        @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
-        private boolean kilt$checkMobGriefing(boolean original) {
-            return original || EventHooks.canEntityGrief(this.enderman.level(), this.enderman);
+        @Definition(id = "Boolean", type = Boolean.class)
+        @Definition(id = "get", method = "Lnet/minecraft/world/level/gamerules/GameRules;get(Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;")
+        @Definition(id = "MOB_GRIEFING", field = "Lnet/minecraft/world/level/gamerules/GameRules;MOB_GRIEFING:Lnet/minecraft/world/level/gamerules/GameRule;")
+        @Expression("(Boolean) ?.get(MOB_GRIEFING)")
+        @ModifyExpressionValue(method = "canUse", at = @At("MIXINEXTRAS:EXPRESSION"))
+        private Boolean kilt$checkMobGriefing(Boolean original) {
+            return original || EventHooks.canEntityGrief(getServerLevel(this.enderman.level()), this.enderman);
         }
     }
 }

@@ -9,7 +9,6 @@ transitive-inject-interface net/minecraft/client/gui/screens/advancements/Advanc
 transitive-inject-interface net/minecraft/client/gui/screens/advancements/AdvancementTabType xyz/bluspring/kilt/injections/client/gui/screens/advancements/AdvancementTabTypeInjection
 transitive-inject-interface net/minecraft/client/gui/screens/inventory/AbstractContainerScreen xyz/bluspring/kilt/injections/client/gui/screens/inventory/AbstractContainerScreenInjection
 transitive-inject-interface net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen xyz/bluspring/kilt/injections/client/gui/screens/inventory/CreativeModeInventoryScreenInjection
-transitive-inject-interface net/minecraft/client/gui/screens/MenuScreens xyz/bluspring/kilt/injections/client/gui/screens/MenuScreensInjection
 transitive-inject-interface net/minecraft/client/gui/screens/Screen xyz/bluspring/kilt/injections/client/gui/screens/ScreenInjection
 transitive-inject-interface net/minecraft/client/gui/screens/worldselection/WorldCreationContext xyz/bluspring/kilt/injections/client/gui/screens/worldselection/WorldCreationContextInjection
 transitive-inject-interface net/minecraft/client/Minecraft xyz/bluspring/kilt/injections/client/MinecraftInjection
@@ -21,6 +20,7 @@ transitive-inject-interface net/minecraft/client/multiplayer/ServerData xyz/blus
 transitive-inject-interface net/minecraft/client/multiplayer/SessionSearchTrees xyz/bluspring/kilt/injections/client/multiplayer/SessionSearchTreesInjection
 transitive-inject-interface net/minecraft/client/Options xyz/bluspring/kilt/injections/client/OptionsInjection
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
+transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/renderer/ScreenEffectRendererInjection
 transitive-inject-interface net/minecraft/client/resources/language/LanguageManager xyz/bluspring/kilt/injections/client/resources/language/LanguageManagerInjection
 transitive-inject-interface net/minecraft/client/resources/sounds/SoundInstance xyz/bluspring/kilt/injections/client/resources/sounds/SoundInstanceInjection
 transitive-inject-interface net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/injections/commands/synchronization/ArgumentTypeInfosInjection
@@ -58,7 +58,6 @@ transitive-inject-interface net/minecraft/network/protocol/status/ServerStatus x
 transitive-inject-interface net/minecraft/network/RegistryFriendlyByteBuf xyz/bluspring/kilt/injections/network/RegistryFriendlyByteBufInjection
 transitive-inject-interface net/minecraft/resources/FileToIdConverter xyz/bluspring/kilt/injections/resources/FileToIdConverterInjection
 transitive-inject-interface net/minecraft/resources/Identifier xyz/bluspring/kilt/injections/resources/IdentifierInjection
-transitive-inject-interface net/minecraft/resources/RegistryDataLoader xyz/bluspring/kilt/injections/resources/RegistryDataLoaderInjection
 transitive-inject-interface net/minecraft/resources/RegistryOps xyz/bluspring/kilt/injections/resources/RegistryOpsInjection
 transitive-inject-interface net/minecraft/server/level/DistanceManager xyz/bluspring/kilt/injections/server/level/DistanceManagerInjection
 transitive-inject-interface net/minecraft/server/level/GenerationChunkHolder xyz/bluspring/kilt/injections/server/level/GenerationChunkHolderInjection
@@ -80,6 +79,7 @@ transitive-inject-interface net/minecraft/tags/TagBuilder xyz/bluspring/kilt/inj
 transitive-inject-interface net/minecraft/tags/TagEntry xyz/bluspring/kilt/injections/tags/TagEntryInjection
 transitive-inject-interface net/minecraft/tags/TagFile xyz/bluspring/kilt/injections/tags/TagFileInjection
 transitive-inject-interface net/minecraft/tags/TagLoader xyz/bluspring/kilt/injections/tags/TagLoaderInjection
+transitive-inject-interface net/minecraft/util/random/WeightedList xyz/bluspring/kilt/injections/util/random/WeightedListInjection
 transitive-inject-interface net/minecraft/world/damagesource/DamageScaling xyz/bluspring/kilt/injections/world/damagesource/DamageScalingInjection
 transitive-inject-interface net/minecraft/world/damagesource/DeathMessageType xyz/bluspring/kilt/injections/world/damagesource/DeathMessageTypeInjection
 transitive-inject-interface net/minecraft/world/effect/MobEffect xyz/bluspring/kilt/injections/world/effect/MobEffectInjection
@@ -87,6 +87,7 @@ transitive-inject-interface net/minecraft/world/entity/Entity xyz/bluspring/kilt
 transitive-inject-interface net/minecraft/world/entity/EntityType xyz/bluspring/kilt/injections/world/entity/EntityTypeInjection
 transitive-inject-interface net/minecraft/world/entity/item/ItemEntity xyz/bluspring/kilt/injections/world/entity/item/ItemEntityInjection
 transitive-inject-interface net/minecraft/world/entity/LightningBolt xyz/bluspring/kilt/injections/world/entity/LightningBoltInjection
+transitive-inject-interface net/minecraft/world/entity/LivingEntity xyz/bluspring/kilt/injections/world/entity/LivingEntityInjection
 transitive-inject-interface net/minecraft/world/entity/MobCategory xyz/bluspring/kilt/injections/world/entity/MobCategoryInjection
 transitive-inject-interface net/minecraft/world/entity/Mob xyz/bluspring/kilt/injections/world/entity/MobInjection
 transitive-inject-interface net/minecraft/world/entity/monster/Slime xyz/bluspring/kilt/injections/world/entity/monster/SlimeInjection

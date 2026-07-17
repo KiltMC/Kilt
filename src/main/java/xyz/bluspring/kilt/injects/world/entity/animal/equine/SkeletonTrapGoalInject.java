@@ -22,7 +22,7 @@ public abstract class SkeletonTrapGoalInject {
     @WrapMethod(method = "tick")
     private void kilt$avoidSkeletonHorseGoalCrash(Operation<Void> original) {
         var level = (ServerLevel) this.horse.level();
-        level.getServer().tell(new TickTask(level.getServer().getTickCount(), original::call));
+        level.getServer().schedule(new TickTask(level.getServer().getTickCount(), original::call));
     }
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)

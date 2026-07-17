@@ -5,6 +5,7 @@
   "plugin": "xyz.bluspring.kilt.KiltMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AbstractHorseAccessor",
     "AbstractSelectionListAccessor",
     "ArgumentTypeInfosAccessor",
     "ArmPoseAccessor",
@@ -16,6 +17,7 @@
     "ClientTextTooltipAccessor",
     "CompoundTagAccessor",
     "CreativeModeTabAccessor",
+    "DataComponentPatchAccessor",
     "DataGeneratorAccessor",
     "DebugLevelSourceAccessor",
     "DyeColorAccessor",
@@ -57,6 +59,7 @@
     "WoodTypeAccessor",
     "WorldSliceAccessor",
     "client.gui.components.ButtonBuilderAccessor",
+    "client.renderer.ScreenEffectRendererAccessor",
     "client.renderer.item.ItemPropertiesAccessor",
     "compat.fabric_api.FuelRegistryImplAccessor",
     "compat.fabric_api.Int2ObjectMapTrackerMixin",

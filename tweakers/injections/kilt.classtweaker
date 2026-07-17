@@ -28,5 +28,6 @@ transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState xyz/bluspring/kilt/injections/client/multiplayer/prediction/BlockStatePredictionHandlerInjection$ServerVerifiedStateInjection
 transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection$TypeInjection
+transitive-inject-interface net/minecraft/util/random/WeightedList$Builder xyz/bluspring/kilt/injections/util/random/WeightedListInjection$BuilderInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM

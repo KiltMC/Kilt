@@ -17,10 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.fox.Fox;
@@ -74,21 +72,6 @@ public abstract class FoxInject extends Animal {
         @ModifyExpressionValue(method = "onReachedTarget", at = @At("MIXINEXTRAS:EXPRESSION"))
         private Boolean kilt$checkMobGriefingEvent(Boolean original) {
             return original && EventHooks.canEntityGrief((ServerLevel) this$0.level(), this$0);
-        }
-    }
-
-    @Mixin(targets = "net.minecraft.world.entity.animal.fox.Fox$FoxFloatGoal")
-    public abstract static class FoxFloatGoalInject extends FloatGoal {
-        @Shadow @Final private Fox this$0;
-
-        public FoxFloatGoalInject(Mob mob) {
-            super(mob);
-        }
-
-        @ModifyExpressionValue(method = "canUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/fox/Fox;isInLava()Z"))
-        private boolean kilt$checkIsInFluidType(boolean original) {
-            var fox = this$0;
-            return original || fox.isInFluidType((fluidType, height) -> fox.canSwimInFluidType(fluidType) && height > 0.25);
         }
     }
 }
