@@ -620,6 +620,8 @@ transitive-extendable class net/minecraft/resources/RegistryOps$HolderLookupAdap
 transitive-accessible field net/minecraft/resources/RegistryOps$HolderLookupAdapter lookupProvider Lnet/minecraft/core/HolderLookup$Provider;
 transitive-mutable field net/minecraft/resources/RegistryOps$HolderLookupAdapter lookupProvider Lnet/minecraft/core/HolderLookup$Provider;
 transitive-accessible method net/minecraft/resources/ResourceLocation validNamespaceChar (C)Z
+transitive-accessible method net/minecraft/server/PlayerAdvancements load (Lnet/minecraft/server/ServerAdvancementManager;)V
+transitive-extendable method net/minecraft/server/PlayerAdvancements load (Lnet/minecraft/server/ServerAdvancementManager;)V
 transitive-accessible field net/minecraft/server/MinecraftServer nextTickTimeNanos J
 transitive-mutable field net/minecraft/server/MinecraftServer nextTickTimeNanos J
 transitive-accessible class net/minecraft/server/MinecraftServer$ReloadableResources
