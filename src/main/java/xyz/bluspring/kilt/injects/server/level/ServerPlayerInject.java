@@ -6,6 +6,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -58,6 +60,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
 import xyz.bluspring.kilt.injections.world.entity.player.PlayerInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
@@ -311,8 +314,9 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     }
 
     @Inject(method = "drop(Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;removeFromSelected(Z)Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
-    private void kilt$handleSelectedDrop(boolean dropStack, CallbackInfoReturnable<Boolean> cir, @Local Inventory inventory) {
+    private void kilt$handleSelectedDrop(boolean dropStack, CallbackInfoReturnable<Boolean> cir, @Local Inventory inventory, @Share(value = "selected", namespace = Kilt.MOD_ID) LocalRef<ItemStack> selectedRef) {
         var selected = inventory.getSelected();
+        selectedRef.set(selected);
 
         if (selected.isEmpty() || !selected.onDroppedByPlayer(this)) {
             cir.setReturnValue(false);

@@ -345,6 +345,15 @@ object KiltMixinModifications {
                 ))
             )
         ),
+
+        // Fixes ae2wtlib's ServerPlayerMixin
+        InjectedShareAccessModifier(
+            "net/minecraft/server/level/ServerPlayer",
+            listOf("drop", "drop(Z)Z"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("selected", namespace = Kilt.MOD_ID),
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
