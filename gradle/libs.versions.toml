@@ -1,6 +1,6 @@
 # TODO: move everything here
 [versions]
-fabric-loom = "1.17.+"
+fabric-loom = "1.17.16"
 minivan = "0.5"
 
 [plugins]
