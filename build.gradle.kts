@@ -16,7 +16,7 @@ plugins {
     id("fabric-loom") version "1.14-SNAPSHOT"
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
-    id("me.modmuss50.mod-publish-plugin") version "0.7.+"
+    id("me.modmuss50.mod-publish-plugin") version "2.1.1"
 }
 
 version = "${createVersion()}${getVersionMetadata()}"
@@ -633,6 +633,8 @@ tasks {
 
         curseforge {
             projectId = project.property("publishing.curseforge").toString()
+            client = true
+            server = true
             accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
             minecraftVersions.add(project.property("minecraft_version") as String)
 
