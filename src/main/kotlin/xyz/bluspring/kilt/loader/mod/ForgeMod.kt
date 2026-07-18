@@ -52,6 +52,7 @@ class ForgeMod(
 
     val container = when (definition.additionalData["loader"]) {
         "kotlinforforge" -> KotlinModContainer(this)
+        "klf" -> dev.nyon.klf.KotlinModContainer(this)
         "kotori_scala" -> ScalaModContainer(this)
         else -> KiltModContainer(this)
     }
