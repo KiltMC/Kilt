@@ -1,5 +1,6 @@
 package net.minecraftforge.fml
 
+import dev.nyon.klf.KlfLoadingContext
 import net.minecraftforge.fml.config.IConfigSpec
 import net.minecraftforge.fml.config.ModConfig
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
@@ -34,10 +35,11 @@ open class ModLoadingContext {
         }
 
     fun <T> extension(): T {
-        return if (this.kiltActiveContainer is KotlinModContainer)
-            (this as? KotlinModLoadingContext ?: KotlinModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
-        else
-            (this as? FMLJavaModLoadingContext ?: FMLJavaModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
+        return when(this.kiltActiveContainer) {
+            is KotlinModContainer -> (this as? KotlinModLoadingContext ?: KotlinModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
+            is dev.nyon.klf.KotlinModContainer -> (this as? KlfLoadingContext ?: KlfLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
+            else -> (this as? FMLJavaModLoadingContext ?: FMLJavaModLoadingContext.kiltGetContext((this.kiltActiveContainer as KiltModContainer).mod)) as T
+        }
     }
 
     fun <T> registerExtensionPoint(point: Class<out IExtensionPoint<T>>, extension: Supplier<T>) where T : Record, T : IExtensionPoint<T> {

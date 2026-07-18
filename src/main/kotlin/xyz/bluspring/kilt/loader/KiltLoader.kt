@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
 import cpw.mods.modlauncher.Launcher
 import cpw.mods.modlauncher.api.IEnvironment
+import dev.nyon.klf.KlfLoadingContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
@@ -280,7 +281,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         val modLoader = toml.get<String>("modLoader")
 
         // We need to check if the mod loader in the TOML is valid. Since we don't properly support ModLauncher or custom FML loading sequences, we need to implement support ourselves.
-        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge" && modLoader != "kotori_scala") {
+        if (modLoader != "javafml" && modLoader != "lowcodefml" && modLoader != "kotlinforforge" && modLoader != "kotori_scala" && modLoader != "klf") {
             throw IncompatibleModException("Forge mod file $fileName is not a supported FML mod! (got: $modLoader)")
         }
 
@@ -289,6 +290,12 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
             "kotlinforforge" -> {
                 if (!loaderVersionRange.containsVersion(Constants.KFF_VERSION)) {
                     throw IncompatibleModException("Forge mod file $fileName does not support Kotlin for Forge version ${Constants.KFF_VERSION}! (mod supports versions between [$loaderVersionRange])")
+                }
+            }
+
+            "klf" -> {
+                if (!loaderVersionRange.containsVersion(Constants.KLF_VERSION)) {
+                    throw IncompatibleModException("Forge mod file $fileName does not support KotlinLangForge version ${Constants.KLF_VERSION}! (mod supports versions between [$loaderVersionRange])")
                 }
             }
 
@@ -733,9 +740,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                     val clazz = Class.forName(annotation.clazz.className, true, this::class.java.classLoader)
                     val obj = try { clazz.kotlin.objectInstance } catch (_: Throwable) { null }
 
-                    val bus = if (mod.container is KotlinModContainer && busType == Mod.EventBusSubscriber.Bus.MOD)
-                        KotlinModLoadingContext.get().getKEventBus()
-                    else busType.bus().get()
+                    val bus = if (busType == Mod.EventBusSubscriber.Bus.MOD) {
+                        when (mod.container) {
+                            is KotlinModContainer -> KotlinModLoadingContext.get().getKEventBus()
+                            is dev.nyon.klf.KotlinModContainer -> KlfLoadingContext.get().getKEventBus()
+                            else -> busType.bus().get()
+                        }
+                    } else {
+                        busType.bus().get()
+                    }
 
                     if (obj != null)
                         bus.register(obj)
