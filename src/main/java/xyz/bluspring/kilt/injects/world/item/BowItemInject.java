@@ -22,16 +22,16 @@ import net.minecraft.world.level.Level;
 @Mixin(BowItem.class)
 public abstract class BowItemInject implements BowItemInjection {
     @Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BowItem;getPowerForTime(I)F"), cancellable = true)
-    private void kilt$checkUseDurationEvent(ItemStack itemStack, Level level, LivingEntity entity, int remainingTime, CallbackInfoReturnable<Boolean> cir, @Local Player player, @Local(ordinal = 1) ItemStack projectile, @Local(ordinal = 1) LocalIntRef chargeProgress) {
+    private void kilt$checkUseDurationEvent(ItemStack itemStack, Level level, LivingEntity entity, int remainingTime, CallbackInfoReturnable<Boolean> cir, @Local(name = "player") Player player, @Local(name = "projectile") ItemStack projectile, @Local(name = "timeHeld") LocalIntRef chargeProgress) {
         chargeProgress.set(EventHooks.onArrowLoose(itemStack, level, player, chargeProgress.get(), !projectile.isEmpty()));
 
         if (chargeProgress.get() < 0)
-            ci.cancel();
+            cir.setReturnValue(false);
     }
 
     @ModifyExpressionValue(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
-    private boolean kilt$callArrowNockEvent(boolean flag, Level level, Player player, InteractionHand usedHand, @Local ItemStack bow, @Cancellable CallbackInfoReturnable<InteractionResult> cir) {
-        var result = EventHooks.onArrowNock(bow, level, player, usedHand, flag);
+    private boolean kilt$callArrowNockEvent(boolean flag, Level level, Player player, InteractionHand hand, @Local(name = "itemStack") ItemStack bow, @Cancellable CallbackInfoReturnable<InteractionResult> cir) {
+        var result = EventHooks.onArrowNock(bow, level, player, hand, flag);
 
         if (result != null)
             cir.setReturnValue(result);

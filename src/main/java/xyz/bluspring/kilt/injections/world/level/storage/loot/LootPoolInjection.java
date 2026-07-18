@@ -1,7 +1,9 @@
 package xyz.bluspring.kilt.injections.world.level.storage.loot;
 
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import org.jspecify.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
 public interface LootPoolInjection {
     default void freeze() {
@@ -26,5 +28,14 @@ public interface LootPoolInjection {
 
     default void setBonusRolls(NumberProvider provider) {
         throw KiltHelper.createMixinException(LootPoolInjection.class, "setBonusRolls");
+    }
+
+    @Nullable
+    default String getName() {
+        throw KiltHelper.createMixinException(LootPoolInjection.class, "getName");
+    }
+
+    default void setName(String name) {
+        throw KiltHelper.createMixinException(LootPoolInjection.class, "setName");
     }
 }

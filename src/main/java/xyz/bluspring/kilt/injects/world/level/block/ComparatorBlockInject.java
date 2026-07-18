@@ -24,7 +24,7 @@ public abstract class ComparatorBlockInject extends Block {
     @Override
     public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
         if (pos.getY() == neighbor.getY() && level instanceof Level && !level.isClientSide()) {
-            state.handleNeighborChanged((Level) level, pos, level.getBlockState(neighbor).getBlock(), neighbor, false);
+            state.handleNeighborChanged((Level) level, pos, level.getBlockState(neighbor).getBlock(), null, false);
         }
     }
 }
