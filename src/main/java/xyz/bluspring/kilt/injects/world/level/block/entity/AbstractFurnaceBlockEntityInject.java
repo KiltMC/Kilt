@@ -73,14 +73,14 @@ public abstract class AbstractFurnaceBlockEntityInject implements AbstractFurnac
         AbstractFurnaceBlockEntityInjection.buildFuels(fuelConsumer);
     }
 
-    @Unique // TODO Does this need to be thread safe?
-    private static AbstractFurnaceBlockEntity kilt$currentFurnace = null;
+    @Unique
+    private static final ThreadLocal<AbstractFurnaceBlockEntity> kilt$currentFurnace = ThreadLocal.withInitial(() -> null);
 
     @CreateStatic
     private static boolean canBurn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipe, NonNullList<ItemStack> inventory, int maxStackSize, AbstractFurnaceBlockEntity furnace) {
-        kilt$currentFurnace = furnace;
+        kilt$currentFurnace.set(furnace);
         var result = canBurn(registryAccess, recipe, inventory, maxStackSize);
-        kilt$currentFurnace = null;
+        kilt$currentFurnace.set(null);
         return result;
     }
 
@@ -94,8 +94,8 @@ public abstract class AbstractFurnaceBlockEntityInject implements AbstractFurnac
     private static ItemStack kilt$checkCanBurnWithFurnace(
         Recipe<?> recipe, HolderLookup.Provider provider, Operation<ItemStack> original, @Local(argsOnly = true) RecipeHolder<?> recipeHolder
     ) {
-        if (kilt$currentFurnace != null) {
-            return ((RecipeHolder<? extends AbstractCookingRecipe>) recipeHolder).value().assemble(new SingleRecipeInput(kilt$currentFurnace.getItem(0)), provider);
+        if (kilt$currentFurnace.get() != null) {
+            return ((RecipeHolder<? extends AbstractCookingRecipe>) recipeHolder).value().assemble(new SingleRecipeInput(kilt$currentFurnace.get().getItem(0)), provider);
         }
         return original.call(recipe, provider);
     }
