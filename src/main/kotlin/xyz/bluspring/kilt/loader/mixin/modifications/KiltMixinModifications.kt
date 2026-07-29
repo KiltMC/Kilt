@@ -396,7 +396,7 @@ object KiltMixinModifications {
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
-                    "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
+                    "at" to at("INVOKE", "Lnet/neoforged/neoforge/client/ClientHooks;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/neoforged/neoforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
                 ))
             )
         ),
