@@ -389,7 +389,7 @@ object MixinRemapper {
             return value
 
         // Class reference, we can just return it directly.
-        if (value.contains("/") && !value.startsWith("L") && !value.contains(";") && !value.contains("(")) {
+        if (value.contains("/") && !value.startsWith("L") && !value.contains(";") && !value.contains("(") && !value.contains(":")) {
             return KiltRemapper.remapClass(value, ignoreWorkaround = true).breakpoint()
         }
 
