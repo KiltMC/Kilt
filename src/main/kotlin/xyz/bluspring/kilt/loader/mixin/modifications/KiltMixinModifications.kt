@@ -85,6 +85,27 @@ object KiltMixinModifications {
             "net/minecraft/client/gui/Gui",
             methods = listOf("renderHotbar", "renderHotbar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"),
             remapMethodsTo = listOf("renderHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V") // good enough tm
+        ),
+
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachLine(ZZLjava/util/function/BiConsumer;)V"
+                ))
+            )
+        ),
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachAboveCopyrightLine(Ljava/util/function/BiConsumer;)V"
+                ))
+            )
         )
     )
 
