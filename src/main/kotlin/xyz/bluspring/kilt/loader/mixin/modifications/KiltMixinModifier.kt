@@ -4,6 +4,7 @@ import com.bawnorton.mixinsquared.reflection.MixinInfoExtension
 import com.bawnorton.mixinsquared.reflection.StateExtension
 import com.bawnorton.mixinsquared.reflection.TargetClassContextExtension
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InsnList
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.ParamAnnotationBasedModifier
 import xyz.bluspring.kilt.loader.remap.MixinTypes
 
 class KiltMixinModifier : IExtension {
@@ -40,6 +42,8 @@ class KiltMixinModifier : IExtension {
                 var wasModified = false
 
                 val replacedMethods = mutableMapOf<MethodNode, MethodNode>()
+
+                val paramModifiers = mutableListOf<ParamAnnotationBasedModifier>()
 
                 for (methodNode in mixinClassNode.methods) {
                     val annotations = methodNode.visibleAnnotations ?: continue
@@ -81,6 +85,10 @@ class KiltMixinModifier : IExtension {
 
                         for (modifier in modifiers) {
                             when (modifier) {
+                                is ParamAnnotationBasedModifier -> {
+                                    paramModifiers.add(modifier)
+                                }
+
                                 is AnnotationBasedModifier -> {
                                     modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
                                     wasModified = true
@@ -99,6 +107,27 @@ class KiltMixinModifier : IExtension {
                         methodNode.visibleAnnotations = mutableListOf()
                         methodNode.visibleAnnotations.clear()
                         methodNode.visibleAnnotations.addAll(newAnnotations)
+                    }
+
+                    if (paramModifiers.isNotEmpty()) {
+                        val parameters = Type.getArgumentTypes(methodNode.desc)
+                        if (methodNode.invisibleParameterAnnotations == null) {
+                            methodNode.invisibleParameterAnnotations = arrayOfNulls(parameters.size)
+                        }
+                        for (i in parameters.indices) {
+                            val param = parameters[i]
+                            val annotations = mutableListOf<AnnotationNode>()
+                            if (methodNode.invisibleParameterAnnotations.size > i) {
+                                val toAdd: List<AnnotationNode>? = methodNode.invisibleParameterAnnotations[i]
+                                if (toAdd != null) {
+                                    annotations.addAll(toAdd)
+                                }
+                            }
+                            for (modifier in paramModifiers) {
+                                modifier.modifyMixinParams(context.classInfo, i, param, annotations)
+                            }
+                            methodNode.invisibleParameterAnnotations[i] = annotations
+                        }
                     }
                 }
 
