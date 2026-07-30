@@ -193,7 +193,10 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
 
     @Definition(id = "player", local = @Local(type = ServerPlayer.class, argsOnly = true))
     @Expression("player != null")
-    @ModifyExpressionValue(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0))
+    @ModifyExpressionValue(
+        method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
+        at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 1)
+    )
     private boolean kilt$tryHandleCurrentEntityAsServerPlayer(boolean original) {
         return original || this.kilt$currentEntity instanceof ServerPlayer;
     }
