@@ -482,6 +482,31 @@ object KiltMixinModifications {
     val WRAP_OPERATION = register(
         WrapOperation::class.java,
 
+        // Fix Deep Aether's HumanoidArmorLayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(
+                    at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/Model;ILnet/minecraft/resources/ResourceLocation;)V"
+                    )
+                )
+            ),
+            replaceWith = listOf(
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V",
+                    "at" to listOf(
+                        at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/HumanoidModel;ILnet/minecraft/resources/ResourceLocation;)V"
+                        )
+                    )
+                ))
+            )
+        ),
+
         // Fixes Create's ProjectileUtilMixin
         ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/entity/projectile/ProjectileUtil",
