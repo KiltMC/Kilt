@@ -11,6 +11,7 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.injection.At
+import org.spongepowered.asm.mixin.injection.Coerce
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.ModifyVariable
 import org.spongepowered.asm.mixin.injection.Redirect
@@ -504,6 +505,23 @@ object KiltMixinModifications {
                         )
                     )
                 ))
+            )
+        ),
+        ParamAnnotationBasedModifier.AddParamAnnotationModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(
+                    at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/Model;ILnet/minecraft/resources/ResourceLocation;)V"
+                    )
+                )
+            ),
+            params = mapOf(
+                ParamAnnotationBasedModifier.AddParamAnnotationModifier.ParamMatcher(
+                    type = "net/minecraft/client/model/Model"
+                ) to createAnnotation(Coerce::class.java, mapOf())
             )
         ),
 
