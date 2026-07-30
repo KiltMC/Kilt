@@ -85,6 +85,27 @@ object KiltMixinModifications {
             "net/minecraft/client/gui/Gui",
             methods = listOf("renderHotbar", "renderHotbar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"),
             remapMethodsTo = listOf("renderHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V") // good enough tm
+        ),
+
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachLine(ZZLjava/util/function/BiConsumer;)V"
+                ))
+            )
+        ),
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachAboveCopyrightLine(Ljava/util/function/BiConsumer;)V"
+                ))
+            )
         )
     )
 
@@ -375,7 +396,7 @@ object KiltMixinModifications {
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
-                    "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
+                    "at" to at("INVOKE", "Lnet/neoforged/neoforge/client/ClientHooks;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/neoforged/neoforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
                 ))
             )
         ),

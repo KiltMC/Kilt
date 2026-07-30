@@ -1,6 +1,7 @@
 // TRACKED HASH: 0ce404d106018ee2fbf70e284692f9e57382cddd
 package xyz.bluspring.kilt.injects.client.color.block;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.world.level.block.Block;
@@ -36,5 +37,8 @@ public class BlockColorsInject implements BlockColorsInjection {
         return this.kilt$blockColors;
     }
 
-    // Kilt TODO: is this still needed?
+    @Inject(method = "register", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/IdMapper;addMapping(Ljava/lang/Object;I)V"))
+    private void kilt$registerBlockToForgeColor(BlockColor blockColor, Block[] blocks, CallbackInfo ci, @Local Block block) {
+        this.kilt$blockColors.put(block, blockColor);
+    }
 }
