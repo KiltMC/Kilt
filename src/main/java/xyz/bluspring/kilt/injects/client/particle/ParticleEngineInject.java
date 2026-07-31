@@ -1,7 +1,15 @@
 package xyz.bluspring.kilt.injects.client.particle;
 
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 import com.google.common.collect.Maps;
-import com.google.common.collect.Streams;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -10,9 +18,28 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL32C;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.Kilt;
+import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.*;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -24,20 +51,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
-import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL32C;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.Kilt;
-import xyz.bluspring.kilt.injections.client.particle.ParticleEngineInjection;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineInject implements ParticleEngineInjection {
@@ -49,6 +62,8 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     @Shadow public abstract void render(LightTexture lightTexture, Camera camera, float f);
 
     @Unique private @Nullable Frustum kilt$clippingHelper;
+    @Unique private Predicate<ParticleRenderType> kilt$renderTypePredicate;
+
     // Used by some Forge mods, so we need to patch it, but unfortunately also means we're storing this data twice.
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Unique private final Map<ResourceLocation, ParticleProvider<?>> kilt$providers = new HashMap<>();
@@ -73,10 +88,12 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     }
 
     @Override
-    public void render(LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper) {
+    public void render(LightTexture lightTexture, Camera camera, float tickDelta, @Nullable Frustum clippingHelper, Predicate<ParticleRenderType> renderTypePredicate) {
         this.kilt$clippingHelper = clippingHelper;
+        this.kilt$renderTypePredicate = renderTypePredicate;
         this.render(lightTexture, camera, tickDelta);
         this.kilt$clippingHelper = null;
+        this.kilt$renderTypePredicate = null;
     }
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -84,7 +101,7 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
                                     @Share(value = "frustum", namespace = Kilt.MOD_ID) LocalRef<Frustum> frustum,
                                     @Share(value = "renderTypePredicate", namespace = Kilt.MOD_ID) LocalRef<Predicate<ParticleRenderType>> renderTypePredicate) {
         frustum.set(this.kilt$clippingHelper);
-        renderTypePredicate.set(type -> true); // Kilt TODO: our render() has the wrong signature
+        renderTypePredicate.set(Objects.requireNonNullElse(this.kilt$renderTypePredicate, $ -> true));
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;enableDepthTest()V", shift = At.Shift.AFTER, ordinal = 0, remap = false))
@@ -94,10 +111,17 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/particle/ParticleEngine;RENDER_ORDER:Ljava/util/List;"))
-    private List<ParticleRenderType> kilt$mergeCustomParticles(List<ParticleRenderType> original) {
+    private List<ParticleRenderType> kilt$mergeCustomParticles(List<ParticleRenderType> original, @Share(value = "renderTypePredicate", namespace = Kilt.MOD_ID) LocalRef<Predicate<ParticleRenderType>> renderTypePredicate) {
         var set = new LinkedHashSet<ParticleRenderType>();
         set.addAll(RENDER_ORDER);
         set.addAll(this.particles.keySet());
+
+        var predicate = renderTypePredicate.get();
+        if (predicate == null)
+            predicate = $ -> true;
+
+        set.removeIf(type -> type == ParticleRenderType.NO_RENDER);
+        set.removeIf(predicate);
 
         return set.stream().toList();
     }
