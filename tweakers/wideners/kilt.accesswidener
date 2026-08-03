@@ -58,3 +58,6 @@ accessible field net/minecraft/client/renderer/chunk/SectionRenderDispatcher lev
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask
 accessible method net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection updateGlobalBlockEntities (Ljava/util/Collection;)V
 accessible class net/minecraft/client/renderer/chunk/SectionRenderDispatcher$SectionTaskResult
+
+# Workarounds needed for certain complex systems, such as ModifiedCloneWorkaroundLoader
+accessible class net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal$CrossbowState
