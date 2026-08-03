@@ -13,6 +13,9 @@ transitive-accessible class net/minecraft/data/HashCache$ProviderCache
 transitive-accessible method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
 transitive-extendable method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
 
+# Workarounds needed for certain complex systems, such as ModifiedCloneWorkaroundLoader
+accessible class net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal$CrossbowState
+
 # Auto generated access widener from NeoForge's access transformers.
 transitive-accessible method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
 transitive-extendable method net/minecraft/advancements/CriteriaTriggers register (Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;
