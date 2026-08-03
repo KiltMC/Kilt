@@ -1711,6 +1711,3 @@ transitive-inject-interface net/minecraft/world/level/storage/PlayerDataStorage 
 transitive-inject-interface net/minecraft/world/level/storage/PrimaryLevelData xyz/bluspring/kilt/injections/world/level/storage/PrimaryLevelDataInjection
 transitive-inject-interface net/minecraft/world/level/storage/ServerLevelData xyz/bluspring/kilt/injections/world/level/storage/ServerLevelDataInjection
 transitive-inject-interface net/minecraft/world/phys/AABB xyz/bluspring/kilt/injections/world/phys/AABBInjection
-
-# Workarounds needed for certain complex systems, such as ModifiedCloneWorkaroundLoader
-accessible class net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal$CrossbowState
