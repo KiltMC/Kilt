@@ -1,0 +1,6 @@
+package xyz.bluspring.mods.flashbacksablecompat.compat
+
+import dev.ryanhcode.sable.network.packets.ClientboundSableSnapshotInfoDualPacket
+import xyz.bluspring.mods.flashbacksablecompat.FlashbackSableCompat
+
+object ActionSableSnapshotInfo : ActionSableUdp<ClientboundSableSnapshotInfoDualPacket>(FlashbackSableCompat.id("action/sable_snapshot_info_optional"), ClientboundSableSnapshotInfoDualPacket.CODEC)

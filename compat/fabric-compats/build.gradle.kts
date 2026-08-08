@@ -14,6 +14,12 @@ repositories {
     maven("https://maven.squiddev.cc") {
         content { includeGroup("cc.tweaked") }
     }
+    maven("https://maven.ryanhcode.dev/releases") {
+        content {
+            includeGroup("dev.ryanhcode.sable")
+            includeGroup("dev.ryanhcode.sable-companion")
+        }
+    }
 }
 
 // CC:T Forge defines classes with the same name as CC:T Fabric.
@@ -56,8 +62,8 @@ dependencies {
     modCompileOnly("maven.modrinth:veil:${property("veil_version")}-fabric,1.21.1")
     modCompileOnly("maven.modrinth:3KUWeVhG:${property("veil_version")}-neoforge,1.21.1") // funny workaround to get Veil Neo to be downloaded
 
-    modCompileOnly("maven.modrinth:sable:${property("sable_version")}-fabric,1.21.1")
-    modCompileOnly("maven.modrinth:T9PomCSv:${property("sable_version")}-neoforge,1.21.1") // same for Sable Neo
+    modCompileOnly("dev.ryanhcode.sable:sable-fabric-1.21.1:${property("sable_version")}")
+    modCompileOnly("maven.modrinth:T9PomCSv:${property("sable_version")}+mc1.21.1-neoforge,1.21.1") // same for Sable Neo
 
     modCompileOnly("maven.modrinth:resourceful-lib:${property("resourcefullib_version")}-fabric,1.21.1")
     modCompileOnly("maven.modrinth:G1hIVOrD:${property("resourcefullib_version")}-neoforge,1.21.1") // and ResourcefulLib
@@ -76,6 +82,8 @@ dependencies {
 
     modCompileOnly("maven.modrinth:every-compat:${property("every_compat_version")}-fabric,1.21.1")
     compileOnly("maven.modrinth:eiktJyw1:${property("every_compat_version")}-neoforge,1.21.1")
+
+    modCompileOnly("maven.modrinth:flashback:${property("flashback_version")}-fabric,1.21.1")
 }
 
 tasks {

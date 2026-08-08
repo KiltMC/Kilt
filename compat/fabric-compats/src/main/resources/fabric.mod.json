@@ -16,10 +16,12 @@
     "environment": "*",
     "entrypoints": {
         "client": [
-            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsClient"
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsClient",
+            "xyz.bluspring.mods.flashbacksablecompat.client.FlashbackSableCompatClient"
         ],
         "main": [
-            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompats"
+            "xyz.bluspring.kilt.compat.fabric.KiltFabricCompats",
+            "xyz.bluspring.mods.flashbacksablecompat.FlashbackSableCompat"
         ],
         "mixinsquared": [
             "xyz.bluspring.kilt.compat.fabric.KiltFabricCompatsMixinCanceller"
@@ -32,7 +34,8 @@
         ]
     },
     "mixins": [
-        "kilt_fabric_compats.mixins.json"
+        "kilt_fabric_compats.mixins.json",
+        "flashback-sable-compat.mixins.json"
     ],
     "depends": {
         "fabricloader": ">=${loader_version}",
