@@ -1,6 +1,9 @@
 // TRACKED HASH: 8fda2624182ac03df35817374f8cf966a4ed0fb0
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -8,29 +11,11 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
-import net.minecraft.client.multiplayer.*;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
-import net.minecraft.network.protocol.game.*;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.ClientCommandHandler;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionTransitionScreenManager;
+import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -47,8 +32,33 @@ import xyz.bluspring.kilt.injections.world.item.CreativeModeTabInjection;
 import xyz.bluspring.kilt.injections.world.item.alchemy.PotionBrewingInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.List;
-import java.util.function.BooleanSupplier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
+import net.minecraft.client.multiplayer.ClientConfigurationPacketListenerImpl;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.CommonListenerCookie;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerInject extends ClientCommonPacketListenerImpl {
@@ -118,7 +128,7 @@ public abstract class ClientPacketListenerInject extends ClientCommonPacketListe
 
     @Inject(method = "method_38542", at = @At("HEAD"), cancellable = true)
     public void kilt$onDataPacket(ClientboundBlockEntityDataPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), BlockEntity.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class, HolderLookup.Provider.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(blockEntity.getClass(), IBlockEntityExtension.class, "onDataPacket", Connection.class, ClientboundBlockEntityDataPacket.class, HolderLookup.Provider.class)) {
             blockEntity.onDataPacket(this.connection, packet, this.registryAccess);
             ci.cancel();
         }
