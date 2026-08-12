@@ -121,7 +121,9 @@ public abstract class ParticleEngineInject implements ParticleEngineInjection {
             predicate = $ -> true;
 
         set.removeIf(type -> type == ParticleRenderType.NO_RENDER);
-        set.removeIf(predicate);
+
+        Predicate<ParticleRenderType> finalPredicate = predicate;
+        set.removeIf(t -> !finalPredicate.test(t));
 
         return set.stream().toList();
     }
