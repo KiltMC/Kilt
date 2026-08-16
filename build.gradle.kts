@@ -296,6 +296,10 @@ dependencies {
     implementation(include("net.minecrell:terminalconsoleappender:1.3.0")!!)
     implementation(include("org.openjdk.nashorn:nashorn-core:${property("nashorn_version")}")!!) // for CoreMods
 
+    // I don't know where the fuck these libraries come from, but some NeoForge mods depend on them annoyingly, but I can't
+    // find them in any of Neo's buildscripts at all.
+    implementation(include("com.machinezoo.noexception:noexception:1.7.1")!!)
+
     // Remapping SRG to Intermediary
     implementation(include("xyz.bluspring:srgutils:${property("srgutils_version")}")!!)
     implementation(include("net.fabricmc:tiny-mappings-parser:0.3.0+build.17")!!)
