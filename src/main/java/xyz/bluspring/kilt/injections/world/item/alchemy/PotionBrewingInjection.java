@@ -1,16 +1,17 @@
 package xyz.bluspring.kilt.injections.world.item.alchemy;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
+import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
-import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public interface PotionBrewingInjection {
     AtomicReference<RegistryAccess> kilt$registryAccess = new AtomicReference<>(RegistryAccess.EMPTY);
@@ -24,7 +25,7 @@ public interface PotionBrewingInjection {
         throw KiltHelper.createMixinException(PotionBrewingInjection.class, "isInput");
     }
 
-    default List<IBrewingRecipe> getRecipes() {
+    default List<IBrewingRecipe> neoforge$getRecipes() {
         throw KiltHelper.createMixinException(PotionBrewingInjection.class, "getRecipes");
     }
 
