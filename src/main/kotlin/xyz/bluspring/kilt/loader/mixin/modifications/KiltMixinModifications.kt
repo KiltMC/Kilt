@@ -10,11 +10,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.gen.Accessor
-import org.spongepowered.asm.mixin.injection.At
-import org.spongepowered.asm.mixin.injection.Coerce
-import org.spongepowered.asm.mixin.injection.Inject
-import org.spongepowered.asm.mixin.injection.ModifyVariable
-import org.spongepowered.asm.mixin.injection.Redirect
+import org.spongepowered.asm.mixin.injection.*
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
@@ -300,7 +296,7 @@ object KiltMixinModifications {
 
         // Fixes TerraFirmaCraft's MinecraftMixin, and probably some others too.
         NameRemappingAnnotationModifier(
-            owner = "net/minecraft/client/Client",
+            owner = "net/minecraft/client/Minecraft",
             methods = listOf($$"*(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V", $$"lambda$new$7", $$"lambda$new$7(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V"),
             remapMethodsTo = listOf($$"method_29339(Ljava/util/concurrent/CompletableFuture;Lnet/minecraft/client/Minecraft$GameLoadCookie;)V")
         ),
