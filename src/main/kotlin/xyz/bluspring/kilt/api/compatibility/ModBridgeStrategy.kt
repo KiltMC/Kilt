@@ -36,7 +36,7 @@ sealed class ModBridgeStrategy {
 
         companion object : PreferFabric("") {
             override fun throwException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" also needs to be installed to use NeoForge mod ID \"$neoForgeModId\"!")
+                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" also needs to be installed to use NeoForge mod ID \"$neoForgeModId\"! THIS MEANS INSTALL BOTH VERSIONS AT THE SAME TIME.")
             }
         }
     }
@@ -60,7 +60,7 @@ sealed class ModBridgeStrategy {
 
         companion object : PreferNeoForge("") {
             override fun throwException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" also needs to be installed to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)!")
+                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" also needs to be installed to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)! THIS MEANS INSTALL BOTH VERSIONS AT THE SAME TIME.")
             }
         }
     }
@@ -92,11 +92,11 @@ sealed class ModBridgeStrategy {
 
         companion object : RequireBoth("") {
             override fun throwFabricException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" is also required to use NeoForge mod ID \"$neoForgeModId\"!")
+                throw BridgeFailedException("The Fabric version of mod ID \"${fabricModId}\" is also required to use NeoForge mod ID \"$neoForgeModId\"! THIS MEANS INSTALL BOTH VERSIONS AT THE SAME TIME.")
             }
 
             override fun throwNeoForgeException(fabricModId: String, neoForgeModId: String) {
-                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" is also required to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)!")
+                throw BridgeFailedException("The NeoForge version of mod ID \"${neoForgeModId}\" is also required to use mod ${FabricLoader.getInstance().getModContainer(fabricModId).orElseThrow().metadata.name} ($fabricModId)! THIS MEANS INSTALL BOTH VERSIONS AT THE SAME TIME.")
             }
         }
     }
