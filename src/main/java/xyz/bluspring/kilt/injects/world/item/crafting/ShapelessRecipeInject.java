@@ -1,13 +1,10 @@
 // TRACKED HASH: 12b17cf5ecf56046e0c8f2d76638acdc60c56dfb
 package xyz.bluspring.kilt.injects.world.item.crafting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.RecipeMatcher;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,8 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.ShapedRecipePatternStorage;
 import xyz.bluspring.kilt.injections.world.item.crafting.IngredientInjection;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.level.Level;
 
 @Mixin(ShapelessRecipe.class)
 public class ShapelessRecipeInject {
@@ -34,8 +36,8 @@ public class ShapelessRecipeInject {
         this.isSimple = ingredients.stream().allMatch(IngredientInjection::isSimple);
     }
 
-	@Inject(method = "matches(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/world/level/Level;)Z", at = @At(value = "RETURN", ordinal = 1))
-	private void findNonSimpleMatches(CraftingInput input, Level level, CallbackInfoReturnable<Boolean> cir, @Share("inputs") LocalRef<List<ItemStack>> inputsRef) {
+	@Inject(method = "matches(Lnet/minecraft/world/item/crafting/CraftingInput;Lnet/minecraft/world/level/Level;)Z", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
+	private void kilt$findNonSimpleMatches(CraftingInput input, Level level, CallbackInfoReturnable<Boolean> cir) {
         if (!isSimple) {
             List<ItemStack> nonEmptyItems = new ArrayList<>(input.ingredientCount());
             for (ItemStack item : input.items())

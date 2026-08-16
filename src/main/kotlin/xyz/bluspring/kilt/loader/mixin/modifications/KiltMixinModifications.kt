@@ -301,30 +301,6 @@ object KiltMixinModifications {
             remapMethodsTo = listOf($$"method_29339(Ljava/util/concurrent/CompletableFuture;Lnet/minecraft/client/Minecraft$GameLoadCookie;)V")
         ),
 
-        // Fixes TerraFirmaCraft's ServerPlayerGameModeMixin
-        ReplacedAnnotationsModifier(
-            owner = "net/minecraft/server/level/ServerPlayerGameMode",
-            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
-            variables = mapOf(
-                "at" to listOf(at(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
-                    remap = false
-                ))
-            ),
-            replaceWith = listOf(
-                createAnnotation(
-                    Inject::class.java, mapOf(
-                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
-                        "at" to listOf(at(
-                            value = "INVOKE",
-                            target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"
-                        ))
-                    )
-                )
-            )
-        ),
-
         // Fixes Psi's ParticleEngineMixin
         InjectedShareAccessModifier(
             owner = "net/minecraft/client/particle/ParticleEngine",
@@ -387,6 +363,38 @@ object KiltMixinModifications {
             listOf("drop", "drop(Z)Z"),
             paramToShareMapping = mapOf(
                 ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("selected", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Fixes TFC's ServerPlayerGameModeMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerPlayerGameMode",
+            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Z",
+                    remap = false
+                )),
+                "slice" to listOf(
+                    createAnnotation(Slice::class.java, mapOf(
+                        "from" to at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayerGameMode;isCreative()Z"),
+                        "to" to at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;canHarvestBlock(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z", remap = false)
+                    ))
+                )
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+                        "at" to listOf(at("RETURN", ordinal = 0)),
+                        "slice" to listOf(
+                            createAnnotation(Slice::class.java, mapOf(
+                                "from" to at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayerGameMode;isCreative()Z"),
+                            ))
+                        )
+                    )
+                )
             )
         ),
     )
@@ -606,7 +614,14 @@ object KiltMixinModifications {
                     ))
                 ))
             )
-        )
+        ),
+
+        // Fixes TFC's ItemStackMixin
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/world/item/ItemStack",
+            methods = listOf("hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"),
+            remapMethodsTo = listOf("hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V")
+        ),
     )
 
     val WRAP_WITH_CONDITION = register(
