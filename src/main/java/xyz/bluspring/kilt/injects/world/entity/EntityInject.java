@@ -592,7 +592,7 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     @Unique private boolean isAddedToLevel;
 
     @Override
-    public final boolean isAddedToLevel() {
+    public boolean isAddedToLevel() { // Kilt: made not final because some mods cause problems with this
         return this.isAddedToLevel;
     }
 
