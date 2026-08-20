@@ -192,10 +192,6 @@ allprojects {
     if (project.name == "compat")
         return@allprojects
 
-    // Prevent other Knit Loader modules from going through Fabric Loom.
-    if (project.name == "loader" || (project.parent?.name == "loader"))
-        return@allprojects
-
     // Prevent the annotation processor from going through it too.
     if (project.name == "ap")
         return@allprojects
@@ -220,22 +216,17 @@ allprojects {
             exclude("org.ow2.asm")
         }
 
-        if (project.parent?.name != "loader") {
-            // Fabric API. This is technically optional, but you probably want it anyway.
-            implementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
+        // Fabric API. This is technically optional, but you probably want it anyway.
+        implementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
 
-            // Cursed Fabric/Mixin stuff
-            implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
-                exclude("org.ow2.asm")
-            }
-            implementation("xyz.bluspring.fork:Fabric-ASM:${rootProject.property("fabric_asm_version")}")
-            implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
-                exclude("org.ow2.asm")
-            })
-            api("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}") {
-                exclude("org.ow2.asm")
-            }
+        // Cursed Fabric/Mixin stuff
+        implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
+            exclude("org.ow2.asm")
         }
+        implementation("xyz.bluspring.fork:Fabric-ASM:${rootProject.property("fabric_asm_version")}")
+        implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
+            exclude("org.ow2.asm")
+        })
     }
 }
 
@@ -246,12 +237,15 @@ dependencies {
 //        api(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
 //    }
 
+    api(libs.twill)
+    include(libs.twill)
+
     // JiJ'd into main JAR alone
     //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
     include("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("xyz.bluspring.fork:Fabric-ASM:${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
-    include("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}")
+//    include("de.florianreuth:asmfabricloader:${property("asmfabricloader_version")}")
     include("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
         exclude("org.spongepowered", "mixin")
     }
@@ -307,9 +301,6 @@ dependencies {
     runtimeOnly("org.antlr:antlr4-runtime:4.13.1")
     runtimeOnly("org.anarres:jcpp:1.4.14")
 
-    // apparently I need this for Nullable to exist
-    implementation("com.google.code.findbugs:jsr305:3.0.2")
-
     implementation(include("commons-codec:commons-codec:1.15")!!)
 
     // Compatibility layers
@@ -319,16 +310,6 @@ dependencies {
 //    ).forEach { layer ->
 //        runtimeOnly(project(":compat:$layer"))
 //    }
-
-    // Knit Loader
-    api(project(":loader"))
-    runtimeOnly(project(":loader:fabric"))
-    include(project(":loader:fabric")) {
-        isTransitive = false
-    }
-    /*include(project(":loader:quilt")) {
-        isTransitive = false
-    }*/
 
     // Test libraries
     testImplementation("net.fabricmc:fabric-loader-junit:${property("loader_version")}")

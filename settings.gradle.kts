@@ -29,6 +29,12 @@ pluginManagement {
 }
 
 includeBuild("build-logic")
+includeBuild("twill") {
+    dependencySubstitution {
+        substitute(module("xyz.bluspring:twill"))
+            .using(project(":26.1.2"))
+    }
+}
 
 //file("compat").listFiles { file -> file.isDirectory && file.name != ".gradle" && file.name != "build" }.forEach {
 //    include(":compat:${it.name}")
@@ -37,6 +43,4 @@ includeBuild("build-logic")
 //    }
 //}
 
-include(":loader:cichlid")
-include(":loader:fabric")
 //include(":loader:quilt") // TODO: Quilt Loom is broken on 1.21.1 from the looks.

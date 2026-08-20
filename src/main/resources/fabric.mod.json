@@ -53,6 +53,9 @@
         ],
         "afl:instrumentation": [
             "xyz.bluspring.kilt.loader.asm.KiltInstrumentationHandler"
+        ],
+        "twill:early_init": [
+            "xyz.bluspring.kilt.loader.KiltTwillSetup"
         ]
     },
     "mixins": [

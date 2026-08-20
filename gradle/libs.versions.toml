@@ -1,6 +1,10 @@
 # TODO: move everything here
 [versions]
 fabric-loom = "1.17.+"
+twill = "1.0.0"
+
+[libraries]
+twill = { module = "xyz.bluspring:twill", version.ref = "twill" }
 
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }

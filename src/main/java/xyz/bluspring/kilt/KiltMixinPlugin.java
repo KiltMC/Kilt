@@ -19,7 +19,6 @@ import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import xyz.bluspring.kilt.helpers.mixin.MixinExtensionHelper;
-import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader;
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifier;
 
 public class KiltMixinPlugin implements IMixinConfigPlugin {
@@ -95,13 +94,11 @@ public class KiltMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         MixinExtensionHelper.preApply(targetClassName, targetClass, mixinClassName, mixinInfo);
-        EnumExtensionLoader.INSTANCE.preApplyEnum(targetClass, mixinInfo.getClassNode(0));
     }
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         MixinExtensionHelper.postApply(targetClassName, targetClass, mixinClassName, mixinInfo);
-        EnumExtensionLoader.INSTANCE.postApplyEnum(targetClass, mixinInfo.getClassNode(0));
         CursedMixinExtensions.postApply(targetClass);
     }
 }

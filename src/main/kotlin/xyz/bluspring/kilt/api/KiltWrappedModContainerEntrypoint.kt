@@ -8,6 +8,7 @@ import net.neoforged.fml.ModContainer
  *
  * [ModContainer.getEventBus] is nullable in FML, but the actual provided event bus itself is never nullable here.
  */
+@Deprecated(message = "Migrated to Twill", replaceWith = ReplaceWith("WrappedModContainerEntrypoint", "xyz.bluspring.twill.api.WrappedModContainerEntrypoint"), level = DeprecationLevel.WARNING)
 interface KiltWrappedModContainerEntrypoint {
     fun onLoadModContainer(container: ModContainer)
 

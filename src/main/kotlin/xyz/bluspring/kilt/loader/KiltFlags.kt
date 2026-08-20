@@ -7,15 +7,8 @@ object KiltFlags {
     // Mainly for debugging, used to test unobfuscated mods and ensure that Kilt is running as intended.
     @JvmField val DISABLE_REMAPPING = "kilt.noRemap".checkPropertyBoolean()
 
-    // Mainly for debugging, to make sure all Forge mods remap correctly in production environments
-    // without needing to actually launch a production environment.
-    @JvmField val FORCE_PRODUCTION_REMAPPING = FORCE_REMAPPING && "kilt.forceProductionRemap".checkPropertyBoolean()
-
     // Disables coremods in all loaded Forge mods.
     @JvmField val DISABLE_COREMODS = !"kilt.disableCoreMods".checkPropertyBoolean()
-
-    // Stores modified coremods into the .kilt/modifiedCoreMods directory
-    @JvmField val STORE_MODIFIED_COREMODS = "kilt.storeModifiedCoreMods".checkPropertyBoolean()
 
     // Mainly for debugging, enables profiling if the DeltaTimeProfiler#dumpTree method is called.
     // No longer does anything.
