@@ -335,7 +335,6 @@ object KiltRemapper {
                             ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
                             EventClassVisibilityFixer.fixClass(remappedNode)
                             InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
-                            ObjectHolderDefinalizer.processClass(remappedNode)
                             WorkaroundFixer.fixClass(remappedNode)
                             ConflictingStaticMethodFixer.fixClass(remappedNode)
                             EnvironmentRemapper.remapClass(remappedNode)

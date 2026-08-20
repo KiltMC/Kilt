@@ -11,7 +11,6 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.loader.remap.ObjectHolderDefinalizer
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
@@ -461,7 +460,6 @@ class KiltEarlyRiser : Runnable {
 
             ClassTinkerers.addTransformation(classNode.name) {
                 EventClassVisibilityFixer.fixClass(it)
-                ObjectHolderDefinalizer.processClass(it)
                 AnnotationWorkaroundFixer.fixClass(it)
                 EnvironmentRemapper.remapClass(it)
             }
