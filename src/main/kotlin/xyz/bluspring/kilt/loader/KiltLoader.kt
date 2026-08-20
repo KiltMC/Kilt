@@ -45,6 +45,8 @@ class KiltLoader : TwillOverrides {
         }
     }
 
+    override val hasLaunchOverride: Boolean = true
+
     override fun modExistsNatively(id: String): Boolean {
         // Lie to Knit so we can selectively load stuff from this JAR.
         if (KiltModCompatBridgeManager.canMakeActive(id))
