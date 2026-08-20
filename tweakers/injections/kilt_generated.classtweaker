@@ -84,6 +84,7 @@ transitive-inject-interface net/minecraft/util/TriState xyz/bluspring/kilt/injec
 transitive-inject-interface net/minecraft/world/damagesource/DamageScaling xyz/bluspring/kilt/injections/world/damagesource/DamageScalingInjection
 transitive-inject-interface net/minecraft/world/damagesource/DeathMessageType xyz/bluspring/kilt/injections/world/damagesource/DeathMessageTypeInjection
 transitive-inject-interface net/minecraft/world/effect/MobEffect xyz/bluspring/kilt/injections/world/effect/MobEffectInjection
+transitive-inject-interface net/minecraft/world/entity/EntityFluidInteraction xyz/bluspring/kilt/injections/world/entity/EntityFluidInteractionInjection
 transitive-inject-interface net/minecraft/world/entity/Entity xyz/bluspring/kilt/injections/world/entity/EntityInjection
 transitive-inject-interface net/minecraft/world/entity/EntityType xyz/bluspring/kilt/injections/world/entity/EntityTypeInjection
 transitive-inject-interface net/minecraft/world/entity/item/ItemEntity xyz/bluspring/kilt/injections/world/entity/item/ItemEntityInjection

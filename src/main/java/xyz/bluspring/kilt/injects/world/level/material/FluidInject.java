@@ -21,7 +21,7 @@ public abstract class FluidInject implements IFluidExtension, FluidWorkaround {
 
     @NotNull
     @Override
-    public FluidType neo$getFluidType() {
+    public FluidType getFluidType() {
         // Kilt: We pray that this works
         if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), Fluid.class, "getFluidType", FluidType.class)) {
             return this.getFluidType();
@@ -35,6 +35,6 @@ public abstract class FluidInject implements IFluidExtension, FluidWorkaround {
 
     @Intrinsic
     public FluidType kilt$i$getFluidType() {
-        return this.neo$getFluidType();
+        return this.getFluidType();
     }
 }

@@ -65,3 +65,12 @@ accessible class net/minecraft/world/level/entity/TransientEntitySectionManager$
 accessible class net/minecraft/world/level/entity/PersistentEntitySectionManager$Callback
 accessible field net/minecraft/world/item/ShovelItem FLATTENABLES Ljava/util/Map;
 accessible field net/minecraft/world/item/AxeItem STRIPPABLES Ljava/util/Map;
+
+accessible class net/minecraft/world/entity/EntityFluidInteraction$Tracker
+accessible method net/minecraft/world/entity/EntityFluidInteraction$Tracker <init> ()V
+accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker height D
+accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker eyesInside Z
+accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker accumulatedCurrent Lnet/minecraft/world/phys/Vec3;
+accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker currentCount I
+
+

@@ -1,9 +1,9 @@
 {
   "wideners": {
-    "neoforge": "2e3a57e4252745976711897a26f407656ba1356545c0cff62a4d891be04a7d4d",
-    "neoforge_generated": "2e3a57e4252745976711897a26f407656ba1356545c0cff62a4d891be04a7d4d"
+    "neoforge": "110f0caab6f1286dbd7563034c1eeac6c34f834b1a01e6e0f4049b60feae5386",
+    "neoforge_generated": "110f0caab6f1286dbd7563034c1eeac6c34f834b1a01e6e0f4049b60feae5386"
   },
   "injections": {
-    "neoforge": "0e8c9974300eaf3acc603ba32abe1e76e1a247493922ff21b231e4a18e2d8711"
+    "neoforge": "1b2b402ac4a9bcceda515d7f25cbd5c201d0d0b4fd22113e339a818f0200d62b"
   }
 }

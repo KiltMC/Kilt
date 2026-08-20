@@ -66,6 +66,7 @@ transitive-inject-interface net/minecraft/world/item/Item$Properties net/neoforg
 transitive-inject-interface net/minecraft/world/item/ItemInstance net/neoforged/neoforge/common/extensions/ItemInstanceExtension
 transitive-inject-interface net/minecraft/world/item/ItemStack net/neoforged/neoforge/common/extensions/IItemStackExtension
 transitive-inject-interface net/minecraft/world/item/ItemStack net/neoforged/neoforge/common/MutableDataComponentHolder
+transitive-inject-interface net/minecraft/world/item/TooltipFlag net/neoforged/neoforge/common/extensions/TooltipFlagExtension
 transitive-inject-interface net/minecraft/world/level/BaseSpawner net/neoforged/neoforge/common/extensions/IOwnedSpawner
 transitive-inject-interface net/minecraft/world/level/BlockGetter net/neoforged/neoforge/common/extensions/IBlockGetterExtension
 transitive-inject-interface net/minecraft/world/level/Level net/neoforged/neoforge/common/extensions/ILevelExtension

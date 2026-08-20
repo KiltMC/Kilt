@@ -340,6 +340,12 @@ transitive-accessible class net/minecraft/world/effect/MobEffect$AttributeTempla
 transitive-extendable class net/minecraft/world/effect/MobEffect$AttributeTemplate
 transitive-accessible field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
 transitive-mutable field net/minecraft/world/entity/Entity ENTITY_COUNTER Ljava/util/concurrent/atomic/AtomicInteger;
+transitive-accessible field net/minecraft/world/entity/Entity LAVA_FAST_FLOW_SCALE D
+transitive-mutable field net/minecraft/world/entity/Entity LAVA_FAST_FLOW_SCALE D
+transitive-accessible field net/minecraft/world/entity/Entity LAVA_SLOW_FLOW_SCALE D
+transitive-mutable field net/minecraft/world/entity/Entity LAVA_SLOW_FLOW_SCALE D
+transitive-accessible field net/minecraft/world/entity/Entity WATER_FLOW_SCALE D
+transitive-mutable field net/minecraft/world/entity/Entity WATER_FLOW_SCALE D
 transitive-accessible method net/minecraft/world/entity/Entity getEncodeId ()Ljava/lang/String;
 transitive-accessible method net/minecraft/world/entity/ExperienceOrb setValue (I)V
 transitive-extendable method net/minecraft/world/entity/ExperienceOrb setValue (I)V
@@ -347,6 +353,8 @@ transitive-accessible method net/minecraft/world/entity/LivingEntity getCurrentS
 transitive-extendable method net/minecraft/world/entity/LivingEntity getCurrentSwingDuration ()I
 transitive-accessible method net/minecraft/world/entity/LivingEntity getHitbox ()Lnet/minecraft/world/phys/AABB;
 transitive-extendable method net/minecraft/world/entity/LivingEntity getHitbox ()Lnet/minecraft/world/phys/AABB;
+transitive-accessible method net/minecraft/world/entity/LivingEntity shouldTakeDrowningDamage ()Z
+transitive-extendable method net/minecraft/world/entity/LivingEntity shouldTakeDrowningDamage ()Z
 transitive-accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
 transitive-mutable field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
 transitive-accessible field net/minecraft/world/entity/Mob targetSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
@@ -363,6 +371,8 @@ transitive-accessible class net/minecraft/world/entity/raid/Raid$RaiderType
 transitive-extendable class net/minecraft/world/entity/raid/Raid$RaiderType
 transitive-accessible method net/minecraft/world/entity/schedule/Activity <init> (Ljava/lang/String;)V
 transitive-extendable method net/minecraft/world/entity/schedule/Activity <init> (Ljava/lang/String;)V
+transitive-accessible method net/minecraft/world/entity/item/ItemEntity setFluidMovement (D)V
+transitive-extendable method net/minecraft/world/entity/item/ItemEntity setFluidMovement (D)V
 transitive-accessible method net/minecraft/world/entity/vehicle/VehicleEntity getDropItem ()Lnet/minecraft/world/item/Item;
 transitive-extendable method net/minecraft/world/entity/vehicle/VehicleEntity getDropItem ()Lnet/minecraft/world/item/Item;
 transitive-accessible field net/minecraft/world/entity/monster/zombie/Zombie conversionTime I
@@ -380,6 +390,10 @@ transitive-extendable class net/minecraft/world/item/CreativeModeTab$TabVisibili
 transitive-accessible field net/minecraft/world/item/BucketItem content Lnet/minecraft/world/level/material/Fluid;
 transitive-mutable field net/minecraft/world/item/BucketItem content Lnet/minecraft/world/level/material/Fluid;
 transitive-accessible method net/minecraft/world/item/Item getPlayerPOVHitResult (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/ClipContext$Fluid;)Lnet/minecraft/world/phys/BlockHitResult;
+transitive-accessible field net/minecraft/world/item/ItemStack INTANGIBLE_TOOLTIP Lnet/minecraft/network/chat/Component;
+transitive-mutable field net/minecraft/world/item/ItemStack INTANGIBLE_TOOLTIP Lnet/minecraft/network/chat/Component;
+transitive-accessible field net/minecraft/world/item/ItemStack UNBREAKABLE_TOOLTIP Lnet/minecraft/network/chat/Component;
+transitive-mutable field net/minecraft/world/item/ItemStack UNBREAKABLE_TOOLTIP Lnet/minecraft/network/chat/Component;
 transitive-accessible field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG Lit/unimi/dsi/fastutil/Hash$Strategy;
 transitive-mutable field net/minecraft/world/item/ItemStackLinkedSet TYPE_AND_TAG Lit/unimi/dsi/fastutil/Hash$Strategy;
 transitive-accessible method net/minecraft/world/item/context/BlockPlaceContext <init> (Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/BlockHitResult;)V

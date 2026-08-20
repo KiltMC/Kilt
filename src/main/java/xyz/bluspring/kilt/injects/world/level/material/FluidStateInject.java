@@ -16,6 +16,6 @@ import net.minecraft.world.level.material.FluidState;
 public abstract class FluidStateInject implements IFluidStateExtension {
     @Intrinsic
     public FluidType kilt$i$getFluidType() {
-        return this.neo$getFluidType();
+        return this.getFluidType();
     }
 }

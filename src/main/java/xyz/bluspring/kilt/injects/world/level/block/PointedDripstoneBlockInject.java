@@ -42,7 +42,7 @@ public abstract class PointedDripstoneBlockInject extends Block {
     @Expression("randChance >= @(f)")
     @ModifyExpressionValue(method = "maybeTransferFluid", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static float kilt$tryHandleDripstoneChance(float original, @Local Fluid fluid) {
-        var dripInfo = fluid.neo$getFluidType().getDripInfo();
+        var dripInfo = fluid.getFluidType().getDripInfo();
 
         if (dripInfo != null)
             return dripInfo.chance();
@@ -52,7 +52,7 @@ public abstract class PointedDripstoneBlockInject extends Block {
 
     @ModifyVariable(method = "spawnDripParticle(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/Fluid;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addParticle(Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)V"))
     private static ParticleOptions kilt$tryHandleCustomParticle(ParticleOptions options, @Cancellable CallbackInfo ci, @Local(ordinal = 1) Fluid fluid) {
-        var dripInfo = fluid.neo$getFluidType().getDripInfo();
+        var dripInfo = fluid.getFluidType().getDripInfo();
         if (dripInfo != null) {
             var particle = dripInfo.dripParticle();
 
@@ -68,6 +68,6 @@ public abstract class PointedDripstoneBlockInject extends Block {
 
     @ModifyReturnValue(method = "canFillCauldron", at = @At("RETURN"))
     private static boolean kilt$checkHasDripInfo(boolean original, @Local(argsOnly = true) Fluid fluid) {
-        return original || fluid.neo$getFluidType().getDripInfo() != null;
+        return original || fluid.getFluidType().getDripInfo() != null;
     }
 }
