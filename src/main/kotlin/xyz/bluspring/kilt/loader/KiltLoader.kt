@@ -5,6 +5,8 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.neoforged.bus.api.Event
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.neoforge.common.NeoForge
 import org.spongepowered.asm.mixin.FabricUtil
 import org.spongepowered.asm.mixin.Mixins
 import xyz.bluspring.kilt.Kilt
@@ -44,6 +46,9 @@ class KiltLoader : TwillOverrides {
             }
         }
     }
+
+    override val gameBus: IEventBus
+        get() = NeoForge.EVENT_BUS
 
     override val hasLaunchOverride: Boolean = true
 
