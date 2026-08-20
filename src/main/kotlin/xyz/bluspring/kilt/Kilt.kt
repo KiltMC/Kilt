@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.util.EventResult
 import net.minecraft.core.BlockPos
 import net.minecraft.core.GlobalPos
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
 import net.minecraft.world.entity.LivingEntity
@@ -240,6 +241,11 @@ class Kilt : ModInitializer {
             if (!onServer) {
                 KiltClient.lateRegisterEvents()
             }
+        }
+
+        @JvmStatic
+        fun id(name: String): Identifier {
+            return Identifier.fromNamespaceAndPath(MOD_ID, name)
         }
     }
 }

@@ -1,20 +1,20 @@
 package xyz.bluspring.kilt.injections.world.level.chunk;
 
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+
+import net.neoforged.neoforge.attachment.AttachmentHolder;
+import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import xyz.bluspring.kilt.processor.FabricInjectedInterface;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import javax.annotation.Nullable;
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 @FabricInjectedInterface(ChunkAccess.class)
 public interface ChunkAccessInjection {

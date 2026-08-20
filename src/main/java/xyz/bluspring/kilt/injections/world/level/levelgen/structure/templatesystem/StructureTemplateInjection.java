@@ -1,15 +1,16 @@
 package xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public interface StructureTemplateInjection {
     static Vec3 transformedVec3d(StructurePlaceSettings placementIn, Vec3 pos) {

@@ -1,12 +1,12 @@
 package xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem;
 
+import org.jetbrains.annotations.Nullable;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import javax.annotation.Nullable;
 
 public interface StructureProcessorInjection {
     @Nullable

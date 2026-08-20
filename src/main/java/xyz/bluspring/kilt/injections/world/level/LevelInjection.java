@@ -3,9 +3,8 @@ package xyz.bluspring.kilt.injections.world.level;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.annotation.Nullable;
-
 import net.neoforged.neoforge.common.util.BlockSnapshot;
+import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.core.BlockPos;

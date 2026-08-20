@@ -6,9 +6,17 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.debug.DebugScreenDisplayer
+import net.minecraft.client.gui.components.debug.DebugScreenEntries
+import net.minecraft.client.gui.components.debug.DebugScreenEntry
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.chunk.LevelChunk
 import net.neoforged.neoforge.client.ClientHooks
 import net.neoforged.neoforge.event.EventHooks
+import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.twill.TwillClient
 
 @Suppress("removal")
 class KiltClient : ClientModInitializer {
@@ -28,6 +36,26 @@ class KiltClient : ClientModInitializer {
         ItemTooltipCallback.EVENT.register { stack, context, flags, components ->
             EventHooks.onItemTooltip(stack, null, components, flags, context)
         }
+
+        DebugScreenEntries.register(Kilt.id("version"), object : DebugScreenEntry {
+            override fun display(displayer: DebugScreenDisplayer, serverOrClientLevel: Level?, clientChunk: LevelChunk?, serverChunk: LevelChunk?) {
+                val version = FabricLoader.getInstance().getModContainer("kilt")
+                    .orElseThrow().metadata.version.friendlyString
+
+                val color = if (version.endsWith("-local"))
+                    "§c"
+                else if (version.contains("+build."))
+                    "§6"
+                else
+                    "§b"
+
+                displayer.addToGroup(TwillClient.id("info"), "Kilt ${color}v$version")
+            }
+
+            override fun isAllowed(reducedDebugInfo: Boolean): Boolean {
+                return true
+            }
+        })
 
 //        TextureAtlasStitchedEvent.EVENT.register { event ->
 //            val forgeEvent = net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent(event.atlas)

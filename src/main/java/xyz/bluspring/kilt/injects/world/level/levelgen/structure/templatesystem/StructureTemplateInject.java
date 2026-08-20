@@ -1,8 +1,19 @@
 // TRACKED HASH: 5520e72d813534639a4a101cffa56e6e9fe409b0
 package xyz.bluspring.kilt.injects.world.level.levelgen.structure.templatesystem;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
+import xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem.StructureProcessorInjection;
+import xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem.StructureTemplateInjection;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -13,16 +24,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
-import xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem.StructureProcessorInjection;
-import xyz.bluspring.kilt.injections.world.level.levelgen.structure.templatesystem.StructureTemplateInjection;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Mixin(StructureTemplate.class)
 public abstract class StructureTemplateInject implements StructureTemplateInjection {
