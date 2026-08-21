@@ -412,7 +412,6 @@
         "world.level.block.entity.AbstractFurnaceBlockEntityInject",
         "world.level.block.entity.BeaconBlockEntityInject",
         "world.level.block.entity.BlockEntityInject",
-        "world.level.block.entity.BlockEntityInject$DataComponentInputInject",
         "world.level.block.entity.BlockEntityTypeInject",
         "world.level.block.entity.BrewingStandBlockEntityInject",
         "world.level.block.entity.ChestBlockEntityInject",

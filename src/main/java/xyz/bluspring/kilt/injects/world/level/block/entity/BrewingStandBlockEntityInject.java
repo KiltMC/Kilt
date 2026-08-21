@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.level.Level;
@@ -45,11 +44,11 @@ public abstract class BrewingStandBlockEntityInject extends BaseContainerBlockEn
     // Kilt: getCraftingRemainingItem handled by Fabric API
 
     @Definition(id = "stack", local = @Local(type = ItemStack.class, argsOnly = true))
-    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z")
+    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Ljava/lang/Object;)Z")
     @Definition(id = "POTION", field = "Lnet/minecraft/world/item/Items;POTION:Lnet/minecraft/world/item/Item;")
     @Expression("stack.is(POTION)")
     @WrapOperation(method = "canPlaceItem", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$checkIsPotionInput(ItemStack instance, Item item, Operation<Boolean> original) {
+    private boolean kilt$checkIsPotionInput(ItemStack instance, Object item, Operation<Boolean> original) {
         PotionBrewing brewing = this.level != null ? this.level.potionBrewing() : PotionBrewing.EMPTY;
         return brewing.isInput(instance) || original.call(instance, item);
     }

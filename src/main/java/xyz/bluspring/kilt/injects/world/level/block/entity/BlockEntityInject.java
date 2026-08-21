@@ -1,21 +1,20 @@
 package xyz.bluspring.kilt.injects.world.level.block.entity;
 
+import java.util.Set;
+
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import fr.catcore.cursedmixinextensions.annotations.ShadowSuper;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.attachment.AttachmentSync;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,13 +23,26 @@ import xyz.bluspring.kilt.injections.world.level.block.entity.BlockEntityInjecti
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 
-import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 @Extends(AttachmentHolder.class)
 @Mixin(BlockEntity.class)
 public abstract class BlockEntityInject implements BlockEntityInjection, IBlockEntityExtension, AttachmentHolderWorkaround, IAttachmentHolder {
     @Shadow public abstract BlockEntityType<?> getType();
     @Shadow public abstract void setChanged();
+    @Shadow @Nullable protected Level level;
+    @Shadow @Final protected BlockPos worldPosition;
+
+    @Unique @Nullable private CompoundTag customPersistentData;
+    @Unique @Nullable private Set<AttachmentType<?>> attachmentTypesToSync;
 
     @ShadowSuper("setData")
     public abstract <T> T kilt$super$setData(AttachmentType<T> type, T data);
@@ -48,18 +60,24 @@ public abstract class BlockEntityInject implements BlockEntityInjection, IBlockE
     }
 
     @Inject(method = "loadAdditional", at = @At("TAIL"))
-    private void kilt$handleAdditionalLoad(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo ci) {
-        if (tag.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, CompoundTag.TAG_COMPOUND)) {
-            this.deserializeAttachments(registries, tag.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY));
-        }
+    private void kilt$handleAdditionalLoad(ValueInput input, CallbackInfo ci) {
+        input.read("NeoForgeData", CompoundTag.CODEC)
+            .ifPresent(neoData -> this.customPersistentData = neoData);
+        input.child(AttachmentHolder.ATTACHMENTS_NBT_KEY)
+            .ifPresent(this::deserializeAttachments);
     }
 
     @Inject(method = "saveAdditional", at = @At("TAIL"))
-    private void kilt$handleAdditionalSave(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo ci) {
-        var attachments = this.serializeAttachments(registries);
+    private void kilt$handleAdditionalSave(ValueOutput output, CallbackInfo ci) {
+        if (this.customPersistentData != null)
+            output.store("NeoForgeData", CompoundTag.CODEC, this.customPersistentData.copy());
 
-        if (attachments != null) {
-            tag.put(AttachmentHolder.ATTACHMENTS_NBT_KEY, attachments);
+        //HolderLookup.Provider registries = this.level != null ? this.level.registryAccess() : RegistryAccess.EMPTY; // Kilt: this isn't used by NeoForge at all??? I'm commenting it out for now.
+        var attachments = output.child(AttachmentHolder.ATTACHMENTS_NBT_KEY);
+        this.serializeAttachments(attachments);
+
+        if (attachments.isEmpty()) {
+            output.discard(AttachmentHolder.ATTACHMENTS_NBT_KEY);
         }
     }
 
@@ -76,8 +94,10 @@ public abstract class BlockEntityInject implements BlockEntityInjection, IBlockE
 
     @Override
     public CompoundTag getPersistentData() {
-        // Kilt: Redirect to Porting Lib
-        return ((BlockEntity) (Object) this).getPortingLibPersistentData();
+        if (this.customPersistentData == null)
+            this.customPersistentData = new CompoundTag();
+
+        return this.customPersistentData;
     }
 
     @Override
@@ -94,24 +114,22 @@ public abstract class BlockEntityInject implements BlockEntityInjection, IBlockE
 
     @Override
     public void syncData(AttachmentType<?> type) {
-        AttachmentSync.syncBlockEntityUpdate((BlockEntity) (Object) this, type);
+        if (!(this.level instanceof ServerLevel serverLevel))
+            return;
+
+        if (this.attachmentTypesToSync == null)
+            this.attachmentTypesToSync = new ReferenceOpenHashSet<>();
+
+        this.attachmentTypesToSync.add(type);
+        serverLevel.getChunkSource().blockChanged(this.worldPosition);
     }
 
-    @Mixin(targets = "net.minecraft.world.level.block.entity.BlockEntity$DataComponentInput")
-    public interface DataComponentInputInject {
-        @Shadow
-        @Nullable <T> T get(DataComponentType<T> component);
+    @Nullable
+    @ApiStatus.Internal
+    public Set<AttachmentType<?>> getAndClearAttachmentTypesToSync() {
+        var ret = this.attachmentTypesToSync;
+        this.attachmentTypesToSync = null;
 
-        @Shadow
-        <T> T getOrDefault(DataComponentType<? extends T> component, T defaultValue);
-
-        @Nullable
-        default <T> T get(Supplier<? extends DataComponentType<T>> componentType) {
-            return this.get(componentType.get());
-        }
-
-        default <T> T getOrDefault(Supplier<? extends DataComponentType<T>> componentType, T value) {
-            return this.getOrDefault(componentType.get(), value);
-        }
+        return ret;
     }
 }
