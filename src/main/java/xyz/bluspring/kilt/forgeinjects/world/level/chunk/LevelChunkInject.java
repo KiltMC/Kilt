@@ -31,6 +31,7 @@ import net.minecraftforge.common.extensions.IForgeLevelChunk;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,6 +41,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.ChunkAccessInjection;
+import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 import xyz.bluspring.kilt.injections.world.level.chunk.LevelChunkInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
@@ -68,9 +70,9 @@ public abstract class LevelChunkInject extends ChunkAccess implements ChunkAcces
         return original.call(instance, block) && state.hasBlockEntity();
     }
 
-    @WrapOperation(method = "setBlockState", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"))
+    @WrapOperation(method = "setBlockState", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z", ordinal = 1, opcode = Opcodes.GETFIELD))
     private boolean kilt$validateNotCapturingSnapshots(Level instance, Operation<Boolean> original) {
-        return original.call(instance); // || ((LevelInjection) instance).isCaptureBlockSnapshots();
+        return original.call(instance) || ((LevelInjection) instance).kilt$getCapturingBlockSnapshots();
     }
 
     @WrapOperation(method = "getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
