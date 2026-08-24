@@ -21,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 @Mixin(TntBlock.class)
 public abstract class TntBlockInject extends Block {
     @Shadow
-    private static void explode(Level level, BlockPos pos, @Nullable LivingEntity entity) {
+    private static boolean prime(Level par1, BlockPos par2, LivingEntity par3) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
 
@@ -29,34 +29,35 @@ public abstract class TntBlockInject extends Block {
         super(properties);
     }
 
-    public void onCaughtFire(BlockState state, Level world, BlockPos pos, @Nullable Direction face, @Nullable LivingEntity igniter) {
-        explode(world, pos, igniter);
+    @Override
+    public boolean onCaughtFire(BlockState state, Level world, BlockPos pos, @Nullable Direction face, @Nullable LivingEntity igniter) {
+        return prime(world, pos, igniter);
     }
 
-    @WrapOperation(method = {"onPlace", "neighborChanged", "playerWillDestroy"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"))
-    private void kilt$callExplodeOrCaughtFire(Level level, BlockPos pos, Operation<Void> original, @Local(argsOnly = true, ordinal = 0) BlockState state) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), TntBlock.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
-            this.onCaughtFire(state, level, pos, null, null);
+    @WrapOperation(method = {"onPlace", "neighborChanged", "playerWillDestroy"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"))
+    private boolean kilt$callExplodeOrCaughtFire(Level level, BlockPos pos, Operation<Boolean> original, @Local(argsOnly = true, ordinal = 0) BlockState state) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), TntBlock.class, "onCaughtFire", boolean.class, BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
+            return this.onCaughtFire(state, level, pos, null, null);
         } else {
-            original.call(level, pos);
+            return original.call(level, pos);
         }
     }
 
-    @WrapOperation(method = "useItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V"))
-    private void kilt$callExplodeOrCaughtFire(Level level, BlockPos pos, LivingEntity entity, Operation<Void> original, @Local(argsOnly = true) BlockHitResult result, @Local(argsOnly = true, ordinal = 0) BlockState state) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), TntBlock.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
-            this.onCaughtFire(state, level, pos, result.getDirection(), entity);
+    @WrapOperation(method = "useItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"))
+    private boolean kilt$callExplodeOrCaughtFire(Level level, BlockPos pos, LivingEntity entity, Operation<Boolean> original, @Local(argsOnly = true) BlockHitResult result, @Local(argsOnly = true, ordinal = 0) BlockState state) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), TntBlock.class, "onCaughtFire", boolean.class, BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
+            return this.onCaughtFire(state, level, pos, result.getDirection(), entity);
         } else {
-            original.call(level, pos, entity);
+            return original.call(level, pos, entity);
         }
     }
 
-    @WrapOperation(method = "onProjectileHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;explode(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)V"))
-    private void kilt$callExplodeOrCaughtFire2(Level level, BlockPos pos, LivingEntity entity, Operation<Void> original, @Local(argsOnly = true, ordinal = 0) BlockState state) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), TntBlock.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
-            this.onCaughtFire(state, level, pos, null, entity);
+    @WrapOperation(method = "onProjectileHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"))
+    private boolean kilt$callExplodeOrCaughtFire2(Level level, BlockPos pos, LivingEntity entity, Operation<Boolean> original, @Local(argsOnly = true, ordinal = 0) BlockState state) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), TntBlock.class, "onCaughtFire", boolean.class, BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
+            return this.onCaughtFire(state, level, pos, null, entity);
         } else {
-            original.call(level, pos, entity);
+            return original.call(level, pos, entity);
         }
     }
 }

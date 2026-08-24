@@ -25,8 +25,8 @@ public interface VibrationSystemInject {
 
     @Inject(method = "getGameEventFrequency(Lnet/minecraft/resources/ResourceKey;)I", at = @At("HEAD"), cancellable = true)
     private static void kilt$tryUseDataMapIfPossible(ResourceKey<GameEvent> gameEvent, CallbackInfoReturnable<Integer> cir) {
-        var holder = BuiltInRegistries.GAME_EVENT.getHolder(gameEvent);
-
+        var holder = BuiltInRegistries.GAME_EVENT.get(gameEvent);
+        
         if (holder.isPresent()) {
             var data = holder.orElseThrow().getData(NeoForgeDataMaps.VIBRATION_FREQUENCIES);
 

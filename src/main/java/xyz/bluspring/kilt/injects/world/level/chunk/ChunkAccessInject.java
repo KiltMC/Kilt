@@ -26,11 +26,14 @@ import xyz.bluspring.kilt.workarounds.CommonLevelWorkaround;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 
 @Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(ChunkAccess.class)
@@ -39,7 +42,7 @@ public abstract class ChunkAccessInject implements ChunkAccessInjection, BlockGe
     @Shadow public abstract void findBlocks(Predicate<BlockState> predicate, BiConsumer<BlockPos, BlockState> biConsumer);
 
     @Shadow
-    public abstract void setUnsaved(boolean bl);
+    public abstract void markUnsaved();
 
     @Unique private BiPredicate<BlockState, BlockPos> kilt$fineFilter;
 
@@ -88,24 +91,34 @@ public abstract class ChunkAccessInject implements ChunkAccessInjection, BlockGe
 
     @Override
     public @Nullable <T> T setData(AttachmentType<T> type, T data) {
-        this.setUnsaved(true);
+        this.markUnsaved();
         return this.getAttachmentHolder().setData(type, data);
     }
 
     @Override
     public @Nullable <T> T removeData(AttachmentType<T> type) {
-        this.setUnsaved(true);
+        this.markUnsaved();
         return this.getAttachmentHolder().removeData(type);
     }
 
     @Override
     public @Nullable CompoundTag writeAttachmentsToNBT(HolderLookup.Provider provider) {
-        return this.getAttachmentHolder().serializeAttachments(provider);
+        ProblemReporter.Collector reporter = new ProblemReporter.Collector();
+        var tag = TagValueOutput.createWithContext(reporter, provider);
+        this.getAttachmentHolder().serializeAttachments(tag);
+        if (!reporter.isEmpty())
+            throw new IllegalArgumentException("Attachments failed to serialize: " + reporter.getReport());
+
+        return tag.isEmpty() ? null : tag.buildResult();
     }
 
     @Override
     public void readAttachmentsFromNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        this.getAttachmentHolder().deserializeAttachments(provider, tag);
+        ProblemReporter.Collector reporter = new ProblemReporter.Collector();
+        var input = TagValueInput.create(reporter, provider, tag);
+        this.getAttachmentHolder().deserializeAttachments(input);
+        if (!reporter.isEmpty())
+            throw new IllegalArgumentException("Attachments failed to deserialize: " + reporter.getReport());
     }
 
     @Override

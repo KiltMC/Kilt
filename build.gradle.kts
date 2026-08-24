@@ -237,7 +237,10 @@ dependencies {
 //        api(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
 //    }
 
-    api(libs.twill)
+    api(libs.twill) {
+        exclude(group = "net.minecraft")
+        exclude(group = "com.mojang")
+    }
     include(libs.twill)
 
     // JiJ'd into main JAR alone

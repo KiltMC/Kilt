@@ -3,7 +3,17 @@ package xyz.bluspring.kilt.injects.world.level.block;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import it.unimi.dsi.fastutil.objects.Reference2BooleanLinkedOpenHashMap;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
+import org.spongepowered.asm.mixin.Intrinsic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.world.level.block.FireBlockInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -18,23 +28,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.spongepowered.asm.mixin.Intrinsic;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.world.level.block.FireBlockInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(FireBlock.class)
 public abstract class FireBlockInject extends BaseFireBlock implements FireBlockInjection {
     @Shadow protected abstract void checkBurnOut(Level level, BlockPos pos, int chance, RandomSource random, int age);
 
+    @Unique
     private final ThreadLocal<Direction> kilt$face = new ThreadLocal<>();
-    @Unique private static final Reference2BooleanLinkedOpenHashMap<Class<? extends Block>> kilt$cachedFlammabilityOverride = new Reference2BooleanLinkedOpenHashMap<>();
-    @Unique private static final Reference2BooleanLinkedOpenHashMap<Class<? extends Block>> kilt$cachedFireEventOverride = new Reference2BooleanLinkedOpenHashMap<>();
 
     public FireBlockInject(Properties properties, float fireDamage) {
         super(properties, fireDamage);
@@ -66,7 +66,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
         var relativeY = pos.getY() - originalPos.getY();
         var relativeZ = pos.getZ() - originalPos.getZ();
 
-        var direction = Direction.fromDelta(relativeX, relativeY, relativeZ);
+        var direction = Direction.getNearest(relativeX, relativeY, relativeZ, null);
         if (direction != null)
             kilt$face.set(direction.getOpposite());
         original.call(instance, level, pos, chance, random, age);
@@ -74,7 +74,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
     }
 
     @Intrinsic
-    private void tryCatchFire(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face) {
+    private void checkBurnOut(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face) {
         kilt$face.set(face);
         this.checkBurnOut(level, pos, chance, random, age);
         kilt$face.remove();
@@ -82,7 +82,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
 
     @WrapOperation(method = "checkBurnOut", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/FireBlock;getBurnOdds(Lnet/minecraft/world/level/block/state/BlockState;)I"))
     private int kilt$checkFlammability(FireBlock instance, BlockState state, Operation<Integer> original, @Local(argsOnly = true) Level level, @Local(argsOnly = true) BlockPos pos) {
-        if (kilt$cachedFlammabilityOverride.computeIfAbsent(state.getBlock().getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), Block.class, "getFlammability", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class))) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(state.getBlock().getClass(), IBlockExtension.class, "getFlammability", BlockState.class, BlockGetter.class, BlockPos.class, Direction.class)) {
             return state.getFlammability(level, pos, kilt$face.get());
         }
 
@@ -96,7 +96,7 @@ public abstract class FireBlockInject extends BaseFireBlock implements FireBlock
         if (block == null)
             return null;
 
-        if (kilt$cachedFireEventOverride.computeIfAbsent(block.getClass(), $ -> KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), Block.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class))) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), IBlockExtension.class, "onCaughtFire", BlockState.class, Level.class, BlockPos.class, Direction.class, LivingEntity.class)) {
             instance.onCaughtFire(level, pos, kilt$face.get(), null);
             return null;
         }

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +26,7 @@ public abstract class PhantomSpawnerInject {
     @Definition(id = "blockPosition", method = "Lnet/minecraft/server/level/ServerPlayer;blockPosition()Lnet/minecraft/core/BlockPos;")
     @Expression("? = ?.blockPosition()")
     @Inject(method = "tick", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
-    private void kilt$callSpawnPhantomsEvent(ServerLevel level, boolean spawnEnemies, boolean spawnFriendlies, CallbackInfoReturnable<Integer> cir, @Local ServerPlayer player, @Local BlockPos pos, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
+    private void kilt$callSpawnPhantomsEvent(ServerLevel level, boolean spawnEnemies, CallbackInfo ci, @Local(name = "player") ServerPlayer player, @Local(name = "playerPos") BlockPos pos, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
         eventRef.set(EventHooks.firePlayerSpawnPhantoms(player, level, pos));
     }
 
@@ -71,7 +71,7 @@ public abstract class PhantomSpawnerInject {
     @Expression("1 + randomSource.nextInt(?)")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private int kilt$tryUseCustomPhantomSpawnEvent(int original, @Share("event") LocalRef<PlayerSpawnPhantomsEvent> eventRef) {
-        if (eventRef.get().kilt$wasModified) {
+        if (eventRef.get().kilt$wasModified()) {
             return eventRef.get().getPhantomsToSpawn();
         }
 

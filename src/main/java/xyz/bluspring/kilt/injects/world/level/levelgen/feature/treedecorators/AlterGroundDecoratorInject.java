@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.AlterGroundDecorator;
@@ -31,11 +32,11 @@ public abstract class AlterGroundDecoratorInject {
     @Shadow @Final private BlockStateProvider provider;
     @Unique private final ThreadLocal<AlterGroundEvent.StateProvider> kilt$eventProvider = new ThreadLocal<>();
 
-    @Definition(id = "get", method = "Ljava/util/List;get(I)Ljava/lang/Object;")
     @Definition(id = "list", local = @Local(type = List.class, ordinal = 0))
     @Definition(id = "BlockPos", type = BlockPos.class)
     @Definition(id = "getY", method = "Lnet/minecraft/core/BlockPos;getY()I")
-    @Expression("((BlockPos) list.get(0)).getY()")
+    @Definition(id = "getFirst", method = "Ljava/util/List;getFirst()Ljava/lang/Object;")
+    @Expression("((BlockPos) list.getFirst()).getY()")
     @Inject(method = "place", at = @At("MIXINEXTRAS:EXPRESSION"))
     private void kilt$callAlterGroundEvent(TreeDecorator.Context context, CallbackInfo ci, @Share("eventProvider") LocalRef<AlterGroundEvent.StateProvider> eventProvider, @Local List<BlockPos> list) {
         AlterGroundEvent.StateProvider provider = this.provider::getState;
@@ -50,13 +51,13 @@ public abstract class AlterGroundDecoratorInject {
         this.kilt$eventProvider.remove();
     }
 
-    @WrapOperation(method = "placeBlockAt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProvider;getState(Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
-    private BlockState kilt$tryUseCustomEventProvider(BlockStateProvider instance, RandomSource randomSource, BlockPos pos, Operation<BlockState> original) {
+    @WrapOperation(method = "placeBlockAt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProvider;getOptionalState(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
+    private BlockState kilt$tryUseCustomEventProvider(BlockStateProvider instance, WorldGenLevel level, RandomSource random, BlockPos pos, Operation<BlockState> original) {
         var eventProvider = this.kilt$eventProvider.get();
         if (eventProvider != null) {
-            return eventProvider.getState(randomSource, pos);
+            return eventProvider.getState(level, random, pos);
         }
 
-        return original.call(instance, randomSource, pos);
+        return original.call(instance, level, random, pos);
     }
 }

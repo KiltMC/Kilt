@@ -21,7 +21,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 public abstract class TreeGrowerInject {
     @Definition(id = "holder", local = @Local(type = Holder.class))
     @Expression("holder != null")
-    @ModifyVariable(method = "growTree", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @ModifyVariable(method = "growTree", at = @At("MIXINEXTRAS:EXPRESSION"), name = "featureHolder")
     private Holder<ConfiguredFeature<?, ?>> kilt$handleGrowFeatureEvent(Holder<ConfiguredFeature<?, ?>> holder, @Cancellable CallbackInfoReturnable<Boolean> cir, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) RandomSource random, @Local(argsOnly = true) BlockPos pos) {
         var event = EventHooks.fireBlockGrowFeature(level, random, pos, holder);
 
@@ -34,7 +34,7 @@ public abstract class TreeGrowerInject {
 
     @Definition(id = "holder2", local = @Local(type = Holder.class))
     @Expression("holder2 == null")
-    @ModifyVariable(method = "growTree", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @ModifyVariable(method = "growTree", at = @At("MIXINEXTRAS:EXPRESSION"), name = "featureHolder")
     private Holder<ConfiguredFeature<?, ?>> kilt$handleGrowFeatureEvent2(Holder<ConfiguredFeature<?, ?>> holder, @Cancellable CallbackInfoReturnable<Boolean> cir, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) RandomSource random, @Local(argsOnly = true) BlockPos pos) {
         var event = EventHooks.fireBlockGrowFeature(level, random, pos, holder);
 

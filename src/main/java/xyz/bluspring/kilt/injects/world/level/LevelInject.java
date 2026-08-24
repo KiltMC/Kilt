@@ -45,7 +45,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
@@ -57,6 +56,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 
 @Mixin(value = Level.class, priority = 1111) // higher priority to mixin to Porting Lib
@@ -91,11 +91,6 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
             blockSnapshot.set(BlockSnapshot.create(this.dimension, (Level) (Object) this, posRef.get()));
             this.capturedBlockSnapshots.add(blockSnapshot.get());
         }
-
-        // TODO: Kilt: what are these used for?
-        BlockState old = this.getBlockState(posRef.get());
-        int oldLight = old.getLightEmission((Level) (Object) this, posRef.get());
-        int oldOpacity = old.getLightBlock((Level) (Object) this, posRef.get());
     }
 
     @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At(value = "RETURN", ordinal = 2))
@@ -105,7 +100,7 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
         }
     }
 
-    @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;onBlockStateChange(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V", shift = At.Shift.AFTER))
+    @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;updatePOIOnBlockStateChange(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V", shift = At.Shift.AFTER))
     private void kilt$callOtherBlockStateChange(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 1) BlockState newState) {
         state.onBlockStateChange((Level) (Object) this, pos, newState);
     }
@@ -118,7 +113,7 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
     }
 
     @Inject(method = "updateNeighborsAt", at = @At("TAIL"))
-    public void kilt$notifyNeighbours(BlockPos pos, Block block, CallbackInfo ci) {
+    public void kilt$notifyNeighbours(BlockPos pos, Block sourceBlock, Orientation orientation, CallbackInfo ci) {
         // why is "isCanceled()" added at the end?
         EventHooks.onNeighborNotify((Level) (Object) this, pos, this.getBlockState(pos), EnumSet.allOf(Direction.class), false).isCanceled();
     }
@@ -132,10 +127,7 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
         }
     }
 
-    @Definition(id = "profilerFiller", local = @Local(type = ProfilerFiller.class))
-    @Definition(id = "push", method = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V")
-    @Expression("profilerFiller.push('blockEntities')")
-    @Inject(method = "tickBlockEntities", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
+    @Inject(method = "tickBlockEntities", at = @At("HEAD"))
     private void kilt$addAllPendingFreshBlockEntities(CallbackInfo ci) {
         if (!this.pendingFreshBlockEntities.isEmpty()) {
             this.freshBlockEntities.addAll(this.pendingFreshBlockEntities);

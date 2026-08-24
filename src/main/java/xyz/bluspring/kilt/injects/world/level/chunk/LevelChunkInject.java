@@ -13,6 +13,7 @@ import net.neoforged.neoforge.attachment.AttachmentInternals;
 import net.neoforged.neoforge.attachment.AttachmentSync;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
+import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
 import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
 import net.neoforged.neoforge.common.world.LevelChunkAuxiliaryLightManager;
 import org.jetbrains.annotations.Nullable;
@@ -31,29 +32,27 @@ import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.CommonLevelWorkaround;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PalettedContainerFactory;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
+import net.minecraft.world.level.storage.ValueInput;
 
 @Implements(@Interface(iface = CommonLevelWorkaround.class, prefix = "kilt$i$", remap = Interface.Remap.NONE))
 @Mixin(LevelChunk.class)
 public abstract class LevelChunkInject extends ChunkAccess implements IAttachmentHolder {
     @Shadow @Final private Level level;
 
-    public LevelChunkInject(ChunkPos chunkPos, UpgradeData upgradeData, LevelHeightAccessor levelHeightAccessor, Registry<Biome> biomeRegistry, long inhabitedTime, @Nullable LevelChunkSection[] sections, @Nullable BlendingData blendingData) {
-        super(chunkPos, upgradeData, levelHeightAccessor, biomeRegistry, inhabitedTime, sections, blendingData);
+    public LevelChunkInject(ChunkPos chunkPos, UpgradeData upgradeData, LevelHeightAccessor levelHeightAccessor, PalettedContainerFactory containerFactory, long inhabitedTime, LevelChunkSection @org.jspecify.annotations.Nullable [] sections, @org.jspecify.annotations.Nullable BlendingData blendingData) {
+        super(chunkPos, upgradeData, levelHeightAccessor, containerFactory, inhabitedTime, sections, blendingData);
     }
 
     @Inject(method = "<init>(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ProtoChunk;Lnet/minecraft/world/level/chunk/LevelChunk$PostLoadProcessor;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;setAllReferences(Ljava/util/Map;)V", shift = At.Shift.AFTER))
@@ -62,8 +61,8 @@ public abstract class LevelChunkInject extends ChunkAccess implements IAttachmen
     }
 
     @Definition(id = "level", field = "Lnet/minecraft/world/level/chunk/LevelChunk;level:Lnet/minecraft/world/level/Level;")
-    @Definition(id = "isClientSide", field = "Lnet/minecraft/world/level/Level;isClientSide:Z")
-    @Expression("this.level.isClientSide == 0")
+    @Definition(id = "isClientSide", method = "Lnet/minecraft/world/level/Level;isClientSide()Z")
+    @Expression("this.level.isClientSide() == 0")
     @ModifyExpressionValue(method = "setBlockState", at = @At("MIXINEXTRAS:EXPRESSION"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunkSection;getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;"), to = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;onPlace(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V")))
     private boolean kilt$checkShouldLevelCaptureSnapshots(boolean original) {
         return original && !this.level.kilt$getCapturingBlockSnapshots();
@@ -97,12 +96,12 @@ public abstract class LevelChunkInject extends ChunkAccess implements IAttachmen
         this.auxLightManager.removeLightAt(pos);
     }
 
-    @WrapOperation(method = "method_31716", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;loadWithComponents(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;)V"))
-    private void kilt$tryLoadWithUpdateTag(BlockEntity instance, CompoundTag tag, HolderLookup.Provider registries, Operation<Void> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), BlockEntity.class, "handleUpdateTag", CompoundTag.class, HolderLookup.Provider.class)) {
-            instance.handleUpdateTag(tag, registries);
+    @WrapOperation(method = "lambda$replaceWithPacketData$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;loadWithComponents(Lnet/minecraft/world/level/storage/ValueInput;)V"))
+    private void kilt$tryLoadWithUpdateTag(BlockEntity instance, ValueInput input, Operation<Void> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IBlockEntityExtension.class, "handleUpdateTag", ValueInput.class)) {
+            instance.handleUpdateTag(input);
         } else {
-            original.call(instance, tag, registries);
+            original.call(instance, input);
         }
     }
 

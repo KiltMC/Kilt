@@ -54,6 +54,7 @@
     "data.registries.VanillaRegistriesAccessor",
     "debug.ChunkSkyLightSourcesMixin",
     "dev.MappedRegistryMixin",
+    "neoforge.events.PlayerSpawnPhantomsEventMixin",
     "resources.RegistryOpsAccessor",
     "workarounds.avoid_feature_cycles.BiomeGenerationSettings$PlainBuilderMixin",
     "workarounds.datamap_fallbacks.BaseMappedRegistryMixin",
