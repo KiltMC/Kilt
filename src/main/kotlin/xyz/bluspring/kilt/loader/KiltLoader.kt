@@ -117,6 +117,12 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
             }
         }
 
+        // Not our fault, but we unfortunately have to block it ourselves.
+        // https://github.com/The-Aether-Team/Nitrogen/issues/38
+        if (loader.isModLoaded("nitrogen_internals")) {
+            KnitLoader.instance.displayError(KILT_ERROR_MESSAGE, IllegalStateException("Kilt: Detected Aether Fabric (or Nitrogen Internals), please use Aether NeoForge instead!"))
+        }
+
         // Sanity check for determining if Fabric mods are bundling NeoForge classes for whatever reason
         for (container in loader.allMods) {
             // Ignore ourselves and whatever we know works correctly.
