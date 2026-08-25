@@ -75,7 +75,7 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
         return loc;
     }
 
-    private void renderModel(PoseStack poseStack, MultiBufferSource source, int i, boolean bl, Model model, float r, float g, float b, ResourceLocation armorResource) {
+    private void renderModel(PoseStack poseStack, MultiBufferSource source, int i, ArmorItem armorItem, Model model, boolean bl, float r, float g, float b, ResourceLocation armorResource) {
         var vertexConsumer = ItemRenderer.getArmorFoilBuffer(source, RenderType.armorCutoutNoCull(armorResource), false, bl);
         model.renderToBuffer(poseStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY, r, g, b, 1F);
     }
@@ -88,7 +88,7 @@ public abstract class HumanoidArmorLayerInject<T extends LivingEntity, M extends
     @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ArmorItem;Lnet/minecraft/client/model/HumanoidModel;ZFFFLjava/lang/String;)V"), method = "renderArmorPiece")
     private void kilt$useForgeRenderModel(HumanoidArmorLayer<T, M, A> instance, PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorItem armorItem, A model, boolean withGlint, float red, float green, float blue, String armorSuffix, Operation<Void> original, @Local(ordinal = 0) ItemStack itemStack, @Share("kilt$model") LocalRef<Model> modelLocalRef, @Local EquipmentSlot equipmentSlot, @Local T livingEntity) {
         if (IClientItemExtensions.of(itemStack) != IClientItemExtensions.DEFAULT || KiltHelper.INSTANCE.hasMethodOverride(armorItem.getClass(), IForgeItem.class, "getArmorTexture", ItemStack.class, Entity.class, EquipmentSlot.class, String.class))
-            this.renderModel(poseStack, buffer, packedLight, withGlint, modelLocalRef.get(), red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, armorSuffix));
+            this.renderModel(poseStack, buffer, packedLight, armorItem, modelLocalRef.get(), withGlint, red, green, blue, this.getArmorResource(livingEntity, itemStack, equipmentSlot, armorSuffix));
         else
             original.call(instance, poseStack, buffer, packedLight, armorItem, model, withGlint, red, green, blue, armorSuffix);
     }
