@@ -667,7 +667,7 @@ object KiltMixinModifications {
         // Fixes Forbidden and Arcanus' PlayerMixin
         NameRemappingAnnotationModifier(
             "net/minecraft/world/entity/player/Player",
-            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
         )
     )
@@ -756,7 +756,7 @@ object KiltMixinModifications {
         // Fixes Artifacts' PlayerMixin
         NameRemappingAnnotationModifier(
             "net/minecraft/world/entity/player/Player",
-            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
         ),
     )
