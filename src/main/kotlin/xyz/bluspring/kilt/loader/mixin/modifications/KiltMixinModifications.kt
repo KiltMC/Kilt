@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.ModifyReturnValue
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import com.llamalad7.mixinextras.sugar.Local
@@ -656,6 +657,30 @@ object KiltMixinModifications {
             "net/minecraft/world/entity/player/Player",
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
+        )
+    )
+
+    val MODIFY_EXPRESSION_VALUE = register(
+        ModifyExpressionValue::class.java,
+
+        // Fixes Reliquified Ars Nouveau's PlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/player/Player",
+            methods = listOf("tryToStartFallFlying", "tryToStartFallFlying()Z"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.player.PlayerInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
         )
     )
 
