@@ -681,7 +681,65 @@ object KiltMixinModifications {
                     "at" to listOf(at("RETURN"))
                 ))
             )
-        )
+        ),
+
+        // Fixes Reliquified Ars Nouveau's LivingEntityMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/LivingEntity",
+            methods = listOf("updateFallFlying", "updateFallFlying()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.LivingEntityInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/LivingEntity",
+            methods = listOf("updateFallFlying", "updateFallFlying()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;elytraFlightTick(Lnet/minecraft/world/entity/LivingEntity;I)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.LivingEntityInject",
+                    "name" to $$"kilt$tryHandleFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+
+        // Fixes Reliquified Ars Nouveau's LocalPlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/player/LocalPlayer",
+            methods = listOf("aiStep", "aiStep()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.player.LocalPlayerInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
     )
 
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {

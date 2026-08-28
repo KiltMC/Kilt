@@ -7,7 +7,20 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.common.extensions.IItemExtension;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,16 +30,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.player.LocalPlayerInjection;
-
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.Input;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.Level;
+import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerInject extends AbstractClientPlayer implements LocalPlayerInjection {
@@ -86,7 +90,14 @@ public abstract class LocalPlayerInject extends AbstractClientPlayer implements 
         return original || this.isInFluidType((fluidType, height) -> this.canSwimInFluidType(fluidType));
     }
 
-    // TODO: elytra flying
+    @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+    private boolean kilt$checkCanElytraFly(ItemStack instance, Item item, Operation<Boolean> original) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IItemExtension.class, "canElytraFly", ItemStack.class, LivingEntity.class)) {
+            return instance.canElytraFly(this);
+        }
+
+        return original.call(instance, item);
+    }
 
     @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isInWater()Z", ordinal = 3))
     private boolean kilt$checkCanSwimInFluidType3(boolean original, @Share("fluidType") LocalRef<FluidType> fluidType) {
