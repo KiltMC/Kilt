@@ -9,14 +9,10 @@ import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
 object MixinStaticMethodFixer {
-    private val STATIC_METHODS = mapOf(
-        "net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity" to listOf(
-            "canBurn", "burn", "canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/Recipe;Lnet/minecraft/core/NonNullList;I)Z", "burn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/Recipe;Lnet/minecraft/core/NonNullList;I)Z"
-        )
+    private val STATIC_METHODS = mapOf<String, List<String>>(
     )
 
-    private val THIS_REMAP = mapOf(
-        "net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity" to "kilt\$furnaceBE"
+    private val THIS_REMAP = mapOf<String, String>(
     )
 
     // Forge switches some methods from static to instance.
