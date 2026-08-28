@@ -403,11 +403,11 @@ object KiltMixinModifications {
         InjectedShareAccessModifier(
             owner = "net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity",
             methods = listOf(
-                "canBurn", "canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/entity/block/entity/AbstractFurnaceBlockEntity;I)Z",
-                "burn", "burn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/entity/block/entity/AbstractFurnaceBlockEntity;I)Z"
+                "canBurn", "canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;I)Z",
+                "burn", "burn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;I)Z"
             ),
             paramToShareMapping = mapOf(
-                ParamPair("Lnet/minecraft/world/entity/block/entity/AbstractFurnaceBlockEntity;", 0) to Share(value = "currentFurnace", namespace = "kilt")
+                ParamPair("Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;", 0) to Share(value = "currentFurnace", namespace = "kilt")
             )
         ),
     )
