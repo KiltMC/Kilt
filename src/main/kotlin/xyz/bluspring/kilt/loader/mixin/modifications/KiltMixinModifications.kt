@@ -668,7 +668,7 @@ object KiltMixinModifications {
             owner = "net/minecraft/world/entity/player/Player",
             methods = listOf("tryToStartFallFlying", "tryToStartFallFlying()Z"),
             variables = mapOf(
-                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z"))
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
             ),
             replaceWith = listOf(
                 createAnnotation(TargetHandler::class.java, mapOf(
