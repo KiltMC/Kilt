@@ -752,6 +752,13 @@ object KiltMixinModifications {
                 ))
             )
         ),
+
+        // Fixes Artifacts' PlayerMixin
+        NameRemappingAnnotationModifier(
+            "net/minecraft/world/entity/player/Player",
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
+            remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
+        ),
     )
 
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
