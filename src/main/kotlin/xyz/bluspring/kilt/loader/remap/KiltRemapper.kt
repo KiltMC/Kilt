@@ -63,7 +63,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 252
+    const val REMAPPER_VERSION = 253
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags

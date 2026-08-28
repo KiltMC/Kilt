@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -24,6 +26,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.level.block.entity.AbstractFurnaceBlockEntityInjection;
 
@@ -34,6 +37,11 @@ import java.util.function.ObjIntConsumer;
 public abstract class AbstractFurnaceBlockEntityInject implements AbstractFurnaceBlockEntityInjection {
     @Shadow
     private static boolean canBurn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipeHolder, NonNullList<ItemStack> nonNullList, int i) {
+        throw new UnsupportedOperationException("Implemented via mixin");
+    }
+
+    @Shadow
+    private static boolean burn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipeHolder, NonNullList<ItemStack> nonNullList, int i) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
 
@@ -80,12 +88,17 @@ public abstract class AbstractFurnaceBlockEntityInject implements AbstractFurnac
     private static boolean canBurn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipe, NonNullList<ItemStack> inventory, int maxStackSize, AbstractFurnaceBlockEntity furnace) {
         kilt$currentFurnace.set(furnace);
         var result = canBurn(registryAccess, recipe, inventory, maxStackSize);
-        kilt$currentFurnace.set(null);
+        kilt$currentFurnace.remove();
         return result;
     }
 
+    @Inject(method = {"canBurn", "burn"}, at = @At("HEAD"))
+    private static void kilt$setupCurrentFurnaceParam(RegistryAccess registryAccess, RecipeHolder<?> recipe, NonNullList<ItemStack> inventory, int maxStackSize, CallbackInfoReturnable<Boolean> cir, @Share(value = "currentFurnace", namespace = "kilt") LocalRef<AbstractFurnaceBlockEntity> currentFurnace) {
+        currentFurnace.set(kilt$currentFurnace.get());
+    }
+
     @WrapOperation(
-        method = "canBurn",
+        method = {"canBurn", "burn"},
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/item/crafting/Recipe;getResultItem(Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;"
@@ -95,8 +108,19 @@ public abstract class AbstractFurnaceBlockEntityInject implements AbstractFurnac
         Recipe<?> recipe, HolderLookup.Provider provider, Operation<ItemStack> original, @Local(argsOnly = true) RecipeHolder<?> recipeHolder
     ) {
         if (kilt$currentFurnace.get() != null) {
-            return ((RecipeHolder<? extends AbstractCookingRecipe>) recipeHolder).value().assemble(new SingleRecipeInput(kilt$currentFurnace.get().getItem(0)), provider);
+            ItemStack stack = ((RecipeHolder<? extends AbstractCookingRecipe>) recipeHolder).value().assemble(new SingleRecipeInput(kilt$currentFurnace.get().getItem(0)), provider);
+            if (stack != null && !stack.isEmpty())
+                return stack;
         }
+
         return original.call(recipe, provider);
+    }
+
+    @CreateStatic
+    private static boolean burn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipe, NonNullList<ItemStack> inventory, int maxStackSize, AbstractFurnaceBlockEntity furnace) {
+        kilt$currentFurnace.set(furnace);
+        var result = burn(registryAccess, recipe, inventory, maxStackSize);
+        kilt$currentFurnace.remove();
+        return result;
     }
 }
