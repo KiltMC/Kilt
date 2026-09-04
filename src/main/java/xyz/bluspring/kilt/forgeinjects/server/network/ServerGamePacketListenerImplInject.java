@@ -5,19 +5,17 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
-import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.Util;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.event.entity.living.LivingSwapItemsEvent;
 import net.minecraftforge.network.NetworkHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,43 +31,16 @@ public abstract class ServerGamePacketListenerImplInject {
     @Shadow
     public ServerPlayer player;
 
-    @Inject(
-        method = "handlePlayerAction",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/server/level/ServerPlayer;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V",
-            ordinal = 0
-        ),
-        cancellable = true
-    )
-    private void kilt$handleSendPlayerSwapItemsEvent(
-        ServerboundPlayerActionPacket packet, CallbackInfo ci, @Share("event") LocalRef<LivingSwapItemsEvent.Hands> event
-    ) {
-        event.set(ForgeHooks.onLivingSwapHandItems(player));
-        if (event.get().isCanceled()) {
+    @WrapOperation(method = "handlePlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V", ordinal = 0))
+    private void kilt$handleLivingSwapHandItemsEvent(ServerPlayer instance, InteractionHand interactionHand, ItemStack itemStack, Operation<Void> original, @Cancellable CallbackInfo ci, @Local LocalRef<ItemStack> offhandStack) {
+        var event = ForgeHooks.kilt$onLivingSwapHandItems(this.player, offhandStack.get(), itemStack);
+        if (event.isCanceled()) {
             ci.cancel();
+            return;
         }
-    }
 
-    @WrapOperation(
-        method = "handlePlayerAction",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/server/level/ServerPlayer;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V"
-        )
-    )
-    private void kilt$updateSwappedItemsFromEvent(
-        ServerPlayer instance, InteractionHand hand, ItemStack itemStack, Operation<Void> original,
-        @Share("event") LocalRef<LivingSwapItemsEvent.Hands> eventRef
-    ) {
-        var event = eventRef.get();
-
-        if (hand == InteractionHand.OFF_HAND && !event.getItemSwappedToOffHand().equals(itemStack)) {
-            itemStack = event.getItemSwappedToOffHand();
-        } else if (hand == InteractionHand.MAIN_HAND && !event.getItemSwappedToMainHand().equals(itemStack)) {
-            itemStack = event.getItemSwappedToMainHand();
-        }
-        original.call(instance, hand, itemStack);
+        original.call(instance, interactionHand, event.getItemSwappedToOffHand());
+        offhandStack.set(event.getItemSwappedToMainHand());
     }
 
     @ModifyExpressionValue(
