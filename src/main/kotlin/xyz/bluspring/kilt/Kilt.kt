@@ -3,6 +3,7 @@ package xyz.bluspring.kilt
 import com.google.gson.GsonBuilder
 import io.github.fabricators_of_create.porting_lib.core.event.BaseEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.*
+import io.github.fabricators_of_create.porting_lib.entity.events.PlayerInteractionEvents
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
@@ -176,6 +177,14 @@ class Kilt : ModInitializer {
         EntityElytraEvents.CUSTOM.register { entity, tickElytra ->
             val chestPiece = entity.getItemBySlot(EquipmentSlot.CHEST)
             chestPiece.canElytraFly(entity) && chestPiece.elytraFlightTick(entity, entity.fallFlyingTicks)
+        }
+
+        PlayerInteractionEvents.INTERACT_ENTITY_POSITIONED.register { player, entity, vec3, hand ->
+            val result = ForgeHooks.onInteractEntityAt(player, entity, vec3, hand)
+            if (result != null) {
+                return@register result
+            }
+            return@register null
         }
     }
 

@@ -26,12 +26,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.extensions.IForgeBlock;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -204,17 +202,5 @@ public abstract class MultiPlayerGameModeInject {
         if (stack2.isEmpty()) {
             ForgeEventFactory.onPlayerDestroyItem(player, stack, interactionHand);
         }
-    }
-
-    @Inject(method = "interactAt", at = @At("TAIL"), cancellable = true)
-    private void kilt$handleInteractEntityEvent(Player player, Entity target, EntityHitResult ray, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if (this.localPlayerMode == GameType.SPECTATOR) {
-            cir.setReturnValue(InteractionResult.PASS);
-            return;
-        }
-
-        var cancelResult = ForgeHooks.onInteractEntityAt(player, target, ray, hand);
-        if (cancelResult != null)
-            cir.setReturnValue(cancelResult);
     }
 }
