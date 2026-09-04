@@ -1,18 +1,20 @@
 // TRACKED HASH: 1886f30859644767992d36dcae1264c9b9614cd4
 package xyz.bluspring.kilt.forgeinjects.server.network;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.Util;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.entity.living.LivingSwapItemsEvent;
@@ -68,6 +70,36 @@ public abstract class ServerGamePacketListenerImplInject {
             itemStack = event.getItemSwappedToMainHand();
         }
         original.call(instance, hand, itemStack);
+    }
+
+    @ModifyExpressionValue(
+        method = "method_44900",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/server/MinecraftServer;getChatDecorator()Lnet/minecraft/network/chat/ChatDecorator;"
+        )
+    )
+    private ChatDecorator kilt$combineChatDecorators(ChatDecorator fabricDecorator) {
+        var forgeDecorator = ForgeHooks.getServerChatSubmittedDecorator();
+        return (player, message) -> fabricDecorator.decorate(player, message).thenComposeAsync(
+            fabricMessage -> forgeDecorator.decorate(player, fabricMessage),
+            Util.backgroundExecutor()
+        );
+    }
+
+    @ModifyExpressionValue(
+        method = "method_45064",
+        at = @At(
+            value = "INVOKE",
+            target = "Ljava/util/concurrent/CompletableFuture;join()Ljava/lang/Object;",
+            ordinal = 0
+        )
+    )
+    private <T> T kilt$skipChatWhenMessageNull(T original, @Cancellable CallbackInfo ci) {
+        if (original == null) {
+            ci.cancel();
+        }
+        return original;
     }
 
     @Inject(at = @At("HEAD"), method = "handleCustomPayload", cancellable = true)
