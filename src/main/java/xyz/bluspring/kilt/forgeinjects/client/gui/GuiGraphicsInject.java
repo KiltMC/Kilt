@@ -40,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import net.fabricmc.loader.api.FabricLoader;
 import xyz.bluspring.kilt.injections.client.gui.GuiGraphicsInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.tooltip.TooltipRenderUtilInjection;
 import xyz.bluspring.kilt.mixin.ClientTextTooltipAccessor;
@@ -50,6 +51,10 @@ import java.util.Optional;
 
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeGuiGraphics {
+
+    @Unique
+    private static final boolean kilt$isIcebergLoaded = FabricLoader.getInstance().isModLoaded("iceberg");
+
     @Shadow @Deprecated protected abstract void flushIfUnmanaged();
 
     @Shadow @Final private PoseStack pose;
@@ -142,6 +147,12 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IForgeG
 
     @ModifyArg(method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltipInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V"))
     private List<ClientTooltipComponent> kilt$gatherForgeTooltips(List<ClientTooltipComponent> original, @Local(argsOnly = true) List<Component> lines, @Local(argsOnly = true) Optional<TooltipComponent> visualTooltipComponent, @Local(argsOnly = true, ordinal = 0) int mouseX, @Local(argsOnly = true) Font font) {
+        // Iceberg handles tooltip gathering and wrapping itself, so we should not interfere with it.
+        // Otherwise, we get duplicate tooltips when text wrapping is applied.
+        if (kilt$isIcebergLoaded) {
+            return original;
+        }
+
         var forgeTooltips = new ArrayList<>(ForgeHooksClient.gatherTooltipComponents(this.tooltipStack, lines, visualTooltipComponent, mouseX, guiWidth(), guiHeight(), font));
 
         // Make a copy of the original list for modification, as we also want to be able to support other mods that may be injecting into here.
