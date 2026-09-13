@@ -35,7 +35,7 @@ object AccessTransformerLoader {
         val delimiter = if (textData.contains("\r\n")) "\r\n" else "\n"
 
         for ((index, line) in textData.split(delimiter).withIndex()) {
-            if (line.startsWith("#"))
+            if (line.trim().startsWith("#"))
                 continue
 
             if (line.isBlank())
