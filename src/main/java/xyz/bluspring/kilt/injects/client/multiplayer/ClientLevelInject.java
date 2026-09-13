@@ -1,6 +1,9 @@
 // TRACKED HASH: 9493f81a6485a3765611155c032cf421d0ceeaf2
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import java.util.Collection;
+import java.util.function.Supplier;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -10,26 +13,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.minecraft.client.color.block.BlockTintCache;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.storage.WritableLevelData;
 import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.model.data.ModelDataManager;
 import net.neoforged.neoforge.client.model.lighting.QuadLighter;
@@ -52,8 +35,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.multiplayer.ClientLevelInjection;
 
-import java.util.Collection;
-import java.util.function.Supplier;
+import net.minecraft.client.color.block.BlockTintCache;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.WritableLevelData;
 
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelInject extends Level implements ClientLevelInjection, ILevelExtension {
@@ -166,7 +167,7 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
 
         @Inject(method = "onTrackingStart(Lnet/minecraft/world/entity/Entity;)V", at = @At("TAIL"))
         private void kilt$addForgeMultipartEntitiesToLevel(Entity entity, CallbackInfo ci) {
-            if (entity.isMultipartEntity()) {
+            if (entity.isMultipartEntity() && entity.getParts() != null) {
                 for (PartEntity<?> part : entity.getParts()) {
                     field_27735.kilt$getPartEntitiesMap().put(part.getId(), part);
                 }
@@ -178,7 +179,7 @@ public abstract class ClientLevelInject extends Level implements ClientLevelInje
             entity.onRemovedFromLevel();
             NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(entity, field_27735));
 
-            if (entity.isMultipartEntity()) {
+            if (entity.isMultipartEntity() && entity.getParts() != null) {
                 for (PartEntity<?> part : entity.getParts()) {
                     field_27735.kilt$getPartEntitiesMap().remove(part.getId());
                 }
