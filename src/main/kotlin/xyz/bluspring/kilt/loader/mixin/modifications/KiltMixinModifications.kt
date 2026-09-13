@@ -104,7 +104,22 @@ object KiltMixinModifications {
                     target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachAboveCopyrightLine(Ljava/util/function/BiConsumer;)V"
                 ))
             )
-        )
+        ),
+
+        // Fixes LDLib2's ServerPlayerMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/server/level/ServerPlayer",
+            methods = listOf("openMenu(Lnet/minecraft/world/MenuProvider;Ljava/util/function/Consumer;)Ljava/util/OptionalInt;"),
+            paramToShareMapping = mapOf(
+                ParamPair("Ljava/util/function/Consumer;", 0) to Share("extraDataWriter", namespace = "kilt")
+            )
+        ),
+        // goes along with above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/server/level/ServerPlayer",
+            methods = listOf("openMenu(Lnet/minecraft/world/MenuProvider;Ljava/util/function/Consumer;)Ljava/util/OptionalInt;"),
+            remapMethodsTo = listOf("openMenu(Lnet/minecraft/world/MenuProvider;)Ljava/util/OptionalInt;")
+        ),
     )
 
     val INJECT = register(

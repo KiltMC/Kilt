@@ -1,6 +1,11 @@
 // TRACKED HASH: 8ce7cfcc1608a79d687631411c28c60d1064aad3
 package xyz.bluspring.kilt.injects.server.level;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Consumer;
+
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -9,6 +14,32 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
+import net.neoforged.neoforge.common.extensions.IEntityExtension;
+import net.neoforged.neoforge.common.util.FriendlyByteBufUtil;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
+import net.neoforged.neoforge.network.payload.AdvancedContainerSetDataPayload;
+import net.neoforged.neoforge.network.payload.AdvancedOpenScreenPayload;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.Kilt;
+import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
+import xyz.bluspring.kilt.injections.world.entity.player.PlayerInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -39,36 +70,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.DimensionTransition;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.extensions.IBlockExtension;
-import net.neoforged.neoforge.common.extensions.IEntityExtension;
-import net.neoforged.neoforge.common.util.FriendlyByteBufUtil;
-import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
-import net.neoforged.neoforge.network.payload.AdvancedContainerSetDataPayload;
-import net.neoforged.neoforge.network.payload.AdvancedOpenScreenPayload;
-import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.Kilt;
-import xyz.bluspring.kilt.injections.server.level.ServerPlayerInjection;
-import xyz.bluspring.kilt.injections.world.entity.player.PlayerInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.Consumer;
 
 @Mixin(value = ServerPlayer.class, priority = 1100)
 public abstract class ServerPlayerInject extends Player implements ServerPlayerInjection {
@@ -167,6 +168,11 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         return result;
     }
 
+    @Inject(method = "openMenu", at = @At("HEAD"))
+    private void kilt$storeExtraDataWriter(MenuProvider menu, CallbackInfoReturnable<OptionalInt> cir, @Share(value = "extraDataWriter", namespace = "kilt") LocalRef<Consumer<RegistryFriendlyByteBuf>> extraDataWriterRef) {
+        extraDataWriterRef.set(this.kilt$extraDataWriter);
+    }
+
     @WrapOperation(method = "openMenu", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;closeContainer()V"))
     private void kilt$checkShouldTriggerClientSideClosing(ServerPlayer instance, Operation<Void> original, @Local(argsOnly = true) MenuProvider provider) {
         if (provider.shouldTriggerClientSideContainerClosingOnOpen()) {
@@ -181,16 +187,27 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         Consumer<RegistryFriendlyByteBuf> extraDataWriter = this.kilt$extraDataWriter;
 
         var extraData = FriendlyByteBufUtil.writeCustomData(buffer -> {
-            menuProvider.writeClientSideData(menu, buffer);
-            if (extraDataWriter != null) {
-                extraDataWriter.accept(buffer);
-            }
+            this.lambda$openMenu$15(menuProvider, menu, extraDataWriter, buffer);
         }, this.registryAccess());
 
         if (extraData.length != 0) {
             instance.send(new AdvancedOpenScreenPayload(menu.containerId, menu.getType(), menuProvider.getDisplayName(), extraData));
         } else {
             original.call(instance, packet);
+        }
+    }
+
+    // Kilt: funny workaround
+    @Unique
+    private void lambda$openMenu$15(MenuProvider provider, AbstractContainerMenu menu, Consumer<RegistryFriendlyByteBuf> extraDataWriter, RegistryFriendlyByteBuf buffer) {
+        try {
+            provider.writeClientSideData(menu, buffer);
+            if (extraDataWriter != null) {
+                extraDataWriter.accept(buffer);
+            }
+        } catch (Throwable e) {
+            // Kilt: knowing me, I'm gonna get confused, and other people will get confused. Lemme just make that a little easier on everyone.
+            throw new RuntimeException("An exception occurred in lambda$openMenu$15, which is a Kilt addition!!!", e);
         }
     }
 
