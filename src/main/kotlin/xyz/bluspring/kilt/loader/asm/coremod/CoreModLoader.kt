@@ -244,6 +244,18 @@ object CoreModLoader {
                     postTransformedClassNode.accept(EnhancedClassRemapper(unmappedClassNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
                     classNode.fields.clear()
                     classNode.methods.clear()
+                    if (classNode.invisibleAnnotations != null) {
+                        classNode.invisibleAnnotations.clear()
+                    }
+                    if (classNode.visibleAnnotations != null) {
+                        classNode.visibleAnnotations.clear()
+                    }
+                    if (classNode.invisibleTypeAnnotations != null) {
+                        classNode.invisibleTypeAnnotations.clear()
+                    }
+                    if (classNode.visibleTypeAnnotations != null) {
+                        classNode.visibleTypeAnnotations.clear()
+                    }
 
                     // Validate added fields and methods, some Fabric mods provide accessors for already-existing methods,
                     // which then breaks here because they get applied twice.
