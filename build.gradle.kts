@@ -257,10 +257,7 @@ val relocateCichlid = tasks.register<ShadowJar>("relocateCichlid") {
 
 dependencies {
     // Forge Reimplementations
-    val portingLibs = listOf("attributes", "base", "blocks", "brewing", "chunk_loading", "client_events", "client_extensions", "common", "config", "core", "data", "entity", "entity_data_serializers", "fluids", "gametest", "gui_utils", "item_abilities", "items", "level_events", "loot", "milk", "mixin_extensions", "model_data", "model_loader", "models", "obj_loader", "recipe_book_categories", "registry", "render_types", "resources", "tags", "transfer")
-    portingLibs.forEach { lib ->
-        modApi(include("io.github.fabricators_of_create.Porting-Lib:$lib:${property("porting_lib_version")}")!!)
-    }
+    modApi(include("io.github.fabricators_of_create.Porting-Lib:Porting-Lib:${property("porting_lib_version")}")!!)
 
     // JiJ'd into main JAR alone
     //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
