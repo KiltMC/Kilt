@@ -563,7 +563,7 @@ object MixinRemapper {
                                 continue
 
                             // Ignore methods that don't exist in the child we're actually injecting to
-                            if (!injectingClassNode.methods.any { it.name == member && remapper.mapMethodDesc(it.desc) == methodDesc })
+                            if (!injectingClassNode.methods.any { it.name == methodName && remapper.mapMethodDesc(it.desc) == methodDesc })
                                 continue
 
                             if (bestCandidate == null) {
@@ -577,11 +577,9 @@ object MixinRemapper {
                             }
                         }
 
-                        if (bestCandidate == null) {
-                            bestCandidate = "$mappedClassDescriptor${mappedPairs.first().first}"
+                        if (bestCandidate != null) {
+                            return bestCandidate.breakpoint()
                         }
-
-                        return bestCandidate.breakpoint()
                     }
                 }
 
