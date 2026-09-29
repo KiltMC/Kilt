@@ -471,6 +471,7 @@
     "world.level.ExplosionInject",
     "world.level.ForcedChunksSavedDataInject",
     "world.level.LevelInject",
+    "world.level.LevelReaderInject",
     "world.level.LevelSettingsInject",
     "world.level.NaturalSpawnerInject",
     "world.level.SignalGetterInject",
