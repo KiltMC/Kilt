@@ -216,10 +216,6 @@ allprojects {
         // Just because I like Kotlin more than Java
         modImplementation ("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
 
-        /*(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
-            exclude("org.ow2.asm")
-        })!!)*/
-
         implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
             exclude("org.spongepowered", "mixin")
             exclude("org.ow2.asm")
@@ -263,7 +259,6 @@ dependencies {
     }
 
     // JiJ'd into main JAR alone
-    //include("io.github.llamalad7:mixinextras-fabric:${property("mixinextras_version")}")
     include("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${property("cursedmixinextensions_version")}")
     include("xyz.bluspring.fork:Fabric-ASM:${property("fabric_asm_version")}")
     include("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")
