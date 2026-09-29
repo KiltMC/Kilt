@@ -120,6 +120,23 @@ object KiltMixinModifications {
             methods = listOf("openMenu(Lnet/minecraft/world/MenuProvider;Ljava/util/function/Consumer;)Ljava/util/OptionalInt;"),
             remapMethodsTo = listOf("openMenu(Lnet/minecraft/world/MenuProvider;)Ljava/util/OptionalInt;")
         ),
+
+        // Fixes Psi and Astral Sorcery's ParticleEngineMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/particle/ParticleEngine",
+            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/client/renderer/culling/Frustum;", 0) to Share("frustum", namespace = Kilt.MOD_ID),
+                ParamPair("Ljava/util/function/Predicate;", 0) to Share("renderTypePredicate", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Goes along with the above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/particle/ParticleEngine",
+            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
+            remapMethodsTo = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V")
+        ),
     )
 
     val INJECT = register(
@@ -315,23 +332,6 @@ object KiltMixinModifications {
             owner = "net/minecraft/client/Minecraft",
             methods = listOf($$"*(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V", $$"lambda$new$7", $$"lambda$new$7(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V"),
             remapMethodsTo = listOf($$"method_29339(Ljava/util/concurrent/CompletableFuture;Lnet/minecraft/client/Minecraft$GameLoadCookie;)V")
-        ),
-
-        // Fixes Psi's ParticleEngineMixin
-        InjectedShareAccessModifier(
-            owner = "net/minecraft/client/particle/ParticleEngine",
-            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
-            paramToShareMapping = mapOf(
-                ParamPair("Lnet/minecraft/client/renderer/culling/Frustum;", 0) to Share("frustum", namespace = Kilt.MOD_ID),
-                ParamPair("Ljava/util/function/Predicate;", 0) to Share("renderTypePredicate", namespace = Kilt.MOD_ID),
-            )
-        ),
-
-        // Goes along with the above
-        NameRemappingAnnotationModifier(
-            owner = "net/minecraft/client/particle/ParticleEngine",
-            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
-            remapMethodsTo = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V")
         ),
 
         // Fixes Lodestone's ShaderInstanceMixin

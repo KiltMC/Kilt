@@ -101,7 +101,7 @@ data class InjectedShareAccessModifier(
 
             for (i in indicesBeforeCallbackInfo) {
                 val newIndex = descriptorOrder.indexOf(i)
-                shareIndices[shareIndices.indexOf(i)] = newIndex
+                shareIndices[oldShareIndices.indexOf(i)] = newIndex
             }
 
             for ((paramPair, _) in this.paramToShareMapping) {
