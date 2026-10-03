@@ -2,11 +2,13 @@
 package xyz.bluspring.kilt.forgeinjects.client.gui.screens.inventory;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -28,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
@@ -126,6 +129,27 @@ public abstract class AbstractContainerScreenInject extends Screen implements Ab
     @WrapWithCondition(method = "mouseReleased", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ClickType;)V", ordinal = 0))
     private boolean kilt$useForgeInventoryCheck(AbstractContainerScreen<?> instance, Slot slot, int slotId, int mouseButton, ClickType type, @Local(ordinal = 0, index = 0) Slot slot2) {
         return ((SlotInjection) slot).isSameInventory(slot2);
+    }
+
+    @ModifyExpressionValue(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;checkHotbarKeyPressed(II)Z"))
+    private boolean kilt$storeKeyPressHandling(boolean original, @Share(value = "handled", namespace = "kilt") LocalBooleanRef handledRef) {
+        handledRef.set(original);
+        return original;
+    }
+
+    @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ClickType;)V", shift = At.Shift.AFTER))
+    private void kilt$markAsHandledForClicks(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir, @Share(value = "handled", namespace = "kilt") LocalBooleanRef handledRef) {
+        handledRef.set(true);
+    }
+
+    @ModifyReturnValue(method = "keyPressed", at = @At("RETURN"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;checkHotbarKeyPressed(II)Z")))
+    private boolean kilt$resolveAsHandled(boolean original, @Share(value = "handled", namespace = "kilt") LocalBooleanRef handledRef, @Local(argsOnly = true, ordinal = 0) int keySym, @Local(argsOnly = true, ordinal = 1) int scanCode) {
+        if (!(this.hoveredSlot != null && this.hoveredSlot.hasItem()) && this.minecraft.options.keyDrop.matches(keySym, scanCode)) {
+            // Emulate MC bug (MC-146650 ig?)
+            handledRef.set(true);
+        }
+
+        return handledRef.get();
     }
 
     @Nullable
