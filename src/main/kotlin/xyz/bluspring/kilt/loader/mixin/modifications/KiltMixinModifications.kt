@@ -776,6 +776,35 @@ object KiltMixinModifications {
         ),
     )
 
+    val MODIFY_ARG = register(
+        ModifyArg::class.java,
+
+        // Fixes Create: Enchantment Industry's PlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/player/Player",
+            methods = listOf("attack", "attack(Lnet/minecraft/world/entity/Entity;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.player.PlayerInject",
+                    "name" to $$"kilt$checkCanUseSweepEvent",
+                    "prefix" to "localvar"
+                )),
+                createAnnotation(ModifyArg::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"
+                    ))
+                ))
+            )
+        ),
+    )
+
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
         if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
