@@ -157,6 +157,29 @@ object MixinRemapper {
                 }
             }
 
+            if (atValues.contains("args")) {
+                val argsList = atValues["args"]!!
+                val argPairs = when (argsList) {
+                    is Array<*> if argsList.isArrayOf<String>() -> {
+                        argsList.map { (it as String).split("=") }
+                    }
+
+                    is List<*> -> {
+                        argsList.map { (it as String).split("=") }.toMutableList()
+                    }
+
+                    else -> null
+                }?.associate { it.first() to it[1] }?.toMutableMap()
+
+                if (argPairs != null) {
+                    if (argPairs.contains("classValue")) {
+                        argPairs["classValue"] = tryRemapMixinRefmap(argPairs["classValue"]!!)
+                    }
+
+                    atValues["args"] = argPairs.map { "${it.key}=${it.value}" }
+                }
+            }
+
             if (atValues.contains("desc")) {
                 // TODO: i'm not even going to try.
                 KiltRemapper.logger.error("!! Tell BluSpring to stop being lazy. $mixinClassName")
