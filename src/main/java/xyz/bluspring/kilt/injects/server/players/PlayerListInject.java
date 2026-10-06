@@ -4,6 +4,8 @@ package xyz.bluspring.kilt.injects.server.players;
 import java.nio.file.Path;
 import java.util.function.Function;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
@@ -30,7 +32,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -111,7 +113,10 @@ public abstract class PlayerListInject {
             ci.cancel();
     }
 
-    @ModifyArg(method = "sendLevelInfo", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V", ordinal = 0))
+    @Definition(id = "send", method = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V")
+    @Definition(id = "ClientboundSetTimePacket", type = ClientboundSetTimePacket.class)
+    @Expression("?.send(new ClientboundSetTimePacket(?, ?, ?))")
+    @ModifyArg(method = "sendLevelInfo", at = @At("MIXINEXTRAS:EXPRESSION"))
     private Packet<?> kilt$tryUseCustomSetTime(Packet<?> original, @Local(argsOnly = true) ServerPlayer player, @Local(argsOnly = true) ServerLevel level) {
         if (player.connection.hasChannel(ClientboundCustomSetTimePayload.TYPE)) {
             return (new ClientboundCustomSetTimePayload(level.getGameTime(), level.getDayTime(), level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT), level.getDayTimeFraction(), level.getDayTimePerTick()))
