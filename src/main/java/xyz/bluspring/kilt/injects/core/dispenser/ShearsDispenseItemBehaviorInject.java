@@ -5,13 +5,8 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.dispenser.BlockSource;
-import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Shearable;
-import net.minecraft.world.item.ItemStack;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.IShearable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,6 +15,14 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Shearable;
+import net.minecraft.world.item.ItemStack;
 
 @Mixin(ShearsDispenseItemBehavior.class)
 public abstract class ShearsDispenseItemBehaviorInject {
@@ -50,6 +53,11 @@ public abstract class ShearsDispenseItemBehaviorInject {
         kilt$currentStack.remove();
 
         return value;
+    }
+
+    @Inject(method = "tryShearLivingEntity", at = @At("HEAD"))
+    private static void kilt$setCurrentStack(ServerLevel level, BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Share(value = "stack", namespace = "kilt") LocalRef<ItemStack> stackRef) {
+        stackRef.set(kilt$currentStack.get());
     }
 
     @Definition(id = "livingEntity", local = @Local(type = LivingEntity.class))

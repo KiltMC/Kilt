@@ -425,6 +425,15 @@ object KiltMixinModifications {
                 ParamPair("Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;", 0) to Share(value = "currentFurnace", namespace = "kilt")
             )
         ),
+
+        // fixes Cold Sweat's MixinShearsDispenseBehavior
+        InjectedShareAccessModifier(
+            "net/minecraft/core/dispenser/ShearsDispenseItemBehavior",
+            listOf("tryShearLivingEntity", "tryShearLivingEntity(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)Z"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("stack", namespace = Kilt.MOD_ID),
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
