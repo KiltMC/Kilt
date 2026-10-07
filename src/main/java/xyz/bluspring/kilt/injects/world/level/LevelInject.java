@@ -20,13 +20,13 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import net.neoforged.neoforge.common.extensions.ILevelExtension;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.server.timings.TimeTracker;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,14 +41,8 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -162,21 +156,6 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
         }
     }
 
-    @Definition(id = "getGameRules", method = "Lnet/minecraft/world/level/Level;getGameRules()Lnet/minecraft/world/level/GameRules;")
-    @Definition(id = "getBoolean", method = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z")
-    @Definition(id = "RULE_MOBGRIEFING", field = "Lnet/minecraft/world/level/GameRules;RULE_MOBGRIEFING:Lnet/minecraft/world/level/GameRules$Key;")
-    @Expression("this.getGameRules().getBoolean(RULE_MOBGRIEFING)")
-    @ModifyExpressionValue(method = "explode(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;ZLnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/Holder;)Lnet/minecraft/world/level/Explosion;", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$checkCanEntityGrief(boolean original, @Local(argsOnly = true) Entity entity) {
-        return original || EventHooks.canEntityGrief((Level) (Object) this, entity);
-    }
-
-    @Inject(method = "explode(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Level$ExplosionInteraction;ZLnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/particles/ParticleOptions;Lnet/minecraft/core/Holder;)Lnet/minecraft/world/level/Explosion;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Explosion;explode()V"), cancellable = true)
-    private void kilt$checkExplosionStartEvent(@Nullable Entity source, @Nullable DamageSource damageSource, @Nullable ExplosionDamageCalculator damageCalculator, double x, double y, double z, float radius, boolean fire, Level.ExplosionInteraction explosionInteraction, boolean spawnParticles, ParticleOptions smallExplosionParticles, ParticleOptions largeExplosionParticles, Holder<SoundEvent> explosionSound, CallbackInfoReturnable<Explosion> cir, @Local Explosion explosion) {
-        if (EventHooks.onExplosionStart((Level) (Object) this, explosion))
-            cir.setReturnValue(explosion);
-    }
-
     @Inject(method = "removeBlockEntity", at = @At("TAIL"))
     public void kilt$updateNeighbourOutputSignalsForRemoval(BlockPos pos, CallbackInfo ci) {
         this.updateNeighbourForOutputSignal(pos, this.getBlockState(pos).getBlock());
@@ -209,9 +188,9 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
         return Arrays.stream(Direction.values()).iterator();
     }
 
-    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
-    public boolean kilt$checkForNeighbourChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) BlockPos blockPos, @Local(ordinal = 1) BlockPos directionPos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "onNeighborChange", BlockState.class, LevelReader.class, BlockPos.class, BlockPos.class)) {
+    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z", ordinal = 0))
+    public boolean kilt$checkForNeighbourChange(BlockState instance, Object block, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) BlockPos blockPos, @Local(ordinal = 1) BlockPos directionPos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IBlockExtension.class, "onNeighborChange", BlockState.class, LevelReader.class, BlockPos.class, BlockPos.class)) {
             instance.onNeighborChange((Level) (Object) this, directionPos, blockPos);
             // Don't trigger the Vanilla neighbour change.
             return false;
@@ -220,9 +199,9 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
         return original.call(instance, block);
     }
 
-    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 1))
-    public boolean kilt$getWeakChange(BlockState instance, Block block, Operation<Boolean> original, @Local(ordinal = 1) BlockPos directionPos) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), Block.class, "getWeakChanges", BlockState.class, LevelReader.class, BlockPos.class)) {
+    @WrapOperation(method = "updateNeighbourForOutputSignal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z", ordinal = 1))
+    public boolean kilt$getWeakChange(BlockState instance, Object block, Operation<Boolean> original, @Local(ordinal = 1) BlockPos directionPos) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getBlock().getClass(), IBlockExtension.class, "getWeakChanges", BlockState.class, LevelReader.class, BlockPos.class)) {
             return instance.getWeakChanges((Level) (Object) this, directionPos);
         }
 

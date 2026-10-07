@@ -38,7 +38,7 @@ public abstract class TrialSpawnerInject implements IOwnedSpawner {
 
     @WrapOperation(method = "spawnMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;finalizeSpawn(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/EntitySpawnReason;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;"))
     private SpawnGroupData kilt$handleMobSpawnEvent(Mob instance, ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, SpawnGroupData groupData, Operation<SpawnGroupData> original, @Local boolean flag) {
-        return EventHooks.kilt$finalizeMobSpawnSpawner(instance, level, difficulty, spawnReason, groupData, this, flag, original);
+        return EventHooks.kilt$finalizeMobSpawnSpawner(instance, level, difficulty, spawnReason, groupData, this, flag, original::call).getSpawnData();
     }
 
     @Override
