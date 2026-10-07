@@ -1,8 +1,15 @@
 package xyz.bluspring.kilt.injects.world.level.material;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.event.EventHooks;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -11,10 +18,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.LavaFluid;
-import net.neoforged.neoforge.event.EventHooks;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(LavaFluid.class)
 public abstract class LavaFluidInject {
@@ -53,7 +56,21 @@ public abstract class LavaFluidInject {
         return original.call(instance) || instance.isFlammable(level, pos, kilt$direction.get());
     }
 
+    @Unique
     private boolean isFlammable(LevelReader level, BlockPos pos, Direction face) {
-        return pos.getY() >= level.getMinBuildHeight() && pos.getY() < level.getMaxBuildHeight() && !level.hasChunkAt(pos) ? false : level.getBlockState(pos).isFlammable(level, pos, face);
+        if (level.isInsideBuildHeight(pos.getY()) && !level.hasChunkAt(pos))
+            return false;
+
+        BlockState state = level.getBlockState(pos);
+        return state.ignitedByLava(level, pos, face);
+    }
+
+    @Definition(id = "setBlock", method = "Lnet/minecraft/world/level/LevelAccessor;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z")
+    @Definition(id = "STONE", field = "Lnet/minecraft/world/level/block/Blocks;STONE:Lnet/minecraft/world/level/block/Block;")
+    @Definition(id = "defaultBlockState", method = "Lnet/minecraft/world/level/block/Block;defaultBlockState()Lnet/minecraft/world/level/block/state/BlockState;")
+    @Expression("?.setBlock(?, STONE.defaultBlockState(), ?)")
+    @WrapOperation(method = "spreadTo", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$handleFluidPlaceBlockEvent(LevelAccessor instance, BlockPos pos, BlockState state, int flags, Operation<Boolean> original) {
+        return original.call(instance, pos, EventHooks.fireFluidPlaceBlockEvent(instance, pos, pos, state), flags);
     }
 }

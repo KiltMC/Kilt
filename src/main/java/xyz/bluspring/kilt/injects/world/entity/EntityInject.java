@@ -1,13 +1,16 @@
 package xyz.bluspring.kilt.injects.world.entity;
 
+import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.common.extensions.IEntityExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityFluidInteraction;
 
+@Extends(AttachmentHolder.class)
 @Mixin(Entity.class)
 public abstract class EntityInject implements EntityInjection, IEntityExtension {
     @Accessor("fluidInteraction")

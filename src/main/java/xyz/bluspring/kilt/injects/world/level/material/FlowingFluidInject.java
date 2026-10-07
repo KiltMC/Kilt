@@ -3,33 +3,35 @@ package xyz.bluspring.kilt.injects.world.level.material;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.FluidState;
+
 @Mixin(FlowingFluid.class)
 public abstract class FlowingFluidInject extends FluidInject {
     @Shadow protected abstract boolean canConvertToSource(Level level);
 
     @WrapOperation(method = "getNewLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;isSource()Z"))
-    private boolean kilt$checkCanCreateSource(FluidState instance, Operation<Boolean> original, @Local(argsOnly = true) Level level, @Local(ordinal = 1) BlockPos pos, @Local(ordinal = 1) BlockState state) {
+    private boolean kilt$checkCanCreateSource(FluidState instance, Operation<Boolean> original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 1) BlockPos pos, @Local(ordinal = 1) BlockState state) {
         return original.call(instance) && EventHooks.canCreateFluidSource(level, pos, state);
     }
 
-    @Redirect(method = "getNewLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FlowingFluid;canConvertToSource(Lnet/minecraft/world/level/Level;)Z"))
-    private boolean kilt$noopConvertToSource(FlowingFluid instance, Level level) {
+    @Redirect(method = "getNewLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FlowingFluid;canConvertToSource(Lnet/minecraft/server/level/ServerLevel;)Z"))
+    private boolean kilt$noopConvertToSource(FlowingFluid instance, ServerLevel level) {
         return true;
     }
 
     @Override
-    public boolean canConvertToSource(FluidState state, Level level, BlockPos pos) {
+    public boolean canConvertToSource(FluidState state, ServerLevel level, BlockPos pos) {
         return this.canConvertToSource(level);
     }
 }

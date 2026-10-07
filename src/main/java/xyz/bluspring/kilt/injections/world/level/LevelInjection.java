@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import net.neoforged.neoforge.common.util.BlockSnapshot;
+import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
@@ -59,5 +60,9 @@ public interface LevelInjection {
 
     default void addFreshBlockEntities(Collection<BlockEntity> list) {
         throw KiltHelper.createMixinException(LevelInjection.class, "addFreshBlockEntities");
+    }
+
+    default Collection<? extends PartEntity<?>> kilt$getPartEntities() {
+        throw KiltHelper.createMixinException(LevelInjection.class, "kilt$getPartEntities");
     }
 }
