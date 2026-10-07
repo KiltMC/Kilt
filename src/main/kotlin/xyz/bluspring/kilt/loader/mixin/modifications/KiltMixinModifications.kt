@@ -17,10 +17,8 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.loader.remap.MixinTypes
-import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
@@ -455,7 +453,7 @@ object KiltMixinModifications {
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
-                    "at" to at("INVOKE", "Lnet/neoforged/neoforge/client/ClientHooks;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/neoforged/neoforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
+                    "at" to at("INVOKE", "Lnet/neoforged/neoforge/client/ClientHooks;onCustomizeBossEventProgress(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/neoforged/neoforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")
                 ))
             )
         ),

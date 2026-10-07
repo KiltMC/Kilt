@@ -3,14 +3,8 @@ package xyz.bluspring.kilt.loader.remap.fixers.mixin
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
-import org.spongepowered.asm.mixin.Mixin
-import org.spongepowered.asm.mixin.gen.Accessor
-import org.spongepowered.asm.mixin.gen.Invoker
-import org.spongepowered.asm.mixin.injection.Inject
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
-import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
-import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.MixinRefmap
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.util.KiltHelper
 
 object MixinRemapper {

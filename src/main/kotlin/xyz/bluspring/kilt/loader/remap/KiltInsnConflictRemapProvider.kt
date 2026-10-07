@@ -28,7 +28,7 @@ class KiltInsnConflictRemapProvider : InsnConflictRemapProvider {
                     "sendPairingData" -> return $$"neoforge$sendPairingData"
                 }
 
-            "net/minecraft/world/item/alchemy/PotionBrewing", KiltRemapper.remapClass("net/minecraft/world/item/alchemy/PotionBrewing") -> {
+            "net/minecraft/world/item/alchemy/PotionBrewing" -> {
                 when (name) {
                     "getRecipes" -> return $$"neoforge$getRecipes"
                 }
