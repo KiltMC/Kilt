@@ -238,6 +238,7 @@ object ModifiedCloneWorkaroundLoader {
                                 is Handle -> insn.bsmArgs[i] = mapHandle(arg, oldType, newType)
                             }
                         }
+                        insn.desc = insn.desc.replace(oldDescriptor, newDescriptor)
                     }
                     is FrameNode -> {
                         insn.local = mapFrameTypes(insn.local, oldType, newDescriptor)

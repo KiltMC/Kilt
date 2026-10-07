@@ -49,7 +49,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 246
+    const val REMAPPER_VERSION = 257
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -300,7 +300,7 @@ object KiltRemapper {
                     // GUESS WHAT, SOME MODS DON'T FUCKING DEFINE SOME MIXINS IN THE FILE, INSTEAD IN THE MIXIN PLUGIN.
                     // SO LET'S JUST RUN THIS ON EVERYTHING THAT HAS THE BLOODY ANNOTATION.
                     KiltHelper.mergeNullableCollections(node.visibleAnnotations, node.invisibleAnnotations)
-                        .any { it.desc == MixinAdditionalRemapper.MIXIN_TYPE.descriptor }
+                        .any { it.desc == MixinTypes.MIXIN.descriptor }
             }
 
             // Make copies of the original ClassNode objects so we can use them as reference to remap inherited shadows.

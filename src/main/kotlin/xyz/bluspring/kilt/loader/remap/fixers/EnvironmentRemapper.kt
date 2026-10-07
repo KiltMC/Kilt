@@ -11,7 +11,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.DistUtil
 import java.util.function.Consumer
 
@@ -63,7 +63,7 @@ object EnvironmentRemapper {
 
         for (node in annotations) {
             if (node.desc == ONLYINS_TYPE.descriptor) {
-                val values = KiltMixinModifications.annotationValuesToMap(node.values)["value"]
+                val values = MixinHelpers.annotationValuesToMap(node.values)["value"]
                 val newValues = mutableListOf<AnnotationNode>()
                 if (values is List<*>) {
                     for (annotation in values) {
@@ -73,20 +73,20 @@ object EnvironmentRemapper {
                         if (annotation.desc != ONLYIN_TYPE.descriptor)
                             continue
 
-                        val aValues = KiltMixinModifications.annotationValuesToMap(annotation.values)
+                        val aValues = MixinHelpers.annotationValuesToMap(annotation.values)
 
                         val value = stringArrayToDist(aValues["value"] as Array<String>) ?: return
                         val itf = aValues["_interface"]
                         if (itf != null && itf != Object::class.java) {
                             replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
-                                this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                                this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                                     "value" to envTypeToStringArray(DistUtil.distToEnvType(value)),
                                     "itf" to itf
                                 ))
                             })
                         } else {
                             replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
-                                this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                                this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                                     "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
                                 ))
                             })
@@ -95,25 +95,25 @@ object EnvironmentRemapper {
                 }
 
                 replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACES_TYPE.descriptor).apply {
-                    this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                    this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                         "value" to newValues
                     ))
                 })
             } else if (node.desc == ONLYIN_TYPE.descriptor) {
-                val values = KiltMixinModifications.annotationValuesToMap(node.values)
+                val values = MixinHelpers.annotationValuesToMap(node.values)
                 val value = stringArrayToDist(values["value"] as Array<String>) ?: return
                 val itf = values["_interface"]
 
                 if (itf != null && itf != Object::class.java) {
                     replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_INTERFACE_TYPE.descriptor).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                        this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                             "value" to envTypeToStringArray(DistUtil.distToEnvType(value)),
                             "itf" to itf
                         ))
                     })
                 } else {
                     replaceable.add(AnnotationNode(Opcodes.ASM9, ENVIRONMENT_TYPE.descriptor).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                        this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                             "value" to envTypeToStringArray(DistUtil.distToEnvType(value))
                         ))
                     })

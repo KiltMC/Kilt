@@ -2,6 +2,7 @@ package xyz.bluspring.kilt.loader.mixin.modifications
 
 import com.bawnorton.mixinsquared.TargetHandler
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue
+import com.llamalad7.mixinextras.injector.ModifyReturnValue
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
 import com.llamalad7.mixinextras.sugar.Local
@@ -10,27 +11,21 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.gen.Accessor
-import org.spongepowered.asm.mixin.injection.At
-import org.spongepowered.asm.mixin.injection.Inject
-import org.spongepowered.asm.mixin.injection.ModifyVariable
-import org.spongepowered.asm.mixin.injection.Redirect
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
+import org.spongepowered.asm.mixin.injection.*
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.*
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.NameRemappingAnnotationModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier.ReplacedAnnotationsModifier
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
+import xyz.bluspring.kilt.loader.remap.MixinTypes
+import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
     val MIXIN_CLASSES = mutableSetOf<String>()
     private val MODIFIERS = mutableMapOf<String, List<MixinModifier>>()
     private val ACCESSORS = mutableMapOf<String, List<AccessorModifier>>()
-
-    val SUGAR_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/sugar/impl/SugarWrapper;")
-    val FACTORY_REDIRECT_WRAPPER = Type.getType("Lcom/llamalad7/mixinextras/wrapper/factory/FactoryRedirectWrapper;")
-    val CALLBACK_INFO = Type.getType(CallbackInfo::class.java)
-    val CALLBACK_INFO_RETURNABLE = Type.getType(CallbackInfoReturnable::class.java)
 
     val GLOBAL_MODIFIERS = listOf<MixinModifier>(
         RetargetingLocalModifier(
@@ -88,7 +83,60 @@ object KiltMixinModifications {
             "net/minecraft/client/gui/Gui",
             methods = listOf("renderHotbar", "renderHotbar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"),
             remapMethodsTo = listOf("renderHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V") // good enough tm
-        )
+        ),
+
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachLine(ZZLjava/util/function/BiConsumer;)V"
+                ))
+            )
+        ),
+        AnnotationBasedModifier.JustIgnoreItAnnotationModifier(
+            "net/minecraft/client/gui/screens/TitleScreen",
+            methods = listOf("render", "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/internal/BrandingControl;forEachAboveCopyrightLine(Ljava/util/function/BiConsumer;)V"
+                ))
+            )
+        ),
+
+        // Fixes LDLib2's ServerPlayerMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/server/level/ServerPlayer",
+            methods = listOf("openMenu(Lnet/minecraft/world/MenuProvider;Ljava/util/function/Consumer;)Ljava/util/OptionalInt;"),
+            paramToShareMapping = mapOf(
+                ParamPair("Ljava/util/function/Consumer;", 0) to Share("extraDataWriter", namespace = "kilt")
+            )
+        ),
+        // goes along with above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/server/level/ServerPlayer",
+            methods = listOf("openMenu(Lnet/minecraft/world/MenuProvider;Ljava/util/function/Consumer;)Ljava/util/OptionalInt;"),
+            remapMethodsTo = listOf("openMenu(Lnet/minecraft/world/MenuProvider;)Ljava/util/OptionalInt;")
+        ),
+
+        // Fixes Psi and Astral Sorcery's ParticleEngineMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/client/particle/ParticleEngine",
+            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/client/renderer/culling/Frustum;", 0) to Share("frustum", namespace = Kilt.MOD_ID),
+                ParamPair("Ljava/util/function/Predicate;", 0) to Share("renderTypePredicate", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Goes along with the above
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/client/particle/ParticleEngine",
+            methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
+            remapMethodsTo = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V")
+        ),
     )
 
     val INJECT = register(
@@ -281,33 +329,9 @@ object KiltMixinModifications {
 
         // Fixes TerraFirmaCraft's MinecraftMixin, and probably some others too.
         NameRemappingAnnotationModifier(
-            owner = "net/minecraft/client/Client",
+            owner = "net/minecraft/client/Minecraft",
             methods = listOf($$"*(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V", $$"lambda$new$7", $$"lambda$new$7(Lnet/minecraft/client/Minecraft$GameLoadCookie;)V"),
             remapMethodsTo = listOf($$"method_29339(Ljava/util/concurrent/CompletableFuture;Lnet/minecraft/client/Minecraft$GameLoadCookie;)V")
-        ),
-
-        // Fixes TerraFirmaCraft's ServerPlayerGameModeMixin
-        ReplacedAnnotationsModifier(
-            owner = "net/minecraft/server/level/ServerPlayerGameMode",
-            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
-            variables = mapOf(
-                "at" to listOf(at(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
-                    remap = false
-                ))
-            ),
-            replaceWith = listOf(
-                createAnnotation(
-                    Inject::class.java, mapOf(
-                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
-                        "at" to listOf(at(
-                            value = "INVOKE",
-                            target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"
-                        ))
-                    )
-                )
-            )
         ),
 
         // Fixes Lodestone's ShaderInstanceMixin
@@ -348,6 +372,68 @@ object KiltMixinModifications {
                 ))
             )
         ),
+
+        // Fixes ae2wtlib's ServerPlayerMixin
+        InjectedShareAccessModifier(
+            "net/minecraft/server/level/ServerPlayer",
+            listOf("drop", "drop(Z)Z"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("selected", namespace = Kilt.MOD_ID),
+            )
+        ),
+
+        // Fixes TFC's ServerPlayerGameModeMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/server/level/ServerPlayerGameMode",
+            methods = listOf("destroyBlock", "destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Z",
+                    remap = false
+                )),
+                "slice" to listOf(
+                    createAnnotation(Slice::class.java, mapOf(
+                        "from" to at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayerGameMode;isCreative()Z"),
+                        "to" to at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;canHarvestBlock(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z", remap = false)
+                    ))
+                )
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
+                        "at" to listOf(at("RETURN", ordinal = 0)),
+                        "slice" to listOf(
+                            createAnnotation(Slice::class.java, mapOf(
+                                "from" to at(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayerGameMode;isCreative()Z"),
+                            ))
+                        )
+                    )
+                )
+            )
+        ),
+
+        // Fixes Reliquified Artifacts' AbstractFurnaceBlockEntityMixin
+        InjectedShareAccessModifier(
+            owner = "net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity",
+            methods = listOf(
+                "canBurn", "canBurn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;I)Z",
+                "burn", "burn(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/crafting/RecipeHolder;Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;I)Z"
+            ),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;", 0) to Share(value = "currentFurnace", namespace = "kilt")
+            )
+        ),
+
+        // fixes Cold Sweat's MixinShearsDispenseBehavior
+        InjectedShareAccessModifier(
+            "net/minecraft/core/dispenser/ShearsDispenseItemBehavior",
+            listOf("tryShearLivingEntity", "tryShearLivingEntity(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)Z"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("stack", namespace = Kilt.MOD_ID),
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
@@ -369,7 +455,7 @@ object KiltMixinModifications {
                 )),
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("@MixinSquared:Handler"),
-                    "at" to at("INVOKE", "Lnet/minecraftforge/client/ForgeHooksClient;onCustomizeBossEventProgress(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/minecraftforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")
+                    "at" to at("INVOKE", "Lnet/neoforged/neoforge/client/ClientHooks;onCustomizeBossEventProgress${KiltRemapper.remapDescriptor("(Lnet/minecraft/client/gui/GuiGraphics;Lcom/mojang/blaze3d/platform/Window;Lnet/minecraft/client/gui/components/LerpingBossEvent;III)Lnet/neoforged/neoforge/client/event/CustomizeGuiOverlayEvent\$BossEventProgress;")}")
                 ))
             )
         ),
@@ -455,6 +541,48 @@ object KiltMixinModifications {
     val WRAP_OPERATION = register(
         WrapOperation::class.java,
 
+        // Fix Deep Aether's HumanoidArmorLayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(
+                    at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/Model;ILnet/minecraft/resources/ResourceLocation;)V"
+                    )
+                )
+            ),
+            replaceWith = listOf(
+                createAnnotation(WrapOperation::class.java, mapOf(
+                    "method" to "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V",
+                    "at" to listOf(
+                        at(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/HumanoidModel;ILnet/minecraft/resources/ResourceLocation;)V"
+                        )
+                    )
+                ))
+            )
+        ),
+        ParamAnnotationBasedModifier.AddParamAnnotationModifier(
+            owner = "net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer",
+            methods = listOf("renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;FFFFFF)V"),
+            variables = mapOf(
+                "at" to listOf(
+                    at(
+                        value = "INVOKE",
+                        target = "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/model/Model;ILnet/minecraft/resources/ResourceLocation;)V"
+                    )
+                )
+            ),
+            params = mapOf(
+                ParamAnnotationBasedModifier.AddParamAnnotationModifier.ParamMatcher(
+                    type = "net/minecraft/client/model/Model"
+                ) to createAnnotation(Coerce::class.java, mapOf())
+            )
+        ),
+
         // Fixes Create's ProjectileUtilMixin
         ReplacedAnnotationsModifier(
             owner = "net/minecraft/world/entity/projectile/ProjectileUtil",
@@ -523,7 +651,14 @@ object KiltMixinModifications {
                     ))
                 ))
             )
-        )
+        ),
+
+        // Fixes TFC's ItemStackMixin
+        NameRemappingAnnotationModifier(
+            owner = "net/minecraft/world/item/ItemStack",
+            methods = listOf("hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"),
+            remapMethodsTo = listOf("hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V")
+        ),
     )
 
     val WRAP_WITH_CONDITION = register(
@@ -556,15 +691,133 @@ object KiltMixinModifications {
         // Fixes Forbidden and Arcanus' PlayerMixin
         NameRemappingAnnotationModifier(
             "net/minecraft/world/entity/player/Player",
-            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"),
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
         )
     )
 
+    val MODIFY_EXPRESSION_VALUE = register(
+        ModifyExpressionValue::class.java,
+
+        // Fixes Reliquified Ars Nouveau's PlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/player/Player",
+            methods = listOf("tryToStartFallFlying", "tryToStartFallFlying()Z"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.player.PlayerInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+
+        // Fixes Reliquified Ars Nouveau's LivingEntityMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/LivingEntity",
+            methods = listOf("updateFallFlying", "updateFallFlying()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.LivingEntityInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/LivingEntity",
+            methods = listOf("updateFallFlying", "updateFallFlying()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;elytraFlightTick(Lnet/minecraft/world/entity/LivingEntity;I)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.LivingEntityInject",
+                    "name" to $$"kilt$tryHandleFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+
+        // Fixes Reliquified Ars Nouveau's LocalPlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/player/LocalPlayer",
+            methods = listOf("aiStep", "aiStep()V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canElytraFly(Lnet/minecraft/world/entity/LivingEntity;)Z", remap = false))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.player.LocalPlayerInject",
+                    "name" to $$"kilt$checkCanElytraFly",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyReturnValue::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at("RETURN"))
+                ))
+            )
+        ),
+
+        // Fixes Artifacts' PlayerMixin
+        NameRemappingAnnotationModifier(
+            "net/minecraft/world/entity/player/Player",
+            methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
+            remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
+        ),
+    )
+
+    val MODIFY_ARG = register(
+        ModifyArg::class.java,
+
+        // Fixes Create: Enchantment Industry's PlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/player/Player",
+            methods = listOf("attack", "attack(Lnet/minecraft/world/entity/Entity;)V"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"                ))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.player.PlayerInject",
+                    "name" to $$"kilt$checkCanUseSweepEvent",
+                    "prefix" to "localvar"
+                )),
+                createAnnotation(ModifyArg::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"
+                    ))
+                ))
+            )
+        ),
+    )
+
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
-        if (annotation.desc == SUGAR_WRAPPER.descriptor || annotation.desc == FACTORY_REDIRECT_WRAPPER.descriptor) {
-            val map = annotationValuesToMap(annotation.values)
+        if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
+            val map = MixinHelpers.annotationValuesToMap(annotation.values)
 
             if (map.containsKey("original")) {
                 annotation = map["original"] as AnnotationNode
@@ -579,7 +832,7 @@ object KiltMixinModifications {
 
         val modifiers = (MODIFIERS[annotation.desc] ?: emptyList()) + GLOBAL_MODIFIERS
         val foundModifiers = mutableListOf<MixinModifier>()
-        val map = annotationValuesToMap(annotation.values ?: emptyList())
+        val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
         modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
             when (modifier) {
@@ -632,7 +885,7 @@ object KiltMixinModifications {
         val modifiers = ACCESSORS[annotation.desc] ?: return null
 
         for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
-            val map = annotationValuesToMap(annotation.values ?: emptyList())
+            val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
             if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
                 continue
@@ -656,24 +909,24 @@ object KiltMixinModifications {
                     if (value is List<*>)
                         value.any { b ->
                             if (b is AnnotationNode && a is AnnotationNode)
-                                checkAllConditionsMatch(annotationValuesToMap(b.values), annotationValuesToMap(a.values))
+                                checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(b.values), MixinHelpers.annotationValuesToMap(a.values))
                             else
                                 b == a
                         }
                     else if (value is AnnotationNode)
                         if (a is AnnotationNode)
-                            checkAllConditionsMatch(annotationValuesToMap(value.values), annotationValuesToMap(a.values))
+                            checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), MixinHelpers.annotationValuesToMap(a.values))
                         else if (a is Map<*, *>)
-                            checkAllConditionsMatch(annotationValuesToMap(value.values), a as Map<String, Any>)
+                            checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), a as Map<String, Any>)
                         else false
                     else
                         a == value
                 }
             else if (it.value is AnnotationNode)
                 if (value is AnnotationNode)
-                    checkAllConditionsMatch(annotationValuesToMap((it.value as AnnotationNode).values), annotationValuesToMap(value.values))
+                    checkAllConditionsMatch(MixinHelpers.annotationValuesToMap((it.value as AnnotationNode).values), MixinHelpers.annotationValuesToMap(value.values))
                 else if (value is Map<*, *>)
-                    checkAllConditionsMatch(annotationValuesToMap((it.value as AnnotationNode).values), value as Map<String, Any>)
+                    checkAllConditionsMatch(MixinHelpers.annotationValuesToMap((it.value as AnnotationNode).values), value as Map<String, Any>)
                 else false
             else
                 // check if values != equal and value is not list
@@ -693,7 +946,7 @@ object KiltMixinModifications {
                     current
                 } else if (value is AnnotationNode)
                     if (it.value is Map<*, *>)
-                        checkAllConditionsMatch(annotationValuesToMap(value.values), it.value as Map<String, Any>)
+                        checkAllConditionsMatch(MixinHelpers.annotationValuesToMap(value.values), it.value as Map<String, Any>)
                     else false
                 else
                     value == it.value
@@ -706,34 +959,8 @@ object KiltMixinModifications {
 
     fun createAnnotation(annotationType: String, variables: Map<String, Any>): AnnotationNode {
         return AnnotationNode(annotationType).apply {
-            this.values = mapToAnnotationValues(variables)
+            this.values = MixinHelpers.mapToAnnotationValues(variables)
         }
-    }
-
-    fun mapToAnnotationValues(map: Map<String, Any>): List<Any> {
-        val values = mutableListOf<Any>()
-
-        for ((key, v) in map) {
-            values.add(key)
-            values.add(v)
-        }
-
-        return values
-    }
-
-    fun annotationValuesToMap(values: List<Any>): Map<String, Any> {
-        val map = mutableMapOf<String, Any>()
-
-        var currentKey = ""
-        for ((index, value) in values.withIndex()) {
-            if ((index and 1) == 0) {
-                currentKey = value as String
-            } else {
-                map[currentKey] = value
-            }
-        }
-
-        return map
     }
 
     private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null, shift: At.Shift? = null): AnnotationNode {
@@ -750,7 +977,7 @@ object KiltMixinModifications {
                 this["remap"] = remap
 
             if (shift != null)
-                this["shift"] = arrayOf("Lorg/spongepowered/asm/mixin/injection/At\$Shift;", shift.name)
+                this["shift"] = arrayOf(MixinTypes.AT_SHIFT.descriptor, shift.name)
 
             this.putAll(variables)
         })

@@ -6,20 +6,20 @@ import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.gen.Invoker
+import org.spongepowered.asm.mixin.injection.Inject
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
+import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinRefmap
 import xyz.bluspring.kilt.util.KiltHelper
 
 object MixinRemapper {
-    val MIXIN_TYPE = Type.getType(Mixin::class.java)
-    private val ACCESSOR_TYPE = Type.getType(Accessor::class.java)
-    private val INVOKER_TYPE = Type.getType(Invoker::class.java)
-
     fun getMixinClassTargets(
         classNode: ClassNode,
         mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
-            .firstOrNull { it.desc == MIXIN_TYPE.descriptor }
+            .firstOrNull { it.desc == MixinTypes.MIXIN.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!"),
-        values: Map<String, Any> = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+        values: Map<String, Any> = MixinHelpers.annotationValuesToMap(mixinAnnotation.values)
     ): Collection<String> {
         val targetClassNames = mutableListOf<String>()
 

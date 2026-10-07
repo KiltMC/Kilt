@@ -69,7 +69,7 @@ public abstract class PotionBrewingInject implements PotionBrewingInjection {
     }
 
     @Override
-    public List<IBrewingRecipe> getRecipes() {
+    public List<IBrewingRecipe> neoforge$getRecipes() {
         return this.registry.recipes();
     }
 

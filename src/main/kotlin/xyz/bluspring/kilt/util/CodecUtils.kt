@@ -1,7 +1,7 @@
 package xyz.bluspring.kilt.util
 
-import fish.cichlidmc.tinycodecs.api.codec.Codec
-import fish.cichlidmc.tinycodecs.api.codec.map.MapCodec
+import xyz.bluspring.kilt.shaded.cichlidmc.tinycodecs.api.codec.Codec
+import xyz.bluspring.kilt.shaded.cichlidmc.tinycodecs.api.codec.map.MapCodec
 import java.util.Locale.getDefault
 
 inline fun <reified T : Enum<T>> enumThrowingFallbackCodec(ignoreCase: Boolean = true): Codec<T> {

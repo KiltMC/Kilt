@@ -6,7 +6,7 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
-import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
 
 object GLVersionSpecifierFixer {
     private val GL_VERSION_ANNOTATION = Type.getType(DetectedGLVersion::class.java)
@@ -40,7 +40,7 @@ object GLVersionSpecifierFixer {
         if (glMajor > 3 || glMinor > 2) {
             val annotations = classNode.visibleAnnotations?.toMutableList() ?: mutableListOf()
             annotations.add(AnnotationNode(Opcodes.ASM9, GL_VERSION_ANNOTATION.descriptor).apply {
-                this.values = KiltMixinModifications.mapToAnnotationValues(mapOf(
+                this.values = MixinHelpers.mapToAnnotationValues(mapOf(
                     "majorVersion" to glMajor,
                     "minorVersion" to glMinor
                 ))

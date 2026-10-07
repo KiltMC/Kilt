@@ -1,14 +1,17 @@
 package xyz.bluspring.kilt.injections.tags;
 
-import net.minecraft.tags.TagEntry;
-import net.minecraft.tags.TagFile;
+import java.util.List;
+
 import xyz.bluspring.kilt.processor.FabricInjectedInterface;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.List;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.tags.TagFile;
+
+import net.fabricmc.fabric.api.tag.v1.FabricTagFile;
 
 @FabricInjectedInterface(TagFile.class)
-public interface TagFileInjection {
+public interface TagFileInjection extends FabricTagFile {
     default List<TagEntry> remove() {
         throw KiltHelper.createMixinException(TagFile.class, "remove");
     }

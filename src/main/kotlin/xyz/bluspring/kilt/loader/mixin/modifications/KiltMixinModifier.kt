@@ -11,12 +11,13 @@ import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.FabricUtil
 import org.spongepowered.asm.mixin.MixinEnvironment
-import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.transformer.ext.IExtension
 import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.AnnotationBasedModifier
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAccessModifier
+import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.ParamAnnotationBasedModifier
+import xyz.bluspring.kilt.loader.remap.MixinTypes
 
 class KiltMixinModifier : IExtension {
     override fun checkActive(environment: MixinEnvironment): Boolean {
@@ -42,12 +43,14 @@ class KiltMixinModifier : IExtension {
 
                 val replacedMethods = mutableMapOf<MethodNode, MethodNode>()
 
+                val paramModifiers = mutableListOf<ParamAnnotationBasedModifier>()
+
                 for (methodNode in mixinClassNode.methods) {
                     val annotations = methodNode.visibleAnnotations ?: continue
                     val newAnnotations = mutableListOf<AnnotationNode>()
 
                     modifierApplier@for (annotation in annotations) {
-                        if (annotation.desc == ACCESSOR) {
+                        if (annotation.desc == MixinTypes.ACCESSOR.descriptor) {
                             val modifier = KiltMixinModifications.findMatchingAccessor(context.classInfo, annotation, methodNode)
 
                             if (modifier != null) {
@@ -82,6 +85,10 @@ class KiltMixinModifier : IExtension {
 
                         for (modifier in modifiers) {
                             when (modifier) {
+                                is ParamAnnotationBasedModifier -> {
+                                    paramModifiers.add(modifier)
+                                }
+
                                 is AnnotationBasedModifier -> {
                                     modifier.modifyMixin(context.classInfo, annotation, newAnnotations)
                                     wasModified = true
@@ -100,6 +107,27 @@ class KiltMixinModifier : IExtension {
                         methodNode.visibleAnnotations = mutableListOf()
                         methodNode.visibleAnnotations.clear()
                         methodNode.visibleAnnotations.addAll(newAnnotations)
+                    }
+
+                    if (paramModifiers.isNotEmpty()) {
+                        val parameters = Type.getArgumentTypes(methodNode.desc)
+                        if (methodNode.invisibleParameterAnnotations == null) {
+                            methodNode.invisibleParameterAnnotations = arrayOfNulls(parameters.size)
+                        }
+                        for (i in parameters.indices) {
+                            val param = parameters[i]
+                            val annotations = mutableListOf<AnnotationNode>()
+                            if (methodNode.invisibleParameterAnnotations.size > i) {
+                                val toAdd: List<AnnotationNode>? = methodNode.invisibleParameterAnnotations[i]
+                                if (toAdd != null) {
+                                    annotations.addAll(toAdd)
+                                }
+                            }
+                            for (modifier in paramModifiers) {
+                                modifier.modifyMixinParams(context.classInfo, i, param, annotations)
+                            }
+                            methodNode.invisibleParameterAnnotations[i] = annotations
+                        }
                     }
                 }
 
@@ -127,85 +155,5 @@ class KiltMixinModifier : IExtension {
     }
 
     override fun export(env: MixinEnvironment, name: String, force: Boolean, classNode: ClassNode) {
-    }
-
-    companion object {
-        val ACCESSOR = Type.getDescriptor(Accessor::class.java)
-
-//        fun splitDescriptor(descriptor: String): List<String> {
-//            val split = mutableListOf<String>()
-//
-//            var incompleteString = ""
-//            var isInArray = false
-//            var isInClass = false
-//
-//            for (ch in descriptor) {
-//                incompleteString += ch
-//
-//                if (ch == '[') {
-//                    isInArray = true
-//                } else if (ch == 'L') {
-//                    isInClass = true
-//                } else if (ch == ';' && isInClass) {
-//                    isInClass = false
-//                    isInArray = false
-//                    split.add(incompleteString)
-//                    incompleteString = ""
-//                } else if (!isInClass) {
-//                    if (isInArray)
-//                        isInArray = false
-//
-//                    split.add(incompleteString)
-//                    incompleteString = ""
-//                }
-//            }
-//
-//            return split
-//        }
-//
-        fun splitSignature(descriptor: String): List<String> {
-            val split = mutableListOf<String>()
-            val current = mutableListOf<String>()
-
-            var incompleteString = ""
-            var isInArray = false
-            var isInClass = false
-            var genericLayer = 0
-
-            for (ch in descriptor) {
-                incompleteString += ch
-
-                if (ch == '<') {
-                    genericLayer++
-                } else if (ch == '>') {
-                    if (--genericLayer <= 0) {
-                        current.add(incompleteString)
-                        incompleteString = ""
-                        genericLayer = 0
-                    }
-                } else if (ch == '[') {
-                    isInArray = true
-                } else if (ch == 'L') {
-                    isInClass = true
-                } else if (ch == ';' && isInClass && genericLayer <= 0) {
-                    isInClass = false
-                    isInArray = false
-                    current.add(incompleteString)
-                    split.add(current.joinToString(""))
-                    current.clear()
-                    incompleteString = ""
-                } else if (!isInClass && genericLayer <= 0) {
-                    if (isInArray)
-                        isInArray = false
-
-                    split.add(incompleteString)
-                    incompleteString = ""
-                }
-            }
-
-            if (current.isNotEmpty())
-                split.add(current.joinToString(""))
-            return split
-        }
     }
 }
