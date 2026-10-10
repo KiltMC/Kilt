@@ -9,11 +9,14 @@ import net.neoforged.neoforge.fluids.FluidType;
 
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.world.entity.player.Player;
 
 public interface StupidWorkarounds {
     // for CustomPacketPayloadInjection - because CreativeCore just doesn't work properly otherwise, due to reflection bullshit. it's dumb.
     ThreadLocal<ConnectionProtocol> kilt$protocol = new ThreadLocal<>();
     ThreadLocal<PacketFlow> kilt$packetFlow = new ThreadLocal<>();
+
+    ThreadLocal<Player> kilt$playerRef = new ThreadLocal<>();
 
     Map<FluidType, IClientFluidTypeExtensions> kilt$fabricFluidExtensions = Collections.synchronizedMap(new HashMap<>());
 }

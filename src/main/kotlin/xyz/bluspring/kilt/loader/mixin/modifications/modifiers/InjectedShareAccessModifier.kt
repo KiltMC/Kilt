@@ -213,14 +213,7 @@ data class InjectedShareAccessModifier(
             if (!shareIndices.contains(descriptorOrder.indexOf(index))) {
                 // We can do a regular variable load if this isn't a share.
                 newMethod.visitVarInsn(
-                    when (descPart.descriptor) {
-                        "I", "Z", "S", "B", "C" -> Opcodes.ILOAD
-                        "J" -> Opcodes.LLOAD
-                        "D" -> Opcodes.DLOAD
-                        "F" -> Opcodes.FLOAD
-
-                        else -> Opcodes.ALOAD
-                    }, descriptorOrder.indexOf(index) + indexOffset
+                    descPart.getOpcode(Opcodes.ILOAD), descriptorOrder.indexOf(index) + indexOffset
                 )
             } else {
                 // Otherwise, time to call the getter.

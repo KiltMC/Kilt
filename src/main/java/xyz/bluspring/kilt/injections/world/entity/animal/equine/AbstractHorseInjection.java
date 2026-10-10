@@ -1,7 +1,8 @@
-package xyz.bluspring.kilt.injections.world.entity.animal.horse;
+package xyz.bluspring.kilt.injections.world.entity.animal.equine;
+
+import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.world.Container;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 public interface AbstractHorseInjection {
     default Container getInventory() {

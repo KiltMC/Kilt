@@ -38,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,7 +56,7 @@ import net.minecraft.world.phys.AABB;
 
 @Mixin(value = Level.class, priority = 1111) // higher priority to mixin to Porting Lib
 @Extends(AttachmentHolder.class)
-public abstract class LevelInject implements LevelAccessor, ILevelExtension, LevelInjection {
+public abstract class LevelInject implements LevelAccessor, ILevelExtension, LevelInjection, AttachmentHolderWorkaround {
     public boolean restoringBlockSnapshots = false;
     public boolean captureBlockSnapshots = false;
 

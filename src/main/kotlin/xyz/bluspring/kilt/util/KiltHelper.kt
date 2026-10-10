@@ -15,6 +15,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarFile
+import kotlin.math.max
 
 object KiltHelper {
     val launcher = FabricLauncherBase.getLauncher()
@@ -35,6 +36,41 @@ object KiltHelper {
         }
 
         return true
+    }
+
+    // Copied from Type::getArgumentTypes
+    // Modified to handle generic types.
+    fun splitSignature(argumentCount: Int, methodSignature: String): Array<String> {
+        val argumentTypes = Array(argumentCount) { "" }
+        var currentOffset = 1
+        var currentArgumentTypeIndex = 0
+
+        while (methodSignature.get(currentOffset) != ')') {
+            val currentArgumentTypeOffset = currentOffset
+            while (methodSignature.get(currentOffset) == '[') {
+                currentOffset++
+            }
+            if (methodSignature.get(currentOffset++) == 'L') {
+                // Skip the argument descriptor content.
+                var semiColumnOffset = methodSignature.indexOf(';', currentOffset)
+                val genericIndex = methodSignature.indexOf("<", currentOffset)
+                if (genericIndex != -1 && genericIndex < semiColumnOffset) {
+                    var depth = 1
+                    currentOffset = genericIndex+1
+                    while (depth > 0) {
+                        when (methodSignature.get(currentOffset)) {
+                            '<' -> depth++
+                            '>' -> depth--
+                        }
+                        currentOffset++
+                    }
+                    semiColumnOffset = methodSignature.indexOf(';', currentOffset)
+                }
+                currentOffset = max(currentOffset, semiColumnOffset + 1)
+            }
+            argumentTypes[currentArgumentTypeIndex++] = methodSignature.substring(currentArgumentTypeOffset, currentOffset)
+        }
+        return argumentTypes
     }
 
     fun hasMethodOverride(topClass: Class<*>, superClass: Class<*>, methodName: String, vararg methodArgs: Class<*>): Boolean {

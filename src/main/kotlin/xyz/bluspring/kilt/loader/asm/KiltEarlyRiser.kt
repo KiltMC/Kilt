@@ -1,14 +1,7 @@
 package xyz.bluspring.kilt.loader.asm
 
 import net.fabricmc.loader.api.FabricLoader
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Label
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.InsnList
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.VarInsnNode
+import org.objectweb.asm.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
@@ -124,46 +117,6 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        // i haven't created a way to replace the abstracted methods yet, so this will do.
-        run {
-            val bakedModelIm = "net.minecraft.class_1087"
-            val itemTransformsIm = "net.minecraft.class_809"
-            val bakedModel = mappingResolver.mapClassName(namespace, bakedModelIm)
-
-            ClassTinkerers.addTransformation(bakedModel) { classNode ->
-                run {
-                    val getTransformsName = mappingResolver.mapMethodName(namespace, bakedModelIm, "method_4709", "()L${itemTransformsIm.replace(".", "/")};")
-
-                    classNode.methods.removeIf { it.name == getTransformsName }
-
-                    val itemTransforms = mappingResolver.mapClassName(namespace, itemTransformsIm).replace(".", "/")
-                    val noTransforms = mappingResolver.mapFieldName(namespace, itemTransformsIm, "field_4301", "L${itemTransformsIm.replace(".", "/")};")
-
-                    // this method should look like this
-                    /*
-                    default ItemTransforms getTransforms() {
-                        return ItemTransforms.NO_TRANSFORMS;
-                    }
-                     */
-
-                    val getTransform = classNode.visitMethod(Opcodes.ACC_PUBLIC, getTransformsName, "()L$itemTransforms;", null, null)
-                    getTransform.visitCode()
-
-                    val label0 = Label()
-                    val label1 = Label()
-
-                    getTransform.visitLabel(label0)
-                    getTransform.visitFieldInsn(Opcodes.GETSTATIC, itemTransforms, noTransforms, "L$itemTransforms;")
-                    getTransform.visitInsn(Opcodes.ARETURN)
-
-                    getTransform.visitLabel(label1)
-                    getTransform.visitLocalVariable("this", "L${bakedModel.replace(".", "/")};", null, label0, label1, 0)
-                    getTransform.visitMaxs(1, 1)
-                    getTransform.visitEnd()
-                }
-            }
-        }
-
         // We need to add some new initializers because thanks Forge.
         // I probably should've done this from the beginning, honestly.
 
@@ -227,28 +180,86 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
-        // BucketItem and LiquidBlock require special treatment as there is currently a weird issue
-        // where @Inject doesn't actually properly allow for injecting into multiple targets.
-        // TODO: Remove this when that bug is fixed
         run {
+            val savedDataType = "net/minecraft/world/level/saveddata/SavedDataType"
+            val factoryName = $$"$$savedDataType$Factory"
+            val factoryInjectionName = $$"xyz/bluspring/kilt/injections/world/level/saveddata/SavedDataTypeInjection$Factory"
+
             run {
-                val flowingFluidIm = "net.minecraft.class_3609"
-                val liquidBlockIm = "net.minecraft.class_2404"
-                val flowingFluid = mappingResolver.mapClassName(namespace, flowingFluidIm).replace(".", "/")
-                val liquidBlock = mappingResolver.mapClassName(namespace, liquidBlockIm).replace(".", "/")
+                val classWriter = ClassWriter(Opcodes.ASM9)
+                classWriter.visit(
+                    Opcodes.V25,
+                    Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT,
+                    factoryName,
+                    "L$factoryName;<TT;>",
+                    "Ljava/lang/Object;",
+                    arrayOf(factoryInjectionName)
+                )
 
-                ClassTinkerers.addTransformation(liquidBlock) {
-                    it.methods.forEach { methodNode ->
-                        if (methodNode.name.startsWith("<") || Modifier.isStatic(methodNode.access) || Modifier.isAbstract(methodNode.access))
-                            return@forEach
+                classWriter.visitNestHost(savedDataType)
+                classWriter.visitAnnotation("Ljava/lang/FunctionalInterface;", true)
+                classWriter.visitInnerClass(
+                    factoryName,
+                    savedDataType,
+                    factoryName.removePrefix(savedDataType).removePrefix("$"),
+                    Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT
+                )
 
-                        if (methodNode.instructions.none { a -> a is FieldInsnNode && a.name == mappingResolver.mapFieldName(namespace, liquidBlockIm, "field_11279", "L${flowingFluidIm.replace(".", "/")};") })
-                            return@forEach
+                classWriter.visitMethod(
+                    Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT,
+                    "create",
+                    "(Lnet/minecraft/server/level/ServerLevel;)Ljava/lang/Object;",
+                    "(Lnet/minecraft/server/level/ServerLevel;)TT;",
+                    null
+                )
+                classWriter.visitEnd()
 
-                        methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
-                            this.add(VarInsnNode(Opcodes.ALOAD, 0))
-                            this.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, liquidBlock, "getFluid", "()L$flowingFluid;"))
-                        })
+                ClassTinkerers.define(factoryName, classWriter.toByteArray())
+            }
+
+            run {
+                ClassTinkerers.addTransformation(savedDataType) { classNode ->
+                    val matchingMethods = classNode.methods.filter { it.desc.contains(factoryInjectionName) }
+
+                    for (methodNode in matchingMethods) {
+                        val newMethod = classNode.visitMethod(methodNode.access, methodNode.name,
+                            methodNode.desc.replace(factoryInjectionName, factoryName),
+                            methodNode.signature?.replace(factoryInjectionName, factoryName),
+                            methodNode.exceptions?.toTypedArray()
+                        )
+
+                        newMethod.visitCode()
+
+                        val l0 = Label()
+                        val l1 = Label()
+
+                        newMethod.visitLabel(l0)
+                        val varOffset = if (Modifier.isStatic(methodNode.access)) 0 else 1
+
+                        if (varOffset == 1)
+                            newMethod.visitVarInsn(Opcodes.ALOAD, 0)
+
+                        val descriptor = Type.getArgumentTypes(methodNode.desc)
+                        val signature = methodNode.signature?.let { KiltHelper.splitSignature(descriptor.size, it) }
+
+                        for ((index, type) in descriptor.withIndex()) {
+                            newMethod.visitVarInsn(type.getOpcode(Opcodes.ILOAD), index + varOffset)
+                        }
+
+                        newMethod.visitMethodInsn(if (Modifier.isStatic(methodNode.access)) Opcodes.INVOKESTATIC else Opcodes.INVOKEVIRTUAL, classNode.name,
+                            methodNode.name, methodNode.desc, false)
+
+                        newMethod.visitLabel(l1)
+
+                        if (varOffset == 1)
+                            newMethod.visitLocalVariable("this", "L${classNode.name};", classNode.signature, l0, l1, 0)
+
+                        for ((index, type) in descriptor.withIndex()) {
+                            newMethod.visitLocalVariable("var$index", type.descriptor.replace(factoryInjectionName, factoryName), signature?.get(index)?.replace(factoryInjectionName, factoryName), l0, l1, index + varOffset)
+                        }
+
+                        newMethod.visitMaxs(1, descriptor.size + varOffset)
+                        newMethod.visitEnd()
                     }
                 }
             }
@@ -262,12 +273,6 @@ class KiltEarlyRiser : Runnable {
             val biomeInjectionName =
                 "xyz/bluspring/kilt/injections/world/level/biome/BiomeSpecialEffectsInjection\$GrassColorModifierInjection"
             val colorModifierName = "$grassColorModifierMapped\$ColorModifier"
-            val modifyColor = mappingResolver.mapMethodName(
-                "intermediary",
-                "net.minecraft.class_4763\$class_5486",
-                "method_30823",
-                "(DDI)I"
-            )
 
             val classWriter = ClassWriter(Opcodes.ASM9)
             classWriter.visit(
