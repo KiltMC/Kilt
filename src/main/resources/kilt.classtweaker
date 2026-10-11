@@ -1657,6 +1657,7 @@ transitive-inject-interface net/minecraft/world/item/CreativeModeTab$Builder xyz
 transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler$ServerVerifiedState xyz/bluspring/kilt/injections/client/multiplayer/prediction/BlockStatePredictionHandlerInjection$ServerVerifiedStateInjection
 transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/bluspring/kilt/injections/world/entity/vehicle/BoatInjection$TypeInjection
 transitive-inject-interface net/minecraft/util/random/WeightedList$Builder xyz/bluspring/kilt/injections/util/random/WeightedListInjection$BuilderInjection
+transitive-inject-interface net/minecraft/util/ExtraCodecs$LateBoundIdMapper xyz/bluspring/kilt/injections/util/ExtraCodecsInjection$LateBoundIdMapperInjection<TI;TV;>
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
@@ -1684,6 +1685,8 @@ transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer x
 transitive-inject-interface net/minecraft/client/resources/language/LanguageManager xyz/bluspring/kilt/injections/client/resources/language/LanguageManagerInjection
 transitive-inject-interface net/minecraft/client/resources/sounds/SoundInstance xyz/bluspring/kilt/injections/client/resources/sounds/SoundInstanceInjection
 transitive-inject-interface net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/injections/commands/synchronization/ArgumentTypeInfosInjection
+transitive-inject-interface net/minecraft/core/cauldron/CauldronInteractions xyz/bluspring/kilt/injections/core/cauldron/CauldronInteractionsInjection
+transitive-inject-interface net/minecraft/core/component/DataComponentGetter xyz/bluspring/kilt/injections/core/component/DataComponentGetterInjection
 transitive-inject-interface net/minecraft/core/component/PatchedDataComponentMap xyz/bluspring/kilt/injections/core/component/PatchedDataComponentMapInjection
 transitive-inject-interface net/minecraft/core/HolderLookup xyz/bluspring/kilt/injections/core/HolderLookupInjection
 transitive-inject-interface net/minecraft/core/MappedRegistry xyz/bluspring/kilt/injections/core/MappedRegistryInjection
@@ -1741,6 +1744,7 @@ transitive-inject-interface net/minecraft/tags/TagBuilder xyz/bluspring/kilt/inj
 transitive-inject-interface net/minecraft/tags/TagEntry xyz/bluspring/kilt/injections/tags/TagEntryInjection
 transitive-inject-interface net/minecraft/tags/TagFile xyz/bluspring/kilt/injections/tags/TagFileInjection
 transitive-inject-interface net/minecraft/tags/TagLoader xyz/bluspring/kilt/injections/tags/TagLoaderInjection
+transitive-inject-interface net/minecraft/util/ExtraCodecs xyz/bluspring/kilt/injections/util/ExtraCodecsInjection
 transitive-inject-interface net/minecraft/util/random/WeightedList xyz/bluspring/kilt/injections/util/random/WeightedListInjection
 transitive-inject-interface net/minecraft/util/TriState xyz/bluspring/kilt/injections/util/TriStateInjection
 transitive-inject-interface net/minecraft/world/damagesource/DamageScaling xyz/bluspring/kilt/injections/world/damagesource/DamageScalingInjection
