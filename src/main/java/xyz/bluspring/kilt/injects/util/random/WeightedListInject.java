@@ -26,6 +26,12 @@ public abstract class WeightedListInject {
         @Unique private final List<Weighted<E>> kilt$removed = new ArrayList<>();
 
         @Override
+        public WeightedList.Builder<E> add(Weighted<E> value) {
+            this.result.add(value);
+            return (WeightedList.Builder<E>) (Object) this;
+        }
+
+        @Override
         public WeightedList.Builder<E> addAll(WeightedList<E> values) {
             this.addAll(values.unwrap());
             return (WeightedList.Builder<E>) (Object) this;

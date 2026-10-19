@@ -25,6 +25,7 @@
     "KeyMappingAccessor",
     "LevelStorageSourceAccessor",
     "ListTagAccessor",
+    "LootContextBuilderAccessor",
     "MappedRegistryAccessor",
     "MenuScreensAccessor",
     "MinecraftServerAccessor",

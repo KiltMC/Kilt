@@ -3,6 +3,8 @@ package xyz.bluspring.kilt.util
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.neoforged.fml.ModLoadingContext
+import net.neoforged.fml.common.asm.enumextension.ExtensionInfo
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
@@ -14,6 +16,7 @@ import java.lang.reflect.Modifier
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Supplier
 import java.util.jar.JarFile
 import kotlin.math.max
 
@@ -296,5 +299,22 @@ object KiltHelper {
             return module
 
         return Optional.of(this::class.java.module)
+    }
+
+    @JvmStatic
+    fun <E> extensionInfoGetter(clazz: Class<E>): Supplier<ExtensionInfo> where E : Enum<E>, E : IExtensibleEnum {
+        val method = try {
+            clazz.getDeclaredMethod("getExtensionInfo")
+        } catch (_: Throwable) { null }
+
+        if (method != null && method.returnType == ExtensionInfo::class.java && Modifier.isStatic(method.modifiers) && Modifier.isPublic(method.modifiers)) {
+            return {
+                method.invoke(null) as ExtensionInfo
+            }
+        }
+
+        return {
+            ExtensionInfo.nonExtended(clazz)
+        }
     }
 }
