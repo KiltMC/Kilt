@@ -30,7 +30,7 @@ dependencies {
     modCompileOnly("maven.modrinth:modernkeybinding:${property("mkb_version")}") { // Modern Keybinding - The Maven repo is unstable, rely on Modrinth instead
         isTransitive = false
     }
-    modCompileOnly("maven.modrinth:sophisticated-core-(unofficial-fabric-port):${property("sophisticatedcore_version")}")
+    modCompileOnly("maven.modrinth:sophisticated-core-unofficial-fabric-port:${property("sophisticatedcore_version")}")
     modCompileOnly("maven.modrinth:creativecore:${property("creativecore_version")}")
     modCompileOnly("de.siphalor:amecsapi-1.20:${property("amecsapi_version")}") {
         isTransitive = false
