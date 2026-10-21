@@ -33,5 +33,9 @@ transitive-inject-interface net/minecraft/util/ExtraCodecs$LateBoundIdMapper xyz
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootContextInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/renderer/block/FluidModel$Unbaked xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection$UnbakedInjection
 transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection$MaterialInfoInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Builder xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$BuilderInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Snippet xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$SnippetInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
+transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH24_STENCIL8
+transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH32_STENCIL8

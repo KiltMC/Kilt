@@ -1,12 +1,15 @@
 package xyz.bluspring.kilt.helpers;
 
 import java.util.Map;
+import java.util.Optional;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.neoforged.neoforge.client.fluid.CustomFluidRenderer;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.client.model.ExtraFaceData;
 import net.neoforged.neoforge.client.model.quad.BakedColors;
 import net.neoforged.neoforge.client.model.quad.BakedNormals;
+import net.neoforged.neoforge.client.stencil.StencilTest;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 
@@ -31,6 +34,9 @@ public interface ClientRecordMixinRefMaps {
 
     Map<CuboidModelElement, ExtendedCuboidModelElement> EXTENDED_CUBOID_MODEL_ELEMENT = create();
     record ExtendedCuboidModelElement(ExtraFaceData faceData) {}
+
+    Map<RenderPipeline.Snippet, ExtendedRenderPipelineSnippet> EXTENDED_RENDER_PIPELINE_SNIPPET = create();
+    record ExtendedRenderPipelineSnippet(Optional<StencilTest> stencilTest) {}
 
     static <K, V> Map<K, V> create() {
         return RecordMixinRefMaps.create();

@@ -18,6 +18,7 @@
     "DataComponentPatchAccessor",
     "DataGeneratorAccessor",
     "DebugLevelSourceAccessor",
+    "DebugScreenEntriesAccessor",
     "DyeColorAccessor",
     "EntityAccessor",
     "InvertedLootItemConditionAccessor",

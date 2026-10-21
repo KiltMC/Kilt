@@ -1,23 +1,28 @@
 // TRACKED HASH: fcbd779256061257dc96dee80bbb7cb48e719c79
 package xyz.bluspring.kilt.injects.server.packs.resources;
 
-import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-
 import java.util.List;
 
+import net.neoforged.neoforge.event.SortedReloadListenerEvent;
+import net.neoforged.neoforge.resource.ReloadListenerSort;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import xyz.bluspring.kilt.injections.server.packs.resources.ReloadableResourceManagerInjection;
+
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+
 @Mixin(ReloadableResourceManager.class)
-public abstract class ReloadableResourceManagerInject {
-    @Shadow @Final private List<PreparableReloadListener> listeners;
+public abstract class ReloadableResourceManagerInject implements ReloadableResourceManagerInjection {
+    @Shadow public List<PreparableReloadListener> listeners;
 
-    @Shadow public abstract void registerReloadListener(PreparableReloadListener listener);
+    @Override
+    public List<PreparableReloadListener> getListeners() {
+        return this.listeners;
+    }
 
-    public void registerReloadListenerIfNotPresent(PreparableReloadListener listener) {
-        if (!this.listeners.contains(listener)) {
-            this.registerReloadListener(listener);
-        }
+    @Override
+    public void updateListenersFrom(SortedReloadListenerEvent event) {
+        this.listeners = ReloadListenerSort.sort(event);
     }
 }

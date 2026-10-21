@@ -1661,18 +1661,30 @@ transitive-inject-interface net/minecraft/util/ExtraCodecs$LateBoundIdMapper xyz
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootContextInjection$BuilderInjection
 transitive-inject-interface net/minecraft/client/renderer/block/FluidModel$Unbaked xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection$UnbakedInjection
 transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection$MaterialInfoInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Builder xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$BuilderInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Snippet xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$SnippetInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
+transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH24_STENCIL8
+transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH32_STENCIL8
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/MainTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/MainTargetInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection
+transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
+transitive-inject-interface com/mojang/blaze3d/systems/RenderSystem xyz/bluspring/kilt/injections/blaze3d/systems/RenderSystemInjection
+transitive-inject-interface com/mojang/blaze3d/textures/TextureFormat xyz/bluspring/kilt/injections/blaze3d/textures/TextureFormatInjection
 transitive-inject-interface net/minecraft/client/Camera xyz/bluspring/kilt/injections/client/CameraInjection
 transitive-inject-interface net/minecraft/client/gui/components/AbstractSelectionList xyz/bluspring/kilt/injections/client/gui/components/AbstractSelectionListInjection
 transitive-inject-interface net/minecraft/client/gui/components/AbstractWidget xyz/bluspring/kilt/injections/client/gui/components/AbstractWidgetInjection
 transitive-inject-interface net/minecraft/client/gui/components/Button xyz/bluspring/kilt/injections/client/gui/components/ButtonInjection
+transitive-inject-interface net/minecraft/client/gui/components/debug/DebugScreenEntries xyz/bluspring/kilt/injections/client/gui/components/debug/DebugScreenEntriesInjection
 transitive-inject-interface net/minecraft/client/gui/components/EditBox xyz/bluspring/kilt/injections/client/gui/components/EditBoxInjection
+transitive-inject-interface net/minecraft/client/gui/Gui xyz/bluspring/kilt/injections/client/gui/GuiInjection
 transitive-inject-interface net/minecraft/client/gui/screens/advancements/AdvancementTab xyz/bluspring/kilt/injections/client/gui/screens/advancements/AdvancementTabInjection
 transitive-inject-interface net/minecraft/client/gui/screens/advancements/AdvancementTabType xyz/bluspring/kilt/injections/client/gui/screens/advancements/AdvancementTabTypeInjection
 transitive-inject-interface net/minecraft/client/gui/screens/inventory/AbstractContainerScreen xyz/bluspring/kilt/injections/client/gui/screens/inventory/AbstractContainerScreenInjection
 transitive-inject-interface net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen xyz/bluspring/kilt/injections/client/gui/screens/inventory/CreativeModeInventoryScreenInjection
+transitive-inject-interface net/minecraft/client/gui/screens/MenuScreens xyz/bluspring/kilt/injections/client/gui/screens/MenuScreensInjection
 transitive-inject-interface net/minecraft/client/gui/screens/Screen xyz/bluspring/kilt/injections/client/gui/screens/ScreenInjection
 transitive-inject-interface net/minecraft/client/gui/screens/worldselection/WorldCreationContext xyz/bluspring/kilt/injections/client/gui/screens/worldselection/WorldCreationContextInjection
 transitive-inject-interface net/minecraft/client/Minecraft xyz/bluspring/kilt/injections/client/MinecraftInjection
@@ -1686,6 +1698,7 @@ transitive-inject-interface net/minecraft/client/Options xyz/bluspring/kilt/inje
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
 transitive-inject-interface net/minecraft/client/renderer/block/FluidModel xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/state/EntityRenderState xyz/bluspring/kilt/injections/client/renderer/entity/state/EntityRenderStateInjection
+transitive-inject-interface net/minecraft/client/renderer/RenderPipelines xyz/bluspring/kilt/injections/client/renderer/RenderPipelinesInjection
 transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/renderer/ScreenEffectRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/state/level/CameraEntityRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/CameraEntityRenderStateInjection
 transitive-inject-interface net/minecraft/client/renderer/state/level/LevelRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/LevelRenderStateInjection
@@ -1748,6 +1761,7 @@ transitive-inject-interface net/minecraft/server/network/ServerStatusPacketListe
 transitive-inject-interface net/minecraft/server/packs/repository/BuiltInPackSource xyz/bluspring/kilt/injections/server/packs/repository/BuiltInPackSourceInjection
 transitive-inject-interface net/minecraft/server/packs/repository/Pack xyz/bluspring/kilt/injections/server/packs/repository/PackInjection
 transitive-inject-interface net/minecraft/server/packs/repository/PackRepository xyz/bluspring/kilt/injections/server/packs/repository/PackRepositoryInjection
+transitive-inject-interface net/minecraft/server/packs/resources/ReloadableResourceManager xyz/bluspring/kilt/injections/server/packs/resources/ReloadableResourceManagerInjection
 transitive-inject-interface net/minecraft/server/packs/resources/SimpleJsonResourceReloadListener xyz/bluspring/kilt/injections/server/packs/resources/SimpleJsonResourceReloadListenerInjection
 transitive-inject-interface net/minecraft/server/ReloadableServerResources xyz/bluspring/kilt/injections/server/ReloadableServerResourcesInjection
 transitive-inject-interface net/minecraft/tags/BlockTags xyz/bluspring/kilt/injections/tags/BlockTagsInjection
