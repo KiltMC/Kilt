@@ -22,20 +22,18 @@ import net.minecraft.world.level.storage.loot.LootDataType;
 
 // hey, you! have you ever wanted to mixin to records and add a field into them?
 // don't! use this instead! some JVMs actually don't support that behavior and instead return invalid/default values!
-public class RecordMixinRefMaps {
-    private RecordMixinRefMaps() {}
+public interface RecordMixinRefMaps {
+    Map<LootDataType<?>, ExtendedLootDataType<?>> EXTENDED_LOOT_DATA_TYPE = create();
+    Map<MobEffect.AttributeTemplate, ExtendedAttributeTemplate> EXTENDED_ATTRIBUTE_TEMPLATE = create();
+    Map<SavedDataType<?>, ExtendedSavedDataType<?>> EXTENDED_SAVED_DATA_TYPE = create();
+    Map<RegistryDataLoader.RegistryData<?>, ExtendedRegistryData<?>> EXTENDED_REGISTRY_DATA = create();
 
-    public static final Map<LootDataType<?>, ExtendedLootDataType<?>> EXTENDED_LOOT_DATA_TYPE = create();
-    public static final Map<MobEffect.AttributeTemplate, ExtendedAttributeTemplate> EXTENDED_ATTRIBUTE_TEMPLATE = create();
-    public static final Map<SavedDataType<?>, ExtendedSavedDataType<?>> EXTENDED_SAVED_DATA_TYPE = create();
-    public static final Map<RegistryDataLoader.RegistryData<?>, ExtendedRegistryData<?>> EXTENDED_REGISTRY_DATA = create();
+    record ExtendedLootDataType<T>(@Nullable T defaultValue, Codec<Optional<T>> conditionalCodec, BiConsumer<T, Identifier> idSetter) {}
+    record ExtendedAttributeTemplate(@Nullable Int2DoubleFunction curve) {}
+    record ExtendedSavedDataType<T extends SavedData>(SavedDataTypeInjection.Factory<T> factory, SavedDataTypeInjection.Factory<Codec<T>> codecFactory) {}
+    record ExtendedRegistryData<T>(Consumer<RegistryBuilder<T>> registryBuilderConsumer) {}
 
-    public record ExtendedLootDataType<T>(@Nullable T defaultValue, Codec<Optional<T>> conditionalCodec, BiConsumer<T, Identifier> idSetter) {}
-    public record ExtendedAttributeTemplate(@Nullable Int2DoubleFunction curve) {}
-    public record ExtendedSavedDataType<T extends SavedData>(SavedDataTypeInjection.Factory<T> factory, SavedDataTypeInjection.Factory<Codec<T>> codecFactory) {}
-    public record ExtendedRegistryData<T>(Consumer<RegistryBuilder<T>> registryBuilderConsumer) {}
-
-    private static <K, V> Map<K, V> create() {
+    static <K, V> Map<K, V> create() {
         return new WeakHashMap<>();
     }
 }

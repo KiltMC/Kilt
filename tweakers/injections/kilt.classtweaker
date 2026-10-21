@@ -31,5 +31,7 @@ transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/blu
 transitive-inject-interface net/minecraft/util/random/WeightedList$Builder xyz/bluspring/kilt/injections/util/random/WeightedListInjection$BuilderInjection<TE;>
 transitive-inject-interface net/minecraft/util/ExtraCodecs$LateBoundIdMapper xyz/bluspring/kilt/injections/util/ExtraCodecsInjection$LateBoundIdMapperInjection<TI;TV;>
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootContextInjection$BuilderInjection
+transitive-inject-interface net/minecraft/client/renderer/block/FluidModel$Unbaked xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection$UnbakedInjection
+transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection$MaterialInfoInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM

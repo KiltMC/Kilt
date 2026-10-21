@@ -1659,6 +1659,8 @@ transitive-inject-interface net/minecraft/world/entity/vehicle/Boat$Type xyz/blu
 transitive-inject-interface net/minecraft/util/random/WeightedList$Builder xyz/bluspring/kilt/injections/util/random/WeightedListInjection$BuilderInjection<TE;>
 transitive-inject-interface net/minecraft/util/ExtraCodecs$LateBoundIdMapper xyz/bluspring/kilt/injections/util/ExtraCodecsInjection$LateBoundIdMapperInjection<TI;TV;>
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootContextInjection$BuilderInjection
+transitive-inject-interface net/minecraft/client/renderer/block/FluidModel$Unbaked xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection$UnbakedInjection
+transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection$MaterialInfoInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
 transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring/kilt/injections/advancements/AdvancementInjection
@@ -1682,8 +1684,16 @@ transitive-inject-interface net/minecraft/client/multiplayer/ServerData xyz/blus
 transitive-inject-interface net/minecraft/client/multiplayer/SessionSearchTrees xyz/bluspring/kilt/injections/client/multiplayer/SessionSearchTreesInjection
 transitive-inject-interface net/minecraft/client/Options xyz/bluspring/kilt/injections/client/OptionsInjection
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
+transitive-inject-interface net/minecraft/client/renderer/block/FluidModel xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection
+transitive-inject-interface net/minecraft/client/renderer/entity/state/EntityRenderState xyz/bluspring/kilt/injections/client/renderer/entity/state/EntityRenderStateInjection
 transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/renderer/ScreenEffectRendererInjection
+transitive-inject-interface net/minecraft/client/renderer/state/level/CameraEntityRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/CameraEntityRenderStateInjection
+transitive-inject-interface net/minecraft/client/renderer/state/level/LevelRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/LevelRenderStateInjection
 transitive-inject-interface net/minecraft/client/resources/language/LanguageManager xyz/bluspring/kilt/injections/client/resources/language/LanguageManagerInjection
+transitive-inject-interface net/minecraft/client/resources/model/cuboid/CuboidFace xyz/bluspring/kilt/injections/client/resources/model/cuboid/CuboidFaceInjection
+transitive-inject-interface net/minecraft/client/resources/model/cuboid/CuboidModelElement xyz/bluspring/kilt/injections/client/resources/model/cuboid/CuboidModelElementInjection
+transitive-inject-interface net/minecraft/client/resources/model/cuboid/FaceBakery xyz/bluspring/kilt/injections/client/resources/model/cuboid/FaceBakeryInjection
+transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection
 transitive-inject-interface net/minecraft/client/resources/sounds/SoundInstance xyz/bluspring/kilt/injections/client/resources/sounds/SoundInstanceInjection
 transitive-inject-interface net/minecraft/commands/synchronization/ArgumentTypeInfos xyz/bluspring/kilt/injections/commands/synchronization/ArgumentTypeInfosInjection
 transitive-inject-interface net/minecraft/core/cauldron/CauldronInteractions xyz/bluspring/kilt/injections/core/cauldron/CauldronInteractionsInjection
