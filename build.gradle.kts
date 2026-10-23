@@ -122,13 +122,6 @@ allprojects {
             name = "Cafeteria Dev"
         }
 
-        maven("https://maven.jamieswhiteshirt.com/libs-release") {
-            name = "JamiesWhiteShirt Dev"
-            content {
-                includeGroup("com.jamieswhiteshirt")
-            }
-        }
-
         maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/") {
             name = "Fuzs Mod Resources"
         }
@@ -281,7 +274,6 @@ dependencies {
     }
 
     //modImplementation(include("io.github.tropheusj:serialization-hooks:${property("serialization_hooks_version")}")!!)
-    modImplementation(include("com.jamieswhiteshirt:reach-entity-attributes:${property("reach_entity_attributes_version")}")!!)
 
     // Forge stuff
     api(include("xyz.bluspring:eventbus:${property("eventbus_version")}") {
@@ -393,6 +385,7 @@ dependencies {
 
 configurations.all {
     exclude("cpw.mods", "modlauncher")
+    exclude("com.jamieswhiteshirt", "reach-entity-attributes")
 }
 
 // why isn't this default?
