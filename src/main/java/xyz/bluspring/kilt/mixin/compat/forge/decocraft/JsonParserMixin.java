@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 @Pseudo
-@Mixin(targets = "com.razz.decocraft.utils.JsonParser")
+@Mixin(targets = "com.razz.decocraft.utils.JsonParser", remap = false)
 public class JsonParserMixin {
     @Redirect(method = "parseDirectory", at = @At(value = "INVOKE", target = "Ljava/net/URL;getProtocol()Ljava/lang/String;"))
     private static String kilt$avoidDecocraftProtocolCrash(URL instance) {
