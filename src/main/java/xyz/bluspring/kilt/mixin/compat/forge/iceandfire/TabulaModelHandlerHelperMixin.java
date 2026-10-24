@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.Locale;
 
 @Pseudo
-@Mixin(targets = "com.github.alexthe666.iceandfire.client.model.util.TabulaModelHandlerHelper")
+@Mixin(targets = "com.github.alexthe666.iceandfire.client.model.util.TabulaModelHandlerHelper", remap = false)
 public class TabulaModelHandlerHelperMixin {
     @Dynamic
     @WrapOperation(method = "loadTabulaModel", at = @At(value = "INVOKE", target = "Ljava/lang/ClassLoader;getResourceAsStream(Ljava/lang/String;)Ljava/io/InputStream;"))

@@ -3,10 +3,7 @@ package xyz.bluspring.kilt.compat.fabric.mixin.pehkui;
 import kotlin.Lazy;
 import kotlin.LazyKt;
 import net.fabricmc.fabric.api.event.Event;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import virtuoel.pehkui.api.ScaleEventCallback;
 import virtuoel.pehkui.api.ScaleType;
 
@@ -15,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Pseudo
 @Mixin(ScaleType.class)
 public abstract class ScaleTypeMixin {
     @Shadow @Final private Event<ScaleEventCallback> scaleChangedEvent;

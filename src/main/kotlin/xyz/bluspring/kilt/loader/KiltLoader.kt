@@ -43,6 +43,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
+import org.spongepowered.asm.mixin.FabricUtil
 import thedarkcolour.kotlinforforge.KotlinModContainer
 import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
@@ -92,6 +93,8 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         "embeddium" to "sodium",
         "oculus" to "iris",
     )
+
+    override val fabricMixinCompatibilityVersion: Int = FabricUtil.COMPATIBILITY_0_10_0
 
     init {
         val loader = FabricLoader.getInstance()
