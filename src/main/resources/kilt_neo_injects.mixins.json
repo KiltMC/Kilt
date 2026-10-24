@@ -174,7 +174,7 @@
     "server.level.ServerLevelInject$EntityCallbacksInject",
     "server.level.ServerPlayerGameModeInject",
     "server.level.ServerPlayerInject",
-    "server.level.ServerPlayerInject$AnonymousContainerSynchronizer0Inject",
+    "server.level.ServerPlayerInject$AnonymousContainerSynchronizer1Inject",
     "server.level.TicketInject",
     "server.level.WorldGenRegionInject",
     "server.network.CommonListenerCookieInject",
