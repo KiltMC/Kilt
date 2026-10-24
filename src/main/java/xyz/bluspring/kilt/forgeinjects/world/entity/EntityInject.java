@@ -670,10 +670,21 @@ public abstract class EntityInject implements IForgeEntity, CapabilityProviderIn
     }
 
     // Porting Lib injects
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
-    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    @Unique
     private void kilt$onTravelToDimension(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
         if (!ForgeHooks.onTravelToDimension((Entity) (Object) this, pDestination.dimension()))
             cir.setReturnValue(null);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, require = 0)
+    private void kilt$onTravelToDimensionMojmap(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        kilt$onTravelToDimension(pDestination, teleporter, cir);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.EntityMixin", name = "changeDimension(Lnet/minecraft/class_3218;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/class_1297;")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, require = 0)
+    private void kilt$onTravelToDimensionIntermediary(ServerLevel pDestination, io.github.fabricators_of_create.porting_lib.entity.ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        kilt$onTravelToDimension(pDestination, teleporter, cir);
     }
 }

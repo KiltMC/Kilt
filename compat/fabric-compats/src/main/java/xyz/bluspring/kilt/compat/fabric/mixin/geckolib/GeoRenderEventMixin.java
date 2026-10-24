@@ -15,10 +15,12 @@ import xyz.bluspring.kilt.helpers.mixin.Extends;
 @Pseudo
 @Mixin(GeoRenderEvent.class)
 public interface GeoRenderEventMixin {
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.Armor.class)
     @Extends(Event.class)
     abstract class ArmorMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Armor.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.Armor {
             @CreateInitializer
@@ -27,6 +29,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Armor.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.Armor {
             @CreateInitializer
@@ -35,6 +38,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Armor.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.Armor {
             @CreateInitializer
@@ -44,10 +48,12 @@ public interface GeoRenderEventMixin {
         }
     }
 
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.Block.class)
     @Extends(Event.class)
     abstract class BlockMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Block.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.Block {
             @CreateInitializer
@@ -56,6 +62,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Block.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.Block {
             @CreateInitializer
@@ -64,6 +71,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Block.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.Block {
             @CreateInitializer
@@ -73,10 +81,12 @@ public interface GeoRenderEventMixin {
         }
     }
 
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.Entity.class)
     @Extends(Event.class)
     abstract class EntityMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Entity.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.Entity {
             @CreateInitializer
@@ -85,6 +95,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Entity.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.Entity {
             @CreateInitializer
@@ -93,6 +104,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Entity.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.Entity {
             @CreateInitializer
@@ -102,10 +114,12 @@ public interface GeoRenderEventMixin {
         }
     }
 
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.Item.class)
     @Extends(Event.class)
     abstract class ItemMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Item.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.Item {
             @CreateInitializer
@@ -114,6 +128,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Item.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.Item {
             @CreateInitializer
@@ -122,6 +137,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Item.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.Item {
             @CreateInitializer
@@ -131,10 +147,12 @@ public interface GeoRenderEventMixin {
         }
     }
 
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.Object.class)
     @Extends(Event.class)
     abstract class ObjectMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Object.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.Object {
             @CreateInitializer
@@ -143,6 +161,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Object.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.Object {
             @CreateInitializer
@@ -151,6 +170,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.Object.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.Object {
             @CreateInitializer
@@ -160,10 +180,12 @@ public interface GeoRenderEventMixin {
         }
     }
 
+    @IfModLoaded("geckolib")
     @Mixin(GeoRenderEvent.ReplacedEntity.class)
     @Extends(Event.class)
     abstract class ReplacedEntityMixin {
         @Cancelable
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.ReplacedEntity.Pre.class)
         public abstract static class PreMixin extends GeoRenderEvent.ReplacedEntity {
             @CreateInitializer
@@ -172,6 +194,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.ReplacedEntity.Post.class)
         public abstract static class PostMixin extends GeoRenderEvent.ReplacedEntity {
             @CreateInitializer
@@ -180,6 +203,7 @@ public interface GeoRenderEventMixin {
             }
         }
 
+        @IfModLoaded("geckolib")
         @Mixin(GeoRenderEvent.ReplacedEntity.CompileRenderLayers.class)
         public abstract static class CompileRenderLayersMixin extends GeoRenderEvent.ReplacedEntity {
             @CreateInitializer

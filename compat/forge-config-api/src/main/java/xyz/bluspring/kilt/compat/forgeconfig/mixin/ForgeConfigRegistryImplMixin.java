@@ -8,9 +8,11 @@ import fuzs.forgeconfigapiport.impl.config.ForgeConfigRegistryImpl;
 import fuzs.forgeconfigapiport.impl.core.CommonAbstractions;
 import net.minecraftforge.fml.config.ModConfig;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
+@Pseudo
 @Mixin(value = ForgeConfigRegistryImpl.class, remap = false)
 public abstract class ForgeConfigRegistryImplMixin {
     @ModifyReturnValue(method = "register*", at = @At("RETURN"))
