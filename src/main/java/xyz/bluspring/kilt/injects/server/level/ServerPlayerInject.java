@@ -73,8 +73,8 @@ import net.minecraft.world.level.portal.DimensionTransition;
 
 @Mixin(value = ServerPlayer.class, priority = 1100)
 public abstract class ServerPlayerInject extends Player implements ServerPlayerInjection {
-    @Mixin(targets = "net.minecraft.server.level.ServerPlayer$0")
-    public abstract static class AnonymousContainerSynchronizer0Inject {
+    @Mixin(targets = "net.minecraft.server.level.ServerPlayer$1")
+    public abstract static class AnonymousContainerSynchronizer1Inject {
         @Shadow
         @Final
         private ServerPlayer field_29182;
