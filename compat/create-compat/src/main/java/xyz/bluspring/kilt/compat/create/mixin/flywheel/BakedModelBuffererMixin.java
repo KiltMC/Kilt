@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.client.Minecraft;
@@ -41,10 +42,17 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class BakedModelBuffererMixin {
     @Inject(method = "bufferModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
     private static void kilt$flywheel$tryLoadModelDataSingle(CallbackInfoReturnable<SimpleModel> cir, @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
-                                                             @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
-        modelData.set(model.getModelData(level, pos, state, level.getModelData(pos)));
+                                                             @Share("modelData") LocalRef<ModelData> modelDataRef, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes) {
+        ModelData modelData = level.getModelData(pos);
         random.setSeed(seed);
-        renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
+
+        if (model != null) {
+            modelDataRef.set(model.getModelData(level, pos, state, modelData));
+            renderTypes.set(model.getRenderTypes(state, random, modelData));
+        } else {
+            modelDataRef.set(modelData);
+            renderTypes.set(ItemBlockRenderTypesInjection.getRenderLayers(state));
+        }
     }
 
     @Inject(method = "bufferBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
