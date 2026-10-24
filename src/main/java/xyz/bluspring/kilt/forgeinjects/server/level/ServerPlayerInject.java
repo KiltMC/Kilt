@@ -98,16 +98,25 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
     }
 
     // Porting Lib injects for the changeDimension patch
-    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
-    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true)
+    @Unique
     private void kilt$onTravelToDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
         if (!ForgeHooks.onTravelToDimension(this, pDestination.dimension()))
             cir.setReturnValue(null);
     }
 
-    @SuppressWarnings({"InvalidInjectorMethodSignature", "MixinAnnotationTarget"}) // We cannot target the "ServerPlayerMixin", so ServerPlayer is the closest we can get.
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, require = 0)
+    private void kilt$onTravelToDimensionMojmap(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        kilt$onTravelToDimension(pDestination, teleporter, cir);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/class_3218;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/class_1297;")
+    @Inject(method = "@MixinSquared:Handler", at = @At("HEAD"), cancellable = true, require = 0)
+    private void kilt$onTravelToDimensionIntermediary(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir) {
+        kilt$onTravelToDimension(pDestination, teleporter, cir);
+    }
+
+    @Unique
     private void kilt$handleRevive(ServerPlayer instance, Operation<Void> original) {
         if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), IForgeEntity.class, "revive")) {
             this.revive();
@@ -117,11 +126,34 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         }
     }
 
-    @SuppressWarnings("MixinAnnotationTarget") // same for over here.
     @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
-    @Inject(method = "@MixinSquared:Handler", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
-    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$handleReviveMojmap(ServerPlayer instance, Operation<Void> original) {
+        kilt$handleRevive(instance, original);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/class_3218;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/class_1297;")
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;unsetRemoved()V"))
+    private void kilt$handleReviveIntermediary(ServerPlayer instance, Operation<Void> original) {
+        kilt$handleRevive(instance, original);
+    }
+
+    // same for over here.
+    @Unique
+    private void kilt$firePlayerChangedDimension(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, ResourceKey<Level> resourcekey) {
         ForgeEventFactory.firePlayerChangedDimensionEvent(this, resourcekey, pDestination.dimension());
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/server/level/ServerLevel;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/world/entity/Entity;")
+    @Inject(method = "@MixinSquared:Handler", require = 0, at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimensionMojmap(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+        kilt$firePlayerChangedDimension(pDestination, teleporter, cir, resourcekey);
+    }
+
+    @TargetHandler(mixin = "io.github.fabricators_of_create.porting_lib.entity.mixin.common.ServerPlayerMixin", name = "changeDimension(Lnet/minecraft/class_3218;Lio/github/fabricators_of_create/porting_lib/entity/ITeleporter;)Lnet/minecraft/class_1297;")
+    @Inject(method = "@MixinSquared:Handler", require = 0, at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
+    private void kilt$firePlayerChangedDimensionIntermediary(ServerLevel pDestination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> resourcekey) {
+        kilt$firePlayerChangedDimension(pDestination, teleporter, cir, resourcekey);
     }
 
     // Handled by Fabric API

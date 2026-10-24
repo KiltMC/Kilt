@@ -13,7 +13,7 @@ import xyz.bluspring.kilt.loader.KiltLoader;
 
 @IfModLoaded("modmenu")
 @Pseudo
-@Mixin(targets = "com.terraformersmc.modmenu.ModMenu")
+@Mixin(targets = "com.terraformersmc.modmenu.ModMenu", remap = false)
 public abstract class ModMenuMixin {
     @ModifyReturnValue(method = "getConfigScreen", at = @At("RETURN"))
     private static Screen kilt$addForgeConfigScreenIfPossible(Screen original, @Local(argsOnly = true) String modId, @Local(argsOnly = true) Screen parent) {

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Pseudo;
 import xyz.bluspring.kilt.workarounds.ForgeEventFactoryWorkaround;
 
 @Pseudo // Pseudo is needed to avoid compile error, we remove it when generating the actual mixin.
-@Mixin(targets = {""}, priority = 1050) // We populate targets at runtime.
+@Mixin(targets = {""}, priority = 1050, remap = false) // We populate targets at runtime.
 public class FinalizeSpawnTemplate {
 
     @WrapMethod(method = "finalizeSpawn")

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 
 @Pseudo
-@Mixin(targets = "it.zerono.mods.zerocore.internal.proxy.ClientProxy")
+@Mixin(targets = "it.zerono.mods.zerocore.internal.proxy.ClientProxy", remap = false)
 public abstract class ClientProxyMixin {
     @WrapMethod(method = "markBlockRangeForRenderUpdate")
     private void kilt$callOnRenderThread(BlockPos min, BlockPos max, Operation<Void> original) {
