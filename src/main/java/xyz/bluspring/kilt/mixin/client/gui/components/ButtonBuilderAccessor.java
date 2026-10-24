@@ -17,10 +17,10 @@ public interface ButtonBuilderAccessor {
     @Accessor
     Tooltip getTooltip();
 
-    @Accessor
+    @Accessor("x")
     int getX();
 
-    @Accessor
+    @Accessor("y")
     int getY();
 
     @Accessor
