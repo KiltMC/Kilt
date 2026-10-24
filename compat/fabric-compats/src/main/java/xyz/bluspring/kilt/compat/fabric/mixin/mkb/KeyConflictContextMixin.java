@@ -3,12 +3,14 @@ package xyz.bluspring.kilt.compat.fabric.mixin.mkb;
 import committee.nova.mkb.keybinding.KeyConflictContext;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.compat.fabric.mkb.MKBKeyConflictContextWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Pseudo
 @Mixin(KeyConflictContext.class)
 public abstract class KeyConflictContextMixin implements IKeyConflictContext {
     @Unique

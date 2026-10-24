@@ -4,10 +4,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.function.Supplier;
 
+@Pseudo
 @Mixin(com.tterrag.registrate.fabric.SimpleFlowableFluid.Properties.class)
 public interface SimpleFlowableFluidPropertiesAccessor {
     @Accessor
