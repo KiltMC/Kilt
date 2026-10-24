@@ -2,11 +2,13 @@ package xyz.bluspring.kilt.compat.fabric.mixin.sable;
 
 import dev.ryanhcode.sable.api.block.BlockEntitySubLevelReactionWheel;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import xyz.bluspring.kilt.helpers.mixin.AbstractOverride;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+@Pseudo
 @Mixin(BlockEntitySubLevelReactionWheel.class)
 public interface BlockEntitySubLevelReactionWheelMixin {
     // Kilt TODO: If Sable solves this in a future update, remove this.
