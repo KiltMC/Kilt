@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 @Pseudo
-@Mixin(targets = "com.pixelmonmod.pixelmon.client.render.GenericModelHolder")
+@Mixin(targets = "com.pixelmonmod.pixelmon.client.render.GenericModelHolder", remap = false)
 public abstract class GenericModelHolderMixin {
     // why would you ever willingly make your own mod code reflection-based. especially in rendering. that sounds like a performance nightmare.
     @ModifyExpressionValue(method = "loadModel", at = @At(value = "INVOKE", target = "Ljava/lang/Class;getConstructors()[Ljava/lang/reflect/Constructor;"))
