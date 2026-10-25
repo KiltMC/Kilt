@@ -118,27 +118,35 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
     }
 
     // Sodium 0.5.x support
-    @SuppressWarnings("UnresolvedMixinReference")
-    @IfModAbsent(value = "sodium", minVersion = "0.6.0")
-    @IfModLoaded("sodium")
-    @TargetHandler(
-        mixin = "me.jellysquid.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
-        name = "getQuads"
-    )
-    @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
-    private boolean kilt$useQuadDataIfAvailableSodium05(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+    @Unique
+    private boolean kilt$useQuadDataIfAvailableSodium05(List<BakedQuad> instance, Collection<BakedQuad> es, BakedModel model, BlockState state, RandomSource randomSource) {
         return kilt$renderType.get() == null || model.getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get());
     }
 
-    @SuppressWarnings("UnresolvedMixinReference")
     @IfModAbsent(value = "sodium", minVersion = "0.6.0")
     @IfModLoaded("sodium")
     @TargetHandler(
         mixin = "me.jellysquid.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
         name = "getQuads"
     )
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium05(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+    @WrapWithCondition(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    private boolean kilt$useQuadDataIfAvailableSodium05Mojmap(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+        return kilt$useQuadDataIfAvailableSodium05(instance, es, model, state, randomSource);
+    }
+
+    @IfModAbsent(value = "sodium", minVersion = "0.6.0")
+    @IfModLoaded("sodium")
+    @TargetHandler(
+        mixin = "me.jellysquid.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "method_4707"
+    )
+    @WrapWithCondition(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    private boolean kilt$useQuadDataIfAvailableSodium05Intermediary(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+        return kilt$useQuadDataIfAvailableSodium05(instance, es, model, state, randomSource);
+    }
+
+    @Unique
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium05(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, long seed) {
         var renderType = kilt$renderType.get();
         var modelData = kilt$modelData.get();
 
@@ -149,17 +157,35 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
 
         // Sodium sets the seed already for us, we don't have to create a new random.
         return instance.getQuads(blockState, direction, randomSource, MultipartModelData.resolve(modelData, instance), renderType);
+    }
+
+    @SuppressWarnings("UnresolvedMixinReference")
+    @IfModAbsent(value = "sodium", minVersion = "0.6.0")
+    @IfModLoaded("sodium")
+    @TargetHandler(
+        mixin = "me.jellysquid.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "getQuads"
+    )
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium05Mojmap(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+        return kilt$useForgeQuadGetterIfAvailableSodium05(instance, blockState, direction, randomSource, original, seed);
+    }
+
+    @SuppressWarnings("UnresolvedMixinReference")
+    @IfModAbsent(value = "sodium", minVersion = "0.6.0")
+    @IfModLoaded("sodium")
+    @TargetHandler(
+        mixin = "me.jellysquid.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "method_4707"
+    )
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium05Intermediary(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+        return kilt$useForgeQuadGetterIfAvailableSodium05(instance, blockState, direction, randomSource, original, seed);
     }
 
     // Sodium 0.6.x support
-    @SuppressWarnings("UnresolvedMixinReference")
-    @IfModLoaded(value = "sodium", minVersion = "0.6.0")
-    @TargetHandler(
-        mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
-        name = "getQuads"
-    )
-    @WrapWithCondition(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
-    private boolean kilt$useQuadDataIfAvailableSodium06(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+    @Unique
+    private boolean kilt$useQuadDataIfAvailableSodium06(List<BakedQuad> instance, Collection<BakedQuad> es, BakedModel model, BlockState state, RandomSource randomSource) {
         return kilt$renderType.get() == null || model.getRenderTypes(state, randomSource, kilt$modelData.get()).contains(kilt$renderType.get());
     }
 
@@ -169,8 +195,24 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
         mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
         name = "getQuads"
     )
-    @WrapOperation(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
-    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium06(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+    @WrapWithCondition(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    private boolean kilt$useQuadDataIfAvailableSodium06Mojmap(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+        return kilt$useQuadDataIfAvailableSodium06(instance, es, model, state, randomSource);
+    }
+
+    @SuppressWarnings("UnresolvedMixinReference")
+    @IfModLoaded(value = "sodium", minVersion = "0.6.0")
+    @TargetHandler(
+        mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "method_4707"
+    )
+    @WrapWithCondition(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z"))
+    private boolean kilt$useQuadDataIfAvailableSodium06Intermediary(List<BakedQuad> instance, Collection<BakedQuad> es, @Local BakedModel model, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true) RandomSource randomSource) {
+        return kilt$useQuadDataIfAvailableSodium06(instance, es, model, state, randomSource);
+    }
+
+    @Unique
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium06(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, long seed) {
         var renderType = kilt$renderType.get();
         var modelData = kilt$modelData.get();
 
@@ -181,6 +223,28 @@ public abstract class MultiPartBakedModelInject implements IDynamicBakedModel, M
 
         // Sodium sets the seed already for us, we don't have to create a new random.
         return instance.getQuads(blockState, direction, randomSource, MultipartModelData.resolve(modelData, instance), renderType);
+    }
+
+    @SuppressWarnings("UnresolvedMixinReference")
+    @IfModLoaded(value = "sodium", minVersion = "0.6.0")
+    @TargetHandler(
+        mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "getQuads"
+    )
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium06Mojmap(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+        return kilt$useForgeQuadGetterIfAvailableSodium06(instance, blockState, direction, randomSource, original, seed);
+    }
+
+    @SuppressWarnings("UnresolvedMixinReference")
+    @IfModLoaded(value = "sodium", minVersion = "0.6.0")
+    @TargetHandler(
+        mixin = "net.caffeinemc.mods.sodium.mixin.features.model.MultipartBakedModelMixin",
+        name = "method_4707"
+    )
+    @WrapOperation(method = "@MixinSquared:Handler", require = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;getQuads(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"))
+    private List<BakedQuad> kilt$useForgeQuadGetterIfAvailableSodium06Intermediary(BakedModel instance, BlockState blockState, Direction direction, RandomSource randomSource, Operation<List<BakedQuad>> original, @Local(ordinal = 1) long seed) {
+        return kilt$useForgeQuadGetterIfAvailableSodium06(instance, blockState, direction, randomSource, original, seed);
     }
 
     @Override
