@@ -27,7 +27,7 @@ public abstract class LevelRenderStateInject implements LevelRenderStateInjectio
         this.customSkyboxRenderer = null;
         this.customCloudsRenderer = null;
         this.customWeatherEffectRenderer = null;
-        ((BaseRenderState) (Object) this).resetRenderData();
+        this.resetRenderData();
     }
 
     @Override

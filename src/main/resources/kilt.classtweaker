@@ -1663,6 +1663,8 @@ transitive-inject-interface net/minecraft/client/renderer/block/FluidModel$Unbak
 transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection$MaterialInfoInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Builder xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$BuilderInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Snippet xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$SnippetInjection
+transitive-inject-interface net/minecraft/client/renderer/state/MapRenderState$MapDecorationRenderState xyz/bluspring/kilt/injections/client/renderer/state/MapRenderStateInjection$MapDecorationRenderStateInjection
+transitive-inject-interface net/minecraft/world/level/storage/loot/LootTable$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection$BuilderInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
 transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH24_STENCIL8
@@ -1698,10 +1700,12 @@ transitive-inject-interface net/minecraft/client/Options xyz/bluspring/kilt/inje
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
 transitive-inject-interface net/minecraft/client/renderer/block/FluidModel xyz/bluspring/kilt/injections/client/renderer/block/FluidModelInjection
 transitive-inject-interface net/minecraft/client/renderer/entity/state/EntityRenderState xyz/bluspring/kilt/injections/client/renderer/entity/state/EntityRenderStateInjection
+transitive-inject-interface net/minecraft/client/renderer/LevelRenderer xyz/bluspring/kilt/injections/client/renderer/LevelRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/RenderPipelines xyz/bluspring/kilt/injections/client/renderer/RenderPipelinesInjection
 transitive-inject-interface net/minecraft/client/renderer/ScreenEffectRenderer xyz/bluspring/kilt/injections/client/renderer/ScreenEffectRendererInjection
 transitive-inject-interface net/minecraft/client/renderer/state/level/CameraEntityRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/CameraEntityRenderStateInjection
 transitive-inject-interface net/minecraft/client/renderer/state/level/LevelRenderState xyz/bluspring/kilt/injections/client/renderer/state/level/LevelRenderStateInjection
+transitive-inject-interface net/minecraft/client/renderer/state/MapRenderState xyz/bluspring/kilt/injections/client/renderer/state/MapRenderStateInjection
 transitive-inject-interface net/minecraft/client/resources/language/LanguageManager xyz/bluspring/kilt/injections/client/resources/language/LanguageManagerInjection
 transitive-inject-interface net/minecraft/client/resources/model/cuboid/CuboidFace xyz/bluspring/kilt/injections/client/resources/model/cuboid/CuboidFaceInjection
 transitive-inject-interface net/minecraft/client/resources/model/cuboid/CuboidModelElement xyz/bluspring/kilt/injections/client/resources/model/cuboid/CuboidModelElementInjection
@@ -1810,9 +1814,12 @@ transitive-inject-interface net/minecraft/world/item/BucketItem xyz/bluspring/ki
 transitive-inject-interface net/minecraft/world/item/component/ItemContainerContents xyz/bluspring/kilt/injections/world/item/component/ItemContainerContentsInjection
 transitive-inject-interface net/minecraft/world/item/crafting/Ingredient xyz/bluspring/kilt/injections/world/item/crafting/IngredientInjection
 transitive-inject-interface net/minecraft/world/item/crafting/Recipe xyz/bluspring/kilt/injections/world/item/crafting/RecipeInjection
+transitive-inject-interface net/minecraft/world/item/crafting/RecipeManager xyz/bluspring/kilt/injections/world/item/crafting/RecipeManagerInjection
+transitive-inject-interface net/minecraft/world/item/crafting/RecipeMap xyz/bluspring/kilt/injections/world/item/crafting/RecipeMapInjection
 transitive-inject-interface net/minecraft/world/item/crafting/RecipeType xyz/bluspring/kilt/injections/world/item/crafting/RecipeTypeInjection
 transitive-inject-interface net/minecraft/world/item/crafting/ShapedRecipePattern xyz/bluspring/kilt/injections/world/item/crafting/ShapedRecipePatternInjection
 transitive-inject-interface net/minecraft/world/item/CreativeModeTab xyz/bluspring/kilt/injections/world/item/CreativeModeTabInjection
+transitive-inject-interface net/minecraft/world/item/DyeColor xyz/bluspring/kilt/injections/world/item/DyeColorInjection
 transitive-inject-interface net/minecraft/world/item/enchantment/EnchantmentHelper xyz/bluspring/kilt/injections/world/item/enchantment/EnchantmentHelperInjection
 transitive-inject-interface net/minecraft/world/item/ItemDisplayContext xyz/bluspring/kilt/injections/world/item/ItemDisplayContextInjection
 transitive-inject-interface net/minecraft/world/item/Item xyz/bluspring/kilt/injections/world/item/ItemInjection
@@ -1831,6 +1838,7 @@ transitive-inject-interface net/minecraft/world/level/block/CropBlock xyz/bluspr
 transitive-inject-interface net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity xyz/bluspring/kilt/injections/world/level/block/entity/AbstractFurnaceBlockEntityInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/BlockEntity xyz/bluspring/kilt/injections/world/level/block/entity/BlockEntityInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/BlockEntityType xyz/bluspring/kilt/injections/world/level/block/entity/BlockEntityTypeInjection
+transitive-inject-interface net/minecraft/world/level/block/entity/FuelValues xyz/bluspring/kilt/injections/world/level/block/entity/FuelValuesInjection
 transitive-inject-interface net/minecraft/world/level/block/entity/HopperBlockEntity xyz/bluspring/kilt/injections/world/level/block/entity/HopperBlockEntityInjection
 transitive-inject-interface net/minecraft/world/level/block/FireBlock xyz/bluspring/kilt/injections/world/level/block/FireBlockInjection
 transitive-inject-interface net/minecraft/world/level/block/FlowerPotBlock xyz/bluspring/kilt/injections/world/level/block/FlowerPotBlockInjection

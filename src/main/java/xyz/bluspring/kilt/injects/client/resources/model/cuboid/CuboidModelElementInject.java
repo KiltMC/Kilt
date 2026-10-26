@@ -46,6 +46,7 @@ public abstract class CuboidModelElementInject implements CuboidModelElementInje
         ClientRecordMixinRefMaps.EXTENDED_CUBOID_MODEL_ELEMENT.put((CuboidModelElement) (Object) this, new ClientRecordMixinRefMaps.ExtendedCuboidModelElement(faceData));
     }
 
+    @CreateInitializer
     public CuboidModelElementInject(Vector3fc from, Vector3fc to, Map<Direction, CuboidFace> faces, ExtraFaceData faceData) {
         this(from, to, faces, null, true, 0, faceData);
     }

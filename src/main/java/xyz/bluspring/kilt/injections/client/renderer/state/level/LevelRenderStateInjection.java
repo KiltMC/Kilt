@@ -5,8 +5,9 @@ import net.neoforged.neoforge.client.CustomSkyboxRenderer;
 import net.neoforged.neoforge.client.CustomWeatherEffectRenderer;
 import org.jspecify.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.BaseRenderStateWorkaround;
 
-public interface LevelRenderStateInjection {
+public interface LevelRenderStateInjection extends BaseRenderStateWorkaround {
     default @Nullable CustomSkyboxRenderer kilt$customSkyboxRenderer() {
         throw KiltHelper.createMixinException(LevelRenderStateInjection.class, "kilt$customSkyboxRenderer");
     }

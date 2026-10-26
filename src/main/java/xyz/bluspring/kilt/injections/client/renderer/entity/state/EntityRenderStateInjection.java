@@ -1,8 +1,9 @@
 package xyz.bluspring.kilt.injections.client.renderer.entity.state;
 
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.BaseRenderStateWorkaround;
 
-public interface EntityRenderStateInjection {
+public interface EntityRenderStateInjection extends BaseRenderStateWorkaround {
     default float kilt$partialTick() {
         throw KiltHelper.createMixinException(EntityRenderStateInjection.class, "kilt$partialTick");
     }
