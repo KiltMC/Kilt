@@ -84,7 +84,8 @@
         "quilt_loader": "*",
         "async": "*",
         "creativecore": "<2.12.33",
-        "embeddium": "*"
+        "embeddium": "*",
+        "sporran": "*"
     },
     "accessWidener": "kilt.classtweaker"
 }
