@@ -15,7 +15,7 @@ dependencies {
     modImplementation("io.github.tropheusj:milk-lib:1.2.60")
     modImplementation("com.tterrag.registrate_fabric:Registrate:1.3.79-MC1.20.1")
 
-    modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.20.1:1.0.4")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-1.20.1:1.0.6")
 }
 
 loom {
