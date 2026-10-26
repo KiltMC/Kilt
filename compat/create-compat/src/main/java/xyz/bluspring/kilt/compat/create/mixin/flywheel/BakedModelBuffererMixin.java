@@ -29,26 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.compat.create.flywheel.BakedModelBuffererHelper;
 import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
 
-@IfModLoaded("flywheel")
+@IfModLoaded(value = "flywheel", minVersion = "1.0.6")
 @Pseudo
 @Mixin(targets = "dev.engine_room.flywheel.lib.model.baked.BakedModelBufferer")
 public abstract class BakedModelBuffererMixin {
-    @IfModLoaded(value = "flywheel", maxVersion = "1.0.5")
-    @Dynamic
     @Inject(method = "bufferModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
-    private static void kilt$flywheel$tryLoadModelDataSingle105(
-        CallbackInfo ci,
-        @Local BakedModel model, @Local BlockState state, @Local long seed, @Local RandomSource random,
-        @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes
-    ) {
-        modelData.set(BakedModelBuffererHelper.getModelData().get());
-        random.setSeed(seed);
-        renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
-    }
-
-    @IfModLoaded(value = "flywheel", minVersion = "1.0.6")
-    @Inject(method = "bufferModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
-    private static void kilt$flywheel$tryLoadModelDataSingle106(
+    private static void kilt$flywheel$tryLoadModelDataSingle(
         CallbackInfoReturnable<SimpleModel> ci,
         @Local BakedModel model, @Local BlockState state, @Local long seed, @Local RandomSource random,
         @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes
@@ -58,24 +44,8 @@ public abstract class BakedModelBuffererMixin {
         renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
     }
 
-    @IfModLoaded(value = "flywheel", maxVersion = "1.0.5")
-    @Dynamic
     @Inject(method = "bufferBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
-    private static void kilt$flywheel$tryLoadModelData105(
-        CallbackInfo ci,
-        @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
-        @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes
-    ) {
-        modelData.set(BakedModelBuffererHelper.getModelDataLookup().get().apply(pos));
-        modelData.set(model.getModelData(level, pos, state, modelData.get()));
-
-        random.setSeed(seed);
-        renderTypes.set(model.getRenderTypes(state, random, modelData.get()));
-    }
-
-    @IfModLoaded(value = "flywheel", minVersion = "1.0.6")
-    @Inject(method = "bufferBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;getChunkRenderType(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/renderer/RenderType;"))
-    private static void kilt$flywheel$tryLoadModelData106(
+    private static void kilt$flywheel$tryLoadModelData(
         CallbackInfoReturnable<SimpleModel> ci,
         @Local BlockPos pos, @Local BakedModel model, @Local(argsOnly = true) BlockAndTintGetter level, @Local BlockState state, @Local long seed, @Local RandomSource random,
         @Share("modelData") LocalRef<ModelData> modelData, @Share("renderTypes") LocalRef<ChunkRenderTypeSet> renderTypes

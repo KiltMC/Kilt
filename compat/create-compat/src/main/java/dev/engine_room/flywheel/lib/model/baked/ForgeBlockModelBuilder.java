@@ -64,18 +64,10 @@ public final class ForgeBlockModelBuilder extends BlockModelBuilder {
             };
         }
 
-        var builder = ChunkLayerSortedListBuilder.<Model.ConfiguredMesh>getThreadLocal();
-
         BakedModelBuffererHelper.getModelDataLookup().set(modelDataLookup);
-        BakedModelBufferer.bufferBlocks(positions.iterator(), level, poseStack, renderFluids, (renderType, shaded, data) -> {
-            Material material = materialFunc.apply(renderType, shaded);
-            if (material != null) {
-                Mesh mesh = MeshHelper.blockVerticesToMesh(data, "source=BlockModelBuilder," + "renderType=" + renderType + ",shaded=" + shaded);
-                builder.add(renderType, new Model.ConfiguredMesh(material, mesh));
-            }
-        });
+        SimpleModel model = BakedModelBufferer.bufferBlocks(positions.iterator(), level, poseStack, renderFluids, materialFunc);
         BakedModelBuffererHelper.getModelDataLookup().remove();
 
-        return new SimpleModel(builder.build());
+        return model;
     }
 }

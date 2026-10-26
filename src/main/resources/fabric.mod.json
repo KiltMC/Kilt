@@ -136,7 +136,8 @@
     "quilt_loader": "*",
     "async": "*",
     "creativecore": "<2.12.41",
-    "embeddium": "*"
+    "embeddium": "*",
+    "flywheel": "<1.0.6"
   },
   "accessWidener": "kilt.accesswidener"
 }

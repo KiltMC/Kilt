@@ -76,18 +76,10 @@ public final class ForgeBakedModelBuilder extends BakedModelBuilder {
         }
         BlockState blockState = level.getBlockState(pos);
 
-        var builder = ChunkLayerSortedListBuilder.<Model.ConfiguredMesh>getThreadLocal();
-
         BakedModelBuffererHelper.getModelData().set(modelData);
-        BakedModelBufferer.bufferModel(bakedModel, pos, level, blockState, poseStack, (renderType, shaded, data) -> {
-            Material material = materialFunc.apply(renderType, shaded);
-            if (material != null) {
-                Mesh mesh = MeshHelper.blockVerticesToMesh(data, "source=BakedModelBuilder," + "bakedModel=" + bakedModel + ",renderType=" + renderType + ",shaded=" + shaded);
-                builder.add(renderType, new Model.ConfiguredMesh(material, mesh));
-            }
-        });
+        SimpleModel model = BakedModelBufferer.bufferModel(bakedModel, pos, level, blockState, poseStack, materialFunc);
         BakedModelBuffererHelper.getModelData().remove();
 
-        return new SimpleModel(builder.build());
+        return model;
     }
 }
