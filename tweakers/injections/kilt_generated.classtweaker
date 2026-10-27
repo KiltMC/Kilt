@@ -46,6 +46,8 @@ transitive-inject-interface net/minecraft/client/resources/model/cuboid/FaceBake
 transitive-inject-interface net/minecraft/client/resources/model/cuboid/ItemModelGenerator xyz/bluspring/kilt/injections/client/resources/model/cuboid/ItemModelGeneratorInjection
 transitive-inject-interface net/minecraft/client/resources/model/cuboid/ItemTransform xyz/bluspring/kilt/injections/client/resources/model/cuboid/ItemTransformInjection
 transitive-inject-interface net/minecraft/client/resources/model/geometry/BakedQuad xyz/bluspring/kilt/injections/client/resources/model/geometry/BakedQuadInjection
+transitive-inject-interface net/minecraft/client/resources/model/ModelBakery xyz/bluspring/kilt/injections/client/resources/model/ModelBakeryInjection
+transitive-inject-interface net/minecraft/client/resources/model/ModelBakery$BakingResult xyz/bluspring/kilt/injections/client/resources/model/ModelBakeryInjection$BakingResultInjection
 transitive-inject-interface net/minecraft/client/resources/model/SimpleModelWrapper xyz/bluspring/kilt/injections/client/resources/model/SimpleModelWrapperInjection
 transitive-inject-interface net/minecraft/client/resources/model/UnbakedModel xyz/bluspring/kilt/injections/client/resources/model/UnbakedModelInjection
 transitive-inject-interface net/minecraft/client/resources/sounds/SoundInstance xyz/bluspring/kilt/injections/client/resources/sounds/SoundInstanceInjection
@@ -116,6 +118,7 @@ transitive-inject-interface net/minecraft/tags/TagBuilder xyz/bluspring/kilt/inj
 transitive-inject-interface net/minecraft/tags/TagEntry xyz/bluspring/kilt/injections/tags/TagEntryInjection
 transitive-inject-interface net/minecraft/tags/TagFile xyz/bluspring/kilt/injections/tags/TagFileInjection
 transitive-inject-interface net/minecraft/tags/TagLoader xyz/bluspring/kilt/injections/tags/TagLoaderInjection
+transitive-inject-interface net/minecraft/tags/TagLoader$EntryWithSource xyz/bluspring/kilt/injections/tags/TagLoaderInjection$EntryWithSourceInjection
 transitive-inject-interface net/minecraft/util/context/ContextKeySet xyz/bluspring/kilt/injections/util/context/ContextKeySetInjection
 transitive-inject-interface net/minecraft/util/context/ContextMap xyz/bluspring/kilt/injections/util/context/ContextMapInjection
 transitive-inject-interface net/minecraft/util/ExtraCodecs xyz/bluspring/kilt/injections/util/ExtraCodecsInjection
@@ -124,8 +127,10 @@ transitive-inject-interface net/minecraft/util/TriState xyz/bluspring/kilt/injec
 transitive-inject-interface net/minecraft/world/damagesource/DamageScaling xyz/bluspring/kilt/injections/world/damagesource/DamageScalingInjection
 transitive-inject-interface net/minecraft/world/damagesource/DeathMessageType xyz/bluspring/kilt/injections/world/damagesource/DeathMessageTypeInjection
 transitive-inject-interface net/minecraft/world/effect/MobEffect xyz/bluspring/kilt/injections/world/effect/MobEffectInjection
+transitive-inject-interface net/minecraft/world/effect/MobEffect$AttributeTemplate xyz/bluspring/kilt/injections/world/effect/MobEffectInjection$AttributeTemplateInjection
 transitive-inject-interface net/minecraft/world/entity/animal/equine/AbstractHorse xyz/bluspring/kilt/injections/world/entity/animal/equine/AbstractHorseInjection
 transitive-inject-interface net/minecraft/world/entity/EntityFluidInteraction xyz/bluspring/kilt/injections/world/entity/EntityFluidInteractionInjection
+transitive-inject-interface net/minecraft/world/entity/EntityFluidInteraction$Tracker xyz/bluspring/kilt/injections/world/entity/EntityFluidInteractionInjection$TrackerInjection
 transitive-inject-interface net/minecraft/world/entity/Entity xyz/bluspring/kilt/injections/world/entity/EntityInjection
 transitive-inject-interface net/minecraft/world/entity/EntityType xyz/bluspring/kilt/injections/world/entity/EntityTypeInjection
 transitive-inject-interface net/minecraft/world/entity/item/ItemEntity xyz/bluspring/kilt/injections/world/entity/item/ItemEntityInjection
@@ -144,6 +149,7 @@ transitive-inject-interface net/minecraft/world/food/FoodData xyz/bluspring/kilt
 transitive-inject-interface net/minecraft/world/food/FoodProperties xyz/bluspring/kilt/injections/world/food/FoodPropertiesInjection
 transitive-inject-interface net/minecraft/world/inventory/AnvilMenu xyz/bluspring/kilt/injections/world/inventory/AnvilMenuInjection
 transitive-inject-interface net/minecraft/world/inventory/BrewingStandMenu xyz/bluspring/kilt/injections/world/inventory/BrewingStandMenuInjection
+transitive-inject-interface net/minecraft/world/inventory/BrewingStandMenu$PotionSlot xyz/bluspring/kilt/injections/world/inventory/BrewingStandMenuInjection$PotionSlotInjection
 transitive-inject-interface net/minecraft/world/inventory/GrindstoneMenu xyz/bluspring/kilt/injections/world/inventory/GrindstoneMenuInjection
 transitive-inject-interface net/minecraft/world/inventory/RecipeBookMenu xyz/bluspring/kilt/injections/world/inventory/RecipeBookMenuInjection
 transitive-inject-interface net/minecraft/world/inventory/RecipeBookType xyz/bluspring/kilt/injections/world/inventory/RecipeBookTypeInjection
@@ -188,6 +194,7 @@ transitive-inject-interface net/minecraft/world/level/block/FlowerPotBlock xyz/b
 transitive-inject-interface net/minecraft/world/level/block/LiquidBlock xyz/bluspring/kilt/injections/world/level/block/LiquidBlockInjection
 transitive-inject-interface net/minecraft/world/level/block/PoweredRailBlock xyz/bluspring/kilt/injections/world/level/block/PoweredRailBlockInjection
 transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection
+transitive-inject-interface net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase xyz/bluspring/kilt/injections/world/level/block/state/BlockBehaviourInjection$BlockStateBaseInjection
 transitive-inject-interface net/minecraft/world/level/block/state/properties/WoodType xyz/bluspring/kilt/injections/world/level/block/state/properties/WoodTypeInjection
 transitive-inject-interface net/minecraft/world/level/chunk/ChunkAccess xyz/bluspring/kilt/injections/world/level/chunk/ChunkAccessInjection
 transitive-inject-interface net/minecraft/world/level/chunk/ChunkGenerator xyz/bluspring/kilt/injections/world/level/chunk/ChunkGeneratorInjection
@@ -210,6 +217,7 @@ transitive-inject-interface net/minecraft/world/level/storage/LevelSummary xyz/b
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootContext xyz/bluspring/kilt/injections/world/level/storage/loot/LootContextInjection
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootDataType xyz/bluspring/kilt/injections/world/level/storage/loot/LootDataTypeInjection
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootPool xyz/bluspring/kilt/injections/world/level/storage/loot/LootPoolInjection
+transitive-inject-interface net/minecraft/world/level/storage/loot/LootPool$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootPoolInjection$BuilderInjection
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootTable xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection
 transitive-inject-interface net/minecraft/world/level/storage/PlayerDataStorage xyz/bluspring/kilt/injections/world/level/storage/PlayerDataStorageInjection
 transitive-inject-interface net/minecraft/world/level/storage/PrimaryLevelData xyz/bluspring/kilt/injections/world/level/storage/PrimaryLevelDataInjection

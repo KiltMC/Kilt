@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.gradle
 
+import com.github.javaparser.JavaParser
+import com.github.javaparser.ParserConfiguration
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import org.gradle.api.Project
@@ -304,6 +308,36 @@ object ClassTweakerUpdater {
             }
 
             classTweakerBuilder.append("transitive-inject-interface $mcClass $injected").newLine()
+
+            val configuration = ParserConfiguration().apply {
+                languageLevel = ParserConfiguration.LanguageLevel.JAVA_21
+            }
+            val javaParser = JavaParser(configuration)
+            val result = javaParser.parse(path)
+            if (!result.isSuccessful)
+                continue
+
+            val cu = result.result.orElseThrow()
+            cu.accept(object : VoidVisitorAdapter<Void>() {
+                override fun visit(n: ClassOrInterfaceDeclaration, arg: Void?) {
+                    super.visit(n, arg)
+
+                    if (n.isInterface && n.parentNode.filter { it is ClassOrInterfaceDeclaration }.isPresent) {
+                        val mcClass = "$mcClass$${n.nameAsString.removeSuffix("Injection")}"
+                        val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "") + "$" + n.nameAsString
+
+                        if (existing.contains(injected))
+                            return
+
+                        if (!mappings.containsKey(mcClass)) {
+                            println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
+                            return
+                        }
+
+                        classTweakerBuilder.append("transitive-inject-interface $mcClass $injected").newLine()
+                    }
+                }
+            }, null)
         }
 
         if (!tweaker.exists())
