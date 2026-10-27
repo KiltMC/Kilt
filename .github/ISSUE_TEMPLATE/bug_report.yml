@@ -86,6 +86,7 @@ body:
         Upload your log file to a service such as GitHub Gist or https://mclo.gs and paste it here. This information may be critical in resolving your issue!
         
         You may find your log file as the `latest.log` file in your game's `logs` folder.
+        __DO NOT LEAVE THIS BLANK OR INSERT GARBAGE DATA. **IF YOU DO NOT INCLUDE THIS, YOUR REPORT WILL BE CLOSED IMMEDIATELY.**__
     validations:
       required: true
   - type: textarea
