@@ -1,5 +1,7 @@
 package xyz.bluspring.kilt.injections.client.gui.components;
 
+import java.util.function.Predicate;
+
 import xyz.bluspring.kilt.util.KiltHelper;
 
 public interface EditBoxInjection {
@@ -9,5 +11,9 @@ public interface EditBoxInjection {
 
     default boolean getTextShadow() {
         throw KiltHelper.createMixinException(EditBoxInjection.class, "getTextShadow");
+    }
+
+    default void setFilter(Predicate<String> filter) {
+        throw KiltHelper.createMixinException(EditBoxInjection.class, "setFilter");
     }
 }

@@ -299,16 +299,6 @@ object ClassTweakerUpdater {
             val mcClass = "$rootPath/${relativePath.joinToString("/").replace("Injection.java", "")}"
             val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "")
 
-            if (existing.contains(injected))
-                continue
-
-            if (!mappings.containsKey(mcClass)) {
-                println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
-                continue
-            }
-
-            classTweakerBuilder.append("transitive-inject-interface $mcClass $injected").newLine()
-
             val configuration = ParserConfiguration().apply {
                 languageLevel = ParserConfiguration.LanguageLevel.JAVA_21
             }
@@ -322,19 +312,46 @@ object ClassTweakerUpdater {
                 override fun visit(n: ClassOrInterfaceDeclaration, arg: Void?) {
                     super.visit(n, arg)
 
-                    if (n.isInterface && n.parentNode.filter { it is ClassOrInterfaceDeclaration }.isPresent) {
-                        val mcClass = "$mcClass$${n.nameAsString.removeSuffix("Injection")}"
-                        val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/").replace(".java", "") + "$" + n.nameAsString
+                    if (n.isInterface) {
+                        if (n.parentNode.filter { it is ClassOrInterfaceDeclaration }.isPresent) {
+                            val mcClass = "$mcClass$${n.nameAsString.removeSuffix("Injection")}"
+                            val injected = "xyz/bluspring/kilt/injections/" + relativePath.joinToString("/")
+                                .replace(".java", "") + "$" + n.nameAsString
 
-                        if (existing.contains(injected))
-                            return
+                            if (existing.contains(injected))
+                                return
 
-                        if (!mappings.containsKey(mcClass)) {
-                            println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
-                            return
+                            if (!mappings.containsKey(mcClass)) {
+                                println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
+                                return
+                            }
+
+                            val genericTypes = n.typeParameters.joinToString("") {
+                                "T${it.nameAsString};"
+                            }
+                            val suffix = if (genericTypes.isNotBlank())
+                                "<${genericTypes}>"
+                            else ""
+
+                            classTweakerBuilder.append("transitive-inject-interface $mcClass $injected$suffix").newLine()
+                        } else {
+                            if (existing.contains(injected))
+                                return
+
+                            if (!mappings.containsKey(mcClass)) {
+                                println("Failed to locate class mapping for $injected! Make sure it's properly inserted in the manual injections!")
+                                return
+                            }
+
+                            val genericTypes = n.typeParameters.joinToString("") {
+                                "T${it.nameAsString};"
+                            }
+                            val suffix = if (genericTypes.isNotBlank())
+                                "<${genericTypes}>"
+                            else ""
+
+                            classTweakerBuilder.append("transitive-inject-interface $mcClass $injected$suffix").newLine()
                         }
-
-                        classTweakerBuilder.append("transitive-inject-interface $mcClass $injected").newLine()
                     }
                 }
             }, null)

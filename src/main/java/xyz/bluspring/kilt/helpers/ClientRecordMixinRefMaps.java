@@ -4,12 +4,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import net.neoforged.neoforge.client.entity.animation.json.AnimationLoader;
 import net.neoforged.neoforge.client.fluid.CustomFluidRenderer;
 import net.neoforged.neoforge.client.fluid.FluidTintSource;
 import net.neoforged.neoforge.client.model.ExtraFaceData;
 import net.neoforged.neoforge.client.model.block.CustomBlockModelDefinition;
 import net.neoforged.neoforge.client.model.quad.BakedColors;
 import net.neoforged.neoforge.client.model.quad.BakedNormals;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelLoader;
 import net.neoforged.neoforge.client.stencil.StencilTest;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.Vector3fc;
@@ -17,6 +19,8 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.cuboid.CuboidFace;
 import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
 import net.minecraft.client.resources.model.cuboid.ItemModelGenerator;
@@ -51,6 +55,12 @@ public interface ClientRecordMixinRefMaps {
 
     Map<BlockStateModelDispatcher, ExtendedBlockStateModelDispatcher> EXTENDED_BLOCK_STATE_MODEL_DISPATCHER = create();
     record ExtendedBlockStateModelDispatcher(Optional<CustomBlockModelDefinition> customDefinition) {}
+
+    Map<ModelBakery.BakingResult, ExtendedModelBakeryBakingResult> EXTENDED_MODEL_BAKERY_BAKING_RESULT = create();
+    record ExtendedModelBakeryBakingResult(StandaloneModelLoader.BakedModels standaloneModels) {}
+
+    Map<ItemModel.BakingContext, ExtendedItemModelBakingContext> EXTENDED_ITEM_MODEL_BAKING_CONTEXT = create();
+    record ExtendedItemModelBakingContext(AnimationLoader.PendingAnimations pendingAnimations) {}
 
     static <K, V> Map<K, V> create() {
         return RecordMixinRefMaps.create();
