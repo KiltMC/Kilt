@@ -61,7 +61,7 @@ public abstract class FaceBakeryInject implements FaceBakeryInjection {
 
     @ModifyReturnValue(method = "bakeQuad(Lnet/minecraft/client/resources/model/ModelBaker$Interner;Lorg/joml/Vector3fc;Lorg/joml/Vector3fc;Lnet/minecraft/client/resources/model/cuboid/CuboidFace$UVs;Lcom/mojang/math/Quadrant;Lnet/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo;Lnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/block/dispatch/ModelState;Lnet/minecraft/client/resources/model/cuboid/CuboidRotation;)Lnet/minecraft/client/resources/model/geometry/BakedQuad;", at = @At("RETURN"))
     private static BakedQuad kilt$attachInternerNormalsAndColors(BakedQuad original, @Local(argsOnly = true, name = "interner") ModelBaker.Interner interner, @Local(name = "vertexPositions") Vector3fc[] vertexPositions) {
-        var faceData = FaceBakeryInjection.kilt$faceData.get();
+        var faceData = FaceBakeryInjection.kilt$faceData.get().top();
 
         ClientRecordMixinRefMaps.EXTENDED_BAKED_QUAD.put(original, new ClientRecordMixinRefMaps.ExtendedBakedQuad(
             interner.normals(BakedNormals.of(BakedNormals.computeQuadNormal(vertexPositions[0], vertexPositions[1], vertexPositions[2], vertexPositions[3]))),

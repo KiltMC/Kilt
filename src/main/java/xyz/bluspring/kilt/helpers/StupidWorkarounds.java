@@ -2,11 +2,14 @@ package xyz.bluspring.kilt.helpers;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidType;
 
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.world.entity.player.Player;
@@ -19,4 +22,5 @@ public interface StupidWorkarounds {
     ThreadLocal<Player> kilt$playerRef = new ThreadLocal<>();
 
     Map<FluidType, IClientFluidTypeExtensions> kilt$fabricFluidExtensions = Collections.synchronizedMap(new HashMap<>());
+    Set<BlockStateModelDispatcher> kilt$shouldUseVanillaBypass = Collections.synchronizedSet(new HashSet<>());
 }

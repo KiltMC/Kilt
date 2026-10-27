@@ -37,6 +37,9 @@ transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Builder x
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline$Snippet xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection$SnippetInjection
 transitive-inject-interface net/minecraft/client/renderer/state/MapRenderState$MapDecorationRenderState xyz/bluspring/kilt/injections/client/renderer/state/MapRenderStateInjection$MapDecorationRenderStateInjection
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootTable$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection$BuilderInjection
+transitive-inject-interface net/minecraft/client/resources/model/cuboid/ItemModelGenerator$ItemLayerKey xyz/bluspring/kilt/injections/client/resources/model/cuboid/ItemModelGeneratorInjection$ItemLayerKeyInjection
+transitive-inject-interface net/minecraft/client/resources/model/UnbakedModel$GuiLight xyz/bluspring/kilt/injections/client/resources/model/UnbakedModelInjection$GuiLightInjection
+transitive-inject-interface  net/minecraft/world/level/storage/loot/LootPool$Builder xyz/bluspring/kilt/injections/world/level/storage/loot/LootPoolInjection$BuilderInjection
 
 transitive-extend-enum net/minecraft/world/item/UseAnim CUSTOM
 transitive-extend-enum com/mojang/blaze3d/textures/TextureFormat DEPTH24_STENCIL8

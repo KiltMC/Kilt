@@ -73,4 +73,5 @@ accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker eyesI
 accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker accumulatedCurrent Lnet/minecraft/world/phys/Vec3;
 accessible field net/minecraft/world/entity/EntityFluidInteraction$Tracker currentCount I
 
-
+accessible class net/minecraft/network/PacketProcessor$ListenerAndPacket
+accessible method net/minecraft/client/gui/screens/MenuScreens getConstructor (Lnet/minecraft/world/inventory/MenuType;)Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;

@@ -15,6 +15,7 @@ import xyz.bluspring.kilt.injections.world.level.saveddata.SavedDataTypeInjectio
 
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -27,11 +28,13 @@ public interface RecordMixinRefMaps {
     Map<MobEffect.AttributeTemplate, ExtendedAttributeTemplate> EXTENDED_ATTRIBUTE_TEMPLATE = create();
     Map<SavedDataType<?>, ExtendedSavedDataType<?>> EXTENDED_SAVED_DATA_TYPE = create();
     Map<RegistryDataLoader.RegistryData<?>, ExtendedRegistryData<?>> EXTENDED_REGISTRY_DATA = create();
+    Map<TicketType, ExtendedTicketType> EXTENDED_TICKET_TYPE = create();
 
     record ExtendedLootDataType<T>(@Nullable T defaultValue, Codec<Optional<T>> conditionalCodec, BiConsumer<T, Identifier> idSetter) {}
     record ExtendedAttributeTemplate(@Nullable Int2DoubleFunction curve) {}
     record ExtendedSavedDataType<T extends SavedData>(SavedDataTypeInjection.Factory<T> factory, SavedDataTypeInjection.Factory<Codec<T>> codecFactory) {}
     record ExtendedRegistryData<T>(Consumer<RegistryBuilder<T>> registryBuilderConsumer) {}
+    record ExtendedTicketType(boolean forceNaturalSpawning) {}
 
     static <K, V> Map<K, V> create() {
         return new WeakHashMap<>();

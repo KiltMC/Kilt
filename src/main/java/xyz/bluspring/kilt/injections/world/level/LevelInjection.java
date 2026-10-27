@@ -7,13 +7,14 @@ import net.neoforged.neoforge.common.util.BlockSnapshot;
 import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-public interface LevelInjection {
+public interface LevelInjection extends AttachmentHolderWorkaround {
     default ArrayList<BlockSnapshot> kilt$getCapturedBlockSnapshots() {
         throw new IllegalStateException();
     }

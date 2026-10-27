@@ -1,21 +1,21 @@
 package xyz.bluspring.kilt.injects.network;
 
+import java.util.function.Function;
+
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.network.RegistryFriendlyByteBufInjection;
 
-import java.util.function.Function;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 @Mixin(RegistryFriendlyByteBuf.class)
 public abstract class RegistryFriendlyByteBufInject implements RegistryFriendlyByteBufInjection {
-    private ConnectionType connectionType = ConnectionType.OTHER;
+    @Unique private ConnectionType connectionType = ConnectionType.OTHER;
 
     public RegistryFriendlyByteBufInject(ByteBuf byteBuf, RegistryAccess registryAccess) {}
 

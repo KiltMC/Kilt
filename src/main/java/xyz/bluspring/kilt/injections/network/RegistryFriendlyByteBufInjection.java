@@ -1,16 +1,21 @@
 package xyz.bluspring.kilt.injections.network;
 
+import java.util.function.Function;
+
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public interface RegistryFriendlyByteBufInjection {
+    static RegistryFriendlyByteBuf create(ByteBuf byteBuf, RegistryAccess registryAccess, ConnectionType connectionType) {
+        var buf = new RegistryFriendlyByteBuf(byteBuf, registryAccess);
+        buf.kilt$setConnectionType(connectionType);
+        return buf;
+    }
+
     static Function<ByteBuf, RegistryFriendlyByteBuf> decorator(RegistryAccess registryAccess, ConnectionType connectionType) {
         return buf -> {
             var friendlyBuf = new RegistryFriendlyByteBuf(buf, registryAccess);

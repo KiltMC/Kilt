@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.injections.world.level.storage.loot;
 import org.jspecify.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
 public interface LootPoolInjection {
@@ -37,5 +38,11 @@ public interface LootPoolInjection {
 
     default void setName(String name) {
         throw KiltHelper.createMixinException(LootPoolInjection.class, "setName");
+    }
+
+    interface BuilderInjection {
+        default LootPool.Builder name(String name) {
+            throw KiltHelper.createMixinException(BuilderInjection.class, "name");
+        }
     }
 }
