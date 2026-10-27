@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import net.minecraft.network.chat.ClickEvent;
 
 @Mixin(ClickEvent.class)
-public abstract class ClickEventInject {
+public interface ClickEventInject {
     @Mixin(ClickEvent.Action.class)
-    public abstract static class ActionInject {
+    abstract class ActionInject {
         @Definition(id = "action", local = @Local(type = ClickEvent.Action.class, argsOnly = true))
         @Definition(id = "isAllowedFromServer", method = "Lnet/minecraft/network/chat/ClickEvent$Action;isAllowedFromServer()Z")
         @Expression("action.isAllowedFromServer() == false")

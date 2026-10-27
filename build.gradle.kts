@@ -660,12 +660,12 @@ fun isRelease(): Boolean {
 
 // Versioning format:
 // X.Y.Z
-// X - Minecraft minor version increment
-// Y - Minecraft patch version increment
+// X - Minecraft year version increment
+// Y - Minecraft drop version increment
 // Z - Kilt version increment, based on the last tag
 fun createVersion(): String {
     val mcVersionComps = (rootProject.property("minecraft_version") as String).split(".")
-    val mcVersion = "${mcVersionComps[1]}.${mcVersionComps[2]}"
+    val mcVersion = "${mcVersionComps[0]}.${mcVersionComps[1]}"
 
     val grgit = Grgit.open(mutableMapOf<String, Any?>(
         "dir" to File("$projectDir")
