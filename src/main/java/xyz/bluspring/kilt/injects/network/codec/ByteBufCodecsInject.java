@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -27,14 +28,14 @@ import net.minecraft.resources.ResourceKey;
 
 @Mixin(ByteBufCodecs.class)
 public interface ByteBufCodecsInject {
-    @Mixin(targets = "net.minecraft.network.codec.ByteBufCodecs$23")
+    @Mixin(targets = "net.minecraft.network.codec.ByteBufCodecs$29")
     abstract class RegistryInject {
         // Kilt: is this needed?
     }
 
-    @Mixin(targets = "net.minecraft.network.codec.ByteBufCodecs$25")
+    @Mixin(targets = "net.minecraft.network.codec.ByteBufCodecs$31")
     abstract class HolderSetInject<T> {
-        @Shadow @Final private ResourceKey val$registryKey;
+        @Shadow @Final ResourceKey<Registry<T>> val$registryKey;
         @Unique private final Map<HolderSetType, StreamCodec<RegistryFriendlyByteBuf, ? extends ICustomHolderSet<T>>> holderSetCodecs = new ConcurrentHashMap<>();
 
         private StreamCodec<RegistryFriendlyByteBuf, ? extends ICustomHolderSet<T>> holderSetCodec(HolderSetType type) {

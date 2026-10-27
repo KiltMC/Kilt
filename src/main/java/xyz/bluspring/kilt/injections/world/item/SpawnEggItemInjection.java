@@ -1,7 +1,12 @@
 package xyz.bluspring.kilt.injections.world.item;
 
-import net.minecraft.world.entity.EntityType;
+import org.jspecify.annotations.Nullable;
+import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 
 public interface SpawnEggItemInjection {
-    EntityType<?> getDefaultType();
+    default @Nullable DispenseItemBehavior createDispenseBehavior() {
+        throw KiltHelper.createMixinException(SpawnEggItemInjection.class, "createDispenseBehavior");
+    }
 }

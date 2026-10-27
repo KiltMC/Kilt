@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
@@ -33,8 +32,8 @@ public abstract class PigInject extends Animal {
         return original && EventHooks.canLivingConvert(this, EntityType.ZOMBIFIED_PIGLIN, timer -> {});
     }
 
-    @Inject(method = "thunderHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/ZombifiedPiglin;setPersistenceRequired()V", shift = At.Shift.AFTER))
-    private void kilt$callLivingConvertEvent(ServerLevel level, LightningBolt lightning, CallbackInfo ci, @Local ZombifiedPiglin ziglin) {
-        EventHooks.onLivingConvert(this, ziglin);
+    @Inject(method = "lambda$thunderHit$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/ZombifiedPiglin;setPersistenceRequired()V", shift = At.Shift.AFTER))
+    private void kilt$callLivingConvertEvent(ServerLevel level, ZombifiedPiglin zp, CallbackInfo ci) {
+        EventHooks.onLivingConvert(this, zp);
     }
 }

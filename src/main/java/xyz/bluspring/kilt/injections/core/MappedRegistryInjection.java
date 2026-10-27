@@ -1,15 +1,16 @@
 package xyz.bluspring.kilt.injections.core;
 
+import xyz.bluspring.kilt.processor.FabricInjectedInterface;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.resources.ResourceKey;
-import xyz.bluspring.kilt.processor.FabricInjectedInterface;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 @FabricInjectedInterface(MappedRegistry.class)
 public interface MappedRegistryInjection<T> {
-    default void unfreeze() {
+    default void unfreeze(boolean clearTags) {
         throw new IllegalStateException();
     }
 

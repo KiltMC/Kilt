@@ -1,14 +1,11 @@
 // TRACKED HASH: 285b05db3877c1ccdd76c7704e1de0c69adff005
 package xyz.bluspring.kilt.injects.world.entity;
 
-import net.minecraft.core.Holder;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+import java.util.stream.Stream;
+
 import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.entity.EntityTypeInjection;
 
-import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
-import java.util.stream.Stream;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 
 @Mixin(EntityType.class)
 public abstract class EntityTypeInject<T extends Entity> implements EntityTypeInjection<T> {
-    @SuppressWarnings("MixinAnnotationTarget") // this is supposed to exist, but I guess mixin doesn't think so?
-    @Shadow @Nullable public abstract T create(Level level);
     @Shadow @Final private Holder.Reference<EntityType<?>> builtInRegistryHolder;
     @Shadow @Final private int clientTrackingRange;
     @Shadow @Final private int updateInterval;
@@ -72,14 +69,17 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
     }
 
     // TODO: any better ideas?
+    @Unique
     private int defaultTrackingRangeSupplier() {
         return this.clientTrackingRange;
     }
 
+    @Unique
     private int defaultUpdateIntervalSupplier() {
         return this.updateInterval;
     }
 
+    @Unique
     private boolean defaultVelocitySupplier() {
         var self = (EntityType<?>) (Object) this;
         return self != EntityType.PLAYER && self != EntityType.LLAMA_SPIT && self != EntityType.WITHER && self != EntityType.BAT && self != EntityType.ITEM_FRAME && self != EntityType.GLOW_ITEM_FRAME && self != EntityType.LEASH_KNOT && self != EntityType.PAINTING && self != EntityType.END_CRYSTAL && self != EntityType.EVOKER_FANGS;
@@ -111,7 +111,7 @@ public abstract class EntityTypeInject<T extends Entity> implements EntityTypeIn
         }
 
         @Inject(at = @At("RETURN"), method = "build")
-        public void kilt$addForgeBuilderItems(String string, CallbackInfoReturnable<EntityType<T>> cir) {
+        public void kilt$addForgeBuilderItems(ResourceKey<EntityType<?>> name, CallbackInfoReturnable<EntityType<T>> cir) {
             var entityType = (EntityTypeInjection<T>) cir.getReturnValue();
             entityType.kilt$setTrackingRangeSupplier(trackingRangeSupplier);
             entityType.kilt$setUpdateIntervalSupplier(updateIntervalSupplier);

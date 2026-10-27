@@ -1,19 +1,14 @@
 // TRACKED HASH: 400a9b89f8ca95162963fb4fdbbc9877f5ae0add
 package xyz.bluspring.kilt.injects.resources;
 
+import java.util.List;
+import java.util.function.Function;
+
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.HolderSetCodec;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.holdersets.ICustomHolderSet;
 import org.spongepowered.asm.mixin.Final;
@@ -26,8 +21,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-import java.util.function.Function;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.HolderSetCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 @Mixin(HolderSetCodec.class)
 public abstract class HolderSetCodecInject<E> {
@@ -48,7 +47,7 @@ public abstract class HolderSetCodecInject<E> {
         return Codec.either(this.forgeDispatchCodec, instance);
     }
 
-    @Redirect(method = "method_40386", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;"))
+    @Redirect(method = "lambda$decode$0", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Either;map(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;"))
     private static <T, E> E kilt$mapEitherCalls(Either<ICustomHolderSet<T>, Either<TagKey<T>, List<Holder<T>>>> instance, Function<TagKey<T>, HolderSet.Named<T>> function, Function<List<Holder<T>>, HolderSet.Direct<T>> function2) {
         return (E) instance.map(DataResult::success, tagOrList -> tagOrList.map(function, function2));
     }

@@ -77,3 +77,4 @@ accessible class net/minecraft/network/PacketProcessor$ListenerAndPacket
 accessible method net/minecraft/client/gui/screens/MenuScreens getConstructor (Lnet/minecraft/world/inventory/MenuType;)Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;
 accessible class net/minecraft/world/clock/ServerClockManager$ClockInstance
 accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
+accessible class net/minecraft/core/MappedRegistry$TagSet

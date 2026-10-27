@@ -1,49 +1,38 @@
 // TRACKED HASH: 47476edb59fcfcf846692ab9ec3986cad3c5d6c4
 package xyz.bluspring.kilt.injects.world.item;
 
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.SpawnEggItem;
-import org.spongepowered.asm.mixin.Final;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.injections.world.item.SpawnEggItemInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.DispenserBlock;
 
 @Mixin(SpawnEggItem.class)
-public class SpawnEggItemInject implements SpawnEggItemInjection {
-    @Shadow @Final private EntityType<?> defaultType;
-
-    @WrapOperation(method = "getType", at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/SpawnEggItem;defaultType:Lnet/minecraft/world/entity/EntityType;", opcode = 0))
-    private EntityType<?> kilt$useForgeDefaultType(SpawnEggItem instance, Operation<EntityType<?>> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), SpawnEggItem.class, "getDefaultType"))
-            return this.getDefaultType();
-
-        return original.call(instance);
-    }
-
-    @ModifyReturnValue(method = "getType", at = @At("RETURN"))
-    private EntityType<?> kilt$returnForgeDefaultType(EntityType<?> original) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), SpawnEggItem.class, "getDefaultType"))
-            return this.getDefaultType();
-
-        return original;
-    }
-
-    @ModifyReceiver(method = "requiredFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityType;requiredFeatures()Lnet/minecraft/world/flag/FeatureFlagSet;"))
-    private EntityType<?> kilt$useForgeDefaultTypeForFeatures(EntityType<?> instance) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), SpawnEggItem.class, "getDefaultType"))
-            return this.getDefaultType();
-
-        return instance;
+public abstract class SpawnEggItemInject extends Item implements SpawnEggItemInjection {
+    public SpawnEggItemInject(Properties properties) {
+        super(properties);
     }
 
     @Override
-    public EntityType<?> getDefaultType() {
-        return this.defaultType;
+    public @Nullable DispenseItemBehavior createDispenseBehavior() {
+        return null;
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    private static void registerDispenseBehavior(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> BuiltInRegistries.ITEM.forEach(item -> {
+            if (item instanceof SpawnEggItem egg && !DispenserBlock.DISPENSER_REGISTRY.containsKey(egg)) {
+                var beh = egg.createDispenseBehavior();
+                if (beh != null)
+                    DispenserBlock.registerBehavior(egg, beh);
+            }
+        }));
     }
 }

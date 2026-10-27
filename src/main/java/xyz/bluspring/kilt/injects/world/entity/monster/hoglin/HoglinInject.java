@@ -3,19 +3,20 @@ package xyz.bluspring.kilt.injects.world.entity.monster.hoglin;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.Zoglin;
-import net.minecraft.world.entity.monster.hoglin.Hoglin;
-import net.minecraft.world.level.Level;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Zoglin;
+import net.minecraft.world.entity.monster.hoglin.Hoglin;
+import net.minecraft.world.level.Level;
 
 @Mixin(Hoglin.class)
 public abstract class HoglinInject extends Animal {
@@ -32,8 +33,11 @@ public abstract class HoglinInject extends Animal {
         return original && EventHooks.canLivingConvert(this, EntityType.ZOGLIN, timer -> this.timeInOverworld = timer);
     }
 
-    @Inject(method = "finishConversion", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/Zoglin;addEffect(Lnet/minecraft/world/effect/MobEffectInstance;)Z", shift = At.Shift.AFTER))
-    private void kilt$callLivingConvertEvent(ServerLevel serverLevel, CallbackInfo ci, @Local Zoglin zoglin) {
-        EventHooks.onLivingConvert(this, zoglin);
+    @WrapOperation(method = "finishConversion", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/hoglin/Hoglin;convertTo(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/ConversionParams;Lnet/minecraft/world/entity/ConversionParams$AfterConversion;)Lnet/minecraft/world/entity/Mob;"))
+    private Mob kilt$callLivingConvertEvent(Hoglin instance, EntityType<Zoglin> entityType, ConversionParams conversionParams, ConversionParams.AfterConversion<Zoglin> afterConversion, Operation<Mob> original) {
+        return original.call(instance, entityType, conversionParams, (ConversionParams.AfterConversion<Zoglin>) zoglin -> {
+            afterConversion.finalizeConversion(zoglin);
+            EventHooks.onLivingConvert(instance, zoglin);
+        });
     }
 }

@@ -19,7 +19,7 @@ public class ElytraLayerMixin {
 
     // Re-implementation of https://github.com/TeamTwilight/twilightforest/blob/1.21.1/tf-asm/src/main/java/twilightforest/asm/transformers/armor/CancelElytraRenderingTransformer.java
     @Definition(id = "itemStack", local = @Local(type = ItemStack.class))
-    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z")
+    @Definition(id = "is", method = "Lnet/minecraft/world/item/ItemStack;is(Ljava/lang/Object;)Z")
     @Definition(id = "ELYTRA", field = "Lnet/minecraft/world/item/Items;ELYTRA:Lnet/minecraft/world/item/Item;")
     @Expression("itemStack.is(ELYTRA)")
     @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At("MIXINEXTRAS:EXPRESSION"))

@@ -1,16 +1,17 @@
 package xyz.bluspring.kilt.mixin;
 
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import java.util.List;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import java.util.List;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 @Mixin(ListTag.class)
 public interface ListTagAccessor {
     @Invoker("<init>")
-    static ListTag createListTag(List<Tag> list, byte type) {
+    static ListTag createListTag(List<Tag> list) {
         throw new UnsupportedOperationException();
     }
 }

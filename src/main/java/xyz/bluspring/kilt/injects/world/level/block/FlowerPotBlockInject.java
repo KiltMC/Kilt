@@ -103,6 +103,7 @@ public abstract class FlowerPotBlockInject extends Block implements FlowerPotBlo
         if (KiltHelper.INSTANCE.hasMethodOverride(block.getClass(), FlowerPotBlock.class, KILT$GET_POTTED)) {
             return block.getPotted();
         }
+        
         return original.call(block);
     }
 

@@ -23,23 +23,23 @@ public abstract class BubbleColumnBlockInject extends Block {
     }
 
     @Inject(method = "getColumnState", at = @At("HEAD"))
-    private static void kilt$storeBubbleColumnDirection(BlockState state, CallbackInfoReturnable<BlockState> cir, @Share("bubbleColumnDirection") LocalRef<BubbleColumnDirection> bubbleColumnDirectionRef) {
-        bubbleColumnDirectionRef.set(state.getBubbleColumnDirection());
+    private static void kilt$storeBubbleColumnDirection(Block bubbleColumn, BlockState belowState, BlockState occupyState, CallbackInfoReturnable<BlockState> cir, @Share("bubbleColumnDirection") LocalRef<BubbleColumnDirection> bubbleColumnDirectionRef) {
+        bubbleColumnDirectionRef.set(belowState.getBubbleColumnDirection());
     }
 
-    @Definition(id = "blockState", local = @Local(type = BlockState.class, argsOnly = true))
-    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
-    @Definition(id = "SOUL_SAND", field = "Lnet/minecraft/world/level/block/Blocks;SOUL_SAND:Lnet/minecraft/world/level/block/Block;")
-    @Expression("blockState.is(SOUL_SAND)")
+    @Definition(id = "belowState", local = @Local(type = BlockState.class, name = "belowState", argsOnly = true))
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z")
+    @Definition(id = "ENABLES_BUBBLE_COLUMN_PUSH_UP", field = "Lnet/minecraft/tags/BlockTags;ENABLES_BUBBLE_COLUMN_PUSH_UP:Lnet/minecraft/tags/TagKey;")
+    @Expression("belowState.is(ENABLES_BUBBLE_COLUMN_PUSH_UP)")
     @ModifyExpressionValue(method = "getColumnState", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static boolean kilt$tryHandleUpwardColumn(boolean original, @Share("bubbleColumnDirection") LocalRef<BubbleColumnDirection> bubbleColumnDirectionRef) {
         return original || bubbleColumnDirectionRef.get() == BubbleColumnDirection.UPWARD;
     }
 
-    @Definition(id = "blockState", local = @Local(type = BlockState.class, argsOnly = true))
-    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
-    @Definition(id = "MAGMA_BLOCK", field = "Lnet/minecraft/world/level/block/Blocks;MAGMA_BLOCK:Lnet/minecraft/world/level/block/Block;")
-    @Expression("blockState.is(MAGMA_BLOCK)")
+    @Definition(id = "belowState", local = @Local(type = BlockState.class, name = "belowState", argsOnly = true))
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z")
+    @Definition(id = "ENABLES_BUBBLE_COLUMN_DRAG_DOWN", field = "Lnet/minecraft/tags/BlockTags;ENABLES_BUBBLE_COLUMN_DRAG_DOWN:Lnet/minecraft/tags/TagKey;")
+    @Expression("belowState.is(ENABLES_BUBBLE_COLUMN_DRAG_DOWN)")
     @ModifyExpressionValue(method = "getColumnState", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static boolean kilt$tryHandleDownwardColumn(boolean original, @Share("bubbleColumnDirection") LocalRef<BubbleColumnDirection> bubbleColumnDirectionRef) {
         return original || bubbleColumnDirectionRef.get() == BubbleColumnDirection.DOWNWARD;

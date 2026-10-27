@@ -5,27 +5,24 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.entity.XpOrbTargetingEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(ExperienceOrb.class)
 public abstract class ExperienceOrbInject extends Entity {
@@ -44,10 +41,9 @@ public abstract class ExperienceOrbInject extends Entity {
         return original.call(instance);
     }
 
-    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
-    private void kilt$fixMc53850(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (this.level().isClientSide() || this.isRemoved())
-            cir.setReturnValue(false);
+    @WrapOperation(method = "followNearbyPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getNearestPlayer(Lnet/minecraft/world/entity/Entity;D)Lnet/minecraft/world/entity/player/Player;"))
+    private Player kilt$tryGetFollowingPlayer(Level instance, Entity entity, double v, Operation<Player> original) {
+        return NeoForge.EVENT_BUS.post(new XpOrbTargetingEvent((ExperienceOrb) (Object) this, v, () -> original.call(instance, entity, v))).getFollowingPlayer();
     }
 
     @Definition(id = "player", local = @Local(type = Player.class, argsOnly = true))

@@ -29,6 +29,7 @@
         "core.HolderLookupInject$RegistryLookupInject$DelegateInject",
         "core.HolderSetInject",
         "core.HolderSetInject$NamedInject",
+        "core.MappedRegistryInject",
         "core.NonNullListInject",
         "core.RegistryInject",
         "core.cauldron.CauldronInteractionsInject",

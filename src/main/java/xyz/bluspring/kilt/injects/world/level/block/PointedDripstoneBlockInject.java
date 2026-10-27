@@ -4,14 +4,14 @@ import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PointedDripstoneBlock;
 import net.minecraft.world.level.material.Fluid;
@@ -50,24 +50,24 @@ public abstract class PointedDripstoneBlockInject extends Block {
         return original;
     }
 
-    @ModifyVariable(method = "spawnDripParticle(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/Fluid;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addParticle(Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)V"))
-    private static ParticleOptions kilt$tryHandleCustomParticle(ParticleOptions options, @Cancellable CallbackInfo ci, @Local(ordinal = 1) Fluid fluid) {
+    @ModifyReturnValue(method = "canFillCauldron", at = @At("RETURN"))
+    private static boolean kilt$checkHasDripInfo(boolean original, @Local(argsOnly = true) Fluid fluid) {
+        return original || fluid.getFluidType().getDripInfo() != null;
+    }
+
+    @ModifyReturnValue(method = "getDripParticle", at = @At(value = "RETURN", ordinal = 1))
+    private static ParticleOptions kilt$tryHandleCustomParticle(ParticleOptions options, @Local(name = "fluidAbove", argsOnly = true) Fluid fluid, @Local(argsOnly = true, name = "level") Level level, @Local(argsOnly = true, name = "posAbove") BlockPos posAbove) {
         var dripInfo = fluid.getFluidType().getDripInfo();
         if (dripInfo != null) {
             var particle = dripInfo.dripParticle();
 
             if (particle == null) {
-                ci.cancel();
+                return level.environmentAttributes().getValue(EnvironmentAttributes.DEFAULT_DRIPSTONE_PARTICLE, posAbove);
             }
 
             return particle;
         }
 
         return options;
-    }
-
-    @ModifyReturnValue(method = "canFillCauldron", at = @At("RETURN"))
-    private static boolean kilt$checkHasDripInfo(boolean original, @Local(argsOnly = true) Fluid fluid) {
-        return original || fluid.getFluidType().getDripInfo() != null;
     }
 }

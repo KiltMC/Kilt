@@ -19,6 +19,7 @@ import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -33,7 +34,9 @@ import net.minecraft.world.phys.BlockHitResult;
 @Mixin(BucketItem.class)
 public abstract class BucketItemInject extends Item implements BucketItemInjection {
     @Shadow public Fluid content;
-    @Shadow public abstract boolean emptyContents(@Nullable Player player, Level level, BlockPos pos, @Nullable BlockHitResult result);
+
+    @Shadow
+    public abstract boolean emptyContents(@org.jspecify.annotations.Nullable LivingEntity user, Level level, BlockPos pos, @org.jspecify.annotations.Nullable BlockHitResult hitResult);
 
     public BucketItemInject(Properties properties) {
         super(properties);

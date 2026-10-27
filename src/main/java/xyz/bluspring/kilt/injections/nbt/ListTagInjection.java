@@ -1,12 +1,13 @@
 package xyz.bluspring.kilt.injections.nbt;
 
-import net.minecraft.nbt.ListTag;
+import java.util.ArrayList;
+
 import xyz.bluspring.kilt.mixin.ListTagAccessor;
 
-import java.util.ArrayList;
+import net.minecraft.nbt.ListTag;
 
 public interface ListTagInjection {
     static ListTag create(int initialCapacity) {
-        return ListTagAccessor.createListTag(new ArrayList<>(initialCapacity), (byte) 0);
+        return ListTagAccessor.createListTag(new ArrayList<>(initialCapacity));
     }
 }

@@ -29,19 +29,19 @@ public abstract class ChorusFlowerBlockInject extends Block {
         super(properties);
     }
 
-    @Definition(id = "i", local = @Local(type = int.class))
-    @Expression("i < 5")
+    @Definition(id = "currentAge", local = @Local(type = int.class, name = "currentAge"))
+    @Expression("currentAge < 5")
     @ModifyExpressionValue(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$preGrowEvent(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 1) BlockPos pos, @Local(argsOnly = true) BlockState state, @Share("shouldRunPostEvent") LocalBooleanRef shouldRunPostEvent) {
         shouldRunPostEvent.set(true);
-        return original && !CommonHooks.canCropGrow(level, pos, state, true);
+        return original && CommonHooks.canCropGrow(level, pos, state, true);
     }
 
-    @Definition(id = "blockState", local = @Local(type = BlockState.class, ordinal = 1))
-    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
-    @Definition(id = "END_STONE", field = "Lnet/minecraft/world/level/block/Blocks;END_STONE:Lnet/minecraft/world/level/block/Block;")
-    @Expression("blockState.is(END_STONE)")
-    @ModifyVariable(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"), ordinal = 1)
+    @Definition(id = "belowState", local = @Local(type = BlockState.class, name = "belowState"))
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z")
+    @Definition(id = "SUPPORTS_CHORUS_FLOWER", field = "Lnet/minecraft/tags/BlockTags;SUPPORTS_CHORUS_FLOWER:Lnet/minecraft/tags/TagKey;")
+    @Expression("belowState.is(SUPPORTS_CHORUS_FLOWER)")
+    @ModifyVariable(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"), name = "pillarOnSupportBlock")
     private boolean kilt$checkHandleSustainPlant(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 1) BlockState soilState, @Local(argsOnly = true) BlockPos pos, @Local(argsOnly = true) BlockState plantState) {
         var soilDecision = soilState.canSustainPlant(level, pos.below(), Direction.UP, plantState);
         if (!soilDecision.isDefault())
@@ -50,11 +50,11 @@ public abstract class ChorusFlowerBlockInject extends Block {
         return original;
     }
 
-    @Definition(id = "blockState2", local = @Local(type = BlockState.class, ordinal = 2))
-    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
-    @Definition(id = "END_STONE", field = "Lnet/minecraft/world/level/block/Blocks;END_STONE:Lnet/minecraft/world/level/block/Block;")
-    @Expression("blockState2.is(END_STONE)")
-    @ModifyVariable(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"), ordinal = 1)
+    @Definition(id = "testState", local = @Local(type = BlockState.class, name = "testState"))
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/tags/TagKey;)Z")
+    @Definition(id = "SUPPORTS_CHORUS_FLOWER", field = "Lnet/minecraft/tags/BlockTags;SUPPORTS_CHORUS_FLOWER:Lnet/minecraft/tags/TagKey;")
+    @Expression("testState.is(SUPPORTS_CHORUS_FLOWER)")
+    @ModifyVariable(method = "randomTick", at = @At("MIXINEXTRAS:EXPRESSION"), name = "pillarOnSupportBlock")
     private boolean kilt$checkHandleSustainPlant2(boolean original, @Local(argsOnly = true) ServerLevel level, @Local(ordinal = 2) BlockState soilState, @Local(argsOnly = true) BlockPos pos, @Local(argsOnly = true) BlockState plantState, @Local(ordinal = 1) int j) {
         var soilDecision = soilState.canSustainPlant(level, pos.below(j + 1), Direction.UP, plantState);
         if (!soilDecision.isDefault())
