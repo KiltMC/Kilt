@@ -3,62 +3,60 @@ package xyz.bluspring.kilt.injects.world.entity.projectile;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import net.minecraft.world.entity.Entity;
+import net.neoforged.neoforge.event.EventHooks;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Slice;
+import xyz.bluspring.kilt.workarounds.KiltNoOpImpls;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractArrow.class)
 public abstract class AbstractArrowInject extends Projectile {
-    @Shadow public abstract void setPierceLevel(byte pierceLevel);
-
-    @Unique private final IntOpenHashSet ignoredEntities = new IntOpenHashSet();
-
     public AbstractArrowInject(EntityType<? extends Projectile> entityType, Level level) {
         super(entityType, level);
     }
 
-    @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", ordinal = 0))
+    @Definition(id = "blockState", local = @Local(type = BlockState.class))
+    @Definition(id = "is", method = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
+    @Definition(id = "POWDER_SNOW", field = "Lnet/minecraft/world/level/block/Blocks;POWDER_SNOW:Lnet/minecraft/world/level/block/Block;")
+    @Expression("blockState.is(POWDER_SNOW)")
+    @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean kilt$clearFireIfFluidExtinguishes(boolean original) {
         var entity = this;
-
         return original || this.isInFluidType((fluidType, height) -> entity.canFluidExtinguish(fluidType));
     }
 
-    @Definition(id = "hasImpulse", field = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hasImpulse:Z")
-    @Expression("this.hasImpulse = @(true)")
+    @Definition(id = "hitResult", local = @Local(type = HitResult.class))
+    @Expression("hitResult != null")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean kilt$usActualImpulseValue(boolean original, @Share("currentImpulse") LocalBooleanRef currentImpulse) {
-        return original && currentImpulse.get();
+    private boolean kilt$checkIsNotMiss(boolean original, @Local HitResult hitResult) {
+        return original && hitResult.getType() != HitResult.Type.MISS;
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;", ordinal = 1), cancellable = true)
-    private void kilt$cancelIfRemoved(CallbackInfo ci) {
-        if (this.isRemoved())
-            ci.cancel();
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
+    private ProjectileDeflection kilt$checkShouldHandleProjectileImpact(AbstractArrow instance, HitResult hitResult, Operation<ProjectileDeflection> original) {
+        if (EventHooks.onProjectileImpact(instance, hitResult)) {
+            return KiltNoOpImpls.NO_OP_PROJECTILE_DEFLECTION;
+        }
+
+        return original.call(instance, hitResult);
     }
 
-    @ModifyReturnValue(method = "canHitEntity", at = @At("RETURN"))
-    private boolean kilt$checkEntityIgnored(boolean original, @Local(argsOnly = true) Entity entity) {
-        return original && !this.ignoredEntities.contains(entity.getId());
+    @Definition(id = "hasImpulse", field = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hasImpulse:Z")
+    @Expression("this.hasImpulse = true")
+    @WrapWithCondition(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;")))
+    private boolean kilt$avoidSettingImpulseIfCancelled(AbstractArrow instance, boolean value, @Local ProjectileDeflection deflection) {
+        return deflection != KiltNoOpImpls.NO_OP_PROJECTILE_DEFLECTION;
     }
 }
