@@ -31,12 +31,14 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.client.ClientStartingCallback;
 import xyz.bluspring.kilt.injections.client.MinecraftInjection;
+import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 import xyz.bluspring.kilt.util.KiltHelper;
 
 import net.minecraft.client.DeltaTracker;
@@ -131,13 +133,16 @@ public abstract class MinecraftInject implements MinecraftInjection, IMinecraftE
         return ClientModLoader.completeModLoading(original);
     }
 
+    @Unique private static final String kilt$isEmptyBlockName = KiltRemapper.enhancedRemapper.mapMethodName("net/minecraft/world/level/LevelReader", "isEmptyBlock", "(Lnet/minecraft/core/BlockPos;)Z");
+
     @WrapOperation(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
     private BlockState kilt$checkIsEmptyBlock(ClientLevel instance, BlockPos blockPos, Operation<BlockState> original, @Local BlockPos pos, @Share("has_override") LocalBooleanRef hasOverride, @Share("is_empty") LocalBooleanRef isEmpty) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getClass(), LevelReader.class, "isEmptyBlock", BlockPos.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(instance.getClass(), LevelReader.class, kilt$isEmptyBlockName, boolean.class, BlockPos.class)) {
             hasOverride.set(true);
             isEmpty.set(instance.isEmptyBlock(blockPos));
             return Blocks.AIR.defaultBlockState();
         }
+
         return original.call(instance, blockPos);
     }
 

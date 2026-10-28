@@ -47,6 +47,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.world.entity.EntityInjection;
+import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 import xyz.bluspring.kilt.workarounds.InterimCalculation;
@@ -330,9 +331,11 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
         return lightningBolt.getDamage();
     }
 
+    @Unique private static final String kilt$getTypeName = KiltRemapper.enhancedRemapper.mapMethodName("net/minecraft/world/entity/Entity", "getType", "()Lnet/minecraft/world/entity/EntityType;");
+
     @ModifyReceiver(method = "getTypeName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityType;getDescription()Lnet/minecraft/network/chat/Component;"))
-    private EntityType kilt$tryUseCustomEntityType(EntityType instance) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(this.getClass(), Entity.class, "getType")) {
+    private EntityType<?> kilt$tryUseCustomEntityType(EntityType instance) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), Entity.class, kilt$getTypeName, EntityType.class)) {
             return this.getType();
         }
 

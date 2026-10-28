@@ -1,13 +1,9 @@
 package xyz.bluspring.kilt.injects.world.level.block.entity;
 
+import java.util.function.Supplier;
+
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import fr.catcore.cursedmixinextensions.annotations.ShadowSuper;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.attachment.AttachmentSync;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -16,15 +12,22 @@ import net.neoforged.neoforge.common.extensions.IBlockEntityExtension;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.Extends;
 import xyz.bluspring.kilt.injections.world.level.block.entity.BlockEntityInjection;
+import xyz.bluspring.kilt.loader.remap.KiltRemapper;
 import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.AttachmentHolderWorkaround;
 
-import java.util.function.Supplier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Extends(AttachmentHolder.class)
 @Mixin(BlockEntity.class)
@@ -38,9 +41,11 @@ public abstract class BlockEntityInject implements BlockEntityInjection, IBlockE
     @ShadowSuper("removeData")
     public abstract @Nullable <T> T kilt$super$removeData(AttachmentType<T> type);
 
+    @Unique private static final String kilt$getTypeName = KiltRemapper.enhancedRemapper.mapMethodName("net/minecraft/world/level/block/entity/BlockEntity", "getType", "()Lnet/minecraft/world/level/block/entity/BlockEntityType;");
+
     @ModifyReceiver(method = "isValidBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntityType;isValid(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
     private BlockEntityType<?> kilt$tryUseCustomGetType(BlockEntityType<?> instance, BlockState state) {
-        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), BlockEntity.class, "getType", BlockEntityType.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), BlockEntity.class, kilt$getTypeName, BlockEntityType.class)) {
             return this.getType();
         }
 
