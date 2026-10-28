@@ -4,15 +4,9 @@ import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
@@ -27,6 +21,23 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.entity.MobInjection;
+import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentHelperInjection;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 
 @Mixin(Mob.class)
 public abstract class MobInject extends LivingEntity implements MobInjection {
@@ -98,6 +109,16 @@ public abstract class MobInject extends LivingEntity implements MobInjection {
     private void kilt$checkMobDespawnEvent(CallbackInfo ci) {
         if (EventHooks.checkMobDespawn((Mob) (Object) this))
             ci.cancel();
+    }
+
+    @WrapOperation(method = "dropCustomDeathLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;processEquipmentDropChance(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+    private float kilt$wrapWithEquipmentSlot(ServerLevel level, LivingEntity entity, DamageSource damageSource, float equipmentDropChance, Operation<Float> original, @Local EquipmentSlot slot) {
+        try {
+            EnchantmentHelperInjection.kilt$currentSlot.set(slot);
+            return original.call(level, entity, damageSource, equipmentDropChance);
+        } finally {
+            EnchantmentHelperInjection.kilt$currentSlot.set(null);
+        }
     }
 
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))

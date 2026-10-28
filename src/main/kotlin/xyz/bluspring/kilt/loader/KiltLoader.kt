@@ -103,7 +103,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
     )
 
     // Otherwise, Neo mods trying to target local names end up failing miserably,
-    // due to NeoForge's mixin version being on 0.15.2, which notably misses this commit in 0.17.0
+    // due to NeoForge's mixin version being on 0.16.4, which notably misses this commit in 0.17.0
     // that fixes the actual parameter names - https://github.com/FabricMC/Mixin/commit/41a0eadd1847e03e1405811b3209badc98c597de
     override val fabricMixinCompatibilityVersion: Int = FabricUtil.COMPATIBILITY_0_14_0
 

@@ -5,17 +5,11 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.extensions.IItemExtension;
 import net.neoforged.neoforge.event.EventHooks;
+import org.apache.commons.lang3.mutable.MutableFloat;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,11 +19,24 @@ import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentHelperInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperInject implements EnchantmentHelperInjection {
     @Inject(method = "getItemEnchantmentLevel", at = @At("HEAD"), cancellable = true)
     private static void kilt$tryHandleDirectEnchantmentLevel(Holder<Enchantment> enchantment, ItemStack stack, CallbackInfoReturnable<Integer> cir) {
-        if (!EnchantmentHelperInjection.kilt$shouldUseTagEnchantment.get() && KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), Item.class, "getEnchantmentLevel", ItemStack.class, Holder.class)) {
+        if (!EnchantmentHelperInjection.kilt$shouldUseTagEnchantment.get() && KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), IItemExtension.class, "getEnchantmentLevel", ItemStack.class, Holder.class)) {
             cir.setReturnValue(stack.getEnchantmentLevel(enchantment));
         }
     }
@@ -46,7 +53,7 @@ public abstract class EnchantmentHelperInject implements EnchantmentHelperInject
     private static ItemEnchantments kilt$tryGetAllEnchantmentsFromLookup(ItemEnchantments value, @Local(argsOnly = true) ItemStack stack) {
         var lookup = CommonHooks.resolveLookup(Registries.ENCHANTMENT);
         if (lookup != null) {
-            if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), Item.class, "getAllEnchantments", ItemStack.class, HolderLookup.RegistryLookup.class)) {
+            if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), IItemExtension.class, "getAllEnchantments", ItemStack.class, HolderLookup.RegistryLookup.class)) {
                 return stack.getAllEnchantments(lookup);
             } else {
                 return EventHooks.getAllEnchantmentLevels(value, stack, lookup); // Kilt: Make sure to still call the event.
@@ -62,16 +69,46 @@ public abstract class EnchantmentHelperInject implements EnchantmentHelperInject
     private static ItemEnchantments kilt$tryGetAllEnchantments(ItemEnchantments value, @Local(argsOnly = true) ItemStack stack, @Local(argsOnly = true) LivingEntity entity) {
         var lookup = entity.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
 
-        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), Item.class, "getAllEnchantments", ItemStack.class, HolderLookup.RegistryLookup.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), IItemExtension.class, "getAllEnchantments", ItemStack.class, HolderLookup.RegistryLookup.class)) {
             return stack.getAllEnchantments(lookup);
         } else {
             return EventHooks.getAllEnchantmentLevels(value, stack, lookup); // Kilt: Make sure to still call the event.
         }
     }
 
+    @CreateStatic
+    private static float processEquipmentDropChance(ServerLevel level, LivingEntity entity, DamageSource source, float equipmentDropChance, @Nullable EquipmentSlot slot) {
+        try {
+            kilt$currentSlot.set(slot);
+            return EnchantmentHelper.processEquipmentDropChance(level, entity, source, equipmentDropChance);
+        } finally {
+            kilt$currentSlot.set(null);
+        }
+    }
+
+    @WrapOperation(method = "processEquipmentDropChance", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableFloat;floatValue()F"))
+    private static float kilt$handleModifyDropChanceEvent(MutableFloat instance, Operation<Float> original, ServerLevel level, LivingEntity entity, DamageSource damageSource, float equipmentDropChance) {
+        EventHooks.onEquipmentDropChance(level, entity, damageSource, instance, equipmentDropChance, kilt$currentSlot.get());
+        return original.call(instance);
+    }
+
+    @ModifyVariable(method = "hasTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
+    private static ItemEnchantments kilt$tryResolveGameplayOnlyEnchantments(ItemEnchantments original, @Local(argsOnly = true) ItemStack stack) {
+        var lookup = CommonHooks.resolveLookup(Registries.ENCHANTMENT);
+        if (lookup != null) {
+            if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(stack.getItem().getClass(), IItemExtension.class, "getAllEnchantments", ItemEnchantments.class, ItemStack.class, HolderLookup.RegistryLookup.class)) {
+                return stack.getAllEnchantments(lookup);
+            } else {
+                return EventHooks.getAllEnchantmentLevels(original, stack, lookup);
+            }
+        }
+
+        return original;
+    }
+
     @WrapOperation(method = {"getEnchantmentCost", "selectEnchantment"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
     private static int kilt$tryGetEnchantmentValueFromStack(Item instance, Operation<Integer> original, @Local(argsOnly = true) ItemStack stack) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), Item.class, "getEnchantmentValue", ItemStack.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(stack.getItem().getClass(), IItemExtension.class, "getEnchantmentValue", ItemStack.class)) {
             return stack.getEnchantmentValue();
         }
 
@@ -80,7 +117,7 @@ public abstract class EnchantmentHelperInject implements EnchantmentHelperInject
 
     @Inject(method = "method_60143", at = @At("HEAD"), cancellable = true)
     private static void kilt$tryCheckIsPrimaryItem(ItemStack itemStack, boolean bl, Holder<Enchantment> holder, CallbackInfoReturnable<Boolean> cir) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(itemStack.getItem().getClass(), Item.class, "isPrimaryItemFor", ItemStack.class, Holder.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(itemStack.getItem().getClass(), IItemExtension.class, "isPrimaryItemFor", ItemStack.class, Holder.class)) {
             cir.setReturnValue(itemStack.isPrimaryItemFor(holder));
         }
     }
