@@ -19,6 +19,10 @@ object KiltArchitecturyApiCompat : KiltWrappedModContainerEntrypoint {
             else
                 EventResult.pass()
         }
+
+        UnhandledLivingDeathCallback.EVENT.register { entity, source ->
+            EntityEvent.LIVING_DEATH.invoker().die(entity, source).isFalse
+        }
     }
 
     private val waitingForRegisterEvent = HashMultimap.create<Registry<*>, Runnable>()
@@ -28,10 +32,6 @@ object KiltArchitecturyApiCompat : KiltWrappedModContainerEntrypoint {
             for (runnable in this.waitingForRegisterEvent.get(event.registry)) {
                 runnable.run()
             }
-        }
-
-        UnhandledLivingDeathCallback.EVENT.register { entity, source ->
-            EntityEvent.LIVING_DEATH.invoker().die(entity, source).isFalse
         }
     }
 
