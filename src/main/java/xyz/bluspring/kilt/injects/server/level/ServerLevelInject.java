@@ -1,6 +1,13 @@
 // TRACKED HASH: 853e9e4639ba453c25a048d0905ec758c41a51dd
 package xyz.bluspring.kilt.injects.server.level;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -12,6 +19,33 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.neoforged.neoforge.attachment.AttachmentSync;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.attachment.LevelAttachmentsSavedData;
+import net.neoforged.neoforge.capabilities.CapabilityListenerHolder;
+import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.IOUtilities;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.ILevelExtension;
+import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.server.level.ServerLevelInjection;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -42,39 +76,10 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.LevelCallback;
 import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.attachment.LevelAttachmentsSavedData;
-import net.neoforged.neoforge.capabilities.CapabilityListenerHolder;
-import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.IOUtilities;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.extensions.ILevelExtension;
-import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
-import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.level.LevelEvent;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.server.level.ServerLevelInjection;
-import xyz.bluspring.kilt.injections.world.level.entity.PersistentEntitySectionManagerInjection;
-
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelInject extends Level implements ServerLevelInjection, ILevelExtension {
@@ -242,6 +247,11 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     @Override
     public Collection<PartEntity<?>> kilt$getPartEntities() {
         return this.kilt$entityParts.values();
+    }
+
+    @Override
+    public void syncData(AttachmentType<?> type) {
+        AttachmentSync.syncLevelUpdate((ServerLevel) (Object) this, type);
     }
 
     @Mixin(targets = "net.minecraft.server.level.ServerLevel$EntityCallbacks")

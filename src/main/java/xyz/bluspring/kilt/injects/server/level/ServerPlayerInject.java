@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -14,6 +16,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
+import net.neoforged.neoforge.attachment.AttachmentSync;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IBlockExtension;
@@ -33,6 +36,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.Kilt;
@@ -138,9 +142,12 @@ public abstract class ServerPlayerInject extends Player implements ServerPlayerI
         }
     }
 
-    @Inject(method = "changeDimension", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerPlayer;lastSentFood:I", shift = At.Shift.AFTER))
-    private void kilt$firePlayerChangedDimensionEventVanilla(DimensionTransition transition, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> oldLevel) {
-        EventHooks.firePlayerChangedDimensionEvent((ServerPlayer) (Object) this, oldLevel, transition.newLevel().dimension());
+    @Definition(id = "isChangingDimension", field = "Lnet/minecraft/server/level/ServerPlayer;isChangingDimension:Z")
+    @Expression("this.isChangingDimension = true")
+    @Inject(method = "changeDimension", at = @At("RETURN"), slice = @Slice(from = @At("MIXINEXTRAS:EXPRESSION")))
+    private void kilt$handleAttachmentSyncOnDimensionChange(DimensionTransition transition, CallbackInfoReturnable<Entity> cir, @Local ResourceKey<Level> dimension) {
+        AttachmentSync.syncInitialPlayerAttachments((ServerPlayer) (Object) this);
+        EventHooks.firePlayerChangedDimensionEvent(this, dimension, transition.newLevel().dimension());
     }
 
     // Handled by Fabric API

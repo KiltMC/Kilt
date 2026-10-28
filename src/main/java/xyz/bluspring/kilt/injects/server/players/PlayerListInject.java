@@ -12,6 +12,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBuf;
+import net.neoforged.neoforge.attachment.AttachmentSync;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.EventHooks;
@@ -62,6 +63,7 @@ public abstract class PlayerListInject {
 
     @Inject(method = "placeNewPlayer", at = @At("TAIL"))
     private void kilt$firePlayerLoginEvent(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
+        AttachmentSync.syncInitialPlayerAttachments(player);
         EventHooks.firePlayerLoggedIn(player);
     }
 
@@ -98,6 +100,7 @@ public abstract class PlayerListInject {
 
     @Inject(method = "respawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setHealth(F)V", shift = At.Shift.AFTER))
     private void kilt$firePlayerRespawnEvent(ServerPlayer player, boolean keepInventory, Entity.RemovalReason reason, CallbackInfoReturnable<ServerPlayer> cir, @Local(ordinal = 1) ServerPlayer newPlayer) {
+        AttachmentSync.syncInitialPlayerAttachments(newPlayer);
         EventHooks.firePlayerRespawnEvent(newPlayer, keepInventory);
     }
 
@@ -124,6 +127,11 @@ public abstract class PlayerListInject {
         }
 
         return original;
+    }
+
+    @Inject(method = "sendLevelInfo", at = @At("RETURN"))
+    private void kilt$syncLevelAttachments(ServerPlayer player, ServerLevel level, CallbackInfo ci) {
+        AttachmentSync.syncInitialLevelAttachments(level, player);
     }
 
     @Inject(method = "getPlayerAdvancements", at = @At("HEAD"), cancellable = true)

@@ -1,11 +1,12 @@
 package xyz.bluspring.kilt.injections.server.level;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.neoforged.neoforge.entity.PartEntity;
 import xyz.bluspring.kilt.injections.world.level.LevelInjection;
 import xyz.bluspring.kilt.util.KiltHelper;
+
+import net.minecraft.core.BlockPos;
 
 public interface ServerLevelInjection extends LevelInjection {
     default Int2ObjectMap<PartEntity<?>> kilt$getEntityParts() {

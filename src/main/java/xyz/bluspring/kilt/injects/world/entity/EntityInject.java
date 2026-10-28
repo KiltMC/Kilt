@@ -656,11 +656,13 @@ public abstract class EntityInject implements IEntityExtension, EntityInjection,
     }
 
     // Kilt: the answer was yes. thanks Expanded Combat.
-    public final <T> T setData(AttachmentType<T> type, T data) {
+    @Override
+    public <T> T setData(AttachmentType<T> type, T data) {
         return kilt$super$setData(type, data);
     }
 
-    public final void syncData(AttachmentType<?> type) {
+    @Override
+    public void syncData(AttachmentType<?> type) {
         AttachmentSync.syncEntityUpdate((Entity) (Object) this, type);
     }
 

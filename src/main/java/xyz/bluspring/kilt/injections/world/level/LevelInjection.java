@@ -6,6 +6,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import io.github.fabricators_of_create.porting_lib.extensions.common.LevelExtensions;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import xyz.bluspring.kilt.util.KiltHelper;
 
@@ -14,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-public interface LevelInjection {
+public interface LevelInjection extends IAttachmentHolder {
     default ArrayList<BlockSnapshot> kilt$getCapturedBlockSnapshots() {
         throw new IllegalStateException();
     }
