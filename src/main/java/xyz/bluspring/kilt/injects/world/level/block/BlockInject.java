@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.injects.world.level.block;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -7,7 +8,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.registries.GameData;
@@ -109,7 +109,7 @@ public abstract class BlockInject implements BlockInjection {
 
     @Unique
     private static void kilt$beginCapturingDrops() {
-        capturedDrops = new Object2ObjectAVLTreeMap<>();
+        capturedDrops = new LinkedHashMap<>();
     }
 
     @Unique
