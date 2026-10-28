@@ -1,30 +1,14 @@
 package xyz.bluspring.kilt.injects.server;
 
 import com.google.gson.Gson;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Cancellable;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.ServerAdvancementManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.neoforged.neoforge.common.conditions.ConditionalOps;
-import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.common.conditions.WithConditions;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.workarounds.ContextAwareReloadListenerWorkaround;
 
-import java.util.Optional;
+import net.minecraft.server.ServerAdvancementManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 
 @Mixin(ServerAdvancementManager.class)
 public abstract class ServerAdvancementManagerInject extends SimpleJsonResourceReloadListener implements ContextAwareReloadListenerWorkaround {
@@ -34,7 +18,8 @@ public abstract class ServerAdvancementManagerInject extends SimpleJsonResourceR
         super(gson, directory);
     }
 
-    @ModifyExpressionValue(method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/HolderLookup$Provider;createSerializationContext(Lcom/mojang/serialization/DynamicOps;)Lnet/minecraft/resources/RegistryOps;"))
+    // Kilt: handled by Fabric API
+    /*@ModifyExpressionValue(method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/HolderLookup$Provider;createSerializationContext(Lcom/mojang/serialization/DynamicOps;)Lnet/minecraft/resources/RegistryOps;"))
     private <V> RegistryOps<V> kilt$tryMakeConditionalContext(RegistryOps<V> original) {
         return this.kilt$makeConditionalOps(original);
     }
@@ -57,5 +42,5 @@ public abstract class ServerAdvancementManagerInject extends SimpleJsonResourceR
         } else {
             return original.call(instance, dynamicOps, o);
         }
-    }
+    }*/
 }
