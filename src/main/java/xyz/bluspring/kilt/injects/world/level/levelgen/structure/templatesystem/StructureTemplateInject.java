@@ -4,7 +4,6 @@ package xyz.bluspring.kilt.injects.world.level.levelgen.structure.templatesystem
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +13,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -45,7 +45,8 @@ public abstract class StructureTemplateInject implements StructureTemplateInject
         return StructureTemplateInjection.processEntityInfos(template, level, blockPos, structurePlaceSettings, structureEntityInfoList);
     }
 
-    private static final AtomicReference<StructureTemplate> kilt$template = new AtomicReference<>(null);
+    @Unique
+    private static final ThreadLocal<StructureTemplate> kilt$template = new ThreadLocal<>();
 
     @Shadow
     public static Vec3 transform(Vec3 target, Mirror mirror, Rotation rotation, BlockPos centerOffset) {
@@ -54,14 +55,18 @@ public abstract class StructureTemplateInject implements StructureTemplateInject
 
     @CreateStatic
     private static List<StructureTemplate.StructureBlockInfo> processBlockInfos(ServerLevelAccessor level, BlockPos pos, BlockPos pos2, StructurePlaceSettings structurePlaceSettings, List<StructureTemplate.StructureBlockInfo> list, @Nullable StructureTemplate template) {
-        kilt$template.set(template);
-        return StructureTemplate.processBlockInfos(level, pos, pos2, structurePlaceSettings, list);
+        try {
+            kilt$template.set(template);
+            return StructureTemplate.processBlockInfos(level, pos, pos2, structurePlaceSettings, list);
+        } finally {
+            kilt$template.set(null);
+        }
     }
 
     @WrapOperation(method = "processBlockInfos", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessor;processBlock(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate$StructureBlockInfo;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate$StructureBlockInfo;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;)Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate$StructureBlockInfo;"))
     private static StructureTemplate.StructureBlockInfo kilt$useForgeProcess(StructureProcessor instance, LevelReader level, BlockPos offset, BlockPos pos, StructureTemplate.StructureBlockInfo blockInfo, StructureTemplate.StructureBlockInfo relativeBlockInfo, StructurePlaceSettings settings, Operation<StructureTemplate.StructureBlockInfo> original) {
         if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(instance.getClass(), StructureProcessor.class, "process", StructureTemplate.StructureBlockInfo.class, LevelReader.class, BlockPos.class, BlockPos.class, StructureTemplate.StructureBlockInfo.class, StructureTemplate.StructureBlockInfo.class, StructurePlaceSettings.class))
-            return instance.process(level, offset, pos, blockInfo, relativeBlockInfo, settings, kilt$template.getAndSet(null));
+            return instance.process(level, offset, pos, blockInfo, relativeBlockInfo, settings, kilt$template.get());
         else
             return original.call(instance, level, offset, pos, blockInfo, relativeBlockInfo, settings);
     }
