@@ -58,7 +58,8 @@ public interface HolderInject<T> extends IHolderExtension<T> {
             if (this == obj)
                 return true;
 
-            // Kilt: this looks messy af but basically only support Holder.Reference <-> Holder.Reference
+            // Kilt: this looks messy af but basically only support Holder.Reference <-> Holder.Reference.
+            //       why? idk someone told me to and i guess it's a problem with Pufferfish Attributes
             if (((((Object) this).getClass() != Holder.Reference.class && !((Object) this instanceof DeferredHolder<?, ?>))
                 || (obj.getClass() != Holder.Reference.class && !(obj instanceof DeferredHolder<?, ?>))))
                 return super.equals(obj);
