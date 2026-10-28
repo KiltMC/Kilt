@@ -22,10 +22,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.entity.MobInjection;
 import xyz.bluspring.kilt.injections.world.item.enchantment.EnchantmentHelperInjection;
+import xyz.bluspring.kilt.workarounds.KiltFluidTags;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -38,11 +39,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.material.Fluid;
 
 @Mixin(Mob.class)
 public abstract class MobInject extends LivingEntity implements MobInjection {
     @Shadow public abstract ItemStack getBodyArmorItem();
     @Shadow public abstract boolean isBodyArmorItem(ItemStack itemStack);
+
+    @Shadow
+    protected abstract void jumpInLiquid(TagKey<Fluid> fluidTag);
 
     @Unique @Nullable private MobSpawnType spawnType;
     @Unique private boolean spawnCancelled = false;
@@ -126,10 +131,28 @@ public abstract class MobInject extends LivingEntity implements MobInjection {
         this.spawnType = spawnType;
     }
 
+    @Unique private Runnable kilt$onSuper;
+
     @Override
     public void jumpInFluid(FluidType type) {
-        // Kilt TODO: make this correct
-        this.jumpInLiquid(FluidTags.WATER);
+        this.jumpInLiquidInternal(() -> super.jumpInFluid(type));
+    }
+
+    @WrapOperation(method = "jumpInLiquid", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;jumpInLiquid(Lnet/minecraft/tags/TagKey;)V"))
+    private void kilt$tryHandleSuperJumpInFluid(Mob instance, TagKey<Fluid> fluidTag, Operation<Void> original) {
+        if (this.kilt$onSuper != null)
+            this.kilt$onSuper.run();
+        else
+            original.call(instance, fluidTag);
+    }
+
+    @Unique
+    private void jumpInLiquidInternal(Runnable onSuper) {
+        this.kilt$onSuper = onSuper;
+
+        this.jumpInLiquid(KiltFluidTags.EMPTY);
+
+        this.kilt$onSuper = null;
     }
 
     @Override
