@@ -137,7 +137,7 @@ public abstract class ItemEntityInject extends Entity implements ItemEntityInjec
 
     @WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onDestroyed(Lnet/minecraft/world/entity/item/ItemEntity;)V"))
     private void kilt$tryCallNeoDestroyed(ItemStack instance, ItemEntity itemEntity, Operation<Void> original, @Local(argsOnly = true) DamageSource source) {
-        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IItemExtension.class, "onDestroyed", ItemStack.class, ItemEntity.class, DamageSource.class)) {
+        if (KiltHelper.INSTANCE.hasMethodOverride(instance.getItem().getClass(), IItemExtension.class, "onDestroyed", ItemEntity.class, DamageSource.class)) {
             instance.onDestroyed(itemEntity, source);
         } else {
             original.call(instance, itemEntity);

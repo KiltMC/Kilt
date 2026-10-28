@@ -1,9 +1,27 @@
 package xyz.bluspring.kilt.injects.world.level.block;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.registries.GameData;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.world.level.block.BlockInjection;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.IdMapper;
@@ -17,19 +35,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.registries.GameData;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.world.level.block.BlockInjection;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 @Mixin(Block.class)
 public abstract class BlockInject implements BlockInjection {
@@ -87,6 +92,7 @@ public abstract class BlockInject implements BlockInjection {
     private static boolean kilt$tryCaptureResourceDrops(Level instance, Entity entity, Operation<Boolean> original) {
         if (capturedDrops != null && entity instanceof ItemEntity itemEntity) {
             capturedDrops.put(itemEntity, () -> original.call(instance, entity));
+            return true;
         }
 
         return original.call(instance, entity);
