@@ -80,20 +80,27 @@ object WorkaroundFixer {
                     insnNode.bsmArgs = newArgs
                 }
 
-                if (insnNode is FieldInsnNode && insnNode.owner == minecraftMapped) {
-                    // We need to remap Forge mods to use the GUI that they're expecting
-                    if (insnNode.name == "f_91065_" || insnNode.name == mcGuiMapped || insnNode.name == "gui") {
-                        val followingInsn = method.instructions.get(method.instructions.indexOf(insnNode) + 1)
-
-                        if (followingInsn.opcode == Opcodes.CHECKCAST && followingInsn is TypeInsnNode && followingInsn.desc == "net/minecraftforge/client/gui/overlay/ForgeGui") {
-                            newNodeMap[insnNode] = FieldInsnNode(Opcodes.GETFIELD, insnNode.owner, "kilt\$forgeGui", insnNode.desc)
-                        }
+                when (insnNode) {
+                    is MethodInsnNode if insnNode.owner == "java/lang/System" && insnNode.name == "exit" && insnNode.desc == "(I)V" -> {
+                        // See: KiltHelper.handleSystemExit()
+                        newNodeMap[insnNode] = MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/util/KiltHelper", "handleSystemExit", insnNode.desc)
                     }
-                } else if (insnNode is MethodInsnNode && insnNode.owner == "java/lang/System" && insnNode.name == "exit" && insnNode.desc == "(I)V") {
-                    // See: KiltHelper.handleSystemExit()
-                    newNodeMap[insnNode] = MethodInsnNode(Opcodes.INVOKESTATIC, "xyz/bluspring/kilt/util/KiltHelper", "handleSystemExit", insnNode.desc)
-                } else if (insnNode is TypeInsnNode && insnNode.opcode == Opcodes.INSTANCEOF && insnNode.desc == "org/violetmoon/quark/mixin/mixins/client/accessor/AccessorCustomCreativeSlot") {
-                    newNodeMap[insnNode] = TypeInsnNode(Opcodes.INSTANCEOF, customSlotMapped)
+
+                    is TypeInsnNode if insnNode.opcode == Opcodes.INSTANCEOF && insnNode.desc == "org/violetmoon/quark/mixin/mixins/client/accessor/AccessorCustomCreativeSlot" -> {
+                        newNodeMap[insnNode] = TypeInsnNode(Opcodes.INSTANCEOF, customSlotMapped)
+                    }
+
+                    is MethodInsnNode if insnNode.opcode == Opcodes.INVOKESPECIAL
+                        && insnNode.owner == KiltRemapper.remapClass("net/minecraft/world/item/crafting/Ingredient") && insnNode.name == "<init>"
+                        && insnNode.desc == "(Lnet/neoforged/neoforge/common/crafting/ICustomIngredient;)V" -> {
+                        newNodeMap[insnNode] = MethodInsnNode(
+                            insnNode.opcode,
+                            "xyz/bluspring/kilt/workarounds/resource/KiltCustomIngredient",
+                            insnNode.name,
+                            insnNode.desc,
+                            insnNode.itf
+                        )
+                    }
                 }
             }
 

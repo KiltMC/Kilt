@@ -16,8 +16,12 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.recipe.v1.ingredient.CustomIngredientSerializer
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Registry
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
@@ -31,11 +35,14 @@ import net.minecraft.world.level.block.state.BlockState
 import net.neoforged.bus.api.EventPriority
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.common.crafting.IngredientType
 import net.neoforged.neoforge.common.extensions.IBlockExtension
 import net.neoforged.neoforge.common.util.TriState
 import net.neoforged.neoforge.event.EventHooks
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.level.LevelEvent
+import net.neoforged.neoforge.registries.NeoForgeRegistries
+import net.neoforged.neoforge.registries.callback.AddCallback
 import net.neoforged.neoforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,12 +51,14 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.workarounds.resource.FabricCustomIngredientSerializer
 import net.fabricmc.fabric.api.util.TriState as FabricTriState
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
         // We have no reason to retain this info.
         KiltHelper.clearForgeClassNodes()
+        FabricCustomIngredientSerializer.EmptyCustomIngredient.TYPE // bonk
 
         registerFabricEvents()
 
@@ -78,6 +87,13 @@ class Kilt : ModInitializer {
                 ServerLivingEntityEvents.AFTER_DEATH.invoker().afterDeath(event.entity, event.source)
             }
         }
+
+        NeoForgeRegistries.INGREDIENT_TYPES.addCallback(object : AddCallback<IngredientType<*>> {
+            override fun onAdd(registry: Registry<IngredientType<*>>, id: Int, key: ResourceKey<IngredientType<*>>, value: IngredientType<*>) {
+                if (CustomIngredientSerializer.get(key.location()) == null)
+                    FabricCustomIngredientSerializer.getOrCreate(value)
+            }
+        })
     }
 
     @Suppress("removal")
@@ -290,5 +306,8 @@ class Kilt : ModInitializer {
                 KiltClient.lateRegisterEvents()
             }
         }
+
+        @JvmStatic
+        fun id(name: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, name)
     }
 }

@@ -54,6 +54,9 @@
         ],
         "afl:instrumentation": [
             "xyz.bluspring.kilt.loader.asm.KiltInstrumentationHandler"
+        ],
+        "kilt:mod_container": [
+            "xyz.bluspring.kilt.KiltModEventBusHandler"
         ]
     },
     "mixins": [
