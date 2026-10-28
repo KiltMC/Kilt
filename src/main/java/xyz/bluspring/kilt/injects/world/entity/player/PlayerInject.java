@@ -28,6 +28,7 @@ import net.neoforged.neoforge.common.extensions.IItemExtension;
 import net.neoforged.neoforge.common.extensions.IPlayerExtension;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -287,11 +288,39 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
             ci.cancel();
     }
 
-    // Kilt: Critical hit implemented by Porting Lib
-
     @WrapWithCondition(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
     private boolean kilt$avoidStrengthTickerReset(Player instance) {
         return false;
+    }
+
+    @Definition(id = "bl3", local = @Local(type = boolean.class, ordinal = 2))
+    @Expression("bl3")
+    @ModifyVariable(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"), ordinal = 2, slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getAttackDamageBonus(Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/damagesource/DamageSource;)F"), to = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;onGround()Z", ordinal = 1)))
+    private boolean kilt$handleCriticalHitEvent(boolean original, @Share(value = "critEvent", namespace = "kilt") LocalRef<CriticalHitEvent> critEvent, @Local(argsOnly = true) Entity target) {
+        critEvent.set(CommonHooks.fireCriticalHit((Player) (Object) this, target, original, original ? 1.5f : 1f));
+        return critEvent.get().isCriticalHit();
+    }
+
+    @Expression("1.5")
+    @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getAttackDamageBonus(Lnet/minecraft/world/entity/Entity;FLnet/minecraft/world/damagesource/DamageSource;)F"), to = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;onGround()Z", ordinal = 1)))
+    private float kilt$useDamageMultiplier(float original, @Share(value = "critEvent", namespace = "kilt") LocalRef<CriticalHitEvent> critEvent) {
+        var event = critEvent.get();
+        if (event != null && event.kilt$wasModified)
+            return event.getDamageMultiplier();
+
+        return original;
+    }
+
+    @Definition(id = "bl3", local = @Local(type = boolean.class, ordinal = 2))
+    @Expression("bl3 == false")
+    @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$checkShouldHandleSweepingCrit(boolean original, @Share(value = "critEvent", namespace = "kilt") LocalRef<CriticalHitEvent> critEvent) {
+        var event = critEvent.get();
+        if (event != null) {
+            return !(event.isCriticalHit() && event.disableSweep());
+        }
+
+        return original;
     }
 
     @Definition(id = "itemStack2", local = @Local(type = ItemStack.class, ordinal = 1))

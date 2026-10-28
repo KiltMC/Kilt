@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder
 import com.mojang.datafixers.util.Either
 import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.player.CriticalHitEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.tick.PlayerTickEvent
 import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
@@ -145,7 +144,7 @@ class Kilt : ModInitializer {
             CommonHooks.onEmptyLeftClick(event.entity)
         }
 
-        CriticalHitEvent.EVENT.register { event ->
+        /*CriticalHitEvent.EVENT.register { event ->
             val forgeEvent = CommonHooks.fireCriticalHit(event.entity, event.entity, event.isVanillaCritical, event.vanillaMultiplier)
 
             if (forgeEvent.isCriticalHit != event.isCriticalHit)
@@ -153,7 +152,7 @@ class Kilt : ModInitializer {
 
             if (forgeEvent.damageMultiplier != event.damageMultiplier)
                 event.damageMultiplier = forgeEvent.damageMultiplier
-        }
+        }*/
 
         /*PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
             CommonHooks.onEmptyClick(event.entity, event.hand)
