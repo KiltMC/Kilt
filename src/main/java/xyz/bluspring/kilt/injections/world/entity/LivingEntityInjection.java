@@ -1,13 +1,12 @@
 package xyz.bluspring.kilt.injections.world.entity;
 
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import java.util.Stack;
+
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import xyz.bluspring.kilt.util.KiltHelper;
 
-import java.util.Stack;
+import net.minecraft.world.entity.player.Player;
 
 public interface LivingEntityInjection {
     default Stack<DamageContainer> kilt$getDamageContainers() {
@@ -20,5 +19,9 @@ public interface LivingEntityInjection {
 
     default boolean shouldRiderFaceForward(Player player) {
         throw KiltHelper.createMixinException(LivingEntityInjection.class, "shouldRiderFaceForward");
+    }
+
+    default boolean kilt$wasDeathHandledByUs() {
+        throw KiltHelper.createMixinException(LivingEntityInjection.class, "kilt$wasDeathHandledByUs");
     }
 }

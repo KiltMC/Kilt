@@ -9,6 +9,7 @@ import net.neoforged.fml.ModContainer
 import net.neoforged.neoforge.event.EventHooks
 import net.neoforged.neoforge.registries.RegisterEvent
 import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
+import xyz.bluspring.kilt.api.event.UnhandledLivingDeathCallback
 
 object KiltArchitecturyApiCompat : KiltWrappedModContainerEntrypoint {
     fun initCommon() {
@@ -27,6 +28,10 @@ object KiltArchitecturyApiCompat : KiltWrappedModContainerEntrypoint {
             for (runnable in this.waitingForRegisterEvent.get(event.registry)) {
                 runnable.run()
             }
+        }
+
+        UnhandledLivingDeathCallback.EVENT.register { entity, source ->
+            EntityEvent.LIVING_DEATH.invoker().die(entity, source).isFalse
         }
     }
 

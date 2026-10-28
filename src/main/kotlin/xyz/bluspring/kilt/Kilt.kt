@@ -11,11 +11,14 @@ import io.github.fabricators_of_create.porting_lib.event.common.ExplosionEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.Unit
 import net.minecraft.world.InteractionResult
@@ -25,15 +28,18 @@ import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.state.BlockState
+import net.neoforged.bus.api.EventPriority
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.extensions.IBlockExtension
 import net.neoforged.neoforge.common.util.TriState
 import net.neoforged.neoforge.event.EventHooks
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.bluspring.kilt.api.event.UnhandledLivingDeathCallback
 import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
@@ -46,6 +52,32 @@ class Kilt : ModInitializer {
         KiltHelper.clearForgeClassNodes()
 
         registerFabricEvents()
+
+        // Some mods don't call super.die(). Guess it's our job to handle the events for everyone.
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, LivingDeathEvent::class.java) { event ->
+            if (!event.entity.`kilt$wasDeathHandledByUs`() && !event.isCanceled) {
+                val level = event.entity.level()
+                if (level !is ServerLevel)
+                    return@addListener
+
+                val plEvent = io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDeathEvent(event.entity, event.source)
+                if (plEvent.post()) {
+                    event.isCanceled = true
+                    return@addListener
+                }
+
+                if (UnhandledLivingDeathCallback.EVENT.invoker().shouldCancelUnhandledLivingDeath(event.entity, event.source)) {
+                    event.isCanceled = true
+                    return@addListener
+                }
+
+                val killer = event.source.directEntity
+                if (killer != null)
+                    ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.invoker().afterKilledOtherEntity(level, killer, event.entity)
+
+                ServerLivingEntityEvents.AFTER_DEATH.invoker().afterDeath(event.entity, event.source)
+            }
+        }
     }
 
     @Suppress("removal")

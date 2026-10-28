@@ -47,6 +47,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -489,6 +490,8 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
     private void kilt$checkLivingDeath(DamageSource damageSource, CallbackInfo ci) {
         if (CommonHooks.onLivingDeath((LivingEntity) (Object) this, damageSource))
             ci.cancel();
+
+        this.kilt$wasDeathHandledByUs = true;
     }
 
     @WrapOperation(method = "createWitherRose", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
@@ -940,5 +943,12 @@ public abstract class LivingEntityInject extends Entity implements ILivingEntity
         }
 
         return original;
+    }
+
+    @Unique private boolean kilt$wasDeathHandledByUs;
+
+    @Override
+    public boolean kilt$wasDeathHandledByUs() {
+        return this.kilt$wasDeathHandledByUs;
     }
 }
