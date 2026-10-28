@@ -1,16 +1,15 @@
 // TRACKED HASH: 3c15b31dfec44b9332f86e2c6d5babfb7b181f59
 package xyz.bluspring.kilt.injects.server.packs.repository;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.*;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
-import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackCompatibility;
-import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.world.flag.FeatureFlagSet;
+import kotlin.collections.CollectionsKt;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,13 +19,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.server.packs.OverlayMetadataSectionInjection;
-import xyz.bluspring.kilt.injections.server.packs.repository.PackMetadataInjection;
 import xyz.bluspring.kilt.injections.server.packs.repository.PackInjection;
+import xyz.bluspring.kilt.injections.server.packs.repository.PackMetadataInjection;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackCompatibility;
+import net.minecraft.world.flag.FeatureFlagSet;
+
+import net.fabricmc.fabric.impl.resource.conditions.OverlayConditionsMetadata;
 
 @Mixin(Pack.class)
 public abstract class PackInject implements PackInjection {
@@ -85,9 +90,27 @@ public abstract class PackInject implements PackInjection {
     @WrapOperation(method = "readPackMetadata", at = @At(value = "NEW", target = "(Lnet/minecraft/network/chat/Component;Lnet/minecraft/server/packs/repository/PackCompatibility;Lnet/minecraft/world/flag/FeatureFlagSet;Ljava/util/List;)Lnet/minecraft/server/packs/repository/Pack$Metadata;"))
     private static Pack.Metadata kilt$addForgeDataToInfo(Component component, PackCompatibility packCompatibility, FeatureFlagSet featureFlagSet, List<String> list, Operation<Pack.Metadata> original, @Local(argsOnly = true) int version, @Local PackMetadataSection section, @Local PackResources resources) throws IOException {
         var neoOverlays = resources.getMetadataSection(OverlayMetadataSectionInjection.NEOFORGE_TYPE);
+        var fabricOverlays = resources.getMetadataSection(OverlayConditionsMetadata.SERIALIZER); // Kilt: if Fabric has it then let them take over.
+
         if (neoOverlays != null) {
             list = new ArrayList<>(list);
-            list.addAll(neoOverlays.overlaysForVersion(version));
+            var potentialOverlays = neoOverlays.overlaysForVersion(version);
+
+            if (fabricOverlays != null) {
+                for (String overlay : potentialOverlays) {
+                    // Kilt: Fabric has this overlay directory, it may or may not have passed on their end, but either way
+                    // we should ignore ours outright then.
+                    if (CollectionsKt.any(fabricOverlays.overlays(), e -> e.directory().equals(overlay)))
+                        continue;
+
+                    // Kilt: Okay, checks passed, let's add ours.
+                    list.add(overlay);
+                }
+            } else {
+                // Kilt: most likely ours, let's move forward.
+                list.addAll(potentialOverlays);
+            }
+
             list = List.copyOf(list);
         }
         var info = original.call(component, packCompatibility, featureFlagSet, list);
