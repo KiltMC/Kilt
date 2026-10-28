@@ -3,7 +3,7 @@
 ## Generative AI
 No generative AI ("vibe coding") may be used for writing code within Kilt's codebase. It may be used to assist
 (i.e. explaining concepts to you), but the code has to come from you. You may not use generative AI
-in creating pull requests either, even if you may not understand English, you may write the information
+in creating pull request messages either, even if you may not understand English, you may write the information
 for your pull request in your native language instead.
 
 ## Mixins
