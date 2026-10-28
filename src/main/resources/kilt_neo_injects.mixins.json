@@ -601,6 +601,7 @@
         "world.level.levelgen.structure.StructureStartInject",
         "world.level.levelgen.structure.templatesystem.StructureProcessorInject",
         "world.level.levelgen.structure.templatesystem.StructureTemplateInject",
+        "world.level.levelgen.structure.templatesystem.StructureTemplateInject$PaletteInject",
         "world.level.lighting.BlockLightEngineInject",
         "world.level.lighting.LightEngineInject",
         "world.level.material.FlowingFluidInject",
