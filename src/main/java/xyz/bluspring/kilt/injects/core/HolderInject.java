@@ -1,12 +1,10 @@
 // TRACKED HASH: ea9681f393c5ebdcf5011d9367e1033462ba9c4c
 package xyz.bluspring.kilt.injects.core;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderOwner;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagKey;
+import java.util.stream.Stream;
+
 import net.neoforged.neoforge.common.extensions.IHolderExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -15,7 +13,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.bluspring.kilt.injections.core.HolderLookupInjection;
 
-import java.util.stream.Stream;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderOwner;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 @Mixin(Holder.class)
 public interface HolderInject<T> extends IHolderExtension<T> {
@@ -55,6 +57,11 @@ public interface HolderInject<T> extends IHolderExtension<T> {
         public boolean equals(Object obj) {
             if (this == obj)
                 return true;
+
+            // Kilt: this looks messy af but basically only support Holder.Reference <-> Holder.Reference
+            if (((((Object) this).getClass() != Holder.Reference.class && !((Object) this instanceof DeferredHolder<?, ?>))
+                || (obj.getClass() != Holder.Reference.class && !(obj instanceof DeferredHolder<?, ?>))))
+                return super.equals(obj);
 
             return obj instanceof Holder<?> h && h.kind() == Holder.Kind.REFERENCE && ((IHolderExtension<T>) h).getKey() == this.key();
         }
