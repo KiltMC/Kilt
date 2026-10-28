@@ -1,12 +1,18 @@
 package xyz.bluspring.kilt.injects.world.entity.ai.navigation;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 
 @Mixin(PathNavigation.class)
 public abstract class PathNavigationInject {
@@ -17,8 +23,20 @@ public abstract class PathNavigationInject {
         if (original != 0.5) // mod compat
             return original;
 
-        return (this.mob.getBbWidth() + 1.0) / 2.0;
+        return ((int) (this.mob.getBbWidth() + 1)) / 2.0;
     }
 
-    // TODO: we need to impl a < to <= but trying to figure out how to properly do this....
+    // MixinExtras beloved
+    @Definition(id = "d", local = @Local(type = double.class, ordinal = 0))
+    @Definition(id = "f", local = @Local(type = double.class, ordinal = 2))
+    @Definition(id = "maxDistanceToWaypoint", field = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;maxDistanceToWaypoint:F")
+    @Expression(value = "d < (double) this.maxDistanceToWaypoint", id = "firstComp")
+    @Expression(value = "f < (double) this.maxDistanceToWaypoint", id = "secondComp")
+    @WrapOperation(method = "followThePath", at = {
+        @At(value = "MIXINEXTRAS:EXPRESSION", id = "firstComp"),
+        @At(value = "MIXINEXTRAS:EXPRESSION", id = "secondComp"),
+    })
+    private boolean kilt$checkEqualityInComparison(double left, double right, Operation<Boolean> original) {
+        return original.call(left, right) || left == right;
+    }
 }
