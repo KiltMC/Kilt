@@ -5,10 +5,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.InsnList
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.VarInsnNode
+import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
@@ -250,7 +247,10 @@ class KiltEarlyRiser : Runnable {
                         methodNode.instructions.insertBefore(methodNode.instructions.first, InsnList().apply {
                             this.add(VarInsnNode(Opcodes.ALOAD, 0))
                             this.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, liquidBlock, "getFluid", "()L$flowingFluid;"))
+                            this.add(InsnNode(Opcodes.POP))
                         })
+
+                        methodNode.maxStack = maxOf(methodNode.maxStack, 1)
                     }
                 }
             }
