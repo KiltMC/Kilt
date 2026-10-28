@@ -5,10 +5,8 @@ import io.github.fabricators_of_create.porting_lib.event.client.TextureAtlasStit
 import io.github.fabricators_of_create.porting_lib.models.geometry.RegisterGeometryLoadersCallback
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.neoforged.fml.ModLoader
@@ -33,9 +31,9 @@ class KiltClient : ClientModInitializer {
             Kilt.loader.postEvent(RegisterParticleProvidersEvent(Minecraft.getInstance().particleEngine))
         }*/
 
-        ItemTooltipCallback.EVENT.register { stack, context, flags, components ->
+        /*ItemTooltipCallback.EVENT.register { stack, context, flags, components ->
             EventHooks.onItemTooltip(stack, null, components, flags, context)
-        }
+        }*/
 
         TextureAtlasStitchedEvent.EVENT.register { event ->
             val forgeEvent = net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent(event.atlas)
@@ -53,7 +51,7 @@ class KiltClient : ClientModInitializer {
         }
 
         ScreenEvents.BEFORE_INIT.register { client, screen, width, height ->
-            ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
+            /*ScreenMouseEvents.allowMouseClick(screen).register { _, mouseX, mouseY, button ->
                 !ClientHooks.onScreenMouseClickedPre(screen, mouseX, mouseY, button)
             }
 
@@ -75,7 +73,7 @@ class KiltClient : ClientModInitializer {
 
             ScreenMouseEvents.afterMouseScroll(screen).register { _, mouseX, mouseY, scrollX, scrollY ->
                 ClientHooks.onScreenMouseScrollPost(Minecraft.getInstance().mouseHandler, screen, scrollX, scrollY)
-            }
+            }*/
 
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, key, scanCode, modifiers ->
                 !ClientHooks.onScreenKeyPressedPre(screen, key, scanCode, modifiers)

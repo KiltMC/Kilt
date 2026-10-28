@@ -102,10 +102,10 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
             .add(NeoForgeMod.CREATIVE_FLIGHT);
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    /*@Inject(method = "tick", at = @At("HEAD")) // Kilt: handled by Porting Lib
     public void kilt$playerTickStart(CallbackInfo ci) {
         EventHooks.firePlayerTickPre((Player) (Object) this);
-    }
+    }*/
 
     @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isDay()Z", ordinal = 0))
     private boolean kilt$checkShouldEntityContinueSleeping(boolean original) {
@@ -120,10 +120,10 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
         }
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
+    /*@Inject(method = "tick", at = @At("TAIL")) // Kilt: handled by Porting Lib
     public void kilt$playerTickEnd(CallbackInfo ci) {
         EventHooks.firePlayerTickPost((Player) (Object) this);
-    }
+    }*/
 
     @Inject(method = "updatePlayerPose", at = @At("HEAD"), cancellable = true)
     private void kilt$useForcedPose(CallbackInfo ci) {

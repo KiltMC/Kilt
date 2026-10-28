@@ -1,6 +1,7 @@
 // TRACKED HASH: debf6874a4415fcbb527c106a281c5bd27a0b454
 package xyz.bluspring.kilt.injects.world.item;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,6 +20,7 @@ import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.common.MutableDataComponentHolder;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IItemStackExtension;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -37,6 +39,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,9 +50,11 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -240,11 +245,11 @@ public abstract class ItemStackInject implements MutableDataComponentHolder, IIt
         return original.call(instance, chatFormatting);
     }
 
-//    @ModifyReturnValue(method = "getTooltipLines", at = @At(value = "RETURN", ordinal = 1)) Handled by fabric oops
-//    private List<Component> onItemTooltip(List<Component> original, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag) {
-//        EventHooks.onItemTooltip((ItemStack) (Object) this, player, original, tooltipFlag, tooltipContext);
-//        return original;
-//    }
+    @ModifyReturnValue(method = "getTooltipLines", at = @At(value = "RETURN", ordinal = 1))
+    private List<Component> onItemTooltip(List<Component> original, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag) {
+        EventHooks.onItemTooltip((ItemStack) (Object) this, player, original, tooltipFlag, tooltipContext);
+        return original;
+    }
 
     // Kilt: okay seriously what's the point of this?
     @Override

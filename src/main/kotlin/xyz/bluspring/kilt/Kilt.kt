@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.neoforged.neoforge.common.CommonHooks
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.common.extensions.IBlockExtension
+import net.neoforged.neoforge.common.util.TriState
 import net.neoforged.neoforge.event.EventHooks
 import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.server.ServerLifecycleHooks
@@ -37,6 +38,7 @@ import xyz.bluspring.kilt.client.KiltClient
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
+import net.fabricmc.fabric.api.util.TriState as FabricTriState
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
@@ -83,10 +85,12 @@ class Kilt : ModInitializer {
 
             if (forgeEvent.isCanceled)
                 event.isCanceled = true
-        }
 
-        CriticalHitEvent.EVENT.register { event ->
-            CommonHooks.fireCriticalHit(event.entity, event.target, event.isVanillaCritical, event.damageMultiplier)
+            if (forgeEvent.useBlock != TriState.DEFAULT)
+                event.useBlock = FabricTriState.of(forgeEvent.useBlock.isTrue)
+
+            if (forgeEvent.useItem != TriState.DEFAULT)
+                event.useItem = FabricTriState.of(forgeEvent.useItem.isTrue)
         }
 
         PlayerInteractEvent.LeftClickEmpty.EVENT.register { event ->
@@ -103,9 +107,9 @@ class Kilt : ModInitializer {
                 event.damageMultiplier = forgeEvent.damageMultiplier
         }
 
-        PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
+        /*PlayerInteractEvent.RightClickEmpty.EVENT.register { event ->
             CommonHooks.onEmptyClick(event.entity, event.hand)
-        }
+        }*/
 
         EntitySleepEvents.ALLOW_SLEEPING.register { player, pos ->
             if (player !is ServerPlayer) // istg

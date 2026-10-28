@@ -98,7 +98,7 @@ public abstract class PlayerListInject {
 
     @Inject(method = "respawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setHealth(F)V", shift = At.Shift.AFTER))
     private void kilt$firePlayerRespawnEvent(ServerPlayer player, boolean keepInventory, Entity.RemovalReason reason, CallbackInfoReturnable<ServerPlayer> cir, @Local(ordinal = 1) ServerPlayer newPlayer) {
-        EventHooks.firePlayerRespawnEvent(player, keepInventory);
+        EventHooks.firePlayerRespawnEvent(newPlayer, keepInventory);
     }
 
     @Inject(method = "op", at = @At("HEAD"), cancellable = true)

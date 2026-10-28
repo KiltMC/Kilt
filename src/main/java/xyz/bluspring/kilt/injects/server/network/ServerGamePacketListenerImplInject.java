@@ -7,20 +7,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.network.Connection;
-import net.minecraft.network.chat.ChatDecorator;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ClientInformation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
-import net.minecraft.server.network.ServerCommonPacketListenerImpl;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ClientInformationUpdatedEvent;
@@ -31,8 +17,21 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.client.multiplayer.CommonListenerCookieInjection;
+
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.ChatDecorator;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplInject extends ServerCommonPacketListenerImpl {
@@ -100,14 +99,14 @@ public abstract class ServerGamePacketListenerImplInject extends ServerCommonPac
 
     @Mixin(targets = "net.minecraft.server.network.ServerGamePacketListenerImpl$1")
     public abstract static class AnonymousServerboundInteractPacketHandlerInject {
-        @Inject(method = "method_33898", at = @At("HEAD"), cancellable = true)
+        /*@Inject(method = "method_33898", at = @At("HEAD"), cancellable = true) // Kilt: handled by Porting Lib
         private static void kilt$tryHandleInteractEntityAtEvent(Vec3 vec3, ServerPlayer player, Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
             // Kilt: it's so interesting how Neo doesn't reuse the variables that are passed through via the lambda.
             InteractionResult onInteractEntityAtResult = CommonHooks.onInteractEntityAt(player, entity, vec3, hand);
             if (onInteractEntityAtResult != null) {
                 cir.setReturnValue(onInteractEntityAtResult);
             }
-        }
+        }*/
     }
 
     @ModifyExpressionValue(method = "handlePlayerAbilities", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;mayfly:Z", opcode = Opcodes.GETFIELD))

@@ -2,29 +2,26 @@
 package xyz.bluspring.kilt.injects.world.level;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 @Mixin(Explosion.class)
 public abstract class ExplosionInject {
     @Shadow @Final private Level level;
 
-    @Inject(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;<init>(DDD)V", ordinal = 1))
+    /*@Inject(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;<init>(DDD)V", ordinal = 1)) // Kilt: handled by Porting Lib
     private void kilt$callNeoExplosionDetonate(CallbackInfo ci, @Local List<Entity> entities, @Local(ordinal = 0) float diameter) {
         EventHooks.onExplosionDetonate(this.level, (Explosion) (Object) this, entities, diameter);
-    }
+    }*/
 
     @ModifyVariable(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"), ordinal = 1)
     private Vec3 kilt$modifyExplosionKnockback(Vec3 original, @Local Entity entity) {

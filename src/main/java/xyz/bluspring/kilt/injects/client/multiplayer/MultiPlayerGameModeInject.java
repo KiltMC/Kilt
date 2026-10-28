@@ -32,7 +32,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -47,7 +46,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
 
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeInject {
@@ -193,8 +191,8 @@ public abstract class MultiPlayerGameModeInject {
         return original;
     }
 
-    // Kilt: handled via Architectury
-    @Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder;"), cancellable = true)
+    // Kilt: handled via Porting Lib
+    /*@Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder;"), cancellable = true)
     private void kilt$callItemRightClickEvent(InteractionHand interactionHand, Player player, MutableObject<InteractionResult> mutableObject, int i, CallbackInfoReturnable<Packet> cir, @Local ServerboundUseItemPacket packet) {
         var cancelResult = CommonHooks.onItemRightClick(player, interactionHand);
 
@@ -202,7 +200,7 @@ public abstract class MultiPlayerGameModeInject {
             mutableObject.setValue(cancelResult);
             cir.setReturnValue(packet);
         }
-    }
+    }*/
 
     @Inject(method = "method_41929", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V", shift = At.Shift.AFTER))
     private void kilt$handleForgeDestroyItemEvent(InteractionHand interactionHand, Player player, MutableObject mutableObject, int i, CallbackInfoReturnable<Packet> cir, @Local(ordinal = 0) ItemStack stack, @Local(ordinal = 1) ItemStack stack2) {
@@ -211,7 +209,7 @@ public abstract class MultiPlayerGameModeInject {
         }
     }
 
-    @Inject(method = "interactAt", at = @At("TAIL"), cancellable = true)
+    /*@Inject(method = "interactAt", at = @At("TAIL"), cancellable = true) // Kilt: handled by Porting Lib
     private void kilt$handleInteractEntityEvent(Player player, Entity target, EntityHitResult ray, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (this.localPlayerMode == GameType.SPECTATOR) {
             cir.setReturnValue(InteractionResult.PASS);
@@ -221,5 +219,5 @@ public abstract class MultiPlayerGameModeInject {
         var cancelResult = CommonHooks.onInteractEntityAt(player, target, ray, hand);
         if (cancelResult != null)
             cir.setReturnValue(cancelResult);
-    }
+    }*/
 }
