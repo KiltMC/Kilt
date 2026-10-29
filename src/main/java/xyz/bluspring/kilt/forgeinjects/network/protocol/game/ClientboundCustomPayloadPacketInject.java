@@ -7,6 +7,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
+
+import io.netty.buffer.Unpooled;
 import net.minecraftforge.network.ICustomPacket;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,7 +32,9 @@ public abstract class ClientboundCustomPayloadPacketInject implements ICustomPac
 
     @Override
     public @Nullable FriendlyByteBuf getInternalData() {
-        return this.getData();
+        var heapCopy = Unpooled.buffer(this.data.readableBytes());
+        heapCopy.writeBytes(this.data.slice());
+        return new FriendlyByteBuf(heapCopy);
     }
 
     @Override
