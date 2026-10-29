@@ -121,6 +121,13 @@ allprojects {
             name = "Cafeteria Dev"
         }
 
+        maven("https://maven.jamieswhiteshirt.com/libs-release") {
+            name = "JamiesWhiteShirt Dev"
+            content {
+                includeGroup("com.jamieswhiteshirt")
+            }
+        }
+
         maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/") {
             name = "Fuzs Mod Resources"
         }
@@ -384,7 +391,7 @@ dependencies {
 
 configurations.all {
     exclude("cpw.mods", "modlauncher")
-    exclude("com.jamieswhiteshirt", "reach-entity-attributes")
+//    exclude("com.jamieswhiteshirt", "reach-entity-attributes")
 }
 
 // why isn't this default?
