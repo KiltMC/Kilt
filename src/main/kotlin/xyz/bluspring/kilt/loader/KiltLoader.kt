@@ -17,7 +17,9 @@ import kotlinx.coroutines.withContext
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.util.FileSystemUtil
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.ForgeStatesProvider
 import net.minecraftforge.eventbus.api.Event
@@ -44,9 +46,13 @@ import org.apache.maven.artifact.versioning.VersionRange
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Type
 import org.spongepowered.asm.mixin.FabricUtil
+import org.spongepowered.asm.mixin.Mixins
 import thedarkcolour.kotlinforforge.KotlinModContainer
 import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
+import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
+import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
@@ -74,6 +80,9 @@ import kotlin.io.path.*
 
 class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     private val tomlParser = TomlParser()
+    private val loadedModIds = mutableSetOf<String>()
+
+    private val bridgedModDefinitions = mutableListOf<ModDefinition>()
 
     private val environment = KiltEnvironment()
     var config = KiltLoaderConfig()
@@ -152,6 +161,15 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         // Load all mod definitions. This is recursive, and since we also need to handle JiJ, it's separated into another method.
         return loadModDefinitions(path)
     }
+
+    override fun modExistsNatively(id: String): Boolean {
+        // Lie to Knit so we can selectively load stuff from this JAR.
+        if (KiltModCompatBridgeManager.canMakeActive(id))
+            return false
+
+        return super.modExistsNatively(id)
+    }
+
 
     override fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
         if (FORGE_TO_FABRIC_MODS.contains(dependencyId))
@@ -523,6 +541,31 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     override fun finishModScanning() {
+        // Validate the compatibility bridges
+        val failedException = RuntimeException("Failed to load mod compatibility bridges between Fabric and NeoForge mods!")
+        for ((entry, _) in KiltModCompatBridgeManager.entries) {
+            // Make sure the environment is valid for these bridges before applying them.
+            if (entry.environment != ModEnvironment.BOTH) {
+                if (FabricLoader.getInstance().environmentType == EnvType.CLIENT && entry.environment != ModEnvironment.CLIENT)
+                    continue
+
+                if (FabricLoader.getInstance().environmentType == EnvType.SERVER && entry.environment != ModEnvironment.SERVER)
+                    continue
+            }
+
+            try {
+                entry.strategy.checkValid(entry.fabricModId, entry.neoForgeModId)
+            } catch (e: BridgeFailedException) {
+                failedException.addSuppressed(e)
+                Kilt.logger.error("Failed to load mod compatibility bridge between Fabric mod ID ${entry.fabricModId} and NeoForge mod ID ${entry.neoForgeModId}!", e)
+            }
+        }
+
+        if (failedException.suppressed.isNotEmpty()) {
+            failedException.stackTrace = arrayOf() // We don't want to overwhelm the user with a stack trace.
+            KnitLoader.instance.displayError("Kilt: Failed to load mod compatibility bridges!", failedException)
+        }
+
         val graph = this.mods.buildGraph()
         val sorted = TopologicalSort.topologicalSort(graph, getForgeNaturalOrder())
 
@@ -564,6 +607,16 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         // Then creates the mod containers for each mod.
         for (definition in definitions) {
+            loadedModIds.add(definition.id)
+
+            // Don't add the mods that probably shouldn't exist into here.
+            if (KiltModCompatBridgeManager.canMakeActive(definition.id)) {
+                // Directly inject into the classpath.
+                KnitLoader.instance.injectIntoClasspath(definition.path)
+                this.bridgedModDefinitions.add(definition)
+                continue
+            }
+
             val config = definition.additionalData["config"] as NightConfigWrapper
 
             mods.add(ForgeMod(definition,
@@ -602,6 +655,35 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
 
         // Load all of the Forge access transformers
         AccessTransformerLoader.runTransformers()
+
+        val rootsField = ModContainerImpl::class.java.getDeclaredField("roots").apply {
+            isAccessible = true
+        }
+
+        for ((entry, _) in KiltModCompatBridgeManager.entries) {
+            if (KiltModCompatBridgeManager.isActive(entry)) {
+                // Handle loading compatibility mixins where necessary.
+                for (mixinConfig in entry.enabledMixinConfigs) {
+                    Mixins.addConfiguration(mixinConfig)
+                }
+
+                for (config in Mixins.getConfigs()) {
+                    if (entry.enabledMixinConfigs.contains(config.name)) {
+                        config.config.decorate(FabricUtil.KEY_MOD_ID, entry.fabricModId)
+                        config.config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_0_14_0)
+                    }
+                }
+
+                // Inject the Neo paths into their native Fabric mods.
+                val neoDefinition = this.bridgedModDefinitions.first { definition -> definition.id == entry.neoForgeModId }
+                val fabricContainer = FabricLoader.getInstance().getModContainer(entry.fabricModId).orElseThrow()
+
+                val paths = fabricContainer.rootPaths.toMutableList()
+                paths.add(FileSystemUtil.getJarFileSystem(neoDefinition.path, FileSystemUtil.AccessMode.READ_WRITE).get().rootDirectories.first())
+
+                rootsField.set(fabricContainer, paths)
+            }
+        }
     }
 
     fun scanModClasses() {
@@ -676,6 +758,9 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
         Kilt.logger.info("Starting initialization of Forge mods...")
 
         val exception = RuntimeException("Failed to load Forge mods in Kilt!")
+
+        // Initialize any compatibility bridges that have been registered
+        KiltModCompatBridgeManager.processLoadedMods()
 
         // Initialize @Mod annotated constructors
         initMods(exception)
@@ -970,7 +1055,7 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
     }
 
     fun hasMod(id: String): Boolean {
-        return mods.any { it != null && it.modId == id }
+        return this.loadedModIds.contains(id)
     }
 
     private var statesProvider: ForgeStatesProvider? = null
