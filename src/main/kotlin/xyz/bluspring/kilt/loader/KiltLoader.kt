@@ -50,7 +50,6 @@ import org.spongepowered.asm.mixin.Mixins
 import thedarkcolour.kotlinforforge.KotlinModContainer
 import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
 import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
