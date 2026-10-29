@@ -25,6 +25,8 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MethodBasedModifi
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.MixinModifier
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinHelpers.annotationValuesToMap
+import xyz.bluspring.kilt.loader.remap.MixinHelpers.mapToAnnotationValues
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinRemapper
 
 object KiltMixinModifications {
@@ -671,32 +673,6 @@ object KiltMixinModifications {
         return AnnotationNode(annotationType).apply {
             this.values = mapToAnnotationValues(variables)
         }
-    }
-
-    fun mapToAnnotationValues(map: Map<String, Any>): List<Any> {
-        val values = mutableListOf<Any>()
-
-        for ((key, v) in map) {
-            values.add(key)
-            values.add(v)
-        }
-
-        return values
-    }
-
-    fun annotationValuesToMap(values: List<Any>): Map<String, Any> {
-        val map = mutableMapOf<String, Any>()
-
-        var currentKey = ""
-        for ((index, value) in values.withIndex()) {
-            if ((index and 1) == 0) {
-                currentKey = value as String
-            } else {
-                map[currentKey] = value
-            }
-        }
-
-        return map
     }
 
     private fun at(value: String, target: String? = null, variables: Map<String, Any> = mapOf(), ordinal: Int? = null, remap: Boolean? = null, shift: At.Shift? = null): AnnotationNode {

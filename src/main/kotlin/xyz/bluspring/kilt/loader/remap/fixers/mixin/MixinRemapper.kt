@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.KiltEnhancedRemapper
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.loader.remap.MixinRefmap
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper.MIXIN_TYPE
 import xyz.bluspring.kilt.util.KiltHelper
@@ -31,7 +32,7 @@ object MixinRemapper {
         if (annotationNode.values == null)
             return annotationNode
 
-        val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+        val values = MixinHelpers.annotationValuesToMap(annotationNode.values).toMutableMap()
 
         // Remap accessor/invoker
         if (annotationNode.desc == ACCESSOR_TYPE.descriptor || annotationNode.desc == INVOKER_TYPE.descriptor) {
@@ -48,7 +49,7 @@ object MixinRemapper {
                 mixinMapping[value] = mapped
             } else {
                 values["value"] = remapTargetString(value, classTargets, remapper)
-                annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+                annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
             }
 
             return annotationNode
@@ -100,7 +101,7 @@ object MixinRemapper {
             if (atValue.values == null)
                 return
 
-            val atValues = KiltMixinModifications.annotationValuesToMap(atValue.values).toMutableMap()
+            val atValues = MixinHelpers.annotationValuesToMap(atValue.values).toMutableMap()
 
             // Remap targets
             if (atValues.contains("target")) {
@@ -116,7 +117,7 @@ object MixinRemapper {
                 KiltRemapper.logger.error("!! Tell BluSpring to stop being lazy. $mixinClassName")
             }
 
-            atValue.values = KiltMixinModifications.mapToAnnotationValues(atValues)
+            atValue.values = MixinHelpers.mapToAnnotationValues(atValues)
         }
 
         // This can also be a very good indicator, but it's a little weird
@@ -145,7 +146,7 @@ object MixinRemapper {
                 if (sliceValue.values == null)
                     return
 
-                val sliceValues = KiltMixinModifications.annotationValuesToMap(sliceValue.values).toMutableMap()
+                val sliceValues = MixinHelpers.annotationValuesToMap(sliceValue.values).toMutableMap()
 
                 if (sliceValues.contains("from") && sliceValues["from"] is AnnotationNode) {
                     sliceValues["from"] = remapAtValue(sliceValues["from"] as AnnotationNode)
@@ -176,7 +177,7 @@ object MixinRemapper {
         }
 
         // Now to change the values list
-        annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+        annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
         return annotationNode
     }
 
@@ -459,7 +460,7 @@ object MixinRemapper {
         mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
             .firstOrNull { it.desc == MIXIN_TYPE.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!"),
-        values: Map<String, Any> = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+        values: Map<String, Any> = MixinHelpers.annotationValuesToMap(mixinAnnotation.values)
     ): Collection<String> {
         val targetClassNames = mutableListOf<String>()
 

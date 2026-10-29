@@ -64,7 +64,7 @@ object KiltRemapper {
     // Keeps track of the remapper changes, so every time I update the remapper,
     // it remaps all the mods following the remapper changes.
     // this can update by like 12 versions in 1 update, so don't worry too much about it.
-    const val REMAPPER_VERSION = 215
+    const val REMAPPER_VERSION = 216
     const val MC_MAPPED_JAR_VERSION = 9
 
     // Kilt JVM flags
@@ -575,8 +575,10 @@ object KiltRemapper {
                         ConflictingStaticMethodFixer.fixClass(remappedNode)
                         EnvironmentRemapper.remapClass(remappedNode)
                         EnvironmentLambdaFixer.fixClass(remappedNode)
+                        RemoveModulesFixer.fixClass(remappedNode)
                         ModifiedCloneWorkaroundLoader.fixClass(remappedNode)
                         ReflectionFixer.fixClass(remappedNode)
+                        GLVersionSpecifierFixer.fixClass(remappedNode)
                     }
 
                     val writer = ClassWriter(Opcodes.ASM9)

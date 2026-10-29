@@ -47,12 +47,14 @@ import org.spongepowered.asm.mixin.FabricUtil
 import thedarkcolour.kotlinforforge.KotlinModContainer
 import thedarkcolour.kotlinforforge.KotlinModLoadingContext
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.*
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.util.DistUtil
 import xyz.bluspring.kilt.util.KiltHelper
+import xyz.bluspring.kilt.util.KiltHelper.getAnnotatedBy
 import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.kilt.util.buildGraph
 import xyz.bluspring.knit.loader.KnitLoader
@@ -62,6 +64,7 @@ import xyz.bluspring.knit.loader.mod.ModDependency
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.VersionConstraint
 import xyz.bluspring.knit.loader.util.*
+import java.lang.annotation.ElementType
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.ConcurrentHashMap
@@ -921,6 +924,39 @@ class KiltLoader : KnitModLoader<ForgeMod>(Kilt.MOD_ID, "Forge") {
                 AccessTransformerLoader.convertTransformers(accessTransformer.readBytes())
             }
         }
+    }
+
+    fun getOpenGlVersion(): Pair<Int, Int>? {
+        var glMajor = 3
+        var glMinor = 2
+
+        for (mod in mods) {
+            for (data in mod.scanData.getAnnotatedBy(DetectedGLVersion::class.java, ElementType.TYPE)) {
+                val major = data.annotationData["majorVersion"] as Int
+                val minor = data.annotationData["minorVersion"] as Int
+
+                if (major > glMajor) {
+                    glMajor = major
+                } else if (major == glMajor && minor > glMinor) {
+                    glMinor = minor
+                }
+            }
+        }
+
+        if (glMajor > 3 || glMinor > 2)
+            return glMajor to glMinor
+
+        return null
+    }
+
+    fun getOpenGlVersionString(): String {
+        val version = this.getOpenGlVersion()
+
+        if (version != null) {
+            return "${version.first}.${version.second}"
+        }
+
+        return "3.2"
     }
 
     fun postEvent(ev: Event) {

@@ -4,6 +4,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.injection.Inject
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.KiltHelper
 import kotlin.collections.contains
 
@@ -25,7 +26,7 @@ object MixinCancellableInitFixer {
                     continue
 
                 var wasModified = false
-                val values = KiltMixinModifications.annotationValuesToMap(annotationNode.values).toMutableMap()
+                val values = MixinHelpers.annotationValuesToMap(annotationNode.values).toMutableMap()
 
                 // We should be able to just do an annotation scan and not have to check whether it is actually used, because <init> and <clinit> are not supposed to be
                 // cancelled either way.
@@ -44,7 +45,7 @@ object MixinCancellableInitFixer {
                 }
 
                 if (wasModified) {
-                    annotationNode.values = KiltMixinModifications.mapToAnnotationValues(values)
+                    annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
                 }
             }
         }

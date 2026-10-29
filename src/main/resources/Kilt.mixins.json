@@ -125,7 +125,8 @@
     "compat.sodium.ItemRendererMixin",
     "compat.sodium.LevelRendererMixin",
     "debug.PoseStackMixin",
-    "workarounds.early_screen_delay.MinecraftMixin"
+    "workarounds.early_screen_delay.MinecraftMixin",
+    "workarounds.opengl_bump.WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

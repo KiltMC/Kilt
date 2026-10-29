@@ -7,6 +7,7 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.Mixin
 import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
+import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.KiltHelper
 import kotlin.collections.contains
 
@@ -24,7 +25,7 @@ object MixinAdditionalRemapper {
         val mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
             .firstOrNull { it.desc == MIXIN_TYPE.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!")
-        val values: Map<String, Any> = KiltMixinModifications.annotationValuesToMap(mixinAnnotation.values)
+        val values: Map<String, Any> = MixinHelpers.annotationValuesToMap(mixinAnnotation.values)
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode, mixinAnnotation, values)
 
         // remap some specific mixins
@@ -37,7 +38,7 @@ object MixinAdditionalRemapper {
                         continue
 
                     var wasModified = false
-                    val values = KiltMixinModifications.annotationValuesToMap(node.values).toMutableMap()
+                    val values = MixinHelpers.annotationValuesToMap(node.values).toMutableMap()
 
                     if (values.contains("method")) {
                         val methodValue = values["method"]!!
@@ -70,7 +71,7 @@ object MixinAdditionalRemapper {
                     }
 
                     if (wasModified) {
-                        node.values = KiltMixinModifications.mapToAnnotationValues(values)
+                        node.values = MixinHelpers.mapToAnnotationValues(values)
                     }
                 }
             }
@@ -87,12 +88,12 @@ object MixinAdditionalRemapper {
                 if (classNode.visibleAnnotations != null && classNode.visibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
                     classNode.visibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
                     classNode.visibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                        this.values = MixinHelpers.mapToAnnotationValues(modifiedValues)
                     })
                 } else if (classNode.invisibleAnnotations != null && classNode.invisibleAnnotations.any { it.desc == MIXIN_TYPE.descriptor }) {
                     classNode.invisibleAnnotations.removeIf { it.desc == MIXIN_TYPE.descriptor }
                     classNode.invisibleAnnotations.add(AnnotationNode(Opcodes.ASM9, mixinAnnotation.desc).apply {
-                        this.values = KiltMixinModifications.mapToAnnotationValues(modifiedValues)
+                        this.values = MixinHelpers.mapToAnnotationValues(modifiedValues)
                     })
                 }
             }
