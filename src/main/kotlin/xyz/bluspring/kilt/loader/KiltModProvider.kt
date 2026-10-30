@@ -5,7 +5,7 @@ import net.minecraftforge.forgespi.locating.IModProvider
 import java.nio.file.Path
 import java.util.function.Consumer
 
-class KiltModProvider : IModProvider {
+object KiltModProvider : IModProvider {
     override fun name(): String {
         return "Kilt Mod Provider"
     }

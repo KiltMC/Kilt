@@ -107,6 +107,8 @@ object KiltHelper {
             run {
                 filesToScan.add(getPath("xyz/bluspring/kilt/loader/KiltLoader.class") ?: return@run)
                 filesToScan.add(getPath("net/minecraftforge/common/ForgeMod.class") ?: return@run)
+                filesToScan.add(getPath("net/minecraftforge/fml/InterModComms.class") ?: return@run)
+                filesToScan.add(getPath("net/minecraftforge/fml/core/ModStateProvider.class") ?: return@run)
             }
 
             // Test environment
@@ -204,7 +206,7 @@ object KiltHelper {
     fun handleSystemExit(code: Int) {
         Kilt.logger.error("Kilt: A Forge mod has called System.exit() directly from its code! Exit code: $code")
 
-        if (ModLoadingContext.get().kiltActiveContainer != null) {
+        if (ModLoadingContext.get().activeContainer != null) {
             val container = ModLoadingContext.get().getActiveContainer()
             Kilt.logger.error("Kilt: Active mod container: ${container.modInfo.displayName} (${container.modId})")
         }

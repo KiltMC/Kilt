@@ -1,0 +1,2 @@
+net.minecraftforge.fml.lowcodemod.LowCodeModLanguageProvider
+net.minecraftforge.fml.javafmlmod.FMLJavaModLanguageProvider

@@ -6,13 +6,14 @@ import xyz.bluspring.kilt.loader.mod.ForgeMod
 import java.util.*
 import java.util.function.Consumer
 
-open class KiltModContainer(internal val mod: ForgeMod) : FMLModContainer(mod) {
+open class KiltModContainer(internal val mod: ForgeMod) : FMLModContainer(mod, null, mod.scanData, ModuleLayer.empty()) {
     init {
         configHandler = Optional.of(Consumer {
             mod.eventBus.post(it.self())
         })
     }
 
-    override val eventBus: IEventBus
-        get() = mod.eventBus
+    override fun getEventBus(): IEventBus {
+        return mod.eventBus
+    }
 }

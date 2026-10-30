@@ -119,7 +119,7 @@ class KiltClient : ClientModInitializer {
         RegisterGeometryLoadersCallback.EVENT.register { map ->
             shouldPostGeoLoaders = true
 
-            ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
+            ModLoader.get().postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(map))
         }
 
         ScreenEvents.AFTER_INIT.register { client, screen, width, height ->
@@ -212,7 +212,7 @@ class KiltClient : ClientModInitializer {
         fun lateRegisterEvents() {
             if (shouldPostGeoLoaders) {
                 val map = GeometryLoaderManagerAccessor.getLoaders().toMutableMap()
-                ModLoader.get().kiltPostEventWrappingMods(ModelEvent.RegisterGeometryLoaders(map))
+                ModLoader.get().postEventWrapContainerInModOrder(ModelEvent.RegisterGeometryLoaders(map))
 
                 GeometryLoaderManagerAccessor.setLoaders(ImmutableMap.copyOf(map))
                 GeometryLoaderManagerAccessor.setLoaderList(map.keys.joinToString(", ") { it.toString() })

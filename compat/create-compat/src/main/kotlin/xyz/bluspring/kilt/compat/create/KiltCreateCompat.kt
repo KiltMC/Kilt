@@ -26,7 +26,7 @@ class KiltCreateCompat : ClientModInitializer {
         }
 
         ReloadLevelRendererCallback.EVENT.register { level ->
-            ModLoader.get().kiltPostEventWrappingMods(ReloadLevelRendererEvent(level))
+            ModLoader.get().postEventWrapContainerInModOrder(ReloadLevelRendererEvent(level))
         }
     }
 }

@@ -1,12 +1,13 @@
 package xyz.bluspring.kilt.loader.mod
 
-import com.kotori316.scala_lib.ScalaModContainer
 import cpw.mods.jarhandling.SecureJar
 import net.minecraftforge.eventbus.EventBusErrorMessage
 import net.minecraftforge.eventbus.api.BusBuilder
 import net.minecraftforge.eventbus.api.Event
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.eventbus.api.IEventListener
+import net.minecraftforge.fml.ModContainer
+import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.event.IModBusEvent
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo
 import net.minecraftforge.forgespi.language.IConfigurable
@@ -19,10 +20,10 @@ import org.apache.maven.artifact.versioning.ArtifactVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.maven.artifact.versioning.VersionRange
 import org.spongepowered.asm.mixin.connect.IMixinConnector
-import thedarkcolour.kotlinforforge.KotlinModContainer
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltModContainer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreMod
+import xyz.bluspring.kilt.util.fallback
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModDependency
@@ -50,15 +51,16 @@ class ForgeMod(
 ) : KnitMod(definition), IModInfo {
     private val forgeDependencies = this.definition.dependencies.map { ForgeModDependency(it) }.toMutableList()
 
-    val container = when (definition.additionalData["loader"]) {
-        "kotlinforforge" -> KotlinModContainer(this)
-        "klf" -> dev.nyon.klf.KotlinModContainer(this)
-        "kotori_scala" -> ScalaModContainer(this)
-        else -> KiltModContainer(this)
+    var container: ModContainer by fallback {
+        val activeContainer = ModLoadingContext.get().activeContainer
+        if (activeContainer.modId == this.modId) {
+            return@fallback activeContainer
+        }
+
+        throw IllegalStateException("Could not get mod container for ${this.displayName} (${this.modId})")
     }
 
-
-    lateinit var scanData: ModFileScanData
+    val scanData = ModFileScanData()
     lateinit var modObject: Any
 
     var parent: ForgeMod? = null
@@ -145,7 +147,7 @@ class ForgeMod(
         return forgeDependencies
     }
 
-    override fun getForgeFeatures(): MutableList<out ForgeFeature.Bound> {
+    override fun getForgeFeatures(): MutableList<ForgeFeature.Bound> {
         return mutableListOf()
     }
 

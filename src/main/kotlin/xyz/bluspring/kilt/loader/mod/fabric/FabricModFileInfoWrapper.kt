@@ -1,14 +1,17 @@
 package xyz.bluspring.kilt.loader.mod.fabric
 
 import net.fabricmc.loader.api.ModContainer
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo
 import net.minecraftforge.forgespi.language.IConfigurable
 import net.minecraftforge.forgespi.language.IModFileInfo
 import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.locating.IModFile
 
 class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
+    lateinit var modInfo: ModInfo
+
     override fun getMods(): MutableList<IModInfo> {
-        return mutableListOf()
+        return mutableListOf(modInfo)
     }
 
     override fun requiredLanguageLoaders(): List<IModFileInfo.LanguageSpec> {
@@ -40,7 +43,7 @@ class FabricModFileInfoWrapper(val mod: ModContainer) : IModFileInfo {
     }
 
     override fun getFile(): IModFile? {
-        return null
+        return FabricModFileWrapper(this.mod, this)
     }
 
     override fun getConfig(): IConfigurable? {

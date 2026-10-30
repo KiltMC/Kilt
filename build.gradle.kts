@@ -40,18 +40,13 @@ sourceSets {
             srcDir("src/main/java")
             srcDir("src/main/kotlin")
             srcDir("forge/src/main/java")
+
+            // why does FML have so much separation holy fuck
             srcDir("forge/fmlcore/src/main/java")
-
-            exclude {
-                val relativePath = it.file.toPath().relativeTo(project.rootDir.toPath())
-
-                // Hilarious trickery to force Gradle to only import the config package
-                if (relativePath.getName(0).name == "forge" && relativePath.getName(1).name == "fmlcore" && it.file.isFile) {
-                    return@exclude !it.relativePath.startsWith("net/minecraftforge/fml/config")
-                }
-
-                false
-            }
+            srcDir("forge/fmlloader/src/main/java")
+            srcDir("forge/javafmllanguage/src/main/java")
+            srcDir("forge/lowcodelanguage/src/main/java")
+            srcDir("forge/src/fmlcommon/java")
         }
 
         resources.srcDir("forge/src/generated/resources")

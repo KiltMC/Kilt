@@ -33,6 +33,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.loader.asm.OverridingMethodWrappers
+import xyz.bluspring.kilt.loader.mixin.modifications.KiltMixinModifications
 import xyz.bluspring.kilt.loader.remap.fixers.*
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinAdditionalRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.mixin.MixinCancellableInitFixer
@@ -385,6 +386,8 @@ object KiltRemapper {
 
         if (FabricLoader.getInstance().isDevelopmentEnvironment)
             enhancedSrgRemapper.initDevRemapper()
+
+        KiltMixinModifications.init()
 
         suspend fun remapMod(file: Path, mod: ModDefinition) {
             val exception = RuntimeException("Failed to remap Forge mod ${mod.displayName} (${mod.id})!")

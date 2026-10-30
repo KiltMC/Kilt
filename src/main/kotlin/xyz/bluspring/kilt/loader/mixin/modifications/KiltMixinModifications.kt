@@ -538,6 +538,8 @@ object KiltMixinModifications {
         )
     )
 
+    fun init() {}
+
     fun getBaseAnnotation(annotation: AnnotationNode): AnnotationNode {
         var annotation = annotation
         if (annotation.desc == SUGAR_WRAPPER.descriptor) {

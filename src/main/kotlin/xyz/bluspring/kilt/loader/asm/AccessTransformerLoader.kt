@@ -8,7 +8,9 @@ import org.objectweb.asm.Opcodes
 import org.slf4j.LoggerFactory
 import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
+import java.nio.file.Path
 import java.util.regex.Pattern
+import kotlin.io.path.readBytes
 
 // A reimplementation of Forge's Access Transformers.
 // The specification can be found here: https://github.com/MinecraftForge/AccessTransformers/blob/master/FMLAT.md
@@ -26,6 +28,10 @@ object AccessTransformerLoader {
             logger.info(info)
         else
             logger.debug(info)
+    }
+
+    fun convertTransformers(path: Path) {
+        this.convertTransformers(path.readBytes())
     }
 
     fun convertTransformers(data: ByteArray) {
