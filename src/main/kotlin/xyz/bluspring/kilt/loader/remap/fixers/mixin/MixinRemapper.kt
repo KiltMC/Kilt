@@ -29,7 +29,7 @@ object MixinRemapper {
 
         // Remap accessor/invoker
         if (annotationNode.desc == MixinTypes.ACCESSOR.descriptor || annotationNode.desc == MixinTypes.INVOKER.descriptor) {
-            val value = (values["value"] as? String ?: methodName.run {
+            var value = (values["value"] as? String ?: methodName.run {
                 val value = (if (this.startsWith("get"))
                     this.removePrefix("get")
                 else if (this.startsWith("is"))
@@ -47,23 +47,47 @@ object MixinRemapper {
                     value
                 else
                     value.replaceFirstChar { it.lowercaseChar() }
-            }) + (if (annotationNode.desc == MixinTypes.ACCESSOR.descriptor)
-                ":${if (methodDesc.endsWith(")V"))
-                    methodDesc.removePrefix("(").removeSuffix(")V")
-                else
-                    methodDesc.removePrefix("()")}"
-            else
-                methodDesc
-                )
+            })
 
+            val descriptor = when (annotationNode.desc) {
+                MixinTypes.INVOKER.descriptor -> {
+                    if (value.contains("<init>"))
+                        null
+                    else
+                        methodDesc
+                }
+                MixinTypes.ACCESSOR.descriptor -> {
+                    val returnType = Type.getReturnType(methodDesc)
+
+                    if (returnType == Type.VOID_TYPE)
+                        Type.getArgumentTypes(methodDesc)[0].descriptor
+                    else
+                        returnType.descriptor
+                }
+                else -> null
+            }
+
+            // Some targets don't have descriptors, because they got stripped out for one reason or another.
+            if (descriptor != null) {
+                value = when (annotationNode.desc) {
+                    MixinTypes.INVOKER.descriptor if !value.contains("(") -> "$value$descriptor"
+                    MixinTypes.ACCESSOR.descriptor if !value.contains(":") -> "$value:$descriptor"
+                    else -> value
+                }
+            }
+
+            // for future reference because i forgot to write this down, we strip the descriptor from accessors and invokers because Neo likes to change field/return types.
+            // mixin is usually smart enough to figure out where things are actually pointing, and if not, the mixin modifiers will fix the accessors.
             if (mixinMapping.contains(value)) {
                 if (!alreadyRefmapped.add(value))
                     return annotationNode
 
                 val mapped = remapTargetString(mixinMapping[value]!!, classTargets, remapper)
-                mixinMapping[value] = mapped.replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
+                mixinMapping[value] = mapped.replaceAfter(":", "").removeSuffix(":")
+                    .replaceAfter("(", "").removeSuffix("(")
             } else {
-                values["value"] = remapTargetString(value, classTargets, remapper).replaceAfter(":", "").removeSuffix(":").replaceAfter("(", "").removeSuffix("(")
+                values["value"] = remapTargetString(value, classTargets, remapper).replaceAfter(":", "").removeSuffix(":")
+                    .replaceAfter("(", "").removeSuffix("(")
                 annotationNode.values = MixinHelpers.mapToAnnotationValues(values)
             }
 
@@ -86,7 +110,6 @@ object MixinRemapper {
 
                 value
             } else {
-
                 val mapped = remapTargetString(value, classTargets, remapper, isTarget, if (annotationNode.desc == MixinTypes.INJECT.descriptor) methodDesc else null)
 
                 if (refmap != null) {
