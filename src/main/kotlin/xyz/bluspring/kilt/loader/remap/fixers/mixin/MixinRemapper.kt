@@ -431,6 +431,8 @@ object MixinRemapper {
         isTarget: Boolean = true,
         descriptorHint: String? = null // if this is an @Inject, the descriptor of the injector method itself
     ): String {
+        val value = value.replace(" ", "") // apparently some have spaces.
+
         if (FabricLoader.getInstance().isDevelopmentEnvironment && !KiltRemapper.forceProductionRemap && !value.startsWith("lambda$"))
             return value
 

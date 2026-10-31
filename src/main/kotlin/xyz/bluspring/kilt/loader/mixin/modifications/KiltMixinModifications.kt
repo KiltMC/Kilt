@@ -813,6 +813,22 @@ object KiltMixinModifications {
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
         ),
+
+        // Fixes Spectrum's LivingEntityMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/LivingEntity",
+            methods = listOf("travel", "travel(Lnet/minecraft/world/phys/Vec3;)V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getFriction(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)F"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(ModifyExpressionValue::class.java, mapOf(
+                    "method" to listOf("travel", "travel(Lnet/minecraft/world/phys/Vec3;)V"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getFriction()F")),
+                    "require" to 1,
+                ))
+            )
+        ),
     )
 
     val MODIFY_ARG = register(
