@@ -703,7 +703,27 @@ object KiltMixinModifications {
             "net/minecraft/world/entity/player/Player",
             methods = listOf("getDigSpeed", "getDigSpeed(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)F"),
             remapMethodsTo = listOf("getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F")
-        )
+        ),
+
+        // Fixes Overgeared's PlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/world/entity/player/Player",
+            methods = listOf("attack", "attack(Lnet/minecraft/world/entity/Entity;)V"),
+            variables = mapOf(
+                "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"))
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.world.entity.player.PlayerInject",
+                    "name" to $$"kilt$checkCanPerformSwordSweep",
+                    "prefix" to "modifyVariable"
+                )),
+                createAnnotation(Redirect::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"))
+                ))
+            )
+        ),
     )
 
     val MODIFY_EXPRESSION_VALUE = register(
