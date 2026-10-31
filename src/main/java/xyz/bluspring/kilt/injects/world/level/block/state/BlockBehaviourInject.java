@@ -7,6 +7,8 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IBlockExtension;
 import net.neoforged.neoforge.event.EventHooks;
@@ -163,9 +165,11 @@ public abstract class BlockBehaviourInject implements BlockBehaviourInjection {
         }
 
         @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-        private void kilt$tryHandleUseItemOnBlock(ItemStack stack, Level level, Player player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<ItemInteractionResult> cir) {
+        private void kilt$tryHandleUseItemOnBlock(ItemStack stack, Level level, Player player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<ItemInteractionResult> cir, @Share(value = "context", namespace = "kilt") LocalRef<UseOnContext> contextRef, @Share(value = "event", namespace = "kilt") LocalRef<UseItemOnBlockEvent> eventRef) {
             var useOnContext = new UseOnContext(level, player, hand, stack, hitResult);
             var e = NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(useOnContext, UseItemOnBlockEvent.UsePhase.BLOCK));
+            contextRef.set(useOnContext);
+            eventRef.set(e);
             if (e.isCanceled()) {
                 cir.setReturnValue(e.getCancellationResult());
             }

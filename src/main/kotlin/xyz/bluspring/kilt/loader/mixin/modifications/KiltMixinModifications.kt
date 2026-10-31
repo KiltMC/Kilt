@@ -137,6 +137,16 @@ object KiltMixinModifications {
             methods = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"),
             remapMethodsTo = listOf("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F)V")
         ),
+
+        // Fixes SWEM's BlockBehaviourMixin
+        InjectedShareAccessModifier(
+            owner = $$"net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase",
+            methods = listOf("useItemOn", "useItemOn(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/ItemInteractionResult;"),
+            paramToShareMapping = mapOf(
+                ParamPair("Lnet/minecraft/world/item/context/UseOnContext;", 0) to Share("context", namespace = Kilt.MOD_ID),
+                ParamPair("Lnet/neoforged/neoforge/event/entity/player/UseItemOnBlockEvent;", 0) to Share("event", namespace = Kilt.MOD_ID),
+            )
+        ),
     )
 
     val INJECT = register(
