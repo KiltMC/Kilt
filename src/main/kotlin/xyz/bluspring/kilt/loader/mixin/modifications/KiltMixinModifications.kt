@@ -824,7 +824,7 @@ object KiltMixinModifications {
             replaceWith = listOf(
                 createAnnotation(ModifyExpressionValue::class.java, mapOf(
                     "method" to listOf("travel", "travel(Lnet/minecraft/world/phys/Vec3;)V"),
-                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getFriction()F")),
+                    "at" to listOf(at(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F")),
                     "require" to 1,
                 ))
             )
@@ -855,6 +855,36 @@ object KiltMixinModifications {
                         value = "INVOKE",
                         target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"
                     ))
+                ))
+            )
+        ),
+
+        // Fixes Arrowhead's AbstractClientPlayerMixin
+        ReplacedAnnotationsModifier(
+            owner = "net/minecraft/client/player/AbstractClientPlayer",
+            methods = listOf("getFieldOfViewModifier", "getFieldOfViewModifier()F"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = "Lnet/neoforged/neoforge/client/ClientHooks;getFieldOfViewModifier(Lnet/minecraft/world/entity/player/Player;F)F",
+                    remap = false,
+                )),
+                "index" to 1,
+            ),
+            replaceWith = listOf(
+                createAnnotation(TargetHandler::class.java, mapOf(
+                    "mixin" to "xyz.bluspring.kilt.injects.client.player.AbstractClientPlayerInject",
+                    "name" to $$"kilt$getNeoForgeFovModifier",
+                    "prefix" to "wrapOperation"
+                )),
+                createAnnotation(ModifyArg::class.java, mapOf(
+                    "method" to listOf("@MixinSquared:Handler"),
+                    "at" to listOf(at(
+                        value = "INVOKE",
+                        target = $$"Lnet/neoforged/neoforge/client/ClientHooks;kilt$getFieldOfViewModifier(Lnet/minecraft/world/entity/player/Player;F)Lnet/neoforged/neoforge/client/event/ComputeFovModifierEvent;",
+                        remap = false
+                    )),
+                    "index" to 1,
                 ))
             )
         ),

@@ -55,6 +55,24 @@ public abstract class CreativeModeTabInject implements CreativeModeTabInjection 
     CreativeModeTabInject(CreativeModeTab.Row row, int column, CreativeModeTab.Type type, Component displayName, Supplier<ItemStack> iconGenerator, CreativeModeTab.DisplayItemsGenerator displayItemGenerator) {
     }
 
+    // turns out there is at least one person that calls this directly.
+    // why? good fuckin' question! but Fractal does. no idea why.
+    @CreateInitializer
+    CreativeModeTabInject(
+        CreativeModeTab.Row row, int column, CreativeModeTab.Type type, Component displayName, Supplier<ItemStack> iconGenerator, CreativeModeTab.DisplayItemsGenerator displayItemGenerator,
+        ResourceLocation scrollerSpriteLocation, boolean hasSearchBar, int searchBarWidth, ResourceLocation tabsImage, int labelColor, int slotColor, List<ResourceLocation> tabsBefore, List<ResourceLocation> tabsAfter
+    ) {
+        this(row, column, type, displayName, iconGenerator, displayItemGenerator);
+        this.scrollerSpriteLocation = scrollerSpriteLocation;
+        this.hasSearchBar = hasSearchBar;
+        this.searchBarWidth = searchBarWidth;
+        this.tabImage = tabsImage;
+        this.labelColor = labelColor;
+        this.slotColor = slotColor;
+        this.tabsBefore = tabsBefore;
+        this.tabsAfter = tabsAfter;
+    }
+
     @CreateInitializer
     protected CreativeModeTabInject(CreativeModeTab.Builder builder) {
         this(((CreativeModeTabBuilderAccessor) builder).getRow(), ((CreativeModeTabBuilderAccessor) builder).getColumn(), ((CreativeModeTabBuilderAccessor) builder).getType(), ((CreativeModeTabBuilderAccessor) builder).getDisplayName(), ((CreativeModeTabBuilderAccessor) builder).getIconGenerator(), ((CreativeModeTabBuilderAccessor) builder).getDisplayItemsGenerator());

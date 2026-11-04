@@ -1,6 +1,7 @@
 // TRACKED HASH: 9169c1a016aa79fe41a22e24efb28b87a97545d4
 package xyz.bluspring.kilt.injects.client.gui.screens.inventory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -8,9 +9,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
+import net.neoforged.neoforge.client.gui.CreativeTabsScreenPage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,10 +38,13 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 
-@Mixin(value = CreativeModeInventoryScreen.class, priority = 1009)
+@Mixin(value = CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenInject extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> implements CreativeModeInventoryScreenInjection {
     @Shadow private static CreativeModeTab selectedTab;
     @Shadow private EditBox searchBox;
+
+    // i was hoping to not have to implement this but fuck's sake I guess I do.
+    @Unique private CreativeTabsScreenPage currentPage = new CreativeTabsScreenPage(new ArrayList<>());
 
     public CreativeModeInventoryScreenInject(CreativeModeInventoryScreen.ItemPickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -137,7 +143,17 @@ public abstract class CreativeModeInventoryScreenInject extends EffectRenderingI
         this.searchBox.setX(this.leftPos + (82 + 89) - this.searchBox.getWidth());
     }
 
-//    Creative Tab sorting
+    @Override
+    public CreativeTabsScreenPage getCurrentPage() {
+        return currentPage;
+    }
+
+    @Override
+    public void setCurrentPage(CreativeTabsScreenPage currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    //    Creative Tab sorting
 //    @TargetHandler(
 //            mixin = "net.fabricmc.fabric.mixin.itemgroup.client.CreativeInventoryScreenMixin",
 //            name = "fabric_updateSelection"
