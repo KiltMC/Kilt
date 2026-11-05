@@ -8,12 +8,15 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.Kilt.Companion.loader
+import xyz.bluspring.kilt.loader.mod.fabric.WrappedFabricModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.stream.Stream
+
 
 class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     val mods: List<IModInfo>
@@ -27,9 +30,18 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
     }
 
     fun getModContainerById(modId: String): Optional<out ModContainer> {
-        val mod = kiltMods.firstOrNull { it.modId == modId } ?: return Optional.empty()
+        // Kilt: Point to loader
+        if (loader.FORGE_TO_FABRIC_MODS.containsKey(modId))
+            return FabricLoader.getInstance().getModContainer(loader.FORGE_TO_FABRIC_MODS[modId])
+                .map(WrappedFabricModContainer::get)
 
-        return Optional.of(mod.container)
+        return Optional.ofNullable(loader.getMod(modId))
+            .map<ModContainer>(ForgeMod::container)
+            .or { FabricLoader.getInstance().getModContainer(modId).map(WrappedFabricModContainer::get) }
+            .or {
+                FabricLoader.getInstance().getModContainer(modId.replace("_", "-"))
+                    .map(WrappedFabricModContainer::get)
+            }
     }
 
     fun getModContainerByObject(obj: Any): Optional<out ModContainer> {
