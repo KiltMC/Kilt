@@ -3,6 +3,7 @@ package xyz.bluspring.kilt.forgeinjects.server.level;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -204,6 +205,11 @@ public abstract class ServerLevelInject extends Level implements ServerLevelInje
     @Override
     public Collection<PartEntity<?>> kilt$getPartEntities() {
         return this.kilt$entityParts.values();
+    }
+
+    @ModifyReturnValue(method = "getEntityOrPart", at = @At("RETURN"))
+    private Entity kilt$tryResolveForgeEntityPart(Entity original, @Local(argsOnly = true) int id) {
+        return original != null ? original : this.kilt$entityParts.get(id);
     }
 
     @Mixin(targets = "net.minecraft.server.level.ServerLevel$EntityCallbacks")
