@@ -8,7 +8,6 @@ import net.minecraftforge.forgespi.language.IModInfo
 import net.minecraftforge.forgespi.language.ModFileScanData
 import net.minecraftforge.forgespi.locating.IModFile
 import xyz.bluspring.kilt.Kilt
-import xyz.bluspring.kilt.Kilt.Companion.loader
 import xyz.bluspring.kilt.loader.mod.fabric.WrappedFabricModContainer
 import xyz.bluspring.kilt.loader.mod.ForgeMod
 import xyz.bluspring.kilt.loader.mod.fabric.FabricModFileInfoWrapper
@@ -31,11 +30,11 @@ class ModList private constructor(private val kiltMods: List<ForgeMod>) {
 
     fun getModContainerById(modId: String): Optional<out ModContainer> {
         // Kilt: Point to loader
-        if (loader.FORGE_TO_FABRIC_MODS.containsKey(modId))
-            return FabricLoader.getInstance().getModContainer(loader.FORGE_TO_FABRIC_MODS[modId])
+        if (Kilt.loader.FORGE_TO_FABRIC_MODS.containsKey(modId))
+            return FabricLoader.getInstance().getModContainer(Kilt.loader.FORGE_TO_FABRIC_MODS[modId])
                 .map(WrappedFabricModContainer::get)
 
-        return Optional.ofNullable(loader.getMod(modId))
+        return Optional.ofNullable(Kilt.loader.getMod(modId))
             .map<ModContainer>(ForgeMod::container)
             .or { FabricLoader.getInstance().getModContainer(modId).map(WrappedFabricModContainer::get) }
             .or {
