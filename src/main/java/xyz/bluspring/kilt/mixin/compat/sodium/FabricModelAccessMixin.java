@@ -1,6 +1,7 @@
 package xyz.bluspring.kilt.mixin.compat.sodium;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
@@ -36,14 +37,14 @@ public abstract class FabricModelAccessMixin {
     @Inject(method = "getModelRenderTypes", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoRenderTypes(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, RandomSource random, SodiumModelData modelData, CallbackInfoReturnable<Iterable<RenderType>> cir) {
         if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
-            cir.setReturnValue(model.getRenderTypes(state, random, (ModelData) (Object) modelData));
+            cir.setReturnValue(model.getRenderTypes(state, random, Objects.requireNonNullElse((ModelData) (Object) modelData, ModelData.EMPTY)));
         }
     }
 
     @Inject(method = "getQuads", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoQuads(BlockAndTintGetter level, BlockPos pos, BakedModel model, BlockState state, Direction face, RandomSource random, RenderType renderType, SodiumModelData modelData, CallbackInfoReturnable<List<BakedQuad>> cir) {
         if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getQuads", BlockState.class, Direction.class, RandomSource.class, ModelData.class, RenderType.class)) {
-            cir.setReturnValue(model.getQuads(state, face, random, (ModelData) (Object) modelData, renderType));
+            cir.setReturnValue(model.getQuads(state, face, random, Objects.requireNonNullElse((ModelData) (Object) modelData, ModelData.EMPTY), renderType));
         }
     }
 
@@ -66,7 +67,7 @@ public abstract class FabricModelAccessMixin {
     @Inject(method = "getModelData", at = @At("HEAD"), cancellable = true)
     private void kilt$tryGetNeoModelData(LevelSlice slice, BakedModel model, BlockState state, BlockPos pos, SodiumModelData originalData, CallbackInfoReturnable<SodiumModelData> cir) {
         if (KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getModelData", BlockAndTintGetter.class, BlockPos.class, BlockState.class, ModelData.class)) {
-            cir.setReturnValue((SodiumModelData) (Object) model.getModelData(slice, pos, state, (ModelData) (Object) originalData));
+            cir.setReturnValue((SodiumModelData) (Object) model.getModelData(slice, pos, state, Objects.requireNonNullElse((ModelData) (Object) originalData, ModelData.EMPTY)));
         }
     }
 
