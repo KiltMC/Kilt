@@ -132,9 +132,9 @@ public abstract class PlayerInject extends LivingEntity implements IForgePlayer,
             ci.cancel();
     }
 
-    @Inject(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;setAbsorptionAmount(F)V", shift = At.Shift.AFTER))
-    private void kilt$callLivingDamage(DamageSource damageSource, float damageAmount, CallbackInfo ci, @Local(ordinal = 1) LocalFloatRef damageRef) {
-        damageRef.set(ForgeHooks.onLivingDamage(this, damageSource, damageRef.get()));
+    @ModifyVariable(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;setAbsorptionAmount(F)V", shift = At.Shift.AFTER), ordinal = 1)
+    private float kilt$callLivingDamage(float damageAmount, @Local(argsOnly = true) DamageSource damageSource) {
+        return ForgeHooks.onLivingDamage(this, damageSource, damageAmount);
     }
 
     @Inject(method = "interactOn", at = @At(value = "RETURN", ordinal = 1))
