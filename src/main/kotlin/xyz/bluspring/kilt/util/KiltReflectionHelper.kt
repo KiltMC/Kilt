@@ -30,17 +30,44 @@ object KiltReflectionHelper {
 
     @JvmStatic
     fun getClass(name: String): Class<*> {
-        return Class.forName(KiltRemapper.remapClass(name).replace('/', '.'))
+        return try {
+            Class.forName(KiltRemapper.remapClass(name).replace('/', '.'))
+        } catch (e: Exception) {
+            try {
+                Class.forName(name)
+            } catch (e2: Exception) {
+                e.addSuppressed(e2)
+                throw e
+            }
+        }
     }
 
     @JvmStatic
-    fun getClass(module: Module, name: String): Class<*> {
-        return Class.forName(module, KiltRemapper.remapClass(name).replace('/', '.'))
+    fun getClass(module: Module, name: String): Class<*>? {
+        return try {
+            Class.forName(module, KiltRemapper.remapClass(name).replace('/', '.'))
+        } catch (e: Exception) {
+            try {
+                Class.forName(module, name)
+            } catch (e2: Exception) {
+                e.addSuppressed(e2)
+                throw e
+            }
+        }
     }
 
     @JvmStatic
     fun getClass(name: String, initialize: Boolean, classLoader: ClassLoader): Class<*> {
-        return Class.forName(KiltRemapper.remapClass(name).replace('/', '.'), initialize, classLoader)
+        return try {
+            Class.forName(KiltRemapper.remapClass(name).replace('/', '.'), initialize, classLoader)
+        } catch (e: Exception) {
+            try {
+                Class.forName(name, initialize, classLoader)
+            } catch (e2: Exception) {
+                e.addSuppressed(e2)
+                throw e
+            }
+        }
     }
 
     @JvmStatic
