@@ -203,38 +203,13 @@ public final class MixinExtensionHelper {
 
         for (MethodNode methodNode : classNode.methods) {
             if (Annotations.getVisible(methodNode, CreateStatic.class) != null) {
-                methodsToRemove.add(methodNode);
-                targetClass.methods.removeIf((method) -> method.name.equals(methodNode.name) && method.desc.equals(methodNode.desc));
-
-                var method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                method.visitCode();
-
-                var instructions = new InsnList();
-
-                for (AbstractInsnNode insn : methodNode.instructions) {
-                    if (insn instanceof MethodInsnNode methodInsn) {
-                        if (methodInsn.owner.equals(slashedMixinClassName))
-                            methodInsn.owner = slashedTargetClassName;
-
-                        instructions.add(methodInsn);
-                        continue;
-                    } else if (insn instanceof FieldInsnNode fieldInsn) {
-                        if (fieldInsn.owner.equals(slashedMixinClassName))
-                            fieldInsn.owner = slashedTargetClassName;
-
-                        instructions.add(fieldInsn);
-                        continue;
+                for (MethodNode method : targetClass.methods) {
+                    if (method.name.equals(methodNode.name) && method.desc.equals(methodNode.desc)) {
+                        method.access = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
                     }
-
-                    instructions.add(insn);
                 }
 
-                method.instructions.add(instructions);
-                method.localVariables.addAll(methodNode.localVariables);
-
-                method.visitEnd();
-
-                targetClass.methods.add(method);
+                methodNode.access = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
                 // Comment the stuff below if you want to use this in your own mod. You most likely need to remap stuff still.
                 methodNode.name = KiltRemapper.INSTANCE.getEnhancedRemapper().mapMethodName(KiltRemapper.INSTANCE.remapClass(targetClass.name), methodNode.name, methodNode.desc);

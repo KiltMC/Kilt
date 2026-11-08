@@ -6,6 +6,22 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.neoforged.neoforge.client.RenderTypeHelper;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.lighting.LightPipelineAwareModelBlockRenderer;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.bluspring.kilt.injections.client.renderer.block.BlockRenderDispatcherInjection;
+import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
+import xyz.bluspring.kilt.util.client.KiltClientHelper;
+
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -21,18 +37,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.RenderTypeHelper;
-import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.lighting.LightPipelineAwareModelBlockRenderer;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.renderer.block.BlockRenderDispatcherInjection;
-import xyz.bluspring.kilt.injections.client.renderer.block.ModelBlockRendererInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
 
 @Mixin(BlockRenderDispatcher.class)
 public abstract class BlockRenderDispatcherInject implements BlockRenderDispatcherInjection {
@@ -107,17 +111,18 @@ public abstract class BlockRenderDispatcherInject implements BlockRenderDispatch
         var modelData = kilt$modelData.get();
         var mainRenderType = kilt$renderType.get();
         var singleRenderType = ItemBlockRenderTypes.getRenderType(blockState, false);
-        var existingRenderTypes = bakedModel.getRenderTypes(blockState, RandomSource.create(42), modelData).asList();
+        var existingRenderTypes = bakedModel.getRenderTypes(blockState, RandomSource.create(42), modelData);
+        var existingRenderTypesList = existingRenderTypes.asList();
 
-        if (KiltHelper.INSTANCE.hasMethodOverride(bakedModel.getClass(), IBakedModelExtension.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
+        if (!KiltClientHelper.shouldFallbackToVanilla(modelData, blockState, existingRenderTypes, bakedModel)) {
             for (RenderType renderType : existingRenderTypes) {
                 if (modelData == ModelData.EMPTY)
                     original.call(instance, pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j);
                 else
-                    ((ModelBlockRendererInjection) instance).renderModel(pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j, modelData, mainRenderType != null ? mainRenderType : RenderTypeHelper.getEntityRenderType(renderType, false));
+                    instance.renderModel(pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j, modelData, mainRenderType != null ? mainRenderType : RenderTypeHelper.getEntityRenderType(renderType, false));
             }
-        } else if (existingRenderTypes.size() == 1 && existingRenderTypes.get(0) != singleRenderType) {
-            ((ModelBlockRendererInjection) instance).renderModel(pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j, modelData, mainRenderType != null ? mainRenderType : RenderTypeHelper.getEntityRenderType(existingRenderTypes.get(0), false));
+        } else if (existingRenderTypes.kilt$size() == 1 && existingRenderTypesList.getFirst() != singleRenderType) {
+            instance.renderModel(pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j, modelData, mainRenderType != null ? mainRenderType : RenderTypeHelper.getEntityRenderType(existingRenderTypesList.getFirst(), false));
         } else {
             original.call(instance, pose, vertexConsumer, blockState, bakedModel, f, g, h, i, j);
         }

@@ -45,6 +45,7 @@ import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.AccessTransformerLoader
 import xyz.bluspring.kilt.loader.asm.EnumExtensionLoader
+import xyz.bluspring.kilt.loader.asm.KiltStaticInjectionFixer
 import xyz.bluspring.kilt.loader.asm.coremod.CoreModLoader
 import xyz.bluspring.kilt.loader.mod.KiltEnvironment
 import xyz.bluspring.kilt.loader.mod.NeoForgeMod
@@ -587,6 +588,7 @@ class KiltLoader : KnitModLoader<NeoForgeMod>(Kilt.MOD_ID, "NeoForge") {
         // Load mod access transformers and coremods
         for (mod in mods) {
             loadTransformers(mod)
+            KiltStaticInjectionFixer.findAndFixInjections(mod)
             EnumExtensionLoader.loadEnumExtension(mod)
             CoreModLoader.scanAndLoadCoreMods(mod)
         }

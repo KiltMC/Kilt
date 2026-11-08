@@ -13,8 +13,6 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.AddSectionGeometryEvent;
-import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,9 +20,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.bluspring.kilt.injections.client.renderer.ItemBlockRenderTypesInjection;
 import xyz.bluspring.kilt.injections.client.renderer.chunk.SectionCompilerInjection;
-import xyz.bluspring.kilt.util.KiltHelper;
+import xyz.bluspring.kilt.util.client.KiltClientHelper;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
@@ -73,7 +70,7 @@ public abstract class SectionCompilerInject implements SectionCompilerInjection 
 
             ChunkRenderTypeSet renderTypes = model.getRenderTypes(state, randomSource, modelData);
             // Kilt: Fallback to Vanilla
-            if (modelData == ModelData.EMPTY && renderTypes.kilt$size() == 1 && ItemBlockRenderTypesInjection.getRenderLayers(state) == renderTypes && !KiltHelper.INSTANCE.hasMethodOverride(model.getClass(), IBakedModelExtension.class, "getRenderTypes", BlockState.class, RandomSource.class, ModelData.class)) {
+            if (KiltClientHelper.shouldFallbackToVanilla(modelData, state, renderTypes, model)) {
                 return true;
             }
 
