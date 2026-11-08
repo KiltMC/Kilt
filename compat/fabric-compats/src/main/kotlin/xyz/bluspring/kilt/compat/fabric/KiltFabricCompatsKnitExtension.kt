@@ -73,5 +73,7 @@ class KiltFabricCompatsKnitExtension : KnitNativeModCompatExtension {
         KiltModCompatBridgeManager.register("jade", strategy = ModBridgeStrategy.PreferFabric) {}
 
         KiltModCompatBridgeManager.register("emi", strategy = ModBridgeStrategy.PreferFabric) {}
+
+        KiltModCompatBridgeManager.register("athena", strategy = ModBridgeStrategy.PreferFabric) {}
     }
 }

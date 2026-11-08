@@ -74,6 +74,9 @@ dependencies {
     compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge-api:${property("cc_tweaked_version")}")
     compileOnlyLater("cc.tweaked:cc-tweaked-1.21.1-forge:${property("cc_tweaked_version")}")
 
+    modCompileOnly("maven.modrinth:athena-ctm:${property("athena_version")}-fabric,1.21.1")
+    compileOnlyLater("maven.modrinth:b1ZV3DIJ:${property("athena_version")}-neoforge,1.21.1")
+
     modCompileOnly("maven.modrinth:every-compat:${property("every_compat_version")}-fabric,1.21.1")
     compileOnly("maven.modrinth:eiktJyw1:${property("every_compat_version")}-neoforge,1.21.1")
 

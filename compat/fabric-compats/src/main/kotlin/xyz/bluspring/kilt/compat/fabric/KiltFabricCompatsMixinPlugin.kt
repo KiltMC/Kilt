@@ -23,27 +23,26 @@ class KiltFabricCompatsMixinPlugin : IMixinConfigPlugin {
     override fun shouldApplyMixin(targetClassName: String, mixinClassName: String): Boolean {
         val modId = mixinClassName.removePrefix("$mixinPackage.").replaceAfter(".", "").removeSuffix(".")
 
-        if (modId == "sophisticatedcore" || modId == "creativecore") {
+        if (modId == "sophisticatedcore" || modId == "creativecore")
             return FabricLoader.getInstance().isModLoaded(modId) && !KiltLoader.instance.hasMod(modId) && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
-        }
 
-        if (modId == "everycompat") {
+        if (modId == "everycompat")
             return KiltModCompatBridgeManager.isActive("everycomp") && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
-        }
 
-        if (modId == "accessories") {
+        if (modId == "accessories")
             return FabricLoader.getInstance().isModLoaded("accessories")
-                    && !KiltLoader.instance.hasMod("accessories")
-                    && KiltLoader.instance.hasMod("cclayer")
-        }
+                && !KiltLoader.instance.hasMod("accessories")
+                && KiltLoader.instance.hasMod("cclayer")
+                && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
 
-        if (modId == "cctweaked") {
-            return KiltLoader.instance.hasMod("computercraft")
-        }
+        if (modId == "cctweaked")
+            return KiltLoader.instance.hasMod("computercraft") && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
 
-        if (modId == "jade_forge") {
-            return KiltLoader.instance.hasMod("jade")
-        }
+        if (modId == "jade_forge")
+            return KiltLoader.instance.hasMod("jade") && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
+
+        if (modId == "athena_multi")
+            return KiltModCompatBridgeManager.isActive("athena") && MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
 
         return MixinConstraints.shouldApplyMixin(targetClassName, mixinClassName)
     }
