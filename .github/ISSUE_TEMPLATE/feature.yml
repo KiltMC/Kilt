@@ -1,8 +1,8 @@
 name: Feature Request
 description: "Would you like to request a feature that is not currently in Kilt? (this is **NOT** for currently incompatible mods, rather for APIs, bridges and such.)"
 labels:
-  - S-needs-triage
-  - T-enhancement
+  - "status: needs-triage"
+  - "type: enhancement"
 # This has been modified from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/ISSUE_TEMPLATE/bug_report.yml?plain=1
 body:
   - type: markdown
@@ -34,7 +34,7 @@ body:
       label: Version information
       description: >-
         Please provide which version of Minecraft you would want the feature added to
-      placeholder: 'Example: 1.20.1'
+      placeholder: 'Example: 1.21.1'
     validations:
       required: true
   - type: textarea
@@ -42,7 +42,7 @@ body:
     attributes:
       label: What you would like added
       description: The feature that you would like implemented
-      placeholder: 'Example: Kilt needs to add support for energy transfer between Forge & Fabric'
+      placeholder: 'Example: Kilt needs to add support for energy transfer between NeoForge & Fabric'
     validations:
       required: true
   - type: textarea
