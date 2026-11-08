@@ -4,39 +4,38 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.FrameNode
-import org.objectweb.asm.tree.InsnNode
-import org.objectweb.asm.tree.InvokeDynamicInsnNode
-import org.objectweb.asm.tree.LabelNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.LocalVariableNode
-import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TypeInsnNode
-import org.objectweb.asm.tree.VarInsnNode
+import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import kotlin.collections.iterator
+import xyz.bluspring.kilt.loader.remap.MixinTypes
+import xyz.bluspring.kilt.util.KiltHelper
 
 object ModifiedCloneWorkaroundLoader {
 
     val REMAPPED_TYPES = mutableMapOf<String, String>()
     val TRANSFORMERS = mutableListOf<Runnable>()
+    private val shouldApplyTransformers = mutableMapOf<String, (ClassNode) -> Boolean>()
 
     init {
         val monsterType = KiltRemapper.remapClass("net/minecraft/world/entity/monster/Monster")
         val monsterDesc = "L$monsterType;"
         val mobType = KiltRemapper.remapClass("net/minecraft/world/entity/Mob")
         val mobDesc = "L$mobType;"
-        val rangedAttackMob = KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/RangedAttackMob;")
+        val rangedAttackMobCls = KiltRemapper.remapClass("net/minecraft/world/entity/monster/RangedAttackMob")
+        val rangedAttackMob = "L$rangedAttackMobCls;"
+        val crossbowAttackMob = KiltRemapper.remapClass("net/minecraft/world/entity/monster/CrossbowAttackMob")
         run {
             val bowAttackGoal = "net/minecraft/world/entity/ai/goal/RangedBowAttackGoal"
             val bowAttackGoalClone = "xyz/bluspring/kilt/workarounds/RangedBowAttackGoalWorkaround"
             addTransformedClone(
                 KiltRemapper.remapClass(bowAttackGoal),
                 bowAttackGoalClone,
+                { classNode ->
+                    if (KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations).any { it.desc == MixinTypes.MIXIN.descriptor }) {
+                        KiltRemapper.enhancedRemapper.getClassHierarchy(classNode.name)
+                            .none { it.name == rangedAttackMobCls } && classNode.interfaces.none { it == rangedAttackMobCls }
+                    } else true
+                }
             ) { classNode ->
                 replaceType(classNode, monsterType, mobType)
 
@@ -76,6 +75,12 @@ object ModifiedCloneWorkaroundLoader {
             addTransformedClone(
                 KiltRemapper.remapClass(crossbowAttackGoal),
                 crossbowAttackGoalClone,
+                { classNode ->
+                    if (KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations).any { it.desc == MixinTypes.MIXIN.descriptor }) {
+                        KiltRemapper.enhancedRemapper.getClassHierarchy(classNode.name)
+                            .none { it.name == crossbowAttackMob } && classNode.interfaces.none { it == crossbowAttackMob }
+                    } else true
+                }
             ) { classNode ->
                 replaceType(classNode, monsterType, mobType)
 
@@ -83,7 +88,7 @@ object ModifiedCloneWorkaroundLoader {
 					Opcodes.ACC_PUBLIC,
 	                "<init>",
 	                "(${monsterDesc}DF)V",
-					"<M:$monsterDesc:$rangedAttackMob:${KiltRemapper.remapDescriptor("Lnet/minecraft/world/entity/monster/CrossbowAttackMob;")}>(TM;DF)V",
+					"<M:$monsterDesc:$rangedAttackMob:L$crossbowAttackMob;>(TM;DF)V",
 	                null
 				).apply {
                     val startLabel = LabelNode()
@@ -163,9 +168,11 @@ object ModifiedCloneWorkaroundLoader {
 
     fun addTransformedClone(
         targetClass: String, cloneClass: String,
-        transformer: (ClassNode) -> Unit
+        shouldApplyTransformer: (ClassNode) -> Boolean = { true },
+        transformer: (ClassNode) -> Unit,
     ) {
         REMAPPED_TYPES[targetClass] = cloneClass
+        shouldApplyTransformers[targetClass] = shouldApplyTransformer
         TRANSFORMERS.add {
             var originalNode: ClassNode? = null
             ClassTinkerers.addPostTransformation(targetClass) { classNode ->
@@ -193,7 +200,7 @@ object ModifiedCloneWorkaroundLoader {
     fun replaceType(
 		classNode: ClassNode,
 	    oldType: String,
-	    newType: String
+	    newType: String,
     ) {
         val oldDescriptor = "L$oldType;"
         val newDescriptor = "L$newType;"
@@ -209,7 +216,15 @@ object ModifiedCloneWorkaroundLoader {
             return@map it
         }
 
+        val ignoredFieldNames = mutableSetOf<String>()
+        val ignoredMethodNames = mutableSetOf<Pair<String, String>>()
+
         for (field in classNode.fields) {
+            if (KiltHelper.mergeNullableCollections(field.visibleAnnotations, field.invisibleAnnotations).any { it.desc == MixinTypes.SHADOW.descriptor }) {
+                ignoredFieldNames.add(field.name)
+                continue
+            }
+
             if (field.desc == oldDescriptor) {
                 field.desc = newDescriptor
             }
@@ -217,20 +232,36 @@ object ModifiedCloneWorkaroundLoader {
         }
 
         for (method in classNode.methods) {
+            if (KiltHelper.mergeNullableCollections(method.visibleAnnotations, method.invisibleAnnotations).any { it.desc == MixinTypes.SHADOW.descriptor }) {
+                ignoredMethodNames.add(method.name to method.desc)
+                continue
+            }
+
             method.desc = method.desc.replace(oldDescriptor, newDescriptor)
             method.signature = method.signature?.replace(oldDescriptor, newDescriptor)
         }
 
         for (method in classNode.methods) {
+            if (KiltHelper.mergeNullableCollections(method.visibleAnnotations, method.invisibleAnnotations).any { it.desc == MixinTypes.SHADOW.descriptor }) {
+                ignoredMethodNames.add(method.name to method.desc)
+                continue
+            }
+
             for (insn in method.instructions) {
                 when (insn) {
                     is FieldInsnNode -> {
+                        if (insn.owner == classNode.name && ignoredFieldNames.contains(insn.name))
+                            continue
+
                         if (insn.owner == oldType) {
                             insn.owner = newType
                         }
                         insn.desc = insn.desc.replace(oldDescriptor, newDescriptor)
                     }
                     is MethodInsnNode -> {
+                        if (insn.owner == classNode.name && ignoredMethodNames.contains(insn.name to insn.desc))
+                            continue
+
                         if (insn.owner == oldType) {
                             insn.owner = newType
                         }
@@ -274,6 +305,9 @@ object ModifiedCloneWorkaroundLoader {
 
     fun fixClass(classNode: ClassNode) {
         for ((from, to) in REMAPPED_TYPES) {
+            if (shouldApplyTransformers.contains(from) && !shouldApplyTransformers[from]!!(classNode))
+                continue
+
             replaceType(classNode, from, to)
         }
     }
