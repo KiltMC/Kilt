@@ -15,7 +15,7 @@ object KiltClientHelper {
     @JvmStatic
     fun shouldFallbackToVanilla(modelData: ModelData?, state: BlockState, renderTypes: ChunkRenderTypeSet, model: BakedModel): Boolean {
         if ((modelData ?: ModelData.EMPTY) == ModelData.EMPTY && renderTypes.`kilt$size`() == 1 && ItemBlockRenderTypesInjection.getRenderLayers(state) == renderTypes) {
-            if (renderTypes.first() == ItemBlockRenderTypes.getChunkRenderType(state))
+            if (renderTypes.first() != ItemBlockRenderTypes.getChunkRenderType(state))
                 return false
 
             // Fun fact: NeoForge mods rely on this behaviour! Let's make sure this is limited to Neo mods only.
