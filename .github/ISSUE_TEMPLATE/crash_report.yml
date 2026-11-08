@@ -1,8 +1,8 @@
 name: Crash Report
 description: "Experiencing a crash in Kilt?"
 labels:
-  - T-crash
-  - S-needs triage
+  - "type: crash"
+  - "status: needs triage"
 # This has been modified from https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/ISSUE_TEMPLATE/bug_report.yml?plain=1
 # and https://github.com/CaffeineMC/sodium-fabric/blob/1.19.3/dev/.github/ISSUE_TEMPLATE/crash_report.yml?plain=1
 body:
@@ -26,6 +26,8 @@ body:
         - Are you using the latest version of the mod? If not, try updating to
         see if it resolves your issue.
 
+        - If you are using Kilt for Minecraft 1.20.1, please note that it has been marked as "end-of-life" as of the 8th of November, 2026.
+        Please read [here](https://github.com/KiltMC/Kilt-Archive) for more information.
 
         All good? Then continue to fill the issue by providing the following
         information about it:
@@ -37,7 +39,7 @@ body:
         Please provide the exact version of the mod you are using. Every part of
         the version is important! If you do not know what version you are using,
         look at the file name in your `mods` folder.
-      placeholder: 'Example: 0.0.1.3+mc1.19.2'
+      placeholder: 'Example: Kilt 21.1.13'
     validations:
       required: true
   - type: textarea
@@ -60,7 +62,7 @@ body:
     id: java
     attributes:
       label: Java Provider + Version
-      placeholder: 'Example: Eclipse Termurin 17.0.6'
+      placeholder: 'Example: Eclipse Termurin 21.0.7'
     validations:
       required: true
   - type: input
