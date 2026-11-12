@@ -444,6 +444,29 @@ object KiltMixinModifications {
                 ParamPair("Lnet/minecraft/world/item/ItemStack;", 0) to Share("stack", namespace = Kilt.MOD_ID),
             )
         ),
+
+        // fixes Gleam's RebuildTaskMixin
+        ReplacedAnnotationsModifier(
+            owner = $$"net/minecraft/client/renderer/chunk/SectionRenderDispatcher$RenderSection$RebuildTask",
+            methods = listOf("doTask", "doTask(Lnet/minecraft/client/renderer/SectionBufferBuilderPack;)Ljava/util/concurrent/CompletableFuture;"),
+            variables = mapOf(
+                "at" to listOf(at(
+                    value = "INVOKE",
+                    target = $$"Lnet/minecraft/client/renderer/chunk/SectionCompiler;compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;",
+                )),
+            ),
+            replaceWith = listOf(
+                createAnnotation(
+                    Inject::class.java, mapOf(
+                        "method" to listOf("doTask(Lnet/minecraft/client/renderer/SectionBufferBuilderPack;)Ljava/util/concurrent/CompletableFuture;"),
+                        "at" to listOf(at(
+                            value = "INVOKE",
+                            target = $$"Lnet/minecraft/client/renderer/chunk/SectionCompiler;compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;",
+                        )),
+                    )
+                )
+            )
+        ),
     )
 
     val MODIFY_VARIABLE = register(
