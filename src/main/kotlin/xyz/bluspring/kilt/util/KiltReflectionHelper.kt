@@ -77,23 +77,45 @@ object KiltReflectionHelper {
 
     @JvmStatic
     fun getField(clazz: Class<*>, name: String): Field {
-        return ObfuscationReflectionHelper.findField(clazz, name)
+        try {
+            return ObfuscationReflectionHelper.findField(clazz, name)
+        } catch (e: RuntimeException) {
+            when (e) {
+                is ObfuscationReflectionHelper.UnableToFindFieldException, is ObfuscationReflectionHelper.UnableToAccessFieldException -> throw e.cause!!
+                else -> throw e
+            }
+        }
     }
 
     @JvmStatic
     fun getDeclaredField(clazz: Class<*>, name: String): Field {
-        return ObfuscationReflectionHelper.findField(clazz, name)
+        try {
+            return ObfuscationReflectionHelper.findField(clazz, name)
+        } catch (e: RuntimeException) {
+            when (e) {
+                is ObfuscationReflectionHelper.UnableToFindFieldException, is ObfuscationReflectionHelper.UnableToAccessFieldException -> throw e.cause!!
+                else -> throw e
+            }
+        }
     }
 
     @JvmStatic
     fun getMethod(clazz: Class<*>, name: String, vararg args: Class<*>): Method {
-        return clazz.getMethod(KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(Type.getInternalName(clazz), name,
-            args.joinToString("") { Type.getDescriptor(it) }) ?: name, *args)
+        try {
+            return clazz.getMethod(KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(Type.getInternalName(clazz), name,
+                args.joinToString("") { Type.getDescriptor(it) }) ?: name, *args)
+        } catch (e: ObfuscationReflectionHelper.UnableToFindMethodException) {
+            throw e.cause!!
+        }
     }
 
     @JvmStatic
     fun getDeclaredMethod(clazz: Class<*>, name: String, vararg args: Class<*>): Method {
-        return clazz.getDeclaredMethod(KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(Type.getInternalName(clazz), name,
-            args.joinToString("") { Type.getDescriptor(it) }) ?: name, *args)
+        try {
+            return clazz.getDeclaredMethod(KiltRemapper.enhancedRemapper.mapMethodNamePrefixDesc(Type.getInternalName(clazz), name,
+                args.joinToString("") { Type.getDescriptor(it) }) ?: name, *args)
+        } catch (e: ObfuscationReflectionHelper.UnableToFindMethodException) {
+            throw e.cause!!
+        }
     }
 }
