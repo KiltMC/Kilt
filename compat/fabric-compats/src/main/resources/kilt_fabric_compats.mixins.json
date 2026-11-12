@@ -4,6 +4,9 @@
     "package": "xyz.bluspring.kilt.compat.fabric.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
+        "appleskin.FoodValuesEventMixin",
+        "appleskin.HUDOverlayEventMixin",
+        "appleskin.TooltipOverlayEventMixin",
         "architectury.RegistrarManagerImplMixin",
         "athena_multi.FactoryManagerImplMixin",
         "cctweaked.ComponentAccessImplMixin",

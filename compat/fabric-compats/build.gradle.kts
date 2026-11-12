@@ -81,6 +81,8 @@ dependencies {
     compileOnly("maven.modrinth:eiktJyw1:${property("every_compat_version")}-neoforge,1.21.1")
 
     modCompileOnly("maven.modrinth:spark:${property("spark_version")}-fabric")
+
+    modCompileOnly("maven.modrinth:appleskin:${property("appleskin_version")}")
 }
 
 tasks {
