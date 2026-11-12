@@ -284,7 +284,7 @@ object MixinRemapper {
         alreadyRefmapped: MutableSet<String> = Collections.synchronizedSet(mutableSetOf<String>()),
         refmap: MixinRefmap? = null
     ) {
-        for (annotationNode in annotations) {
+        MixinHelpers.nestedModifyAnnotations(annotations) { annotationNode ->
             remapMixinAnnotation(
                 annotationNode, remapper, classTargets, mixinClassName, methodName,
                 methodDesc, mixinMapping, alreadyRefmapped, refmap
