@@ -31,8 +31,10 @@ data class WrappedNeoCondition<C : ICondition>(val wrapped: C) : ResourceConditi
                     }
 
                     override fun <T> getTag(key: TagKey<T>): Collection<Holder<T>> {
-                        return registryLookup.lookupOrThrow(key.registry)
-                            .get(key).map { it.toList() }.orElse(emptyList())
+                        return registryLookup.lookup(key.registry)
+                            .flatMap { it.get(key) }
+                            .map { it.toList() }
+                            .orElse(emptyList())
                     }
                 }
         )
