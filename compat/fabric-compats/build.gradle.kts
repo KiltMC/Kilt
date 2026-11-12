@@ -83,6 +83,9 @@ dependencies {
     modCompileOnly("maven.modrinth:spark:${property("spark_version")}-fabric")
 
     modCompileOnly("maven.modrinth:appleskin:${property("appleskin_version")}")
+
+    modCompileOnly("maven.modrinth:explorers-compass:${property("explorers_compass_version")}")
+    modCompileOnly("maven.modrinth:natures-compass:${property("natures_compass_version")}")
 }
 
 tasks {
