@@ -453,6 +453,7 @@ object KiltMixinModifications {
                 "at" to listOf(at(
                     value = "INVOKE",
                     target = $$"Lnet/minecraft/client/renderer/chunk/SectionCompiler;compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;",
+                    shift = At.Shift.AFTER,
                 )),
             ),
             replaceWith = listOf(
@@ -462,6 +463,7 @@ object KiltMixinModifications {
                         "at" to listOf(at(
                             value = "INVOKE",
                             target = $$"Lnet/minecraft/client/renderer/chunk/SectionCompiler;compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;",
+                            shift = At.Shift.AFTER,
                         )),
                     )
                 )
