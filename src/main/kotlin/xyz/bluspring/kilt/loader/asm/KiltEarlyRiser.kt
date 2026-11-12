@@ -390,6 +390,25 @@ class KiltEarlyRiser : Runnable {
             }
         }
 
+        run {
+            // Need to copy over a field.
+            val dataProviderMapped = KiltRemapper.remapClass("net/minecraft/data/DataProvider")
+
+            ClassTinkerers.addTransformation(dataProviderMapped) { classNode ->
+                classNode.visitField(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_FINAL, "INDENT_WIDTH", "Ljava/util/concurrent/atomic/AtomicInteger;", null, null)
+
+                val clinit = classNode.methods.first { it.name == "<clinit>" && it.desc == "()V" }
+
+                val insns = InsnList()
+                val l0 = Label()
+                insns.add(LabelNode(l0))
+                insns.add(FieldInsnNode(Opcodes.GETSTATIC, "xyz/bluspring/kilt/injections/data/DataProviderInjection", "INDENT_WIDTH", "Ljava/util/concurrent/atomic/AtomicInteger;"))
+                insns.add(FieldInsnNode(Opcodes.PUTSTATIC, classNode.name, "INDENT_WIDTH", "Ljava/util/concurrent/atomic/AtomicInteger;"))
+
+                clinit.instructions.insert(insns)
+            }
+        }
+
         // Turns out some mods extend some final classes in Sodium, which are apparently not final in Rubidium/Embeddium.
         if (FabricLoader.getInstance().isModLoaded("sodium")) {
             ClassTinkerers.addTransformation("me.jellysquid.mods.sodium.client.world.WorldSlice") { classNode ->
