@@ -90,6 +90,9 @@ class NeoForgeFluidStorage(val handler: IFluidHandler) : Storage<FluidVariant> {
 
         override fun getResource(): FluidVariant {
             val stack = handler.getFluidInTank(tank)
+            if (stack.isEmpty)
+                return FluidVariant.blank()
+
             return FluidVariant.of(stack.fluid, stack.componentsPatch)
         }
 

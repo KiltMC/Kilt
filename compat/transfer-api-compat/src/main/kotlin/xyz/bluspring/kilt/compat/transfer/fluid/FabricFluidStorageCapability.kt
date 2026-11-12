@@ -29,6 +29,9 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
     }
 
     override fun fill(resource: FluidStack, action: IFluidHandler.FluidAction): Int {
+        if (!storage.supportsInsertion())
+            return 0
+
         TransferUtil.getTransaction().use { transaction ->
             val inserted = storage.insert(FluidVariant.of(resource.fluid, resource.componentsPatch), resource.amount.toDroplets(), transaction)
 
@@ -42,6 +45,9 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
     }
 
     override fun drain(resource: FluidStack, action: IFluidHandler.FluidAction): FluidStack {
+        if (!storage.supportsExtraction())
+            return FluidStack.EMPTY
+
         TransferUtil.getTransaction().use { transaction ->
             val extracted = storage.extract(FluidVariant.of(resource.fluid, resource.componentsPatch), resource.amount.toDroplets(), transaction)
 
@@ -55,6 +61,9 @@ open class FabricFluidStorageCapability(val storage: Storage<FluidVariant>) : IF
     }
 
     override fun drain(maxDrain: Int, action: IFluidHandler.FluidAction): FluidStack {
+        if (!storage.supportsExtraction())
+            return FluidStack.EMPTY
+
         TransferUtil.getTransaction().use { transaction ->
             var totalToDrain = maxDrain.toDroplets()
             var selectedStack = FluidStack.EMPTY

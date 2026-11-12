@@ -85,7 +85,11 @@ class NeoForgeSlottedStorage(val handler: IItemHandler) : SlottedStorage<ItemVar
         }
 
         override fun getResource(): ItemVariant {
-            return ItemVariant.of(handler.getStackInSlot(slot))
+            val stack = handler.getStackInSlot(slot)
+            if (stack.isEmpty)
+                return ItemVariant.blank()
+
+            return ItemVariant.of(stack)
         }
 
         override fun getAmount(): Long {
