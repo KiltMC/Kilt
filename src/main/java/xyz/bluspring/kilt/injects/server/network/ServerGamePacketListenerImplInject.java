@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.bluspring.kilt.injections.client.multiplayer.CommonListenerCookieInjection;
 
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ChatDecorator;
@@ -123,7 +122,7 @@ public abstract class ServerGamePacketListenerImplInject extends ServerCommonPac
 
     @ModifyExpressionValue(method = "handleConfigurationAcknowledged", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;createCookie(Lnet/minecraft/server/level/ClientInformation;)Lnet/minecraft/server/network/CommonListenerCookie;"))
     private CommonListenerCookie kilt$appendConnectionTypeToCookie(CommonListenerCookie original) {
-        ((CommonListenerCookieInjection) (Object) original).kilt$setConnectionType(this.getConnectionType());
+        original.kilt$setConnectionType(this.getConnectionType());
         return original;
     }
 
