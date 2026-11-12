@@ -15,6 +15,7 @@ pluginManagement {
         }
         maven("https://repo.sleeping.town/")
         maven("https://maven.neoforged.net/releases")
+        maven("https://libraries.minecraft.net")
         mavenCentral()
         gradlePluginPortal()
     }

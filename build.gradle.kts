@@ -7,6 +7,7 @@ import org.ajoberstar.grgit.Grgit
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.ClassTweakerUpdater
+import xyz.bluspring.kilt.gradle.LocalVarMappingBuilder
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
 import java.net.HttpURLConnection
 import java.net.URI
@@ -626,6 +627,14 @@ tasks {
 
         doLast {
             ClassTweakerUpdater.updateTweakers(rootProject)
+        }
+    }
+
+    register("updateLocalVars") {
+        group = "kilt"
+
+        doLast {
+            LocalVarMappingBuilder.setupNeo(rootProject)
         }
     }
 

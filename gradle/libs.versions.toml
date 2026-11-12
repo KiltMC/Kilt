@@ -3,6 +3,9 @@
 fabric-loom = "1.17.16"
 minivan = "0.5"
 
+minecraft = "1.21.1"
+neoforge = "21.1.265"
+
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "fabric-loom" }
 minivan = { id = "agency.highlysuspect.minivan", version.ref = "minivan" }

@@ -446,50 +446,10 @@ object MixinRemapper {
             return KiltRemapper.remapDescriptor(value).breakpoint()
         }
 
-        // Usually the format consists of a descriptor at the beginning for the target class.
-        // However, some mixins may also not have that.
-        val classDescriptor = if (value.startsWith("L") && value.contains(";"))
-            value.replaceAfter(';', "")
-        else if (value.contains(".")) // ah, here's the cursed format.
-            "L${value.replaceAfterLast(".", "").removeSuffix(".").replace('.', '/')};"
-        else if (value.contains("/")) { // oh no, there's another cursed format in town.
-            val split = value.split("/")
-            if (split.last().contains("("))
-                "L${split.dropLast(1).joinToString("/")};"
-            else ""
-        } else
-            ""
 
+        val (classDescriptor, member, descriptor, isField, isMethod) = MixinHelpers.findMemberData(value)
         val mappedClassDescriptor = KiltRemapper.remapDescriptor(classDescriptor)
         val className = classDescriptor.removeSurrounding("L", ";")
-
-        // Member + descriptor is pretty easy to get
-        val memberWithDescriptor = if (value.contains("."))
-            value.replaceBeforeLast(".", "").removePrefix(".")
-        else
-            value.removePrefix(classDescriptor)
-        val isField = memberWithDescriptor.contains(":") // Full field targets consist of a : - fieldName:Ldescriptor/Here;
-        val isMethod = memberWithDescriptor.contains("(") // Full method targets consist of ( : - methodName(Ldescriptor/Here;)V
-
-        val member = if (isField)
-            // Field targets usually consist of a :
-            memberWithDescriptor.replaceAfter(':', "").removeSuffix(":")
-        else if (isMethod)
-            // Method targets typically follow the typical methodName()V rule
-            memberWithDescriptor.replaceAfter('(', "").removeSuffix("(")
-        else
-            // In this case, it's much harder to figure out. In this case, we follow two passes.
-            memberWithDescriptor
-
-        val descriptor = if (isField)
-            // Field descriptor, we can safely remove the member name + :
-            memberWithDescriptor.removePrefix("$member:")
-        else if (isMethod)
-            // This one's even easier, it's just memberName()V
-            memberWithDescriptor.removePrefix(member)
-        else
-            // We don't know what the descriptor is, so assume blank.
-            ""
 
         val mappedDescriptor = KiltRemapper.remapDescriptor(descriptor)
 
@@ -724,6 +684,7 @@ object MixinRemapper {
 
     fun clearCache() {
         this.targetClassNodeCache.clear()
+        MixinNamedLocalFixer.discard()
     }
 
     fun getAllTargetClassNodes(remapper: KiltEnhancedRemapper, targetClassNames: Collection<String>): Collection<ClassNode> {

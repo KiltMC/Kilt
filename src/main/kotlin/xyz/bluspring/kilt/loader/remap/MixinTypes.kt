@@ -1,5 +1,9 @@
 package xyz.bluspring.kilt.loader.remap
 
+import com.llamalad7.mixinextras.expression.Definition
+import com.llamalad7.mixinextras.expression.Definitions
+import com.llamalad7.mixinextras.expression.Expression
+import com.llamalad7.mixinextras.expression.Expressions
 import com.llamalad7.mixinextras.sugar.Local
 import com.llamalad7.mixinextras.sugar.ref.*
 import org.objectweb.asm.Type
@@ -8,8 +12,7 @@ import org.spongepowered.asm.mixin.Overwrite
 import org.spongepowered.asm.mixin.Shadow
 import org.spongepowered.asm.mixin.gen.Accessor
 import org.spongepowered.asm.mixin.gen.Invoker
-import org.spongepowered.asm.mixin.injection.At
-import org.spongepowered.asm.mixin.injection.Inject
+import org.spongepowered.asm.mixin.injection.*
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
@@ -21,9 +24,16 @@ object MixinTypes {
     @JvmField val SHADOW: Type = Type.getType(Shadow::class.java)
     @JvmField val OVERWRITE: Type = Type.getType(Overwrite::class.java)
     @JvmField val INJECT: Type = Type.getType(Inject::class.java)
+    @JvmField val MODIFY_ARG: Type = Type.getType(ModifyArg::class.java)
+    @JvmField val MODIFY_ARGS: Type = Type.getType(ModifyArgs::class.java)
+    @JvmField val MODIFY_VARIABLE: Type = Type.getType(ModifyVariable::class.java)
 
     // MixinExtras annotations
     @JvmField val LOCAL: Type = Type.getType(Local::class.java)
+    @JvmField val EXPRESSION: Type = Type.getType(Expression::class.java)
+    @JvmField val EXPRESSIONS: Type = Type.getType(Expressions::class.java)
+    @JvmField val DEFINITION: Type = Type.getType(Definition::class.java)
+    @JvmField val DEFINITIONS: Type = Type.getType(Definitions::class.java)
 
     // Mixin types used in annotations
     @JvmField val AT_SHIFT: Type = Type.getType(At.Shift::class.java)

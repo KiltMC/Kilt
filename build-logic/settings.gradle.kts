@@ -1,3 +1,11 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven("https://maven.fabricmc.net/")
+        maven("https://repo.sleeping.town/")
+    }
+}
+
 // https://discuss.gradle.org/t/using-version-catalog-from-buildsrc-buildlogic-xyz-common-conventions-scripts/48534
 dependencyResolutionManagement {
     versionCatalogs {
