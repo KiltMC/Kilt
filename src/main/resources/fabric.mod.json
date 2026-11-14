@@ -88,7 +88,8 @@
         "async": "*",
         "creativecore": "<2.12.33",
         "embeddium": "*",
-        "sporran": "*"
+        "sporran": "*",
+        "c2me": "<0.4.0-"
     },
     "accessWidener": "kilt.classtweaker"
 }

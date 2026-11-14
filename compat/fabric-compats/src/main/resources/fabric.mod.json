@@ -43,6 +43,7 @@
     "custom": {
         "modmenu": {
             "parent": "kilt"
-        }
+        },
+        "afl:classtransform": "kilt-fabric-compats.classtransform.json"
     }
 }

@@ -19,6 +19,8 @@ repositories {
 // CC:T Forge defines classes with the same name as CC:T Fabric.
 // This forces CC:T Forge to be deprioritized in classpath.
 val compileOnlyLater by configurations.creating
+val jijDep by configurations.creating
+val jijDepPath = project.layout.buildDirectory.dir("extracted_jij").get().asFile
 
 configurations {
     sourceSets.main.get().compileClasspath += compileOnlyLater
@@ -86,9 +88,27 @@ dependencies {
 
     modCompileOnly("maven.modrinth:explorers-compass:${property("explorers_compass_version")}")
     modCompileOnly("maven.modrinth:natures-compass:${property("natures_compass_version")}")
+
+    modCompileOnly(jijDep("maven.modrinth:c2me-fabric:${property("c2me_version")}")!!)
+    modCompileOnly(fileTree(mapOf(
+        "dir" to jijDepPath,
+        "include" to "*.jar"
+    )))
 }
 
 tasks {
+    register<Copy>("extractJiJ") {
+        from(jijDep.map { zipTree(it) })
+        include("META-INF/jars/*.jar")
+        eachFile { relativePath = RelativePath(true, name) }
+        includeEmptyDirs = true
+        into(jijDepPath)
+    }
+
+    compileJava {
+        dependsOn("extractJiJ")
+    }
+
     processResources {
         val properties = mutableMapOf(
             "version" to project.version,
