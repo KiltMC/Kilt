@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.util.KiltHelper
 
-object MixinAdditionalRemapper {
+object MixinAdditionalRemapper : MixinClassFixer {
     // Able to match: Lpackage/class/name;methodName(BZLother/type/name;)V
     val MIXIN_METHOD_EXPLICIT_REGEX = Regex("(L(?:\\w+(/)?)*;)\\w+(?:\\((?:Z|B|C|S|I|J|F|D|L(?:\\w+(/)?)*;)*\\)(?:Z|B|C|S|I|J|F|D|V|L(?:\\w+(/)?)*;))?")
 
@@ -17,7 +17,7 @@ object MixinAdditionalRemapper {
         "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;I)V" to "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;)V",
     )
 
-    fun remapClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         val mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
             .firstOrNull { it.desc == MixinTypes.MIXIN.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!")

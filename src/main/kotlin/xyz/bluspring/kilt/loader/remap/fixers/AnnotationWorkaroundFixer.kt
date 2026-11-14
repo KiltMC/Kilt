@@ -6,12 +6,12 @@ import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.workarounds.GameTestWorkaround
 
-object AnnotationWorkaroundFixer {
+object AnnotationWorkaroundFixer : GenericClassFixer {
     val mappingResolver = FabricLoader.getInstance().mappingResolver
     val GAME_TEST_WORKAROUND = GameTestWorkaround::class.java.typeName
     val GAME_TEST = mappingResolver.mapClassName("intermediary", "net.minecraft.class_6302")
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         for (method in classNode.methods) {
             if (method.visibleAnnotations == null)
                 continue

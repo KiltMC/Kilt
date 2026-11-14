@@ -5,12 +5,12 @@ import org.objectweb.asm.signature.SignatureWriter
 import org.objectweb.asm.tree.ClassNode
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
-object ConditionalInterfaceInjectionFixer {
+object ConditionalInterfaceInjectionFixer : GenericClassFixer {
     private val forgeMethodLookup = mapOf(
         ("getLightEmission" to KiltRemapper.remapDescriptor("(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)I")) to "io/github/fabricators_of_create/porting_lib/blocks/extensions/LightEmissiveBlock"
     )
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         for (method in classNode.methods) {
             if (forgeMethodLookup.contains(method.name to method.desc)) {
                 val className = forgeMethodLookup[method.name to method.desc]!!

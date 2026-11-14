@@ -128,6 +128,32 @@ object KiltRemapper {
     // Moj name -> (parent class name, (intermediary/mapped name, descriptor))
     val mojMappedMethods = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<String, MutableMap<String, MutableSet<Pair<String, String>>>>())
 
+    private val classFixers by lazy {
+        listOf(
+            ConditionalInterfaceInjectionFixer,
+            EventClassVisibilityFixer,
+            InjectedInterfaceVisibilityFixer,
+            WorkaroundFixer,
+            WorkaroundFixer,
+            ConflictingStaticMethodFixer,
+            EnvironmentRemapper,
+            EnvironmentLambdaFixer,
+            RemoveModulesFixer,
+            ModifiedCloneWorkaroundLoader,
+            ReflectionFixer,
+            GLVersionSpecifierFixer,
+        )
+    }
+
+    private val mixinFixers by lazy {
+        listOf(
+            MixinAdditionalRemapper,
+            MixinStaticMethodFixer,
+            MixinDirectModifierFixer,
+            MixinNamedLocalFixer,
+        )
+    }
+
     init {
         // Magical field references that are required because otherwise the remapper will deadlock
         val mojIntermediaryMapping = devMojIntermediaryMapping
@@ -515,28 +541,18 @@ object KiltRemapper {
                             MixinShadowRemapper.remapClass(originalNode, enhancedRemapper, originalMappings)
 
                             if (!KiltFlags.DISABLE_FIXERS) {
-                                MixinAdditionalRemapper.remapClass(originalNode)
-                                MixinStaticMethodFixer.fixClass(originalNode)
-                                MixinDirectModifierFixer.fixClass(originalNode)
-                                MixinNamedLocalFixer.fixClass(originalNode, enhancedRemapper)
+                                for (fixer in mixinFixers) {
+                                    fixer.fixClass(originalNode, enhancedRemapper)
+                                }
                             }
                         }
 
                         originalNode.accept(EnhancedClassRemapper(remappedNode, enhancedRemapper, RenamingTransformer(enhancedRemapper, false)))
 
                         if (!KiltFlags.DISABLE_FIXERS) {
-                            ConditionalInterfaceInjectionFixer.fixClass(remappedNode)
-                            EventClassVisibilityFixer.fixClass(remappedNode)
-                            InjectedInterfaceVisibilityFixer.fixClass(remappedNode)
-                            ObjectHolderDefinalizer.processClass(remappedNode)
-                            WorkaroundFixer.fixClass(remappedNode)
-                            ConflictingStaticMethodFixer.fixClass(remappedNode)
-                            EnvironmentRemapper.remapClass(remappedNode)
-                            EnvironmentLambdaFixer.fixClass(remappedNode)
-                            RemoveModulesFixer.fixClass(remappedNode)
-                            ModifiedCloneWorkaroundLoader.fixClass(remappedNode)
-                            ReflectionFixer.fixClass(remappedNode)
-                            GLVersionSpecifierFixer.fixClass(remappedNode)
+                            for (fixer in classFixers) {
+                                fixer.fixClass(remappedNode)
+                            }
                         }
 
                         val writer = ClassWriter(Opcodes.ASM9)

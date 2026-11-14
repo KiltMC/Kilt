@@ -8,10 +8,10 @@ import org.objectweb.asm.tree.MethodInsnNode
 
 // When you have to deal with reflection in a codebase, remap all of them!
 // *this is going to be so bad for performance...*
-object ReflectionFixer {
+object ReflectionFixer : GenericClassFixer {
     const val HELPER_CLASS = "xyz/bluspring/kilt/util/KiltReflectionHelper"
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         for (methodNode in classNode.methods) {
             var wasInitialized = false
             val nodesToReplace by lazy {

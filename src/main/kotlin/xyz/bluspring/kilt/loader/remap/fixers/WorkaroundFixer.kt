@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.api.remapping.InsnConflictRemapProvider
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import java.util.*
 
-object WorkaroundFixer {
+object WorkaroundFixer : GenericClassFixer {
     private val insnConflictRemapProviders = ServiceLoader.load(InsnConflictRemapProvider::class.java).toList()
 
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
@@ -17,7 +17,7 @@ object WorkaroundFixer {
     private val minecraftMapped = KiltRemapper.remapClass("net/minecraft/client/Minecraft")
     private val mcGuiMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_310", "field_1705", "Lnet/minecraft/class_329;")
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         val methodReplace = mutableListOf<MethodNode>()
 
         for (method in classNode.methods) {

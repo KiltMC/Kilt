@@ -8,10 +8,10 @@ import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.remap.MixinHelpers
 
-object GLVersionSpecifierFixer {
+object GLVersionSpecifierFixer : GenericClassFixer {
     private val GL_VERSION_ANNOTATION = Type.getType(DetectedGLVersion::class.java)
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         var glMajor = 3
         var glMinor = 2
 

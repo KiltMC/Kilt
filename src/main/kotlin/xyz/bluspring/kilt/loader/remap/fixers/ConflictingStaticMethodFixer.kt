@@ -9,7 +9,7 @@ import xyz.bluspring.kilt.loader.remap.KiltRemapper
 
 // Porting Lib makes some methods virtual instead of static.
 // Let's remap the methods that conflict with Porting Lib.
-object ConflictingStaticMethodFixer {
+object ConflictingStaticMethodFixer : GenericClassFixer {
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
     private val conflictingMethods = mapOf(
@@ -19,7 +19,7 @@ object ConflictingStaticMethodFixer {
         )
     )
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         for (method in classNode.methods) {
             val newNodeMap = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
 

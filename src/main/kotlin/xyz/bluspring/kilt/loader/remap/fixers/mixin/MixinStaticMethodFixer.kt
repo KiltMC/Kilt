@@ -8,7 +8,7 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
-object MixinStaticMethodFixer {
+object MixinStaticMethodFixer : MixinClassFixer {
     private val STATIC_METHODS = mapOf<String, List<String>>(
     )
 
@@ -17,7 +17,7 @@ object MixinStaticMethodFixer {
 
     // Forge switches some methods from static to instance.
     // We need to fix the mixin classes that are targeting them.
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)
 
         if (STATIC_METHODS.none { targetClassNames.contains(it.key) || targetClassNames.contains(KiltRemapper.remapClass(it.key)) })

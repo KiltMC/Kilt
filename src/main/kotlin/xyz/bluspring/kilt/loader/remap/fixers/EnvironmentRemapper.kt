@@ -15,7 +15,7 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.DistUtil
 import java.util.function.Consumer
 
-object EnvironmentRemapper {
+object EnvironmentRemapper : GenericClassFixer {
     val ONLYIN_TYPE = Type.getType(OnlyIn::class.java)
     val ONLYINS_TYPE = Type.getType(OnlyIns::class.java)
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
@@ -25,7 +25,7 @@ object EnvironmentRemapper {
     private val DIST_TYPE = Type.getType(Dist::class.java)
     private val ENVTYPE_TYPE = Type.getType(EnvType::class.java)
 
-    fun remapClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         // Class annotation replacements
         if (classNode.visibleAnnotations?.any { it.desc == ONLYIN_TYPE.descriptor } == true) {
             replaceAnnotations(classNode.visibleAnnotations) { classNode.visibleAnnotations = it }

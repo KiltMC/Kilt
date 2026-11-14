@@ -6,8 +6,8 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
 
 // Wraps all calls relating to "layer.findModule().orElseThrow()"
-object RemoveModulesFixer {
-    fun fixClass(classNode: ClassNode) {
+object RemoveModulesFixer : GenericClassFixer {
+    override fun fixClass(classNode: ClassNode) {
         for (methodNode in classNode.methods) {
             val afterInsns = mutableListOf<AbstractInsnNode>()
 

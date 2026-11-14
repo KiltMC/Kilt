@@ -10,12 +10,12 @@ import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.invoke.LambdaMetafactory
 
-object EnvironmentLambdaFixer {
+object EnvironmentLambdaFixer : GenericClassFixer {
     val LAMBDA_CLASS_NAME = Type.getInternalName(LambdaMetafactory::class.java)!!
     const val LAMBDA_METHOD_DESCRIPTOR = "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"
     private val ENVIRONMENT_TYPE = Type.getType(Environment::class.java)
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         val methodsToMark = mutableMapOf<Pair<String, String>, AnnotationNode>()
 
         for (methodNode in classNode.methods) {

@@ -11,7 +11,7 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.util.KiltHelper
 
-object MixinNamedLocalFixer {
+object MixinNamedLocalFixer : MixinClassFixer {
     private var wasInit = false
     // class:
     //    <method name, method desc>:
@@ -80,7 +80,7 @@ object MixinNamedLocalFixer {
     // - @ModifyVariable
     // - @Local
     // any Neo-added locals cannot be safely remapped, use InjectedShareAccessModifiers for this instead, which will be entirely manual.
-    fun fixClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
+    override fun fixClass(classNode: ClassNode, remapper: KiltEnhancedRemapper) {
         // We should only be targeting Minecraft classes. Anything else is futile.
         val targetClasses = MixinHelpers.getMixinClassTargets(classNode).filter {
             val split = it.className.split(".")

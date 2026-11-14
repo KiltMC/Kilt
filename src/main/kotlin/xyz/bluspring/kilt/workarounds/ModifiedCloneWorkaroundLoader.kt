@@ -8,9 +8,10 @@ import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.loader.remap.MixinTypes
+import xyz.bluspring.kilt.loader.remap.fixers.GenericClassFixer
 import xyz.bluspring.kilt.util.KiltHelper
 
-object ModifiedCloneWorkaroundLoader {
+object ModifiedCloneWorkaroundLoader : GenericClassFixer {
 
     val REMAPPED_TYPES = mutableMapOf<String, String>()
     val TRANSFORMERS = mutableListOf<Runnable>()
@@ -303,7 +304,7 @@ object ModifiedCloneWorkaroundLoader {
 
     }
 
-    fun fixClass(classNode: ClassNode) {
+    override fun fixClass(classNode: ClassNode) {
         for ((from, to) in REMAPPED_TYPES) {
             if (shouldApplyTransformers.contains(from) && !shouldApplyTransformers[from]!!(classNode))
                 continue

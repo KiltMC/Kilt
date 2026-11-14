@@ -8,8 +8,8 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAcce
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.RetargetingLocalModifier
 import xyz.bluspring.kilt.util.KiltHelper
 
-object MixinDirectModifierFixer {
-    fun fixClass(classNode: ClassNode) {
+object MixinDirectModifierFixer : MixinClassFixer {
+    override fun fixClass(classNode: ClassNode) {
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)
         val removedMethods = mutableListOf<MethodNode>()
         val addedMethods = mutableListOf<MethodNode>()
