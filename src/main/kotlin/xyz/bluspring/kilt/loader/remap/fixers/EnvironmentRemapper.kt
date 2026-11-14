@@ -15,6 +15,10 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.DistUtil
 import java.util.function.Consumer
 
+/**
+ * We need to remap @[OnlyIn] annotations to @[Environment], that way they're properly stripped on Fabric just like they are on NeoForge.
+ * We cannot handle it ourselves, we do not implement a custom class loader.
+ */
 object EnvironmentRemapper : GenericClassFixer {
     val ONLYIN_TYPE = Type.getType(OnlyIn::class.java)
     val ONLYINS_TYPE = Type.getType(OnlyIns::class.java)

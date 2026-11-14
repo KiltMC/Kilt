@@ -1,11 +1,16 @@
-package xyz.bluspring.kilt.loader.remap.fixers
+package xyz.bluspring.kilt.loader.remap.fixers.internal
 
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.gametest.framework.GameTest
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import xyz.bluspring.kilt.loader.remap.fixers.GenericClassFixer
 import xyz.bluspring.kilt.workarounds.GameTestWorkaround
 
+/**
+ * Remaps all @[GameTestWorkaround] annotations to correctly reference @[GameTest].
+ */
 object AnnotationWorkaroundFixer : GenericClassFixer {
     val mappingResolver = FabricLoader.getInstance().mappingResolver
     val GAME_TEST_WORKAROUND = GameTestWorkaround::class.java.typeName

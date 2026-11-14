@@ -14,8 +14,6 @@ object WorkaroundFixer : GenericClassFixer {
     private val mappingResolver = FabricLoader.getInstance().mappingResolver
 
     private val customSlotMapped = KiltRemapper.remapClass("net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen\$CustomCreativeSlot")
-    private val minecraftMapped = KiltRemapper.remapClass("net/minecraft/client/Minecraft")
-    private val mcGuiMapped = mappingResolver.mapFieldName("intermediary", "net.minecraft.class_310", "field_1705", "Lnet/minecraft/class_329;")
 
     override fun fixClass(classNode: ClassNode) {
         val methodReplace = mutableListOf<MethodNode>()

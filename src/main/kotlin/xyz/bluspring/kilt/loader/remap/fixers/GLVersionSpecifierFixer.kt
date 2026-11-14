@@ -8,6 +8,10 @@ import org.objectweb.asm.tree.MethodInsnNode
 import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.remap.MixinHelpers
 
+/**
+ * Detects the OpenGL version usage of all classes and annotates the classes with @[DetectedGLVersion] so Kilt can automatically bump the OpenGL version.
+ * This is because we are forced to always read and cache into memory every single annotation in existence for some reason. Thanks NeoForge.
+ */
 object GLVersionSpecifierFixer : GenericClassFixer {
     private val GL_VERSION_ANNOTATION = Type.getType(DetectedGLVersion::class.java)
 

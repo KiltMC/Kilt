@@ -9,9 +9,9 @@ import org.objectweb.asm.tree.*
 import xyz.bluspring.fork.mm.api.ClassTinkerers
 import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
-import xyz.bluspring.kilt.loader.remap.fixers.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.loader.remap.fixers.EnvironmentRemapper
 import xyz.bluspring.kilt.loader.remap.fixers.EventClassVisibilityFixer
+import xyz.bluspring.kilt.loader.remap.fixers.internal.AnnotationWorkaroundFixer
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 import java.net.URL

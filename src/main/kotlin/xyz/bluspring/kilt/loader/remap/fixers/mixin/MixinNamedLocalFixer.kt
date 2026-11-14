@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.remap.fixers.mixin
 
+import com.llamalad7.mixinextras.sugar.Local
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
@@ -11,6 +12,9 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.loader.remap.MixinTypes
 import xyz.bluspring.kilt.util.KiltHelper
 
+/**
+ * Remaps named @[Local] annotations to use ordinals instead.
+ */
 object MixinNamedLocalFixer : MixinClassFixer {
     private var wasInit = false
     // class:

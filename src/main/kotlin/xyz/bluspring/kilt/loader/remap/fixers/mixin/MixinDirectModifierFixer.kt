@@ -8,6 +8,9 @@ import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.InjectedShareAcce
 import xyz.bluspring.kilt.loader.mixin.modifications.modifiers.RetargetingLocalModifier
 import xyz.bluspring.kilt.util.KiltHelper
 
+/**
+ * Handles the direct mixin modification system, such as [InjectedShareAccessModifier] and [RetargetingLocalModifier].
+ */
 object MixinDirectModifierFixer : MixinClassFixer {
     override fun fixClass(classNode: ClassNode) {
         val targetClassNames = MixinRemapper.getMixinClassTargets(classNode)

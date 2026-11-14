@@ -8,6 +8,9 @@ import xyz.bluspring.kilt.loader.remap.MixinHelpers
 import xyz.bluspring.kilt.util.KiltHelper
 import java.lang.reflect.Modifier
 
+/**
+ * This isn't used currently, but previously, Forge switched some methods to be instance methods instead of static.
+ */
 object MixinStaticMethodFixer : MixinClassFixer {
     private val STATIC_METHODS = mapOf<String, List<String>>(
     )
