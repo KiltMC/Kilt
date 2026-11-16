@@ -659,7 +659,7 @@ object MixinRemapper {
         mixinAnnotation: AnnotationNode = KiltHelper.mergeNullableCollections(classNode.visibleAnnotations, classNode.invisibleAnnotations)
             .firstOrNull { it.desc == MixinTypes.MIXIN.descriptor }
             ?: throw IllegalStateException("Failed to locate mixin annotations!"),
-        values: Map<String, Any> = MixinHelpers.annotationValuesToMap(mixinAnnotation.values)
+        values: Map<String, Any> = mixinAnnotation.values?.let { MixinHelpers.annotationValuesToMap(mixinAnnotation.values) } ?: emptyMap() // thanks TBS
     ): Collection<String> {
         val targetClassNames = mutableListOf<String>()
 
