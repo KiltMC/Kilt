@@ -89,7 +89,8 @@
         "creativecore": "<2.12.33",
         "embeddium": "*",
         "sporran": "*",
-        "c2me": "<0.4.0-"
+        "c2me": "<0.4.0-",
+        "jei": "<19.52.0.424"
     },
     "accessWidener": "kilt.classtweaker"
 }
