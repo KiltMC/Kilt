@@ -1,96 +1,96 @@
 {
-    "schemaVersion": 1,
-    "id": "kilt",
-    "version": "${version}",
-    "name": "Kilt",
-    "description": "Allows the loading of NeoForge mods in the Fabric ecosystem. Very experimental.",
-    "authors": [
-        "BluSpring",
-        "AlphaMode"
+  "schemaVersion": 1,
+  "id": "kilt",
+  "version": "1.0.0+26.1.2",
+  "name": "Kilt",
+  "description": "Allows the loading of NeoForge mods in the Fabric ecosystem. Very experimental.",
+  "authors": [
+    "BluSpring",
+    "AlphaMode"
+  ],
+  "contributors": [
+    "Acuadragon100",
+    "Brickmaster1",
+    "Cartrigger",
+    "CephalonCosmic",
+    "embeddedt",
+    "ForestWolf99",
+    "ItsBlackGear",
+    "kallmetony",
+    "KorewaLidesu",
+    "ptk671",
+    "SettingDust",
+    "skyevg",
+    "SuperKnux"
+  ],
+  "provides": [
+    "neoforge"
+  ],
+  "contact": {
+    "repo": "https://github.com/KiltMC/Kilt",
+    "issues": "https://github.com/KiltMC/Kilt/issues"
+  },
+  "license": "LGPL-2.1-only",
+  "icon": "assets/kilt/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "xyz.bluspring.kilt.client.KiltClient"
     ],
-    "contributors": [
-        "Acuadragon100",
-        "Brickmaster1",
-        "Cartrigger",
-        "CephalonCosmic",
-        "embeddedt",
-        "ForestWolf99",
-        "ItsBlackGear",
-        "kallmetony",
-        "KorewaLidesu",
-        "ptk671",
-        "SettingDust",
-        "skyevg",
-        "SuperKnux"
+    "main": [
+      "xyz.bluspring.kilt.Kilt"
     ],
-    "provides": [
-        "neoforge"
+    "server": [
+      "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
     ],
-    "contact": {
-        "repo": "https://github.com/KiltMC/Kilt",
-        "issues": "https://github.com/KiltMC/Kilt/issues"
-    },
-    "license": "LGPL-2.1-only",
-    "icon": "assets/kilt/icon.png",
-    "environment": "*",
-    "entrypoints": {
-        "client": [
-            "xyz.bluspring.kilt.client.KiltClient"
-        ],
-        "main": [
-            "xyz.bluspring.kilt.Kilt"
-        ],
-        "server": [
-            "xyz.bluspring.kilt.server.dedicated.KiltDedicatedServer"
-        ],
-        "mm_kilt:early_risers": [
-            "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
-        ],
-        "mixinsquared-adjuster": [
-            "xyz.bluspring.kilt.loader.mixin.KiltAnnotationAdjuster"
-        ],
-        "mixinsquared": [
-            "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
-        ],
-        "afl:instrumentation": [
-            "xyz.bluspring.kilt.loader.asm.KiltInstrumentationHandler"
-        ],
-        "kilt:mod_container": [
-            "xyz.bluspring.kilt.KiltModEventBusHandler"
-        ]
-    },
-    "mixins": [
-        "Kilt.mixins.json",
-        "kilt_neo_injects.mixins.json",
-        "kilt_neo_modifications.mixins.json"
+    "mm_kilt:early_risers": [
+      "xyz.bluspring.kilt.loader.asm.KiltEarlyRiser"
     ],
-    "depends": {
-        "fabricloader": ">=${loader_version}",
-        "fabric-api": ">=${fabric_version}",
-        "minecraft": "${minecraft_version}",
-        "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-        "mm_kilt": ">=${fabric_asm_version}"
+    "mixinsquared-adjuster": [
+      "xyz.bluspring.kilt.loader.mixin.KiltAnnotationAdjuster"
+    ],
+    "mixinsquared": [
+      "xyz.bluspring.kilt.loader.mixin.KiltMixinCanceller"
+    ],
+    "afl:instrumentation": [
+      "xyz.bluspring.kilt.loader.asm.KiltInstrumentationHandler"
+    ],
+    "kilt:mod_container": [
+      "xyz.bluspring.kilt.KiltModEventBusHandler"
+    ]
+  },
+  "mixins": [
+    "Kilt.mixins.json",
+    "kilt_neo_injects.mixins.json",
+    "kilt_neo_modifications.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.6",
+    "fabric-api": ">=0.151.0+26.1.2",
+    "minecraft": "~26.1.2",
+    "fabric-language-kotlin": "*",
+    "mm_kilt": "*"
+  },
+  "custom": {
+    "kilt:access_transformer": [
+      "META-INF/accesstransformer.cfg"
+    ],
+    "lithium:options": {
+      "mixin.entity.collisions.fluid": false
     },
-    "custom": {
-        "kilt:access_transformer": [
-            "META-INF/accesstransformer.cfg"
-        ],
-        "lithium:options": {
-            "mixin.entity.collisions.fluid": false
-        },
-        "potatoptimize:options": {
-            "mixin.world.farmland": false
-        },
-        "afl:classtransform": "kilt.classtransform.json"
+    "potatoptimize:options": {
+      "mixin.world.farmland": false
     },
-    "breaks": {
-        "quilt_loader": "*",
-        "async": "*",
-        "creativecore": "<2.12.33",
-        "embeddium": "*",
-        "sporran": "*",
-        "c2me": "<0.4.0-",
-        "jei": "<19.52.0.424"
-    },
-    "accessWidener": "kilt.classtweaker"
+    "afl:classtransform": "kilt.classtransform.json"
+  },
+  "breaks": {
+    "quilt_loader": "*",
+    "async": "*",
+    "creativecore": "<2.12.33",
+    "embeddium": "*",
+    "sporran": "*",
+    "c2me": "<0.4.0-",
+    "jei": "<19.52.0.424"
+  },
+  "accessWidener": "kilt.classtweaker"
 }
