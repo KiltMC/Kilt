@@ -7,6 +7,7 @@
     "appleskin.FoodValuesEventMixin",
     "appleskin.HUDOverlayEventMixin",
     "appleskin.TooltipOverlayEventMixin",
+    "architectury.PlatformMixin",
     "architectury.RegistrarManagerImplMixin",
     "athena_multi.FactoryManagerImplMixin",
     "cctweaked.ComponentAccessImplMixin",
