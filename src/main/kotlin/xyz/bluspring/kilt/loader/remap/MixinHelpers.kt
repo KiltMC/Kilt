@@ -17,7 +17,10 @@ object MixinHelpers {
         return values
     }
 
-    fun annotationValuesToMap(values: List<Any>): Map<String, Any> {
+    fun annotationValuesToMap(values: List<Any>?): Map<String, Any> {
+        if (values == null)
+            return emptyMap()
+
         val map = mutableMapOf<String, Any>()
 
         var currentKey = ""
