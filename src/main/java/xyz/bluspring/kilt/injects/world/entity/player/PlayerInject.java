@@ -313,7 +313,7 @@ public abstract class PlayerInject extends LivingEntity implements IPlayerExtens
 
     @Definition(id = "bl3", local = @Local(type = boolean.class, ordinal = 2))
     @Expression("bl3 == false")
-    @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+    @ModifyExpressionValue(method = "attack", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0))
     private boolean kilt$checkShouldHandleSweepingCrit(boolean original, @Share(value = "critEvent", namespace = "kilt") LocalRef<CriticalHitEvent> critEvent) {
         var event = critEvent.get();
         if (event != null) {
