@@ -5,8 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import com.llamalad7.mixinextras.expression.Definition;
@@ -32,7 +30,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.server.ReloadableServerResourcesInjection;
 
 import net.minecraft.commands.Commands;
@@ -45,7 +42,6 @@ import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.flag.FeatureFlagSet;
 
@@ -57,7 +53,7 @@ public abstract class ReloadableServerResourcesInject implements ReloadableServe
     @Unique private RegistryAccess registryAccess = RegistryAccess.EMPTY;
     @Unique private HolderLookup.Provider loadingContext = RegistryAccess.EMPTY;
     @Unique private ConditionContext context;
-    @Unique private Map<ListenerKey<?>, PreparableReloadListener> retainedListeners = new IdentityHashMap<>();
+    @Unique private final Map<ListenerKey<?>, PreparableReloadListener> retainedListeners = new IdentityHashMap<>();
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$initContexts(LayeredRegistryAccess<RegistryLayer> fullLayers, HolderLookup.Provider loadingContext, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, List<Registry.PendingTags<?>> postponedTags, PermissionSet functionCompilationPermissions, List<DataComponentInitializers.PendingComponents<?>> newComponents, CallbackInfo ci) {
@@ -91,21 +87,18 @@ public abstract class ReloadableServerResourcesInject implements ReloadableServe
         return this.retainedListeners;
     }
 
-    @Inject(method = "lambda$loadResources$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
-    private static void kilt$fireReloadListenersEvent(ReloadableServerRegistries.LoadResult fullRegistries, FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection, List updatedContextTags, PermissionSet functionCompilationPermissions, ResourceManager resourceManager, Executor backgroundExecutor, Executor mainThreadExecutor, List pendingComponents, CallbackInfoReturnable<CompletionStage> cir, @Local(name = "result") ReloadableServerResources result, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
+    @WrapOperation(method = "lambda$loadResources$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ReloadableServerResources;listeners()Ljava/util/List;"))
+    private static List<PreparableReloadListener> kilt$tryUseCustomListeners(ReloadableServerResources result, Operation<List<PreparableReloadListener>> original, @Local(argsOnly = true, name = "fullRegistries") ReloadableServerRegistries.LoadResult fullRegistries, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
         List<PreparableReloadListener> listeners = EventHooks.onResourceReload(result, fullRegistries.layers().compositeAccess(), result.kilt$getRetainedListeners());
-        listenersRef.set(listeners);
         for (PreparableReloadListener rl : listeners) {
             if (rl instanceof ContextAwareReloadListener carl) {
                 carl.injectContext(result.getConditionContext(), result.getRegistryLookup());
             }
         }
-    }
 
-    @ModifyExpressionValue(method = "lambda$loadResources$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/ReloadableServerResources;listeners()Ljava/util/List;"))
-    private static List<PreparableReloadListener> kilt$tryUseCustomListeners(List<PreparableReloadListener> original, @Share("listeners") LocalRef<List<PreparableReloadListener>> listeners) {
-        var current = new ArrayList<>(original);
-        for (PreparableReloadListener listener : listeners.get()) {
+        listenersRef.set(listeners);
+        var current = new ArrayList<>(original.call(result));
+        for (PreparableReloadListener listener : listeners) {
             if (!current.contains(listener))
                 current.add(listener);
         }
@@ -117,15 +110,13 @@ public abstract class ReloadableServerResourcesInject implements ReloadableServe
     @Expression("?.done()")
     @ModifyExpressionValue(method = "lambda$loadResources$2", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static CompletableFuture<?> kilt$clearReloadContexts(CompletableFuture<?> original, @Local(name = "result") ReloadableServerResources result, @Share("listeners") LocalRef<List<PreparableReloadListener>> listenersRef) {
-        return original.thenApply(ignore -> {
+        return original.thenRun(() -> {
             ((ConditionContext) result.getConditionContext()).clear();
             for (PreparableReloadListener listener : listenersRef.get()) {
                 if (listener instanceof ContextAwareReloadListener carl) {
                     carl.injectContext(ICondition.IContext.EMPTY, RegistryAccess.EMPTY);
                 }
             }
-
-            return ignore;
         });
     }
 

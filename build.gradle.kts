@@ -69,7 +69,7 @@ loom {
     runs.forEach {
         it.jvmArguments.add("-XX:+AllowEnhancedClassRedefinition")
         it.jvmArguments.add("-Dmixin.debug.export=true")
-        it.jvmArguments.add("-Dkilt.auditMixins=true")
+//        it.jvmArguments.add("-Dkilt.auditMixins=true")
     }
 
     mixin {

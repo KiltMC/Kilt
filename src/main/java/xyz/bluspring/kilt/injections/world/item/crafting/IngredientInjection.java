@@ -18,8 +18,8 @@ public interface IngredientInjection extends FabricIngredient {
         throw KiltHelper.createMixinException(IngredientInjection.class, "getValues");
     }
 
-    default @Nullable ICustomIngredient kilt$getCustomIngredient() {
-        throw KiltHelper.createMixinException(IngredientInjection.class, "kilt$getCustomIngredient");
+    default @Nullable ICustomIngredient getCustomIngredient() {
+        throw KiltHelper.createMixinException(IngredientInjection.class, "getCustomIngredient");
     }
 
     default boolean isCustom() {

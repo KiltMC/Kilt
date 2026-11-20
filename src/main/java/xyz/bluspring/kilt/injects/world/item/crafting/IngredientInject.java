@@ -7,21 +7,30 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Either;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
-import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Implements;
+import org.spongepowered.asm.mixin.Interface;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.injections.world.item.crafting.IngredientInjection;
+import xyz.bluspring.kilt.util.KiltHelper;
 import xyz.bluspring.kilt.workarounds.FabricCustomIngredientWrapper;
 
 import net.minecraft.core.HolderSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 
+import net.fabricmc.fabric.api.recipe.v1.ingredient.CustomIngredient;
 import net.fabricmc.fabric.api.recipe.v1.ingredient.FabricIngredient;
 
+
+@Implements({
+    @Interface(iface = IngredientInjection.class, prefix = "kilt$i$"),
+    @Interface(iface = FabricIngredient.class, prefix = "kilt$f$")
+})
 @Mixin(Ingredient.class)
 public abstract class IngredientInject implements FabricIngredient, IngredientInjection {
     // Kilt: Fabric API already handles most of the ingredient stuff, actually. We defer to Fabric API anyway for custom ingredients,
@@ -54,24 +63,28 @@ public abstract class IngredientInject implements FabricIngredient, IngredientIn
         return this.requiresTesting();
     }
 
-    public @Nullable ICustomIngredient getCustomIngredient() {
-        return this.kilt$getCustomIngredient();
+    @Intrinsic(displace = true)
+    public CustomIngredient kilt$f$getCustomIngredient() {
+        if (KiltHelper.INSTANCE.hasMethodOverrideWithReturnType(this.getClass(), Ingredient.class, "getCustomIngredient", ICustomIngredient.class)) {
+            return this.getCustomIngredient();
+        }
+
+        return null;
     }
 
-    @Override
-    public @Nullable ICustomIngredient kilt$getCustomIngredient() {
-        var ingredient = ((FabricIngredient) this).getCustomIngredient();
-        if (ingredient instanceof ICustomIngredient customIngredient) {
-            return customIngredient;
-        } else if (ingredient != null) {
-            return new FabricCustomIngredientWrapper(ingredient);
-        }
+    public ICustomIngredient kilt$i$getCustomIngredient() {
+        var customIngredient = ((FabricIngredient) this).getCustomIngredient();
+
+        if (customIngredient instanceof ICustomIngredient neoIngredient)
+            return neoIngredient;
+        else if (customIngredient != null)
+            return new FabricCustomIngredientWrapper(customIngredient);
 
         return null;
     }
 
     @Override
     public boolean isCustom() {
-        return this.getCustomIngredient() != null;
+        return ((FabricIngredient) this).getCustomIngredient() != null;
     }
 }
