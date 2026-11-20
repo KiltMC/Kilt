@@ -15,9 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: 'recursive'
           token: ${{ secrets.PAT_TOKEN }}
-          fetch-depth: 2
+          fetch-depth: 0
           filter: tree:0
       - name: Set up JDK 25
         uses: actions/setup-java@v4
