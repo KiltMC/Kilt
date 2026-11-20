@@ -120,6 +120,7 @@ public abstract class BlockInject implements BlockInjection, IBlockExtension {
     private static boolean kilt$tryCaptureResourceDrops(Level instance, Entity entity, Operation<Boolean> original) {
         if (capturedDrops != null && entity instanceof ItemEntity itemEntity) {
             capturedDrops.put(itemEntity, () -> original.call(instance, entity));
+            return true;
         }
 
         return original.call(instance, entity);
