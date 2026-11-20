@@ -42,6 +42,7 @@
         "WorldSliceAccessor",
         "client.gui.components.ButtonBuilderAccessor",
         "client.renderer.ScreenEffectRendererAccessor",
+        "compat.fabric_api.FabricItemStackMixin",
         "compat.fabric_api.Int2ObjectMapTrackerMixin",
         "compat.fabric_api.PackRepositoryMixin",
         "compat.fabric_api.network.ServerConfigurationNetworkAddonMixin",
