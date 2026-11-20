@@ -261,6 +261,9 @@ class KiltLoader : TwillOverrides {
         return TwillLoader.instance.hasMod(id)
     }
 
+    override val overrideName: String = "Kilt"
+    override val overrideVersion: String = FabricLoader.getInstance().getModContainer("kilt").orElseThrow().metadata.version.friendlyString
+
     companion object {
         val instance: KiltLoader = KiltLoader()
 
