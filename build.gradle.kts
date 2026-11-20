@@ -16,7 +16,6 @@ plugins {
     id("maven-publish")
     id("org.ajoberstar.grgit") version "5.0.0" apply false
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
-    id("com.gradleup.shadow") version "9.4.2"
     id("xyz.bluspring.kilt.gradle.kilt-plugin")
     kotlin("kapt") version "2.4.0"
 }
