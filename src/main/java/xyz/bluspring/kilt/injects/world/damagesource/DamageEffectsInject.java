@@ -1,9 +1,17 @@
 package xyz.bluspring.kilt.injects.world.damagesource;
 
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.damagesource.DamageEffects;
-import net.neoforged.fml.common.asm.enumextension.*;
-import org.spongepowered.asm.mixin.*;
+import java.util.function.Supplier;
+
+import net.neoforged.fml.common.asm.enumextension.ExtensionInfo;
+import net.neoforged.fml.common.asm.enumextension.IExtensibleEnum;
+import net.neoforged.fml.common.asm.enumextension.NamedEnum;
+import net.neoforged.fml.common.asm.enumextension.NetworkedEnum;
+import net.neoforged.fml.common.asm.enumextension.ReservedConstructor;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -11,13 +19,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
 import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 
-import java.util.function.Supplier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.damagesource.DamageEffects;
 
 @NamedEnum
 @NetworkedEnum(NetworkedEnum.NetworkCheck.CLIENTBOUND)
 @Mixin(DamageEffects.class)
 public abstract class DamageEffectsInject implements IExtensibleEnum {
-    @Shadow @Final @Mutable private String id;
     @Shadow @Final @Mutable private SoundEvent sound;
     @Unique private Supplier<SoundEvent> soundSupplier;
 
@@ -27,10 +35,10 @@ public abstract class DamageEffectsInject implements IExtensibleEnum {
     }
 
     @ReservedConstructor
-    private DamageEffectsInject(String name, int ordinal, String id, SoundEvent sound) {}
+    DamageEffectsInject(String name, int ordinal, String id, SoundEvent sound) {}
 
     @CreateInitializer
-    private DamageEffectsInject(String name, int ordinal, String id, Supplier<SoundEvent> soundSupplier) {
+    DamageEffectsInject(String name, int ordinal, String id, Supplier<SoundEvent> soundSupplier) {
         this(name, ordinal, id, (SoundEvent) null);
         this.soundSupplier = soundSupplier;
         this.sound = null;

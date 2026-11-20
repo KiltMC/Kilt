@@ -1,14 +1,16 @@
 package xyz.bluspring.kilt.injections.server.packs.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
+import xyz.bluspring.kilt.util.KiltHelper;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import xyz.bluspring.kilt.util.KiltHelper;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public interface PackInjection {
     PackSource CHILD_SOURCE = PackSource.create(
@@ -22,7 +24,7 @@ public interface PackInjection {
 
     static Pack create(PackLocationInfo location, Pack.ResourcesSupplier resources, Pack.Metadata metadata, PackSelectionConfig selectionConfig, List<Pack> children) {
         var pack = new Pack(location, resources, metadata, selectionConfig);
-        List<Pack> flattenedChildren = new java.util.ArrayList<>();
+        List<Pack> flattenedChildren = new ArrayList<>();
         List<Pack> remainingChildren = children;
         // recursively flatten children
         while (!remainingChildren.isEmpty()) {

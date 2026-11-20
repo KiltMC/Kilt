@@ -35,26 +35,6 @@ public interface LevelInjection extends AttachmentHolderWorkaround {
         throw KiltHelper.createMixinException(LevelInjection.class, "kilt$setRestoringBlockSnapshots");
     }
 
-    default void setDayTimeFraction(float dayTimeFraction) {
-        throw KiltHelper.createMixinException(LevelInjection.class, "setDayTimeFraction");
-    }
-
-    default float getDayTimeFraction() {
-        throw KiltHelper.createMixinException(LevelInjection.class, "getDayTimeFraction");
-    }
-
-    default float getDayTimePerTick() {
-        throw KiltHelper.createMixinException(LevelInjection.class, "getDayTimePerTick");
-    }
-
-    default void setDayTimePerTick(float dayTimePerTick) {
-        throw KiltHelper.createMixinException(LevelInjection.class, "setDayTimePerTick");
-    }
-
-    default long advanceDaytime() {
-        throw KiltHelper.createMixinException(LevelInjection.class, "advanceDaytime");
-    }
-
     default void markAndNotifyBlock(BlockPos pos, @Nullable LevelChunk levelchunk, BlockState oldState, BlockState newState, int flags, int p_46608_) {
         throw KiltHelper.createMixinException(LevelInjection.class, "markAndNotifyBlock");
     }
@@ -63,7 +43,7 @@ public interface LevelInjection extends AttachmentHolderWorkaround {
         throw KiltHelper.createMixinException(LevelInjection.class, "addFreshBlockEntities");
     }
 
-    default Collection<? extends PartEntity<?>> kilt$getPartEntities() {
+    default Collection<PartEntity<?>> kilt$getPartEntities() {
         throw KiltHelper.createMixinException(LevelInjection.class, "kilt$getPartEntities");
     }
 }

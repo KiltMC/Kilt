@@ -26,7 +26,6 @@ import net.neoforged.neoforge.common.util.BlockSnapshot;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.server.timings.TimeTracker;
-import org.jetbrains.annotations.ApiStatus;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -222,24 +221,6 @@ public abstract class LevelInject implements LevelAccessor, ILevelExtension, Lev
             maxEntityRadius = value;
 
         return maxEntityRadius;
-    }
-
-    @ApiStatus.Internal @Override public abstract void setDayTimeFraction(float dayTimeFraction);
-    @ApiStatus.Internal @Override public abstract float getDayTimeFraction();
-    @Override public abstract float getDayTimePerTick();
-    @Override public abstract void setDayTimePerTick(float dayTimePerTick);
-
-    @Override
-    public long advanceDaytime() {
-        if (this.getDayTimePerTick() < 0) {
-            return 1L;
-        }
-
-        float dayTimeStep = this.getDayTimeFraction() + this.getDayTimePerTick();
-        long result = (long) dayTimeStep;
-        this.setDayTimeFraction(dayTimeStep - result);
-
-        return result;
     }
 
     // Kilt

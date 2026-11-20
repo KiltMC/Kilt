@@ -2,6 +2,7 @@
 [versions]
 fabric-loom = "1.19.+"
 twill = "1.0.0"
+neoforge = "26.1.2.109"
 
 [libraries]
 twill = { module = "xyz.bluspring:twill", version.ref = "twill" }

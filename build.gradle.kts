@@ -515,7 +515,8 @@ tasks {
             "fabric_version" to project.property("fabric_version"),
             "minecraft_version" to project.property("minecraft_version"),
             "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
-            "fabric_asm_version" to project.property("fabric_asm_version")
+            "fabric_asm_version" to project.property("fabric_asm_version"),
+            "neoforge_version" to libs.versions.neoforge.get(),
         )
 
         for ((key, value) in properties) {
@@ -542,8 +543,12 @@ tasks {
         }
 
         // Rename NeoForge's mods.toml, so launchers like Prism don't end up detecting it over Kilt.
-        filesMatching("META-INF/neoforge.mods.toml") {
-            this.name = "kilt_neoforge.mods.toml"
+        from(rootProject.file("forge/src/main/templates/neoforge.mods.toml")) {
+            rename("(.*)", "META-INF/kilt_neoforge.mods.toml")
+
+            expand(mapOf(
+                "version" to libs.versions.neoforge.get()
+            ))
         }
 
         exclude("log4j2.xml")

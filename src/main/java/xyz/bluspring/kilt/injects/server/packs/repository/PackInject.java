@@ -41,7 +41,7 @@ public abstract class PackInject implements PackInjection {
     @Shadow @Final private PackLocationInfo location;
 
     @Unique private boolean hidden;
-    @Unique private List<Pack> children;
+    @Unique private List<Pack> children = List.of();
 
     public PackInject(PackLocationInfo location, Pack.ResourcesSupplier resources, Pack.Metadata metadata, PackSelectionConfig selectionConfig) {}
 

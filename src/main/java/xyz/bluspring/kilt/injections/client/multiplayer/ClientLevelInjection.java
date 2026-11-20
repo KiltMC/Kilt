@@ -1,11 +1,14 @@
 package xyz.bluspring.kilt.injections.client.multiplayer;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.neoforged.neoforge.entity.PartEntity;
+import org.jspecify.annotations.Nullable;
 import xyz.bluspring.kilt.util.KiltHelper;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.HitResult;
+
 public interface ClientLevelInjection {
-    default Int2ObjectMap<PartEntity<?>> kilt$getPartEntitiesMap() {
-        throw KiltHelper.createMixinException(ClientLevelInjection.class, "kilt$getPartEntitiesMap");
+    default void addBreakingBlockEffect(BlockPos pos, Direction direction, @Nullable HitResult hitResult) {
+        throw KiltHelper.createMixinException(ClientLevelInjection.class, "addBreakingBlockEffect");
     }
 }

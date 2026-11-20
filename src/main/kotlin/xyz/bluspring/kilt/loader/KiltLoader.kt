@@ -13,18 +13,23 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
 import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.helpers.DetectedGLVersion
 import xyz.bluspring.kilt.loader.asm.KiltStaticInjectionFixer
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.knit.loader.KnitLoader
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModEnvironment
+import xyz.bluspring.twill.loader.BuiltinModDefinition
 import xyz.bluspring.twill.loader.TwillLoader
 import xyz.bluspring.twill.loader.TwillOverrides
 import xyz.bluspring.twill.loader.fabric.WrappedFabricModContainer
 import xyz.bluspring.twill.loader.knit.NeoForgeMod
+import java.util.jar.JarFile
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
+import kotlin.io.path.toPath
 
 class KiltLoader : TwillOverrides {
     private val bridgedModDefinitions = mutableListOf<ModDefinition>()
@@ -102,6 +107,38 @@ class KiltLoader : TwillOverrides {
 
         for (mod in mods) {
             KiltStaticInjectionFixer.findAndFixInjections(mod)
+        }
+    }
+
+    override fun getBuiltinModDefinitions(): List<BuiltinModDefinition> {
+        return if (FabricLoader.getInstance().isDevelopmentEnvironment) {
+            val modsList = mutableListOf<BuiltinModDefinition>()
+
+            for (url in this::class.java.classLoader.getResources("META-INF/kilt_neoforge.mods.toml")) {
+                modsList.add(BuiltinModDefinition(listOf(
+                    KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath(),
+                    DetectedGLVersion::class.java.protectionDomain.codeSource.location.toURI().toPath(),
+                ), url.toURI()) { url.openStream() })
+            }
+
+            // Loads gametests
+            for (url in this::class.java.classLoader.getResources("META-INF/neoforge.mods.toml")) {
+                if (url.file.contains(".jar") && url.file.contains("!/META-INF/neoforge.mods.toml")) // Prevent Fabric mods with broken Forge metadata from loading in the dev env
+                    continue
+
+                val path = Path(url.path.removePrefix("file:/"))
+
+                modsList.add(BuiltinModDefinition(listOf(path), url.toURI()) { url.openStream() })
+            }
+
+            modsList
+        } else {
+            val kiltFile = KiltLoader::class.java.protectionDomain.codeSource.location.toURI().toPath()
+            val kiltJar = JarFile(kiltFile.toFile())
+
+            listOf(BuiltinModDefinition(listOf(kiltFile), null) {
+                kiltJar.getInputStream(kiltJar.getJarEntry("META-INF/kilt_neoforge.mods.toml"))
+            })
         }
     }
 
@@ -230,7 +267,6 @@ class KiltLoader : TwillOverrides {
         const val KILT_ERROR_MESSAGE = "Kilt: Failed to start Kilt, please read the exception below!"
 
         // These constants are to be updated each time we change versions
-        val SUPPORTED_NEO_API_VERSION = Constants.NEOFORGE_API_VERSION
         val MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().metadata.version
 
         val kiltCacheDir = (FabricLoader.getInstance().gameDir / ".kilt").apply {

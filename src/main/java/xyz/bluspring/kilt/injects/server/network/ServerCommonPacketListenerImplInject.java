@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
@@ -93,9 +94,13 @@ public abstract class ServerCommonPacketListenerImplInject implements ServerComm
         return cookie;
     }
 
-    // Kilt: Fabric API handles this
     @Accessor
     public abstract @NonNull Connection getConnection();
+
+    @Override
+    public PacketProcessor getPacketProcessor() {
+        return this.server.packetProcessor();
+    }
 
     @Override
     public ConnectionType getConnectionType() {

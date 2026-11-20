@@ -1632,8 +1632,6 @@ accessible class net/minecraft/world/clock/ServerClockManager$ClockInstance
 accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
 accessible class net/minecraft/core/MappedRegistry$TagSet
 
-transitive-accessible class xyz/bluspring/kilt/injections/world/level/saveddata/SavedDataTypeInjection$Factory
-
 # Kilt's own injected interfaces, these ones are manually inserted for interfaces
 # that can't be automatically generated, such as inner injections.
 transitive-inject-interface net/minecraft/client/gui/components/Button$Builder xyz/bluspring/kilt/injections/client/gui/components/ButtonBuilderInjection
@@ -1709,6 +1707,7 @@ transitive-inject-interface net/minecraft/client/multiplayer/prediction/BlockSta
 transitive-inject-interface net/minecraft/client/multiplayer/ServerData xyz/bluspring/kilt/injections/client/multiplayer/ServerDataInjection
 transitive-inject-interface net/minecraft/client/multiplayer/SessionSearchTrees xyz/bluspring/kilt/injections/client/multiplayer/SessionSearchTreesInjection
 transitive-inject-interface net/minecraft/client/Options xyz/bluspring/kilt/injections/client/OptionsInjection
+transitive-inject-interface net/minecraft/client/particle/TerrainParticle xyz/bluspring/kilt/injections/client/particle/TerrainParticleInjection
 transitive-inject-interface net/minecraft/client/player/LocalPlayer xyz/bluspring/kilt/injections/client/player/LocalPlayerInjection
 transitive-inject-interface net/minecraft/client/renderer/block/BlockModelLighter xyz/bluspring/kilt/injections/client/renderer/block/BlockModelLighterInjection
 transitive-inject-interface net/minecraft/client/renderer/block/dispatch/BlockStateModelDispatcher xyz/bluspring/kilt/injections/client/renderer/block/dispatch/BlockStateModelDispatcherInjection
@@ -1908,6 +1907,7 @@ transitive-inject-interface net/minecraft/world/level/storage/loot/LootPool xyz/
 transitive-inject-interface net/minecraft/world/level/storage/loot/LootTable xyz/bluspring/kilt/injections/world/level/storage/loot/LootTableInjection
 transitive-inject-interface net/minecraft/world/level/storage/PlayerDataStorage xyz/bluspring/kilt/injections/world/level/storage/PlayerDataStorageInjection
 transitive-inject-interface net/minecraft/world/level/storage/PrimaryLevelData xyz/bluspring/kilt/injections/world/level/storage/PrimaryLevelDataInjection
+transitive-inject-interface net/minecraft/world/level/storage/SavedDataStorage xyz/bluspring/kilt/injections/world/level/storage/SavedDataStorageInjection
 transitive-inject-interface net/minecraft/world/level/storage/ServerLevelData xyz/bluspring/kilt/injections/world/level/storage/ServerLevelDataInjection
 transitive-inject-interface net/minecraft/world/level/TicketStorage xyz/bluspring/kilt/injections/world/level/TicketStorageInjection
 transitive-inject-interface net/minecraft/world/phys/AABB xyz/bluspring/kilt/injections/world/phys/AABBInjection

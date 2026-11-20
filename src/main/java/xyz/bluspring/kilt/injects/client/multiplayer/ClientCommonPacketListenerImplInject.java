@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,15 +15,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 
 @Mixin(ClientCommonPacketListenerImpl.class)
 public abstract class ClientCommonPacketListenerImplInject implements ClientCommonPacketListener, IClientCommonPacketListenerExtension {
-    @Shadow
-    @Final
-    protected Connection connection;
-    protected ConnectionType connectionType = ConnectionType.OTHER;
+    @Shadow @Final protected Minecraft minecraft;
+
+    @Unique protected ConnectionType connectionType = ConnectionType.OTHER;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void kilt$setConnectionTypeBasedOnCookie(Minecraft minecraft, Connection connection, CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
@@ -74,4 +75,9 @@ public abstract class ClientCommonPacketListenerImplInject implements ClientComm
     @Accessor
     @Override
     public abstract Connection getConnection();
+
+    @Override
+    public PacketProcessor getPacketProcessor() {
+        return this.minecraft.packetProcessor();
+    }
 }

@@ -76,12 +76,13 @@
             "META-INF/accesstransformer.cfg"
         ],
         "lithium:options": {
-            "mixin.entity.collisions.fluid": false
         },
         "potatoptimize:options": {
             "mixin.world.farmland": false
         },
-        "afl:classtransform": "kilt.classtransform.json"
+        "afl:classtransform": "kilt.classtransform.json",
+        "kilt:neoforge_version": "${neoforge_version}",
+        "twill:mod_stub": true
     },
     "breaks": {
         "quilt_loader": "*",

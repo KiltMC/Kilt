@@ -11,7 +11,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public interface ItemStackInjection {
     default boolean isComponentsPatchEmpty() {
@@ -20,10 +19,6 @@ public interface ItemStackInjection {
 
     default void hurtAndBreak(int damage, ServerLevel level, @Nullable LivingEntity entity, Consumer<Item> onBreak) {
         throw KiltHelper.createMixinException(ItemStackInjection.class, "hurtAndBreak");
-    }
-
-    default ItemEnchantments getTagEnchantments() {
-        throw KiltHelper.createMixinException(ItemStackInjection.class, "getTagEnchantments");
     }
 
     static boolean isSameItem(ItemStack a, @Nullable ItemStackTemplate b) {

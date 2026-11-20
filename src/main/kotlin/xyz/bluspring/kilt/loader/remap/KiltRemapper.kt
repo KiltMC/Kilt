@@ -5,7 +5,6 @@ import com.google.gson.JsonParser
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -54,7 +53,6 @@ object KiltRemapper {
 
     // Kilt JVM flags
     private val forceRemap = KiltFlags.FORCE_REMAPPING
-    private val disableRemaps = KiltFlags.DISABLE_REMAPPING
 
     internal val logger = LoggerFactory.getLogger("Kilt Remapper")
     // internal val useNamed = FabricLoader.getInstance().mappingResolver.currentRuntimeNamespace != "intermediary"
@@ -63,15 +61,7 @@ object KiltRemapper {
 
     fun init() {}
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun remapMods(modLoadingQueue: Collection<ModDefinition>, remappedModsDir: Path) {
-        if (disableRemaps) {
-            logger.warn("Mod remapping has been disabled! Mods built normally using ForgeGradle will not function with this enabled.")
-            logger.warn("Only have this enabled if you know what you're doing!")
-
-            return
-        }
-
         this.remappedModsDir = remappedModsDir
 
         if (forceRemap)
