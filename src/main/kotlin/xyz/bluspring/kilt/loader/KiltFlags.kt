@@ -31,6 +31,9 @@ object KiltFlags {
     // This essentially disables most of Kilt's fixers that modify the mod's bytecode to make the mod work in Fabric.
     @JvmField val DISABLE_FIXERS = FORCE_REMAPPING && "kilt.disableFixers".checkPropertyBoolean()
 
+    // Used to just audit all of the mixins and make sure they are all working correctly
+    @JvmField val MIXIN_AUDIT = "kilt.auditMixins".checkPropertyBoolean()
+
     private fun String.checkPropertyBoolean(): Boolean {
         return System.getProperty(this)?.lowercase() == "true"
     }

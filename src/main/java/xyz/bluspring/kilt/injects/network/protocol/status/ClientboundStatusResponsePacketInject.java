@@ -1,20 +1,29 @@
 package xyz.bluspring.kilt.injects.network.protocol.status;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.serialization.Codec;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
-import net.minecraft.network.protocol.status.ServerStatus;
+import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.mixin.CreateInitializer;
+import xyz.bluspring.kilt.helpers.mixin.CreateStatic;
 import xyz.bluspring.kilt.injections.network.protocol.status.ClientboundStatusResponsePacketInjection;
+
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
+import net.minecraft.network.protocol.status.ServerStatus;
 
 @Mixin(ClientboundStatusResponsePacket.class)
 public abstract class ClientboundStatusResponsePacketInject implements ClientboundStatusResponsePacketInjection {
+    @Shadow @Final @Mutable public static StreamCodec<ByteBuf, ClientboundStatusResponsePacket> STREAM_CODEC;
+    @CreateStatic private static StreamCodec<ByteBuf, ClientboundStatusResponsePacket> VANILLA_STREAM_CODEC;
+
     @Nullable @Unique
     private String cachedStatus;
 
@@ -40,12 +49,15 @@ public abstract class ClientboundStatusResponsePacketInject implements Clientbou
         this.cachedStatus = data;
     }
 
-    @WrapOperation(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeJsonWithCodec(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
-    private <T> void kilt$writeCachedStatus(FriendlyByteBuf instance, Codec<T> codec, T value, Operation<Void> original) {
-        if (this.cachedStatus != null && this.kilt$shouldWriteStatus)
-            instance.writeUtf(cachedStatus);
-        else
-            //noinspection MixinExtrasOperationParameters
-            original.call(instance, codec, value);
+    @Inject(method = "<clinit>", at = @At("TAIL"))
+    private static void kilt$wrapWithStatusCache(CallbackInfo ci) {
+        VANILLA_STREAM_CODEC = STREAM_CODEC;
+
+        STREAM_CODEC = StreamCodec.of((buf, packet) -> {
+            if (packet.cachedStatus() != null)
+                ByteBufCodecs.STRING_UTF8.encode(buf, packet.cachedStatus());
+            else
+                VANILLA_STREAM_CODEC.encode(buf, packet);
+        }, VANILLA_STREAM_CODEC);
     }
 }

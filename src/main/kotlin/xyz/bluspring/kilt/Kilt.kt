@@ -26,13 +26,19 @@ import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.server.ServerLifecycleHooks
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.spongepowered.asm.mixin.MixinEnvironment
 import xyz.bluspring.kilt.client.KiltClient
+import xyz.bluspring.kilt.loader.KiltFlags
 import xyz.bluspring.kilt.loader.KiltLoader
 import xyz.bluspring.kilt.mixin.MinecraftServerAccessor
 import xyz.bluspring.kilt.util.KiltHelper
 
 class Kilt : ModInitializer {
     override fun onInitialize() {
+        if (KiltFlags.MIXIN_AUDIT) {
+            MixinEnvironment.getCurrentEnvironment().audit()
+        }
+
         // We have no reason to retain this info.
         KiltHelper.clearForgeClassNodes()
 

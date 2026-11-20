@@ -17,7 +17,7 @@ public abstract class PlayerSpawnPhantomsEventMixin implements KiltModifiedEvent
         return this.kilt$wasModified;
     }
 
-    @Inject(method = "set*", at = @At("TAIL"))
+    @Inject(method = {"setPhantomsToSpawn", "setResult"}, at = @At("TAIL"))
     private void kilt$markAsModified(CallbackInfo ci) {
         this.kilt$wasModified = true;
     }

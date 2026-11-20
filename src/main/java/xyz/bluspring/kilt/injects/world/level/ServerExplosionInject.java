@@ -18,14 +18,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.phys.Vec3;
 
 @Mixin(ServerExplosion.class)
 public abstract class ServerExplosionInject {
-    @Shadow @Final private Level level;
+    @Shadow @Final private ServerLevel level;
 
     @Unique private List<BlockPos> kilt$toBlow = List.of();
 

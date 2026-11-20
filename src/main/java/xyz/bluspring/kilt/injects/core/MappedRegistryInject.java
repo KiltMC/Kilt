@@ -1,9 +1,14 @@
 package xyz.bluspring.kilt.injects.core;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -29,6 +34,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 @Mixin(MappedRegistry.class)
 @Extends(BaseMappedRegistry.class)
@@ -127,6 +133,28 @@ public abstract class MappedRegistryInject<T> implements WritableRegistry<T>, Ma
     private void kilt$forceSetUnregistered(CallbackInfoReturnable<Registry<T>> cir, @Share("kilt$unregisteredIntrusiveHolders") LocalRef<Map<T, Holder.Reference<T>>> unregistered) {
         this.unregisteredIntrusiveHolders = unregistered.get();
         ((BaseMappedRegistry<T>) (Object) this).bakeCallbacks.forEach(callback -> callback.onBake(this));
+    }
+
+    @Definition(id = "allTags", field = "Lnet/minecraft/core/MappedRegistry;allTags:Lnet/minecraft/core/MappedRegistry$TagSet;")
+    @Definition(id = "isBound", method = "Lnet/minecraft/core/MappedRegistry$TagSet;isBound()Z")
+    @Expression("this.allTags.isBound()")
+    @ModifyExpressionValue(method = "freeze", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean kilt$avoidFreezingCrash(boolean original, @Cancellable CallbackInfoReturnable<Registry<T>> cir) {
+        if (original) {
+            cir.setReturnValue(this);
+        }
+
+        return original;
+    }
+
+    @Mixin(targets = "net/minecraft/core/MappedRegistry$3")
+    public abstract static class AnonymousPendingTagsInject<T> implements PendingTags<T> {
+        @Shadow @Final Map<TagKey<T>, List<Holder<T>>> val$pendingContents;
+
+        @Override
+        public Map<TagKey<T>, List<Holder<T>>> contents() {
+            return Collections.unmodifiableMap(val$pendingContents);
+        }
     }
 
     @Override

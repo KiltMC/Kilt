@@ -1,10 +1,9 @@
 package xyz.bluspring.kilt.injects.world.level.storage;
 
+import java.nio.file.Path;
+import java.util.UUID;
+
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.WorldData;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,15 +15,20 @@ import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.injections.world.level.storage.LevelStorageAccessInjection;
 import xyz.bluspring.kilt.mixin.LevelStorageSourceAccessor;
 
-import java.nio.file.Path;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.WorldData;
 
 @Mixin(LevelStorageSource.class)
 public abstract class LevelStorageSourceInject {
     @Mixin(LevelStorageSource.LevelStorageAccess.class)
     public abstract static class LevelStorageAccessInject implements LevelStorageAccessInjection {
-        @Shadow @Final private LevelStorageSource field_23766;
         @Shadow protected abstract void checkLock();
         @Shadow @Final private LevelStorageSource.LevelDirectory levelDirectory;
+
+        @Shadow
+        @Final
+        private LevelStorageSource this$0;
 
         @Override
         public void readAdditionalLevelSaveData(boolean fallback) {
@@ -40,14 +44,14 @@ public abstract class LevelStorageSourceInject {
             }
         }
 
-        @Inject(method = "saveDataTag(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/level/storage/WorldData;Lnet/minecraft/nbt/CompoundTag;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;saveLevelData(Lnet/minecraft/nbt/CompoundTag;)V"))
-        private void kilt$writeAdditionalLevelSaveData(RegistryAccess registries, WorldData serverConfiguration, CompoundTag hostPlayerNBT, CallbackInfo ci, @Local(ordinal = 2) CompoundTag tag) {
-            CommonHooks.writeAdditionalLevelSaveData(serverConfiguration, tag);
+        @Inject(method = "saveDataTag(Lnet/minecraft/world/level/storage/WorldData;Ljava/util/UUID;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;saveLevelData(Lnet/minecraft/nbt/CompoundTag;)V"))
+        private void kilt$writeAdditionalLevelSaveData(WorldData levelData, UUID singleplayerUUID, CallbackInfo ci, @Local(name = "root") CompoundTag root) {
+            CommonHooks.writeAdditionalLevelSaveData(levelData, root);
         }
 
         @Override
         public Path getWorldDir() {
-            return field_23766.getBaseDir();
+            return this$0.getBaseDir();
         }
     }
 }

@@ -1,14 +1,11 @@
 package xyz.bluspring.kilt.injects.world.level.storage;
 
+import java.util.UUID;
+
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.storage.ServerLevelData;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,6 +14,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.world.level.storage.PrimaryLevelDataInjection;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 @Mixin(PrimaryLevelData.class)
 public abstract class PrimaryLevelDataInject implements PrimaryLevelDataInjection, ServerLevelData {
@@ -36,11 +38,11 @@ public abstract class PrimaryLevelDataInject implements PrimaryLevelDataInjectio
     }
 
     @Inject(method = "setTagData", at = @At("TAIL"))
-    private void kilt$saveCustomNeoData(RegistryAccess registry, CompoundTag nbt, CompoundTag playerNBT, CallbackInfo ci) {
-        nbt.putString("forgeLifecycle", CommonHooks.encodeLifecycle(this.settings.getLifecycle()));
-        nbt.putBoolean("confirmedExperimentalSettings", this.confirmedExperimentalWarning);
-        nbt.putFloat("neoDayTimeFraction", this.dayTimeFraction);
-        nbt.putFloat("neoDayTimePerTick", this.dayTimePerTick);
+    private void kilt$saveCustomNeoData(CompoundTag tag, UUID singlePlayerUUID, CallbackInfo ci) {
+        tag.putString("forgeLifecycle", CommonHooks.encodeLifecycle(this.settings.getLifecycle()));
+        tag.putBoolean("confirmedExperimentalSettings", this.confirmedExperimentalWarning);
+        tag.putFloat("neoDayTimeFraction", this.dayTimeFraction);
+        tag.putFloat("neoDayTimePerTick", this.dayTimePerTick);
     }
 
     @Override

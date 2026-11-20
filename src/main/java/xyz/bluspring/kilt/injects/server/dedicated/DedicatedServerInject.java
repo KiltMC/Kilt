@@ -29,7 +29,7 @@ public abstract class DedicatedServerInject extends MinecraftServer {
         super(serverThread, storageSource, packRepository, worldStem, gameRules, proxy, fixerUpper, services, levelLoadListener, propagatesCrashes);
     }
 
-    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/GameProfileCache;setUsesAuthentication(Z)V", shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/UserNameToIdResolver;resolveOfflineUsers(Z)V", shift = At.Shift.AFTER), cancellable = true)
     public void kilt$handleServerAboutToStart(CallbackInfoReturnable<Boolean> cir) {
         ServerLifecycleHooks.handleServerAboutToStart(this);
     }
