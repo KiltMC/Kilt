@@ -5,13 +5,9 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.IShearable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -20,56 +16,24 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.item.ItemStack;
 
 @Mixin(ShearsDispenseItemBehavior.class)
 public abstract class ShearsDispenseItemBehaviorInject {
-    @Shadow private static boolean tryShearLivingEntity(ServerLevel serverLevel, BlockPos blockPos) {
-        throw new IllegalStateException();
+    @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/ShearsDispenseItemBehavior;tryShearBeehive(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/BlockPos;)Z", ordinal = 0))
+    private boolean kilt$tryShearEvent(ServerLevel level, ItemStack tool, BlockPos pos, Operation<Boolean> original, @Local(argsOnly = true, name = "source") BlockSource source) {
+        return CommonHooks.tryDispenseShearsHarvestBlock(source, tool, level, pos) || original.call(level, tool, pos);
     }
 
-    @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/ShearsDispenseItemBehavior;tryShearBeehive(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)Z"))
-    private boolean kilt$tryUseNeoDispenseHook(ServerLevel serverLevel, BlockPos blockPos, Operation<Boolean> original, @Local(argsOnly = true) BlockSource source, @Local(argsOnly = true) ItemStack stack) {
-        return CommonHooks.tryDispenseShearsHarvestBlock(source, stack, serverLevel, blockPos) || original.call(serverLevel, blockPos);
-    }
-
-    @WrapOperation(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/dispenser/ShearsDispenseItemBehavior;tryShearLivingEntity(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)Z"))
-    private boolean kilt$tryUseForgeShearable(ServerLevel serverLevel, BlockPos blockPos, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack) {
-        kilt$currentStack.set(stack);
-        var value = original.call(serverLevel, blockPos);
-        kilt$currentStack.remove();
-
-        return value;
-    }
-
-    @Unique private static final ThreadLocal<ItemStack> kilt$currentStack = new ThreadLocal<>();
-
-    @Unique
-    private static boolean tryShearLivingEntity(ServerLevel level, BlockPos pos, ItemStack stack) {
-        kilt$currentStack.set(stack);
-        var value = tryShearLivingEntity(level, pos);
-        kilt$currentStack.remove();
-
-        return value;
-    }
-
-    @Inject(method = "tryShearLivingEntity", at = @At("HEAD"))
-    private static void kilt$setCurrentStack(ServerLevel level, BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Share(value = "stack", namespace = "kilt") LocalRef<ItemStack> stackRef) {
-        stackRef.set(kilt$currentStack.get());
-    }
-
-    @Definition(id = "livingEntity", local = @Local(type = LivingEntity.class))
+    @Definition(id = "livingEntity", local = @Local(type = Entity.class))
     @Definition(id = "Shearable", type = Shearable.class)
     @Expression("livingEntity instanceof Shearable")
-    @Inject(method = "tryShearLivingEntity", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private static void kilt$tryUseNeoShearable(ServerLevel level, BlockPos pos, CallbackInfoReturnable<Boolean> cir, @Local LivingEntity entity) {
-        if (kilt$currentStack.get() == null)
-            return;
-
-        if (entity instanceof IShearable shearable && shearable.isShearable(null, kilt$currentStack.get(), level, pos)) {
-            shearable.onSheared(null, kilt$currentStack.get(), level, pos)
+    @Inject(method = "tryShearEntity", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private static void kilt$tryUseNeoShearable(ServerLevel level, BlockPos pos, ItemStack tool, CallbackInfoReturnable<Boolean> cir, @Local(name = "entity") Entity entity) {
+        if (entity instanceof IShearable shearable && shearable.isShearable(null, tool, level, pos)) {
+            shearable.onSheared(null, tool, level, pos)
                 .forEach(drop -> shearable.spawnShearedDrop(level, pos, drop));
         }
     }

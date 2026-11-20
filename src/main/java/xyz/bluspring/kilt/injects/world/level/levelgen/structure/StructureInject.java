@@ -20,9 +20,9 @@ public abstract class StructureInject implements StructureInjection {
         modifiableStructureInfo = new ModifiableStructureInfo(new ModifiableStructureInfo.StructureInfo(structureSettings));
     }
 
-    @Inject(at = @At("HEAD"), method = "method_42698", cancellable = true)
-    private static void kilt$useOriginalStructureSettings(Structure structure, CallbackInfoReturnable<Structure.StructureSettings> cir) {
-        cir.setReturnValue(structure.modifiableStructureInfo().getOriginalStructureInfo().structureSettings());
+    @Inject(at = @At("HEAD"), method = "lambda$settingsCodec$0", cancellable = true)
+    private static void kilt$useOriginalStructureSettings(Structure e, CallbackInfoReturnable<Structure.StructureSettings> cir) {
+        cir.setReturnValue(e.modifiableStructureInfo().getOriginalStructureInfo().structureSettings());
     }
 
     @Override

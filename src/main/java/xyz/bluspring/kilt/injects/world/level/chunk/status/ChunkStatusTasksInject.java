@@ -17,8 +17,8 @@ import net.minecraft.world.level.chunk.status.ChunkStatusTasks;
 
 @Mixin(ChunkStatusTasks.class)
 public abstract class ChunkStatusTasksInject {
-    @WrapOperation(method = "method_60553", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;runPostLoad()V"))
-    private static void bypassFutureChain(LevelChunk instance, Operation<Void> original, @Local(argsOnly = true) GenerationChunkHolder holder) {
+    @WrapOperation(method = "lambda$full$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;runPostLoad()V"))
+    private static void bypassFutureChain(LevelChunk instance, Operation<Void> original, @Local(argsOnly = true, name = "holder") GenerationChunkHolder holder) {
         try {
             holder.kilt$setCurrentlyLoading(instance);
             original.call(instance);
@@ -27,8 +27,8 @@ public abstract class ChunkStatusTasksInject {
         }
     }
 
-    @WrapOperation(method = "method_60553", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;registerAllBlockEntitiesAfterLevelLoad()V"))
-    private static void bypassFutureChain2(LevelChunk instance, Operation<Void> original, @Local(argsOnly = true) GenerationChunkHolder holder) {
+    @WrapOperation(method = "lambda$full$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;registerAllBlockEntitiesAfterLevelLoad()V"))
+    private static void bypassFutureChain2(LevelChunk instance, Operation<Void> original, @Local(argsOnly = true, name = "holder") GenerationChunkHolder holder) {
         try {
             holder.kilt$setCurrentlyLoading(instance);
             original.call(instance);
@@ -37,11 +37,11 @@ public abstract class ChunkStatusTasksInject {
         }
     }
 
-    @WrapOperation(method = "method_60553", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;registerTickContainerInLevel(Lnet/minecraft/server/level/ServerLevel;)V"))
-    private static void bypassFutureChain3(LevelChunk instance, ServerLevel arg, Operation<Void> original, @Local(argsOnly = true) GenerationChunkHolder holder, @Local ProtoChunk protoChunk) {
+    @WrapOperation(method = "lambda$full$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunk;registerTickContainerInLevel(Lnet/minecraft/server/level/ServerLevel;)V"))
+    private static void bypassFutureChain3(LevelChunk instance, ServerLevel level, Operation<Void> original, @Local(argsOnly = true, name = "holder") GenerationChunkHolder holder, @Local(name = "protoChunk") ProtoChunk protoChunk) {
         try {
             holder.kilt$setCurrentlyLoading(instance);
-            original.call(instance, arg);
+            original.call(instance, level);
             NeoForge.EVENT_BUS.post(new ChunkEvent.Load(instance, !(protoChunk instanceof ImposterProtoChunk)));
         } finally {
             holder.kilt$setCurrentlyLoading(null);

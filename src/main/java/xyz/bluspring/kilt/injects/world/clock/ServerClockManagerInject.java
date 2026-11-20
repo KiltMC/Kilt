@@ -98,7 +98,7 @@ public abstract class ServerClockManagerInject implements ServerClockManagerInje
     public abstract static class ClockInstanceInject implements ClockInstanceInjection {
         @Unique private @Nullable Holder<WorldClock> holder;
 
-        @Shadow public ClockInstanceInject() {}
+        public ClockInstanceInject() {}
         @Shadow public abstract void tick();
 
         @Shadow

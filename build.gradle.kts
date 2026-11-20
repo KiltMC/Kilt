@@ -18,6 +18,7 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.7.+"
     id("com.gradleup.shadow") version "9.4.2"
     id("xyz.bluspring.kilt.gradle.kilt-plugin")
+    kotlin("kapt") version "2.4.0"
 }
 
 apply<KiltLoomPlugin>()
@@ -64,19 +65,27 @@ sourceSets {
 
 loom {
     accessWidenerPath.set(file("src/main/resources/kilt.classtweaker"))
+
+    runs.forEach {
+        it.jvmArguments.add("-XX:+AllowEnhancedClassRedefinition")
+        it.jvmArguments.add("-Dmixin.debug.export=true")
+    }
+
     mixin {
 //        useLegacyMixinAp = false
         showMessageTypes.set(true)
 
-        messages.set(mutableMapOf(
-            "ACCESSOR_TARGET_NOT_FOUND" to "disabled",
+        messages.set(
+            mutableMapOf(
+                "ACCESSOR_TARGET_NOT_FOUND" to "disabled",
 
-            // Make sure that we don't accidentally leave broken mixins. This happens a lot, I don't know why the hell these aren't error-level by default.
-            "MIXIN_SOFT_TARGET_NOT_RESOLVED" to "error",
-            "TARGET_ELEMENT_NOT_FOUND" to "error",
-            //"NO_OBFDATA_FOR_METHOD" to "error",
-            "MISSING_INJECTOR_DESC_SINGLETARGET" to "error"
-        ))
+                // Make sure that we don't accidentally leave broken mixins. This happens a lot, I don't know why the hell these aren't error-level by default.
+                "MIXIN_SOFT_TARGET_NOT_RESOLVED" to "error",
+                "TARGET_ELEMENT_NOT_FOUND" to "error",
+                //"NO_OBFDATA_FOR_METHOD" to "error",
+                "MISSING_INJECTOR_DESC_SINGLETARGET" to "error"
+            )
+        )
     }
 }
 
@@ -200,12 +209,12 @@ allprojects {
 
     dependencies {
         // To change the versions see the gradle.properties file
-        minecraft ("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
+        minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
 
-        implementation ("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+        implementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
         // Just because I like Kotlin more than Java
-        implementation ("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
+        implementation("prodRuntimeDep"("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")!!)
 
         /*(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}") {
             exclude("org.ow2.asm")
@@ -217,16 +226,29 @@ allprojects {
         }
 
         // Fabric API. This is technically optional, but you probably want it anyway.
-        implementation ("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
+        implementation("prodRuntimeDep"("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_version")}")!!)
 
         // Cursed Fabric/Mixin stuff
-        implementation("com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${rootProject.property("cursedmixinextensions_version")}") {
+        implementation(
+            "com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions:${
+                rootProject.property(
+                    "cursedmixinextensions_version"
+                )
+            }"
+        ) {
             exclude("org.ow2.asm")
         }
         implementation("xyz.bluspring.fork:Fabric-ASM:${rootProject.property("fabric_asm_version")}")
-        implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}") {
-            exclude("org.ow2.asm")
-        })
+        implementation(
+            annotationProcessor(
+                "com.github.bawnorton.mixinsquared:mixinsquared-fabric:${
+                    rootProject.property(
+                        "mixin_squared_version"
+                    )
+                }"
+            ) {
+                exclude("org.ow2.asm")
+            })
     }
 }
 
@@ -275,7 +297,11 @@ dependencies {
 
     api(include("teamreborn:energy:${property("teamreborn_energy_version")}")!!)
 
-    fun modOptional(dependencyNotation: String, shouldRunInRuntime: Boolean, configuration: Action<ExternalModuleDependency> = Action {}) {
+    fun modOptional(
+        dependencyNotation: String,
+        shouldRunInRuntime: Boolean,
+        configuration: Action<ExternalModuleDependency> = Action {}
+    ) {
         if (shouldRunInRuntime) {
             implementation(dependencyNotation, configuration)
         } else {
@@ -286,15 +312,15 @@ dependencies {
     val runSodium = true
 
     // Runtime mods for testing
-    implementation ("com.terraformersmc:modmenu:18.0.0-beta.1") {
+    implementation("com.terraformersmc:modmenu:18.0.0-beta.1") {
         exclude("net.fabricmc", "fabric-loader")
     }
-    runtimeOnly ("maven.modrinth:ferrite-core:9.0.0-fabric") {
+    runtimeOnly("maven.modrinth:ferrite-core:9.0.0-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     "prodRuntimeDep"("maven.modrinth:sodium:${property("sodium_version")}")
-    modOptional ("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
-    runtimeOnly ("maven.modrinth:lithium:mc26.1.2-0.24.5-fabric") {
+    modOptional("maven.modrinth:sodium:${property("sodium_version")}", runSodium)
+    runtimeOnly("maven.modrinth:lithium:mc26.1.2-0.24.5-fabric") {
         exclude("net.fabricmc", "fabric-loader")
     }
     modOptional("maven.modrinth:iris:${property("iris_version")}", runSodium)
@@ -320,6 +346,7 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
+    testImplementation(kotlin("test"))
 }
 
 // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
@@ -417,7 +444,14 @@ tasks {
                 kiltInjectCount--
             }
 
-            println("Progress: $kiltInjectCount injects/$forgePatchCount patches (${String.format("%.2f", (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0)}%)")
+            println(
+                "Progress: $kiltInjectCount injects/$forgePatchCount patches (${
+                    String.format(
+                        "%.2f",
+                        (kiltInjectCount.toDouble() / forgePatchCount.toDouble()) * 100.0
+                    )
+                }%)"
+            )
         }
     }
 
@@ -434,9 +468,15 @@ tasks {
                     if (it.isDirectory) {
                         readDir(it)
                     } else {
-                        val startDir = it.absolutePath.replace("\\", "/").replaceBefore("injects/", "").replace("injects/", "")
-                        val patchDir = if (startDir.startsWith("blaze3d") || startDir.startsWith("math")) "com/mojang/${startDir.replace("Inject.java", ".java.patch")}"
-                            else "net/minecraft/${startDir.replace("Inject.java", ".java.patch")}"
+                        val startDir = it.absolutePath.replace("\\", "/").replaceBefore("injects/", "")
+                            .replace("injects/", "")
+                        val patchDir = if (startDir.startsWith("blaze3d") || startDir.startsWith("math")) "com/mojang/${
+                            startDir.replace(
+                                "Inject.java",
+                                ".java.patch"
+                            )
+                        }"
+                        else "net/minecraft/${startDir.replace("Inject.java", ".java.patch")}"
 
                         val patchFile = File("$projectDir/forge/patches/$patchDir")
                         if (!patchFile.exists()) {
@@ -599,7 +639,7 @@ tasks {
         modLoaders.add("fabric")
 
         dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
-                || providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
+            || providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
 
         modrinth {
             projectId = project.property("publishing.modrinth").toString()
@@ -628,7 +668,8 @@ tasks {
         onlyIf {
             try {
                 // this is how CurseForge has it set up? seriously?
-                val connection = URI.create("https://minecraft.curseforge.com/api/maven/kilt/Kilt/${version}/Kilt-${version}.jar").toURL().openConnection() as HttpURLConnection
+                val connection = URI.create("https://minecraft.curseforge.com/api/maven/kilt/Kilt/${version}/Kilt-${version}.jar")
+                    .toURL().openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.connect()
 
@@ -642,7 +683,8 @@ tasks {
     named("publishModrinth") {
         onlyIf {
             try {
-                val connection = URI.create("https://api.modrinth.com/v2/project/kilt/version/${version}").toURL().openConnection() as HttpURLConnection
+                val connection = URI.create("https://api.modrinth.com/v2/project/kilt/version/${version}").toURL()
+                    .openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.connect()
 
@@ -667,9 +709,11 @@ fun createVersion(): String {
     val mcVersionComps = (rootProject.property("minecraft_version") as String).split(".")
     val mcVersion = "${mcVersionComps[0]}.${mcVersionComps[1]}"
 
-    val grgit = Grgit.open(mutableMapOf<String, Any?>(
-        "dir" to File("$projectDir")
-    ))
+    val grgit = Grgit.open(
+        mutableMapOf<String, Any?>(
+            "dir" to File("$projectDir")
+        )
+    )
 
     var increment = 0
     var shouldBump = false
@@ -677,7 +721,9 @@ fun createVersion(): String {
         val components = tag.name.removePrefix("v").split(".").map { it.toInt() }
 
         // Check if the tag is actually for this MC version
-        if (components.getOrNull(0) != mcVersionComps.getOrNull(1)?.toIntOrNull() || components.getOrNull(1) != mcVersionComps.getOrNull(2)?.toIntOrNull())
+        if (components.getOrNull(0) != mcVersionComps.getOrNull(1)
+                ?.toIntOrNull() || components.getOrNull(1) != mcVersionComps.getOrNull(2)?.toIntOrNull()
+        )
             continue
 
         shouldBump = true
@@ -697,7 +743,11 @@ fun createVersion(): String {
     if (isRelease() && System.getenv("GITHUB_TAG") != null) {
         val tag = System.getenv("GITHUB_TAG")
         if (tag.lowercase().removePrefix("v") != version)
-            throw IllegalStateException("The tag created doesn't match the increment version! Are you incrementing it correctly? ($version != ${tag.lowercase().removePrefix("v")})")
+            throw IllegalStateException(
+                "The tag created doesn't match the increment version! Are you incrementing it correctly? ($version != ${
+                    tag.lowercase().removePrefix("v")
+                })"
+            )
     }
 
     return version
@@ -707,11 +757,18 @@ fun getVersionMetadata(): String {
     if (isRelease())
         return ""
 
-    val grgit = Grgit.open(mutableMapOf<String, Any?>(
-        "dir" to File("$projectDir")
-    ))
+    val grgit = Grgit.open(
+        mutableMapOf<String, Any?>(
+            "dir" to File("$projectDir")
+        )
+    )
     val commitHash =
         System.getenv("GITHUB_SHA") ?: grgit.head().abbreviatedId
 
-    return "+build.${commitHash.subSequence(0, 6)}${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else if (!isRelease()) "-nightly" else ""}"
+    return "+build.${
+        commitHash.subSequence(
+            0,
+            6
+        )
+    }${if (System.getenv("GITHUB_RUN_NUMBER") == null) "-local" else if (!isRelease()) "-nightly" else ""}"
 }

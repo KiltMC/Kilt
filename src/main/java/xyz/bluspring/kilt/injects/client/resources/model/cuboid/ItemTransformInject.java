@@ -22,7 +22,6 @@ import net.minecraft.client.resources.model.cuboid.ItemTransform;
 
 @Mixin(ItemTransform.class)
 public abstract class ItemTransformInject implements ItemTransformInjection {
-    @Shadow
     public ItemTransformInject(Vector3fc rotation, Vector3fc translation, Vector3fc scale) {}
 
     @CreateInitializer

@@ -4,7 +4,7 @@ package xyz.bluspring.kilt.injects.math;
 import com.mojang.math.Transformation;
 import net.neoforged.neoforge.common.extensions.ITransformationExtension;
 import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.Unique;
 import xyz.bluspring.kilt.injections.math.TransformationInjection;
 
 @Mixin(Transformation.class)
-public class TransformationInject implements ITransformationExtension, TransformationInjection {
-    @Shadow @Final private Matrix4f matrix;
+public abstract class TransformationInject implements ITransformationExtension, TransformationInjection {
+    @Shadow @Final private Matrix4fc matrix;
     @Unique private Matrix3f normalTransform = null;
 
     public Matrix3f getNormalMatrix() {

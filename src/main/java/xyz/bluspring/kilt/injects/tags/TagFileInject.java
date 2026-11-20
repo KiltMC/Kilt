@@ -19,8 +19,8 @@ import net.fabricmc.fabric.impl.tag.TagFileHooks;
 
 @Mixin(TagFile.class)
 public abstract class TagFileInject implements TagFileInjection, FabricTagFile, TagFileHooks {
-    @ModifyReturnValue(method = "method_43950", at = @At("RETURN"))
-    private static App<RecordCodecBuilder.Mu<TagFile>, TagFile> kilt$appendRemoveTags(App<RecordCodecBuilder.Mu<TagFile>, TagFile> original, @Local(argsOnly = true) RecordCodecBuilder.Instance<TagFile> instance) {
+    @ModifyReturnValue(method = "lambda$static$0", at = @At("RETURN"))
+    private static App<RecordCodecBuilder.Mu<TagFile>, TagFile> kilt$appendRemoveTags(App<RecordCodecBuilder.Mu<TagFile>, TagFile> original, @Local(argsOnly = true, name = "i") RecordCodecBuilder.Instance<TagFile> instance) {
         return instance.group(original,
             TagEntry.CODEC.listOf()
                 .optionalFieldOf("remove", List.of())

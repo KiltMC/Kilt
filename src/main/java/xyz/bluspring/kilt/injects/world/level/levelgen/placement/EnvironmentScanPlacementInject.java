@@ -11,7 +11,7 @@ import net.minecraft.world.level.levelgen.placement.EnvironmentScanPlacement;
 
 @Mixin(EnvironmentScanPlacement.class)
 public abstract class EnvironmentScanPlacementInject {
-    @ModifyExpressionValue(method = "method_39626", at = @At(value = "FIELD", target = "Lnet/minecraft/core/Direction;VERTICAL_CODEC:Lcom/mojang/serialization/Codec;", opcode = Opcodes.GETSTATIC))
+    @ModifyExpressionValue(method = "lambda$static$0", at = @At(value = "FIELD", target = "Lnet/minecraft/core/Direction;VERTICAL_CODEC:Lcom/mojang/serialization/Codec;", opcode = Opcodes.GETSTATIC))
     private static Codec<Direction> kilt$allowAllDirections(Codec<Direction> original) {
         return Direction.CODEC;
     }

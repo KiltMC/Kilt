@@ -48,7 +48,6 @@ public abstract class ModelBakeryInject implements ModelBakeryInjection {
     @Unique private StandaloneModelLoader.LoadedModels standaloneModels = StandaloneModelLoader.LoadedModels.EMPTY;
     @Unique private AnimationLoader.PendingAnimations pendingAnimations = AnimationLoader.PendingAnimations.EMPTY;
 
-    @Shadow
     public ModelBakeryInject(final EntityModelSet entityModelSet, final SpriteGetter sprites, final PlayerSkinRenderCache playerSkinRenderCache, final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels, final Map<Identifier, ClientItem> clientInfos, final Map<Identifier, ResolvedModel> resolvedModels, final ResolvedModel missingModel) {}
 
     @CreateInitializer

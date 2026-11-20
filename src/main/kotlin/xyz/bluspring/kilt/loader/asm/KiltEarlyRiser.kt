@@ -219,6 +219,12 @@ class KiltEarlyRiser : Runnable {
 
             run {
                 ClassTinkerers.addTransformation(savedDataType) { classNode ->
+                    classNode.visitInnerClass(
+                        factoryName,
+                        savedDataType,
+                        factoryName.removePrefix(savedDataType).removePrefix("$"),
+                        Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC or Opcodes.ACC_INTERFACE or Opcodes.ACC_ABSTRACT
+                    )
                     val matchingMethods = classNode.methods.filter { it.desc.contains(factoryInjectionName) }
 
                     for (methodNode in matchingMethods) {
@@ -232,6 +238,7 @@ class KiltEarlyRiser : Runnable {
 
                         val l0 = Label()
                         val l1 = Label()
+                        val l2 = Label()
 
                         newMethod.visitLabel(l0)
                         val varOffset = if (Modifier.isStatic(methodNode.access)) 0 else 1
@@ -246,16 +253,19 @@ class KiltEarlyRiser : Runnable {
                             newMethod.visitVarInsn(type.getOpcode(Opcodes.ILOAD), index + varOffset)
                         }
 
-                        newMethod.visitMethodInsn(if (Modifier.isStatic(methodNode.access)) Opcodes.INVOKESTATIC else Opcodes.INVOKEVIRTUAL, classNode.name,
+                        newMethod.visitMethodInsn(if (Modifier.isStatic(methodNode.access)) Opcodes.INVOKESTATIC else if (methodNode.name == "<init>") Opcodes.INVOKESPECIAL else Opcodes.INVOKEVIRTUAL, classNode.name,
                             methodNode.name, methodNode.desc, false)
 
                         newMethod.visitLabel(l1)
+                        newMethod.visitInsn(Opcodes.RETURN)
+
+                        newMethod.visitLabel(l2)
 
                         if (varOffset == 1)
-                            newMethod.visitLocalVariable("this", "L${classNode.name};", classNode.signature, l0, l1, 0)
+                            newMethod.visitLocalVariable("this", "L${classNode.name};", classNode.signature, l0, l2, 0)
 
                         for ((index, type) in descriptor.withIndex()) {
-                            newMethod.visitLocalVariable("var$index", type.descriptor.replace(factoryInjectionName, factoryName), signature?.get(index)?.replace(factoryInjectionName, factoryName), l0, l1, index + varOffset)
+                            newMethod.visitLocalVariable("var$index", type.descriptor.replace(factoryInjectionName, factoryName), signature?.get(index)?.replace(factoryInjectionName, factoryName), l0, l2, index + varOffset)
                         }
 
                         newMethod.visitMaxs(1, descriptor.size + varOffset)
@@ -426,7 +436,8 @@ class KiltEarlyRiser : Runnable {
                 "net.neoforged.neoforge.common.TranslatableEnum",
             )
 
-            val helperUrl = Kilt::class.java.classLoader.getResource("net/neoforged/neoforge/common/NeoForge.class")!!
+            val neoHelperUrl = Kilt::class.java.classLoader.getResource("net/neoforged/neoforge/common/NeoForge.class")!!
+            val fmlHelperUrl = Kilt::class.java.classLoader.getResource("net/neoforged/fml/ModLoader.class")!!
 
             for (className in modifiedConfigClasses) {
                 ClassTinkerers.addReplacement(className) { classNode ->
@@ -438,10 +449,17 @@ class KiltEarlyRiser : Runnable {
                     classNode.visibleTypeAnnotations?.clear()
                     classNode.invisibleTypeAnnotations?.clear()
 
-                    val url = URL(
-                        helperUrl.protocol, helperUrl.host, helperUrl.port, helperUrl.file
-                            .replace("net/neoforged/neoforge/common/NeoForge", className.replace(".", "/"))
-                    )
+                    val url = if (className.startsWith("net.neoforged.neoforge")) { // NeoForge
+                        URL(
+                            neoHelperUrl.protocol, neoHelperUrl.host, neoHelperUrl.port, neoHelperUrl.file
+                                .replace("net/neoforged/neoforge/common/NeoForge", className.replace(".", "/"))
+                        )
+                    } else { // FML
+                        URL(
+                            fmlHelperUrl.protocol, fmlHelperUrl.host, fmlHelperUrl.port, fmlHelperUrl.file
+                                .replace("net/neoforged/fml/ModLoader", className.replace(".", "/"))
+                        )
+                    }
                     val classReader = ClassReader(url.readBytes())
                     classReader.accept(classNode, 0)
                 }

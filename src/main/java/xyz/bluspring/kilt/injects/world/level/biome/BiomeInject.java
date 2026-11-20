@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.bluspring.kilt.injections.world.level.biome.BiomeInjection;
 
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -19,8 +20,8 @@ public abstract class BiomeInject implements BiomeInjection {
     private ModifiableBiomeInfo modifiableBiomeInfo;
 
     @Inject(at = @At("TAIL"), method = "<init>")
-    public void kilt$loadModifiableBiomeInfo(Biome.ClimateSettings climateSettings, BiomeSpecialEffects biomeSpecialEffects, BiomeGenerationSettings biomeGenerationSettings, MobSpawnSettings mobSpawnSettings, CallbackInfo ci) {
-        this.modifiableBiomeInfo = new ModifiableBiomeInfo(new ModifiableBiomeInfo.BiomeInfo(climateSettings, biomeSpecialEffects, biomeGenerationSettings, mobSpawnSettings));
+    public void kilt$loadModifiableBiomeInfo(Biome.ClimateSettings climateSettings, EnvironmentAttributeMap attributes, BiomeSpecialEffects specialEffects, BiomeGenerationSettings generationSettings, MobSpawnSettings mobSettings, CallbackInfo ci) {
+        this.modifiableBiomeInfo = new ModifiableBiomeInfo(new ModifiableBiomeInfo.BiomeInfo(climateSettings, specialEffects, generationSettings, mobSettings));
     }
 
     @Override
@@ -38,12 +39,12 @@ public abstract class BiomeInject implements BiomeInjection {
         return modifiableBiomeInfo().get().climateSettings();
     }
 
-    @Inject(at = @At("HEAD"), method = "method_28423", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "<clinit> ->{2} Ljava/util/function/Function;apply(Lnet/minecraft/world/level/biome/Biome;)Lnet/minecraft/world/level/biome/Biome$ClimateSettings;", cancellable = true)
     private static void kilt$useOriginalClimateSettings(Biome biome, CallbackInfoReturnable<Biome.ClimateSettings> cir) {
         cir.setReturnValue(biome.modifiableBiomeInfo().getOriginalBiomeInfo().climateSettings());
     }
 
-    @Inject(at = @At("HEAD"), method = "method_28421", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "<clinit> ->{2} Ljava/util/function/Function;apply(Lnet/minecraft/world/level/biome/Biome;)Lnet/minecraft/world/level/biome/BiomeSpecialEffects;", cancellable = true)
     private static void kilt$useOriginalSpecialEffects(Biome biome, CallbackInfoReturnable<BiomeSpecialEffects> cir) {
         cir.setReturnValue(biome.modifiableBiomeInfo().getOriginalBiomeInfo().effects());
     }

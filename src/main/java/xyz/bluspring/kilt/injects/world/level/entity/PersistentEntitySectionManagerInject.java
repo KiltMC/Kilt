@@ -48,7 +48,7 @@ public abstract class PersistentEntitySectionManagerInject<T extends EntityAcces
         return this.addEntity(entity, worldGenSpawned);
     }
 
-    @Inject(method = {"method_31857", "method_31863", "method_31864"}, at = @At("TAIL"))
+    @Inject(method = {"lambda$addLegacyChunkEntities$0", "lambda$addWorldGenChunkEntities$0", "lambda$processPendingLoads$0"}, at = @At("TAIL"))
     private void kilt$callEntityAddedToWorld(EntityAccess entityAccess, CallbackInfo ci) {
         if (entityAccess instanceof Entity entity)
             entity.onAddedToLevel();

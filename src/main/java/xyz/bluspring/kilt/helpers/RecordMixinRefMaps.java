@@ -1,14 +1,15 @@
 package xyz.bluspring.kilt.helpers;
 
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.Int2DoubleFunction;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.jetbrains.annotations.Nullable;
 import xyz.bluspring.kilt.injections.world.level.saveddata.SavedDataTypeInjection;
@@ -37,6 +38,6 @@ public interface RecordMixinRefMaps {
     record ExtendedTicketType(boolean forceNaturalSpawning) {}
 
     static <K, V> Map<K, V> create() {
-        return new WeakHashMap<>();
+        return Collections.synchronizedMap(new Reference2ObjectLinkedOpenHashMap<>());
     }
 }

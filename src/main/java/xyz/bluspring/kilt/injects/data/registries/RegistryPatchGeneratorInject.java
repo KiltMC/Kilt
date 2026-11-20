@@ -15,7 +15,7 @@ import net.minecraft.resources.RegistryDataLoader;
 
 @Mixin(RegistryPatchGenerator.class)
 public abstract class RegistryPatchGeneratorInject {
-    @ModifyExpressionValue(method = "method_54839", at = @At(value = "FIELD", target = "Lnet/minecraft/resources/RegistryDataLoader;WORLDGEN_REGISTRIES:Ljava/util/List;", opcode = Opcodes.GETSTATIC))
+    @ModifyExpressionValue(method = "lambda$createLookup$0", at = @At(value = "FIELD", target = "Lnet/minecraft/resources/RegistryDataLoader;WORLDGEN_REGISTRIES:Ljava/util/List;", opcode = Opcodes.GETSTATIC))
     private static List<RegistryDataLoader.RegistryData<?>> kilt$mergeDataPackRegistries(List<RegistryDataLoader.RegistryData<?>> original) {
         var set = new HashSet<RegistryDataLoader.RegistryData<?>>();
         set.addAll(original);

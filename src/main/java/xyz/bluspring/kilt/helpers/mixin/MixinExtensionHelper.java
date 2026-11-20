@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -164,7 +165,51 @@ public final class MixinExtensionHelper {
                  methodNode.instructions.clear();
                  targetClass.methods.add(initializer);
             }
+
+             var createRecordComponent = Annotations.getVisible(methodNode, CreateRecordComponent.class);
+             if (createRecordComponent != null) {
+                 var returnType = Type.getReturnType(methodNode.desc);
+                 var returnSig = methodNode.signature != null ? methodNode.signature.split("\\)")[1] : null;
+
+                 targetClass.visitRecordComponent(methodNode.name, returnType.getDescriptor(), returnSig);
+
+                 var component = targetClass.visitMethod(Opcodes.ACC_PUBLIC, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
+                 component.visitAnnotation(createRecordComponent.desc, false);
+                 component.visitCode();
+
+                 var l0 = new Label();
+                 var l1 = new Label();
+                 var l2 = new Label();
+
+                 component.visitLabel(l0);
+                 component.visitVarInsn(Opcodes.ALOAD, 0);
+                 component.visitFieldInsn(Opcodes.GETFIELD, targetClass.name, methodNode.name, methodNode.desc);
+
+                 component.visitLabel(l1);
+                 component.visitInsn(getReturnOpcode(returnType));
+
+                 component.visitLabel(l2);
+                 component.visitLocalVariable("this", "L" + targetClass.name + ";", null, l0, l2, 0);
+
+                 component.visitMaxs(0, 0);
+                 component.visitEnd();
+
+                 targetClass.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL, methodNode.name, returnType.getDescriptor(), returnSig, null);
+             }
         }
+    }
+
+    private static int getReturnOpcode(Type type) {
+        if (type == Type.BOOLEAN_TYPE || type == Type.INT_TYPE || type == Type.SHORT_TYPE || type == Type.BYTE_TYPE || type == Type.CHAR_TYPE)
+            return Opcodes.IRETURN;
+        else if (type == Type.LONG_TYPE)
+            return Opcodes.LRETURN;
+        else if (type == Type.DOUBLE_TYPE)
+            return Opcodes.DRETURN;
+        else if (type == Type.FLOAT_TYPE)
+            return Opcodes.FRETURN;
+        else
+            return Opcodes.ARETURN;
     }
 
     private static String getMixinModifiedName(ClassNode targetClass, String originalName) {
@@ -202,38 +247,13 @@ public final class MixinExtensionHelper {
 
         for (MethodNode methodNode : classNode.methods) {
             if (Annotations.getVisible(methodNode, CreateStatic.class) != null) {
-                methodsToRemove.add(methodNode);
-                targetClass.methods.removeIf((method) -> method.name.equals(methodNode.name) && method.desc.equals(methodNode.desc));
-
-                var method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions != null ? methodNode.exceptions.toArray(String[]::new) : null);
-                method.visitCode();
-
-                var instructions = new InsnList();
-
-                for (AbstractInsnNode insn : methodNode.instructions) {
-                    if (insn instanceof MethodInsnNode methodInsn) {
-                        if (methodInsn.owner.equals(slashedMixinClassName))
-                            methodInsn.owner = slashedTargetClassName;
-
-                        instructions.add(methodInsn);
-                        continue;
-                    } else if (insn instanceof FieldInsnNode fieldInsn) {
-                        if (fieldInsn.owner.equals(slashedMixinClassName))
-                            fieldInsn.owner = slashedTargetClassName;
-
-                        instructions.add(fieldInsn);
-                        continue;
+                for (MethodNode method : targetClass.methods) {
+                    if (method.name.equals(methodNode.name) && method.desc.equals(methodNode.desc)) {
+                        method.access = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
                     }
-
-                    instructions.add(insn);
                 }
 
-                method.instructions.add(instructions);
-                method.localVariables.addAll(methodNode.localVariables);
-
-                method.visitEnd();
-
-                targetClass.methods.add(method);
+                methodNode.access = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
             } else if (Annotations.getVisible(methodNode, AbstractOverride.class) != null) {
                 var originalMethods = targetClass.methods.stream().filter(a -> a.name.equals(methodNode.name) && a.desc.equals(methodNode.desc)).toList();
 

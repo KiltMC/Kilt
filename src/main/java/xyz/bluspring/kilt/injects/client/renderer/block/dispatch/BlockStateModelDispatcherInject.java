@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 @Mixin(BlockStateModelDispatcher.class)
 public abstract class BlockStateModelDispatcherInject implements BlockStateModelDispatcherInjection {
-    @Shadow public BlockStateModelDispatcherInject(Optional<BlockStateModelDispatcher.SimpleModelSelectors> simpleModels, Optional<BlockStateModelDispatcher.MultiPartDefinition> multiPart) {}
+    public BlockStateModelDispatcherInject(Optional<BlockStateModelDispatcher.SimpleModelSelectors> simpleModels, Optional<BlockStateModelDispatcher.MultiPartDefinition> multiPart) {}
     @Shadow public abstract Map<BlockState, BlockStateModel.UnbakedRoot> instantiate(StateDefinition<Block, BlockState> stateDefinition, Supplier<String> source);
 
     @Shadow @Final @Mutable public static Codec<BlockStateModelDispatcher> CODEC;

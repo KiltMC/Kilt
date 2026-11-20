@@ -6,8 +6,6 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.network.*;
-import net.minecraft.network.protocol.PacketFlow;
 import net.neoforged.neoforge.network.connection.ConnectionUtils;
 import net.neoforged.neoforge.network.filters.NetworkFilters;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +19,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.injections.network.ConnectionInjection;
+
+import net.minecraft.network.Connection;
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.ProtocolInfo;
+import net.minecraft.network.protocol.PacketFlow;
 
 @Mixin(Connection.class)
 public abstract class ConnectionInject implements ConnectionInjection {
@@ -59,9 +63,9 @@ public abstract class ConnectionInject implements ConnectionInjection {
         this.inboundProtocol = protocolInfo;
     }
 
-    @Inject(method = "method_56328", at = @At("TAIL"))
-    private static void kilt$injectNetworkFiltersIfNecessary(PacketBundleUnpacker packetBundleUnpacker, ChannelHandlerContext channelHandlerContext, CallbackInfo ci) {
-        NetworkFilters.injectIfNecessary(ConnectionUtils.getConnection(channelHandlerContext));
+    @Inject(method = "lambda$setupOutboundProtocol$1", at = @At("TAIL"))
+    private static void kilt$injectNetworkFiltersIfNecessary(boolean isLoginProtocol, ChannelHandlerContext ctx, CallbackInfo ci) {
+        NetworkFilters.injectIfNecessary(ConnectionUtils.getConnection(ctx));
     }
 
     // Kilt: still not handling dual-stack

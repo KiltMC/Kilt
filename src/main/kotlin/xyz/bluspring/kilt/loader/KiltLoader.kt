@@ -13,6 +13,7 @@ import xyz.bluspring.kilt.Kilt
 import xyz.bluspring.kilt.api.KiltWrappedModContainerEntrypoint
 import xyz.bluspring.kilt.api.compatibility.BridgeFailedException
 import xyz.bluspring.kilt.api.compatibility.KiltModCompatBridgeManager
+import xyz.bluspring.kilt.loader.asm.KiltStaticInjectionFixer
 import xyz.bluspring.kilt.loader.remap.KiltRemapper
 import xyz.bluspring.kilt.workarounds.ModifiedCloneWorkaroundLoader
 import xyz.bluspring.knit.loader.KnitLoader
@@ -98,6 +99,10 @@ class KiltLoader : TwillOverrides {
         } else if (this.hasMod("rubidium")) {
             KnitLoader.instance.displayError("Kilt: You are using Rubidium, which is not supported under Kilt!", IllegalStateException())
         }
+
+        for (mod in mods) {
+            KiltStaticInjectionFixer.findAndFixInjections(mod)
+        }
     }
 
     override fun tryMakeActive(mod: NeoForgeMod): Boolean {
@@ -153,7 +158,7 @@ class KiltLoader : TwillOverrides {
                 val fabricContainer = FabricLoader.getInstance().getModContainer(entry.fabricModId).orElseThrow()
 
                 val paths = fabricContainer.rootPaths.toMutableList()
-                paths.add(FileSystemUtil.getJarFileSystem(neoDefinition.path, false).get().rootDirectories.first())
+                paths.add(FileSystemUtil.getJarFileSystem(neoDefinition.path, FileSystemUtil.AccessMode.READ_WRITE).get().rootDirectories.first())
 
                 rootsField.set(fabricContainer, paths)
             }

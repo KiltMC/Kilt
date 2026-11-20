@@ -21,7 +21,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
 @Mixin(LootPool.class)
 public abstract class LootPoolInject implements LootPoolInjection {
-    @Shadow private LootPoolInject(final List<LootPoolEntryContainer> entries, final List<LootItemCondition> conditions, final List<LootItemFunction> functions, final NumberProvider rolls, final NumberProvider bonusRolls) {}
+    private LootPoolInject(final List<LootPoolEntryContainer> entries, final List<LootItemCondition> conditions, final List<LootItemFunction> functions, final NumberProvider rolls, final NumberProvider bonusRolls) {}
     @Shadow public NumberProvider rolls;
     @Shadow public NumberProvider bonusRolls;
 

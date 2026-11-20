@@ -3,14 +3,15 @@ package xyz.bluspring.kilt.injects.commands.arguments.selector;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.neoforged.neoforge.common.command.EntitySelectorManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 
 @Mixin(EntitySelectorParser.class)
 public abstract class EntitySelectorParserInject {

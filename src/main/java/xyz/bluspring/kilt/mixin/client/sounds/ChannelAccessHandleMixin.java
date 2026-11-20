@@ -1,10 +1,9 @@
 package xyz.bluspring.kilt.mixin.client.sounds;
 
+import java.util.function.Consumer;
+
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
-import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.client.sounds.ChannelAccess;
-import net.minecraft.client.sounds.SoundEngine;
 import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent;
 import net.neoforged.neoforge.client.event.sound.PlayStreamingSourceEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -18,7 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.bluspring.kilt.helpers.SoundConsumerStorage;
 import xyz.bluspring.kilt.injections.client.sounds.ChannelAccessHandleInjection;
 
-import java.util.function.Consumer;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.ChannelAccess;
+import net.minecraft.client.sounds.SoundEngine;
 
 @Mixin(ChannelAccess.ChannelHandle.class)
 public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInjection {
@@ -42,9 +43,9 @@ public abstract class ChannelAccessHandleMixin implements ChannelAccessHandleInj
         this.kilt$soundInstance = instance;
     }
 
-    @Inject(method = "method_19737", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", shift = At.Shift.AFTER))
-    private void kilt$callPlaySoundEvents(Consumer<Channel> consumer, CallbackInfo ci) {
-        if (this.channel != null && kilt$soundEngine != null && kilt$soundInstance != null && SoundConsumerStorage.soundConsumerChannels.remove(consumer)) {
+    @Inject(method = "lambda$execute$0", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", shift = At.Shift.AFTER))
+    private void kilt$callPlaySoundEvents(Consumer<Channel> action, CallbackInfo ci) {
+        if (this.channel != null && kilt$soundEngine != null && kilt$soundInstance != null && SoundConsumerStorage.soundConsumerChannels.remove(action)) {
             if (kilt$pool == Library.Pool.STATIC) {
                 NeoForge.EVENT_BUS.post(new PlaySoundSourceEvent(kilt$soundEngine, kilt$soundInstance, this.channel));
             } else if (kilt$pool == Library.Pool.STREAMING) {

@@ -1,24 +1,28 @@
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.multiplayer.SessionSearchTrees;
-import net.minecraft.client.searchtree.SearchTree;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.ClientTooltipFlag;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import xyz.bluspring.kilt.injections.client.multiplayer.SessionSearchTreesInjection;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.searchtree.SearchTree;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 @Mixin(SessionSearchTrees.class)
 public abstract class SessionSearchTreesInject implements SessionSearchTreesInjection {
@@ -31,6 +35,11 @@ public abstract class SessionSearchTreesInject implements SessionSearchTreesInje
     @Shadow
     private CompletableFuture<SearchTree<ItemStack>> creativeByNameSearch;
     @Unique private SessionSearchTrees.Key kilt$key;
+
+    @ModifyVariable(method = "lambda$updateRecipes$0", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;recipeSearch:Ljava/util/concurrent/CompletableFuture;", opcode = Opcodes.GETFIELD), name = "tooltipFlag")
+    private TooltipFlag kilt$wrapWithClientTooltip(TooltipFlag original) {
+        return ClientTooltipFlag.of(original);
+    }
 
     @Override
     public void updateCreativeTags(List<ItemStack> items, SessionSearchTrees.Key key) {
@@ -47,7 +56,7 @@ public abstract class SessionSearchTreesInject implements SessionSearchTreesInje
         return original;
     }
 
-    @ModifyExpressionValue(method = "method_60368", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeByTagSearch:Ljava/util/concurrent/CompletableFuture;", opcode = Opcodes.GETFIELD))
+    @ModifyExpressionValue(method = "lambda$updateCreativeTags$0", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeByTagSearch:Ljava/util/concurrent/CompletableFuture;", opcode = Opcodes.GETFIELD))
     private CompletableFuture<SearchTree<ItemStack>> kilt$useNeoTagSearchTree(CompletableFuture<SearchTree<ItemStack>> original) {
         if (this.kilt$key != null)
             return CreativeModeTabSearchRegistry.getTagSearchTree(this.kilt$key);
@@ -55,7 +64,7 @@ public abstract class SessionSearchTreesInject implements SessionSearchTreesInje
         return original;
     }
 
-    @WrapOperation(method = "method_60368", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;supplyAsync(Ljava/util/function/Supplier;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
+    @WrapOperation(method = "lambda$updateCreativeTags$0", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;supplyAsync(Ljava/util/function/Supplier;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
     private <U> CompletableFuture<U> kilt$storeTagSearchTree(Supplier<U> supplier, Executor executor, Operation<CompletableFuture<U>> original) {
         var future = original.call(supplier, executor);
 
@@ -87,7 +96,7 @@ public abstract class SessionSearchTreesInject implements SessionSearchTreesInje
         return original;
     }
 
-    @ModifyExpressionValue(method = "method_60369", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeByNameSearch:Ljava/util/concurrent/CompletableFuture;", opcode = Opcodes.GETFIELD))
+    @ModifyExpressionValue(method = "lambda$updateCreativeTooltips$0", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/SessionSearchTrees;creativeByNameSearch:Ljava/util/concurrent/CompletableFuture;", opcode = Opcodes.GETFIELD))
     private CompletableFuture<SearchTree<ItemStack>> kilt$useNeoNameSearchTree(CompletableFuture<SearchTree<ItemStack>> original) {
         if (this.kilt$key != null)
             return CreativeModeTabSearchRegistry.getNameSearchTree(this.kilt$key);
@@ -95,7 +104,7 @@ public abstract class SessionSearchTreesInject implements SessionSearchTreesInje
         return original;
     }
 
-    @WrapOperation(method = "method_60369", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;supplyAsync(Ljava/util/function/Supplier;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
+    @WrapOperation(method = "lambda$updateCreativeTooltips$0", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;supplyAsync(Ljava/util/function/Supplier;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
     private <U> CompletableFuture<U> kilt$storeNameSearchTree(Supplier<U> supplier, Executor executor, Operation<CompletableFuture<U>> original) {
         var future = original.call(supplier, executor);
 

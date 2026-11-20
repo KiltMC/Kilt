@@ -251,7 +251,7 @@ public abstract class EntityFluidInteractionInject implements EntityFluidInterac
             return null;
     }
 
-    @Mixin(targets = "net.minecraft.world.entity.EntityFluidInteraction.Tracker")
+    @Mixin(EntityFluidInteraction.Tracker.class)
     public abstract static class TrackerInject implements TrackerInjection {
         @Shadow public abstract void reset();
 

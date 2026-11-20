@@ -1632,6 +1632,8 @@ accessible class net/minecraft/world/clock/ServerClockManager$ClockInstance
 accessible class net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl
 accessible class net/minecraft/core/MappedRegistry$TagSet
 
+transitive-accessible class xyz/bluspring/kilt/injections/world/level/saveddata/SavedDataTypeInjection$Factory
+
 # Kilt's own injected interfaces, these ones are manually inserted for interfaces
 # that can't be automatically generated, such as inner injections.
 transitive-inject-interface net/minecraft/client/gui/components/Button$Builder xyz/bluspring/kilt/injections/client/gui/components/ButtonBuilderInjection

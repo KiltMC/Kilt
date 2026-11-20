@@ -509,8 +509,6 @@
         "world.level.storage.loot.LootPoolInject$BuilderInject",
         "world.level.storage.loot.functions.EnchantRandomlyFunctionInject",
         "world.level.storage.loot.functions.SmeltItemFunctionInject",
-        "world.level.storage.loot.providers.nbt.ContextNbtProviderInject",
-        "world.level.storage.loot.providers.nbt.ContextNbtProviderInject$Getter2Inject",
         "world.phys.AABBInject"
     ],
     "client": [
@@ -524,6 +522,7 @@
         "blaze3d.textures.TextureFormatInject",
         "client.ClientBrandRetrieverInject",
         "client.GameNarratorInject",
+        "client.KeyMappingInject",
         "client.OptionsInject",
         "client.ScreenshotInject",
         "client.ToggleKeyMappingInject",

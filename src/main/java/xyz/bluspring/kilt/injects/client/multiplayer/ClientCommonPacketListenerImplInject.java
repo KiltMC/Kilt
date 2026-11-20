@@ -1,25 +1,21 @@
 package xyz.bluspring.kilt.injects.client.multiplayer;
 
+import net.neoforged.neoforge.common.extensions.IClientCommonPacketListenerExtension;
+import net.neoforged.neoforge.network.connection.ConnectionType;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.neoforged.neoforge.common.extensions.IClientCommonPacketListenerExtension;
-import net.neoforged.neoforge.network.connection.ConnectionType;
-import net.neoforged.neoforge.network.payload.CommonRegisterPayload;
-import net.neoforged.neoforge.network.payload.CommonVersionPayload;
-import net.neoforged.neoforge.network.payload.MinecraftRegisterPayload;
-import net.neoforged.neoforge.network.payload.MinecraftUnregisterPayload;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientCommonPacketListenerImpl.class)
 public abstract class ClientCommonPacketListenerImplInject implements ClientCommonPacketListener, IClientCommonPacketListenerExtension {
@@ -75,8 +71,7 @@ public abstract class ClientCommonPacketListenerImplInject implements ClientComm
         NetworkRegistry.checkPacket(packet, this);
     }*/
 
+    @Accessor
     @Override
-    public Connection getConnection() {
-        return this.connection;
-    }
+    public abstract Connection getConnection();
 }
