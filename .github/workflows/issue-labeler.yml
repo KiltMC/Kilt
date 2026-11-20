@@ -24,6 +24,8 @@ jobs:
             mc_version="1.21.1"
         elif [[ $third_line == *"1.21.1"* ]]; then
             mc_version="1.21.1"
+        elif [[ $third_line == *"26.1"* ]]; then
+            mc_version="26.1.x"
         fi
         if [[ -n "$mc_version" ]]; then
             curl -L \
