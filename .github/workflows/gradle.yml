@@ -30,7 +30,7 @@ jobs:
       with:
         cache-read-only: false
     - name: Build artifacts
-      run: ./gradlew assemble
+      run: ./gradlew jar
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
