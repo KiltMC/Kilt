@@ -366,6 +366,9 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine:5.+")
     testImplementation("org.opentest4j:opentest4j:1.2.0") // needed for junit 5
     testImplementation("org.hamcrest:hamcrest-all:1.3") // needs advanced matching for list order
+
+    // TODO: this is ONLY FOR ME, DO NOT COMMIT THIS
+    modRuntimeOnly("maven.modrinth:farmers-delight-refabricated:1.21.1-3.3.6")
 }
 
 // yoinked - https://github.com/devOS-Sanity-Edition/Stew/blob/1.21.9/main/build.gradle.kts#L70C10-L80C6
