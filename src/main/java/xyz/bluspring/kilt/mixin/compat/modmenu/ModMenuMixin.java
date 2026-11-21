@@ -3,12 +3,14 @@ package xyz.bluspring.kilt.mixin.compat.modmenu;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import com.terraformersmc.modmenu.ModMenu;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.bluspring.kilt.Kilt;
 import xyz.bluspring.kilt.loader.KiltLoader;
 
 @IfModLoaded("modmenu")
@@ -20,6 +22,12 @@ public abstract class ModMenuMixin {
         var kiltMod = KiltLoader.Companion.getInstance().getMod(modId);
         if (kiltMod != null) {
             // Kilt: Add Forge config screens to ModMenu
+
+            if (ModList.get().getModContainerById(kiltMod.getDefinition().getId()).isEmpty()) {
+                Kilt.Companion.getLogger().warn("Could not find NeoForge mod container for mod ID {}", modId);
+                return;
+            }
+
             var container = kiltMod.getContainer();
             var screenExtension = container.getCustomExtension(IConfigScreenFactory.class);
 
