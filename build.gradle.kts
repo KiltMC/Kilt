@@ -265,26 +265,10 @@ dependencies {
         exclude("org.spongepowered", "mixin")
     }
 
-    api(libs.modmenu.badges.lib)
-    include(libs.modmenu.badges.lib)
-
-    // Extra libraries that should be included
-    api(libs.bundles.tiny.codecs)
-    include(libs.bundles.tiny.codecs)
-
     // NeoForge stuff
-    api(include("net.neoforged:bus:${neoProperties["eventbus_version"]}") {
-        exclude("org.ow2.asm")
-    })
-    implementation(include("org.apache.maven:maven-artifact:${neoProperties["apache_maven_artifact_version"]}")!!)
     implementation(include("net.jodah:typetools:${neoProperties["typetools_version"]}")!!)
-    implementation(include("net.neoforged:mergetool:${neoProperties["mergetool_version"]}") {
-        exclude("org.ow2.asm")
-    })
     implementation(include("org.jline:jline-reader:3.12.+")!!)
     implementation(include("net.minecrell:terminalconsoleappender:${neoProperties["terminalconsoleappender_version"]}")!!)
-    implementation(include("com.electronwill.night-config:core:${neoProperties["nightconfig_version"]}")!!)
-    implementation(include("com.electronwill.night-config:toml:${neoProperties["nightconfig_version"]}")!!)
 
     api(libs.reborn.energy)
     include(libs.reborn.energy)

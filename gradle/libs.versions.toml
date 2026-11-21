@@ -25,15 +25,6 @@ fabric-asm = "2.5.3"
 # https://maven.bawnorton.com/#/releases/com/github/bawnorton/mixinsquared/mixinsquared-fabric
 mixin-squared = "0.3.9"
 
-# https://mvn.devos.one/#/releases/fish/cichlidmc/fishflakes
-fishflakes = "0.2.0"
-
-# https://mvn.devos.one/#/releases/fish/cichlidmc/tiny-json
-tiny-json = "3.0.0"
-
-# https://mvn.devos.one/#/releases/fish/cichlidmc/tiny-codecs
-tiny-codecs = "6.1.0"
-
 ## MC Version Dependent
 
 # https://modrinth.com/mod/twill/versions?g=26.1.2
@@ -44,9 +35,6 @@ fabric-api = "0.155.3+26.1.2"
 
 # https://modrinth.com/mod/sodium/versions?g=26.1.2 + https://maven.caffeinemc.net/#/releases/net/caffeinemc/sodium-fabric
 sodium = "0.9.2+mc26.1.2"
-
-# https://modrinth.com/mod/modmenu-badges-lib/versions
-modmenu-badges-lib = "2026.3.1"
 
 # https://maven.fabricmc.net/teamreborn/energy/
 reborn-energy = "5.0.0"
@@ -77,7 +65,6 @@ mixin-constraints = { module = "com.moulberry:mixinconstraints", version.ref = "
 mixin-squared = { module = "com.github.bawnorton.mixinsquared:mixinsquared-fabric", version.ref = "mixin-squared" }
 cursed_mixin_extensions = { module = "com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions", version.ref = "cursed_mixin_extensions" }
 
-modmenu-badges-lib = { module = "maven.modrinth:modmenu-badges-lib", version.ref = "modmenu-badges-lib" }
 reborn-energy = { module = "teamreborn:energy", version.ref = "reborn-energy" }
 
 sodium = { module = "net.caffeinemc:sodium-fabric", version.ref = "sodium" }
@@ -85,17 +72,6 @@ iris = { module = "maven.modrinth:iris", version.ref = "iris" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 ferritecore = { module = "maven.modrinth:ferrite-core", version.ref = "ferritecore" }
 lithium = { module = "maven.modrinth:lithium", version.ref = "lithium" }
-
-fishflakes = { module = "fish.cichlidmc:fishflakes", version.ref = "fishflakes" }
-tiny-json = { module = "fish.cichlidmc:tiny-json", version.ref = "tiny-json" }
-tiny-codecs = { module = "fish.cichlidmc:tiny-codecs", version.ref = "tiny-codecs" }
-
-[bundles]
-tiny-codecs = [
-    "fishflakes",
-    "tiny-json",
-    "tiny-codecs",
-]
 
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
