@@ -69,7 +69,8 @@
         "fabric-api": ">=${fabric_version}",
         "minecraft": "${minecraft_version}",
         "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-        "mm_kilt": ">=${fabric_asm_version}"
+        "mm_kilt": ">=${fabric_asm_version}",
+        "twill": ">=${twill_version}"
     },
     "custom": {
         "kilt:access_transformer": [

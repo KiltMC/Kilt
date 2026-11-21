@@ -490,6 +490,7 @@ tasks {
             "fabric_kotlin_version" to libs.versions.fabric.kotlin.get(),
             "fabric_asm_version" to libs.versions.fabric.asm.get(),
             "neoforge_version" to libs.versions.neoforge.get(),
+            "twill_version" to libs.versions.twill.get(),
         )
 
         for ((key, value) in properties) {
@@ -627,7 +628,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds(/*"porting_lib",*/ "modmenu-badges-lib")
+            embeds(/*"porting_lib",*/ "modmenu-badges-lib", "twill")
             incompatible("async", "embeddium")
         }
 
@@ -638,7 +639,7 @@ tasks {
 
             requires("fabric-api", "fabric-language-kotlin")
             optional("modmenu")
-            embeds(/*"porting-lib",*/ "modmenu-badges-lib")
+            embeds(/*"porting-lib",*/ "modmenu-badges-lib", "twill")
             incompatible("embeddium")
         }
     }
