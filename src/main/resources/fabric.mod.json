@@ -27,7 +27,7 @@
         "neoforge"
     ],
     "contact": {
-        "repo": "https://github.com/KiltMC/Kilt",
+        "sources": "https://github.com/KiltMC/Kilt",
         "issues": "https://github.com/KiltMC/Kilt/issues"
     },
     "license": "LGPL-2.1-only",
