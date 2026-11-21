@@ -1,11 +1,106 @@
-# TODO: move everything here
 [versions]
 fabric-loom = "1.19.+"
-twill = "1.0.0"
+fabric-loader = "0.20.1"
+grgit = "5.0.0"
+
+# https://github.com/modmuss50/mod-publish-plugin/blob/main/build.gradle.kts
+mod-publish = "2.2.1"
+
+minecraft = "26.1.2"
 neoforge = "26.1.2.109"
 
+# https://modrinth.com/mod/fabric-language-kotlin/versions
+kotlin = "2.4.21"
+fabric-kotlin = "1.14.2+kotlin.2.4.21"
+
+# https://github.com/Moulberry/MixinConstraints
+mixin-constraints = "1.1.0"
+
+# https://github.com/thecatcore/CursedMixinExtensions/tags
+cursed_mixin_extensions = "1.1.0"
+
+# https://github.com/KiltMC/Fabric-ASM
+fabric-asm = "2.5.3"
+
+# https://maven.bawnorton.com/#/releases/com/github/bawnorton/mixinsquared/mixinsquared-fabric
+mixin-squared = "0.3.9"
+
+# https://mvn.devos.one/#/releases/fish/cichlidmc/fishflakes
+fishflakes = "0.2.0"
+
+# https://mvn.devos.one/#/releases/fish/cichlidmc/tiny-json
+tiny-json = "3.0.0"
+
+# https://mvn.devos.one/#/releases/fish/cichlidmc/tiny-codecs
+tiny-codecs = "6.1.0"
+
+## MC Version Dependent
+
+# https://modrinth.com/mod/twill/versions?g=26.1.2
+twill = "1.1.0+26.1.2"
+
+# https://modrinth.com/mod/fabric-api/versions?g=26.1.2
+fabric-api = "0.155.3+26.1.2"
+
+# https://modrinth.com/mod/sodium/versions?g=26.1.2 + https://maven.caffeinemc.net/#/releases/net/caffeinemc/sodium-fabric
+sodium = "0.9.2+mc26.1.2"
+
+# https://modrinth.com/mod/modmenu-badges-lib/versions
+modmenu-badges-lib = "2026.3.1"
+
+# https://maven.fabricmc.net/teamreborn/energy/
+reborn-energy = "5.0.0"
+
+# https://modrinth.com/mod/iris/versions?g=26.1.2
+iris = "1.11.4+26.1-fabric"
+
+# https://modrinth.com/mod/lithium/versions?g=26.1.2
+lithium = "mc26.1.2-0.24.7-fabric"
+
+# https://modrinth.com/mod/modmenu/versions?g=26.1.2
+modmenu = "18.0.2"
+
+# https://modrinth.com/mod/ferrite-core/versions?g=26.1.2
+ferritecore = "9.0.0-fabric"
+
 [libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+
 twill = { module = "xyz.bluspring:twill", version.ref = "twill" }
+
+fabric-asm = { module = "xyz.bluspring.fork:Fabric-ASM", version.ref = "fabric-asm" }
+mixin-constraints = { module = "com.moulberry:mixinconstraints", version.ref = "mixin-constraints" }
+mixin-squared = { module = "com.github.bawnorton.mixinsquared:mixinsquared-fabric", version.ref = "mixin-squared" }
+cursed_mixin_extensions = { module = "com.github.FabricCompatibilityLayers.CursedMixinExtensions:CursedMixinExtensions", version.ref = "cursed_mixin_extensions" }
+
+modmenu-badges-lib = { module = "maven.modrinth:modmenu-badges-lib", version.ref = "modmenu-badges-lib" }
+reborn-energy = { module = "teamreborn:energy", version.ref = "reborn-energy" }
+
+sodium = { module = "net.caffeinemc:sodium-fabric", version.ref = "sodium" }
+iris = { module = "maven.modrinth:iris", version.ref = "iris" }
+modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
+ferritecore = { module = "maven.modrinth:ferrite-core", version.ref = "ferritecore" }
+lithium = { module = "maven.modrinth:lithium", version.ref = "lithium" }
+
+fishflakes = { module = "fish.cichlidmc:fishflakes", version.ref = "fishflakes" }
+tiny-json = { module = "fish.cichlidmc:tiny-json", version.ref = "tiny-json" }
+tiny-codecs = { module = "fish.cichlidmc:tiny-codecs", version.ref = "tiny-codecs" }
+
+[bundles]
+tiny-codecs = [
+    "fishflakes",
+    "tiny-json",
+    "tiny-codecs",
+]
 
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+grgit = { id = "org.ajoberstar.grgit", version.ref = "grgit" }
+mod-publish = { id = "me.modmuss50.mod-publish-plugin", version.ref = "mod-publish" }
+

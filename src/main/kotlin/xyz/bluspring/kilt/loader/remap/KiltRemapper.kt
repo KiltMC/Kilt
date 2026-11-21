@@ -152,6 +152,10 @@ object KiltRemapper {
                 allowSoftFail = true
             }
 
+            // DON'T REMAP MIXINCONSTRAINTS.
+            if (mod.id == "MixinConstraints")
+                return
+
             val hash = withContext(Dispatchers.IO) { DigestUtils.md5Hex(file.inputStream()) }
             val modifiedJarFile = KiltRemapper.remappedModsDir / "${mod.id}_${REMAPPER_VERSION}_$hash.jar"
 
@@ -163,6 +167,22 @@ object KiltRemapper {
             // Make a temporary file, so if any errors occur in remapping, we don't end up with a broken state.
             val tempModifiedJarFile = KiltRemapper.remappedModsDir / "${mod.id}_${REMAPPER_VERSION}_$hash.jar.tmp"
             val jar = withContext(Dispatchers.IO) { JarFile(file.toFile()) }
+
+            val fmjEntry = jar.getJarEntry("fabric.mod.json")
+            if (fmjEntry != null) {
+                val fmj = withContext(Dispatchers.IO) { jar.getInputStream(fmjEntry).use { JsonParser.parseReader(it.reader()) } }
+
+                if (fmj.isJsonObject && fmj.asJsonObject.has("id")) {
+                    val json = fmj.asJsonObject
+
+                    // Do not remap non-Twill overrides.
+                    if (!json.has("custom") || !json.getAsJsonObject("custom").has("twill:mod_stub")) {
+                        mod.path = file
+                        return
+                    }
+                }
+            }
+
             val jarOutputStream = withContext(Dispatchers.IO) { JarOutputStream(tempModifiedJarFile.outputStream(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) }
 
             val entryToClassNodes = Object2ReferenceMaps.synchronize(Object2ReferenceOpenHashMap<JarEntry, ClassNode>())
