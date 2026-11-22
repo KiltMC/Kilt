@@ -16,7 +16,7 @@ tasks {
             "loader_version" to project.property("loader_version"),
             "fabric_version" to project.property("fabric_version"),
             "minecraft_version" to project.property("minecraft_version"),
-            "fabric_kotlin_version" to project.property("fabric_kotlin_version")
+            "fabric_kotlin_version" to project.property("fabric_kotlin_version"),
         )
 
         for ((key, value) in properties) {
