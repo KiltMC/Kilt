@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import xyz.bluspring.kilt.gradle.ClassTweakerUpdater
 import xyz.bluspring.kilt.gradle.LocalVarMappingBuilder
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
+import xyz.bluspring.kilt.gradle.strictMaven
 import java.net.HttpURLConnection
 import java.net.URI
 import java.security.MessageDigest
@@ -111,9 +112,7 @@ allprojects {
             name = "devOS Maven"
         }
 
-        maven("https://maven.florianreuth.de/snapshots") {
-            name = "AsmFabricLoader"
-        }
+        strictMaven("https://maven.florianreuth.de/snapshots", "FlorianReuth", "de.florianreuth")
 
         maven("https://mvn.devos.one/snapshots/") {
             name = "devOS Maven (Snapshots)"
@@ -127,63 +126,30 @@ allprojects {
             name = "Cafeteria Dev"
         }
 
-        maven("https://maven.jamieswhiteshirt.com/libs-release") {
-            name = "JamiesWhiteShirt Dev"
-            content {
-                includeGroup("com.jamieswhiteshirt")
-            }
-        }
-
-        maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/") {
-            name = "Fuzs Mod Resources"
-        }
+        strictMaven("https://maven.jamieswhiteshirt.com/libs-release", "JamiesWhiteShirt Dev", "com.jamieswhiteshirt")
+        strictMaven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/", "Fuzs Mod Resources", "fuzs")
 
         maven("https://maven.neoforged.net/releases") {
             name = "NeoForged Maven"
         }
 
-        maven("https://maven.architectury.dev") {
-            name = "Architectury"
-        }
-
-        maven("https://maven.parchmentmc.org") {
-            name = "ParchmentMC"
-        }
+        strictMaven("https://maven.architectury.dev", "Architectury", "dev.architectury", "me.shedaniel")
+        strictMaven("https://maven.parchmentmc.org", "ParchmentMC", "org.parchmentmc")
 
         flatDir {
             dir("libs")
         }
 
         // Testing mod sources
-        maven("https://api.modrinth.com/maven") {
-            name = "Modrinth"
-            content {
-                includeGroup("maven.modrinth")
-            }
-        }
-
-        maven("https://cursemaven.com") {
-            name = "CurseMaven"
-            content {
-                includeGroup("curse.maven")
-            }
-        }
+        strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
+        strictMaven("https://cursemaven.com", "CurseMaven", "curse.maven")
 
         maven("https://maven.terraformersmc.com/releases") {
             name = "TerraformersMC"
         }
 
-        maven("https://maven.su5ed.dev/releases") {
-            name = "Su5ed"
-        }
-
-        maven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/") {
-            name = "GeckoLib"
-        }
-
-        maven("https://thedarkcolour.github.io/KotlinForForge/") {
-            name = "Kotlin for Forge"
-        }
+        strictMaven("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/", "GeckoLib", "software.bernie")
+        strictMaven("https://thedarkcolour.github.io/KotlinForForge/", "Kotlin for Forge", "thedarkcolour")
 
         maven("https://maven.blamejared.com") {
             name = "BlameJared"

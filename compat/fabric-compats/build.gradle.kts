@@ -1,5 +1,6 @@
 import net.fabricmc.loom.task.RemapJarTask
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
+import xyz.bluspring.kilt.gradle.strictMaven
 
 apply<KiltLoomPlugin>()
 
@@ -10,10 +11,8 @@ base {
 version = property("mod_version") as String
 
 repositories {
-    maven("https://maven.siphalor.de/")
-    maven("https://maven.squiddev.cc") {
-        content { includeGroup("cc.tweaked") }
-    }
+    strictMaven("https://maven.siphalor.de/", "Siphalor", "de.siphalor")
+    strictMaven("https://maven.squiddev.cc", "ComputerCraft", "cc.tweaked")
 }
 
 // CC:T Forge defines classes with the same name as CC:T Fabric.

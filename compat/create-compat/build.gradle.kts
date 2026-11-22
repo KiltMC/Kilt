@@ -1,5 +1,6 @@
 import net.fabricmc.loom.task.RemapJarTask
 import xyz.bluspring.kilt.gradle.loom.KiltLoomPlugin
+import xyz.bluspring.kilt.gradle.strictMaven
 
 apply<KiltLoomPlugin>()
 
@@ -16,7 +17,7 @@ configurations {
 version = property("mod_version") as String
 
 repositories {
-    maven("https://maven.createmod.net/")
+    strictMaven("https://maven.createmod.net/", "Create", "dev.engine-room", "net.createmod", "com.simibubi")
 }
 
 dependencies {
