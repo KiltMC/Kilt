@@ -1,5 +1,6 @@
 package xyz.bluspring.kilt.loader.remap.fixers
 
+import com.google.common.collect.HashMultimap
 import net.fabricmc.loader.api.FabricLoader
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
@@ -20,6 +21,7 @@ object WorkaroundFixer : GenericClassFixer {
 
         for (method in classNode.methods) {
             val newNodeMap = mutableMapOf<AbstractInsnNode, AbstractInsnNode>()
+            val additionalNodes = HashMultimap.create<AbstractInsnNode, AbstractInsnNode>()
 
             insnRemap@for (insnNode in method.instructions) {
                 // Handle remaps through the additional remap providers first
@@ -88,6 +90,18 @@ object WorkaroundFixer : GenericClassFixer {
                         newNodeMap[insnNode] = TypeInsnNode(Opcodes.INSTANCEOF, customSlotMapped)
                     }
 
+                    is TypeInsnNode if insnNode.opcode == Opcodes.NEW
+                        && insnNode.desc == KiltRemapper.remapClass("net/minecraft/world/item/crafting/Ingredient")
+                    -> {
+                        var currentInsn = insnNode.next
+                        while (currentInsn != null && (currentInsn !is MethodInsnNode || currentInsn.opcode != Opcodes.INVOKESPECIAL || currentInsn.owner != insnNode.desc || currentInsn.desc != "(Lnet/neoforged/neoforge/common/crafting/ICustomIngredient;)V")) {
+                            currentInsn = currentInsn.next
+                        }
+
+                        if (currentInsn != null)
+                            newNodeMap[insnNode] = TypeInsnNode(Opcodes.NEW, "xyz/bluspring/kilt/workarounds/resource/KiltCustomIngredient")
+                    }
+
                     is MethodInsnNode if insnNode.opcode == Opcodes.INVOKESPECIAL
                         && insnNode.owner == KiltRemapper.remapClass("net/minecraft/world/item/crafting/Ingredient") && insnNode.name == "<init>"
                         && insnNode.desc == "(Lnet/neoforged/neoforge/common/crafting/ICustomIngredient;)V" -> {
@@ -98,12 +112,18 @@ object WorkaroundFixer : GenericClassFixer {
                             insnNode.desc,
                             insnNode.itf
                         )
+
+                        additionalNodes.put(insnNode, TypeInsnNode(Opcodes.CHECKCAST, insnNode.owner))
                     }
                 }
             }
 
             if (newNodeMap.isNotEmpty()) {
                 for ((oldNode, newNode) in newNodeMap) {
+                    for (node in additionalNodes[oldNode]) {
+                        method.instructions.insert(oldNode, node)
+                    }
+
                     method.instructions.set(oldNode, newNode)
                 }
 
