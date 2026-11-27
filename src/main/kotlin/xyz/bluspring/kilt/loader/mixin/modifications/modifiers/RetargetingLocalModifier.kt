@@ -16,9 +16,6 @@ data class RetargetingLocalModifier(
     override val methods: List<String>,
     val paramToLocalMapping: Map<LocalPair, Local>
 ) : MethodBasedModifier {
-    override lateinit var mappedOwner: String
-    override lateinit var mappedMethods: List<String>
-
     private fun <T> matches(value: T?, target: T, default: T): Boolean {
         if (value == null)
             return target == default

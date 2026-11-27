@@ -15,9 +15,6 @@ data class AccessorModifier(
     val remappedOwner: String,
     val remappedName: String
 ) : MixinModifier {
-    override lateinit var mappedOwner: String
-    lateinit var mappedDesc: String
-
     fun remapAccessor(owner: String): MethodNode = MethodNode().apply {
         visitCode()
 
@@ -31,7 +28,7 @@ data class AccessorModifier(
         visitMethodInsn(
             Opcodes.INVOKEINTERFACE,
             remappedOwner,
-            remappedName, mappedDesc, true
+            remappedName, desc, true
         )
         visitInsn(Opcodes.ARETURN)
 

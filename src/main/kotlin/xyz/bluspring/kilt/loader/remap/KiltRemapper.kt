@@ -330,6 +330,7 @@ object KiltRemapper {
                 this.collect { (entry, originalNode) ->
                     try {
                         val remappedNode = ClassNode(Opcodes.ASM9)
+                        originalNode.accept(remappedNode)
 
                         // only do this on mixin classes, please
                         // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.

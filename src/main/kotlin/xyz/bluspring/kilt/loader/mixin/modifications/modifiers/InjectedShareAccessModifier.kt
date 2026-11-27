@@ -20,9 +20,6 @@ data class InjectedShareAccessModifier(
     override val methods: List<String>,
     val paramToShareMapping: Map<ParamPair, Share>
 ) : MethodBasedModifier {
-    override lateinit var mappedOwner: String
-    override lateinit var mappedMethods: List<String>
-
     fun injectShareAccess(mixinClassNode: ClassNode, methodNode: MethodNode, annotation: AnnotationNode, copiedMethodName: String): MethodNode {
         // Now try to create our custom share-based injection.
         val newMethod = MethodNode()

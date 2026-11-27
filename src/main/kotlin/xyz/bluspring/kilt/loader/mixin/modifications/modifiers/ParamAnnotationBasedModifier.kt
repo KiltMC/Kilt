@@ -18,9 +18,6 @@ interface ParamAnnotationBasedModifier : AnnotationBasedModifier {
         override val variables: Map<String, Any> = mapOf(),
         val params: Map<ParamMatcher, AnnotationNode> = mapOf()
     ) : ParamAnnotationBasedModifier {
-        override lateinit var mappedOwner: String
-        override lateinit var mappedMethods: List<String>
-
         data class ParamMatcher(val index: Int? = null, private val type: String? = null) {
             val mappedType = type
 

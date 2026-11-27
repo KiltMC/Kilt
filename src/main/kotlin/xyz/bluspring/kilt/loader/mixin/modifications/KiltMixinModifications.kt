@@ -832,7 +832,7 @@ object KiltMixinModifications {
         val foundModifiers = mutableListOf<MixinModifier>()
         val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
-        modifierSearch@for (modifier in modifiers.filter { it.mappedOwner == className || it.owner == className }) {
+        modifierSearch@for (modifier in modifiers.filter { it.owner == className }) {
             when (modifier) {
                 is AnnotationBasedModifier -> {
                     if (!modifier.matches(map["method"] ?: continue)) {
@@ -882,7 +882,7 @@ object KiltMixinModifications {
     fun findMatchingAccessor(classInfo: ClassInfo, annotation: AnnotationNode, methodNode: MethodNode): AccessorModifier? {
         val modifiers = ACCESSORS[annotation.desc] ?: return null
 
-        for (modifier in modifiers.filter { it.mappedOwner == classInfo.name }) {
+        for (modifier in modifiers.filter { it.owner == classInfo.name }) {
             val map = MixinHelpers.annotationValuesToMap(annotation.values ?: emptyList())
 
             if (modifier.names.none { it == methodNode.name } && ((map.containsKey("value") && modifier.names.none { it == map["value"] }) || !map.containsKey("value")))
@@ -990,7 +990,6 @@ object KiltMixinModifications {
     fun finalizeModifier(modifier: MixinModifier) {
         val owner = (modifier.owner)
         MIXIN_CLASSES.add(owner)
-        modifier.mappedOwner = owner
     }
 
     fun register(type: Class<*>, vararg mixinModifiers: MixinModifier): List<MixinModifier> {
@@ -1013,10 +1012,7 @@ object KiltMixinModifications {
 
         for (modifier in accessorModifiers) {
             val owner = (modifier.owner)
-            val desc = (modifier.desc)
             MIXIN_CLASSES.add(owner)
-            modifier.mappedOwner = owner
-            modifier.mappedDesc = desc
 
             list.add(modifier)
         }

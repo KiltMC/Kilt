@@ -18,9 +18,6 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
 
         var replaceWith: List<AnnotationNode> = listOf()
     ) : AnnotationBasedModifier {
-        override lateinit var mappedOwner: String
-        override lateinit var mappedMethods: List<String>
-
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
             if (annotation.desc == MixinTypes.SUGAR_WRAPPER.descriptor || annotation.desc == MixinTypes.FACTORY_REDIRECT_WRAPPER.descriptor) {
                 val list = this.replaceWith
@@ -56,9 +53,6 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
 
         var remapMethodsTo: List<String>,
     ) : AnnotationBasedModifier {
-        override lateinit var mappedOwner: String
-        override lateinit var mappedMethods: List<String>
-
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
             val newAnnotation = run {
                 val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
@@ -86,9 +80,6 @@ sealed interface AnnotationBasedModifier : MethodBasedModifier {
         override val methods: List<String> = listOf(),
         override val variables: Map<String, Any> = mapOf(),
     ) : AnnotationBasedModifier {
-        override lateinit var mappedOwner: String
-        override lateinit var mappedMethods: List<String>
-
         override fun modifyMixin(classInfo: ClassInfo, annotation: AnnotationNode, newAnnotations: MutableList<AnnotationNode>) {
             val newAnnotation = run {
                 val annotation = KiltMixinModifications.getBaseAnnotation(annotation)
