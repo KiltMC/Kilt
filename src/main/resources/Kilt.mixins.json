@@ -83,6 +83,8 @@
         "client.sounds.ChannelAccessHandleMixin",
         "debug.ClientPacketListenerMixin",
         "debug.PoseStackMixin",
+        "workarounds.early_init_gamerenderer.GameRendererMixin",
+        "workarounds.early_init_gamerenderer.MinecraftAccessor",
         "workarounds.fix_bundle_noop.ClientPacketListenerMixin",
         "workarounds.method_remap_workaround.ClientCommonPacketListenerImplMixin"
     ],
