@@ -1,7 +1,6 @@
 // TRACKED HASH: 66858683859d22896e8fbc2be116d575c4c260c3
 package xyz.bluspring.kilt.injects.client.gui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +10,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
+import kotlin.collections.CollectionsKt;
 import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.ItemDecoratorHandler;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
@@ -28,12 +28,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import xyz.bluspring.kilt.injections.client.gui.GuiGraphicsInjection;
 import xyz.bluspring.kilt.injections.client.gui.screens.inventory.tooltip.TooltipRenderUtilInjection;
-import xyz.bluspring.kilt.mixin.ClientTextTooltipAccessor;
+import xyz.bluspring.kilt.workarounds.WrappedClientTooltipComponent;
 
 import net.minecraft.CrashReportCategory;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -112,29 +111,9 @@ public abstract class GuiGraphicsInject implements GuiGraphicsInjection, IGuiGra
     }
 
     @ModifyArg(method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltipInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V"))
-    private List<ClientTooltipComponent> kilt$gatherForgeTooltips(List<ClientTooltipComponent> original, @Local(argsOnly = true) List<Component> lines, @Local(argsOnly = true) Optional<TooltipComponent> visualTooltipComponent, @Local(argsOnly = true, ordinal = 0) int mouseX, @Local(argsOnly = true) Font font) {
-        var forgeTooltips = new ArrayList<>(ClientHooks.gatherTooltipComponents(this.tooltipStack, lines, visualTooltipComponent, mouseX, guiWidth(), guiHeight(), font));
-
-        // Make a copy of the original list for modification, as we also want to be able to support other mods that may be injecting into here.
-        var originalCopy = new ArrayList<>(original);
-
-        // Remove the visual tooltip component located in the original, as it's already in the Forge tooltip.
-        visualTooltipComponent.ifPresent(c -> originalCopy.remove(1));
-
-        // Remove anything that is already in the Forge tooltip.
-        var filtered = originalCopy.stream().filter(component -> {
-            if (component instanceof ClientTextTooltip clientTextTooltip) {
-                var text = ((ClientTextTooltipAccessor) clientTextTooltip).getText();
-
-                return forgeTooltips.stream().noneMatch(e -> e instanceof ClientTextTooltip tooltip && ((ClientTextTooltipAccessor) tooltip).getText().equals(text));
-            }
-
-            return forgeTooltips.stream().noneMatch(e -> component == e);
-        }).toList();
-
-        forgeTooltips.addAll(filtered);
-
-        return forgeTooltips;
+    private List<ClientTooltipComponent> kilt$gatherForgeTooltips(List<ClientTooltipComponent> original, @Local(argsOnly = true) List<Component> lines, @Local(argsOnly = true, ordinal = 0) int mouseX, @Local(argsOnly = true) Font font) {
+        // Kilt: Y'know what, let's pull some bullshit.
+        return ClientHooks.kilt$gatherTooltipComponentsFromElements(this.tooltipStack, CollectionsKt.map(original, c -> WrappedClientTooltipComponent.extractOrWrap(c, lines)), guiWidth(), guiHeight());
     }
 
     @Override
