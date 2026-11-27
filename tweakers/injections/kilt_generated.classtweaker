@@ -3,8 +3,14 @@ transitive-inject-interface net/minecraft/advancements/Advancement xyz/bluspring
 transitive-inject-interface com/mojang/blaze3d/pipeline/MainTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/MainTargetInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderPipeline xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderPipelineInjection
 transitive-inject-interface com/mojang/blaze3d/pipeline/RenderTarget xyz/bluspring/kilt/injections/blaze3d/pipeline/RenderTargetInjection
+transitive-inject-interface com/mojang/blaze3d/systems/CommandEncoderBackend xyz/bluspring/kilt/injections/blaze3d/systems/CommandEncoderBackendInjection
+transitive-inject-interface com/mojang/blaze3d/systems/CommandEncoder xyz/bluspring/kilt/injections/blaze3d/systems/CommandEncoderInjection
+transitive-inject-interface com/mojang/blaze3d/systems/RenderPassBackend xyz/bluspring/kilt/injections/blaze3d/systems/RenderPassBackendInjection
+transitive-inject-interface com/mojang/blaze3d/systems/RenderPass xyz/bluspring/kilt/injections/blaze3d/systems/RenderPassInjection
 transitive-inject-interface com/mojang/blaze3d/systems/RenderSystem xyz/bluspring/kilt/injections/blaze3d/systems/RenderSystemInjection
 transitive-inject-interface com/mojang/blaze3d/textures/TextureFormat xyz/bluspring/kilt/injections/blaze3d/textures/TextureFormatInjection
+transitive-inject-interface com/mojang/blaze3d/vertex/VertexFormatElement xyz/bluspring/kilt/injections/blaze3d/vertex/VertexFormatElementInjection
+transitive-inject-interface com/mojang/blaze3d/vertex/VertexFormat xyz/bluspring/kilt/injections/blaze3d/vertex/VertexFormatInjection
 transitive-inject-interface net/minecraft/client/Camera xyz/bluspring/kilt/injections/client/CameraInjection
 transitive-inject-interface net/minecraft/client/data/models/model/ModelTemplate xyz/bluspring/kilt/injections/client/data/models/model/ModelTemplateInjection
 transitive-inject-interface net/minecraft/client/data/models/ModelProvider xyz/bluspring/kilt/injections/client/data/models/ModelProviderInjection

@@ -516,8 +516,16 @@
         "blaze3d.pipeline.RenderPipelineInject$SnippetInject",
         "blaze3d.pipeline.RenderTargetInject",
         "blaze3d.pipeline.TextureTargetInject",
+        "blaze3d.systems.CommandEncoderBackendInject",
+        "blaze3d.systems.CommandEncoderInject",
+        "blaze3d.systems.RenderPassBackendInject",
+        "blaze3d.systems.RenderPassInject",
         "blaze3d.systems.RenderSystemInject",
+        "blaze3d.textures.AddressModeInject",
         "blaze3d.textures.TextureFormatInject",
+        "blaze3d.vertex.VertexConsumerInject",
+        "blaze3d.vertex.VertexFormatElementInject",
+        "blaze3d.vertex.VertexFormatInject",
         "client.ClientBrandRetrieverInject",
         "client.GameNarratorInject",
         "client.KeyMappingInject",
@@ -607,7 +615,9 @@
         "client.server.LanServerDetectionInject",
         "client.server.LanServerPingerInject",
         "client.sounds.MusicManagerInject",
-        "client.sounds.SoundEngineInject"
+        "client.sounds.SoundEngineInject",
+        "realmsclient.gui.screens.RealmsGenericErrorScreenInject",
+        "realmsclient.gui.screens.RealmsNotificationsScreenInject"
     ],
     "injectors": {
         "defaultRequire": 1

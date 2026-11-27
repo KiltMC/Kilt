@@ -7,6 +7,8 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.getByType
 import java.io.File
 import java.security.MessageDigest
 import java.util.*
@@ -38,7 +40,9 @@ object ClassTweakerUpdater {
         else null
 
         // Load Mojmap mappings
-        val mappingDownloader = MappingDownloader(project.property("minecraft_version") as String, project.layout.buildDirectory.get().asFile)
+        val libs = project.extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+        val mappingDownloader = MappingDownloader(libs.findVersion("minecraft").orElseThrow().toString(), project.layout.buildDirectory.get().asFile)
         val mappings = mappingDownloader.setupMappings()
 
         // Tweakers

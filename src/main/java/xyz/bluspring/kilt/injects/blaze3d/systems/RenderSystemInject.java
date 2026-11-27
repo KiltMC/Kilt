@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceKey;
 
 @Mixin(RenderSystem.class)
 public abstract class RenderSystemInject implements RenderSystemInjection {
-    @Unique private static final PipelineModifierStack PIPELINE_MODIFIERS = RenderSystemInjection.PIPELINE_MODIFIERS;
+    @Unique private static final PipelineModifierStack PIPELINE_MODIFIERS = new PipelineModifierStack();
 
     @Inject(method = "flipFrame", at = @At("TAIL"))
     private static void kilt$callFlipFrameEvent(CallbackInfo ci) {
