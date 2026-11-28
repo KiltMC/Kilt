@@ -1,13 +1,16 @@
 package xyz.bluspring.kilt.workarounds
 
 import com.mojang.datafixers.util.Either
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.Style
+import net.minecraft.world.inventory.tooltip.BundleTooltip
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import xyz.bluspring.kilt.Kilt
+import xyz.bluspring.kilt.mixin.ClientBundleTooltipAccessor
 import xyz.bluspring.kilt.mixin.ClientTextTooltipAccessor
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -46,6 +49,9 @@ data class WrappedClientTooltipComponent(
 
         @JvmStatic
         fun extractOrWrap(component: ClientTooltipComponent, originalList: List<FormattedText>): Either<FormattedText, TooltipComponent> {
+            if (component is ClientBundleTooltip) // why...?
+                return Either.right(BundleTooltip((component as ClientBundleTooltipAccessor).contents))
+
             if (component is ClientTextTooltip) {
                 val text = (component as ClientTextTooltipAccessor).text
 
