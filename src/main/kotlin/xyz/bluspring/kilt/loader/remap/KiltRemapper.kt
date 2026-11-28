@@ -150,7 +150,6 @@ object KiltRemapper {
             MixinAdditionalRemapper,
             MixinStaticMethodFixer,
             MixinDirectModifierFixer,
-            MixinNamedLocalFixer,
         )
     }
 
@@ -537,6 +536,7 @@ object KiltRemapper {
                         // only do this on mixin classes, please
                         // We must remap the mixins before actually remapping them to Intermediary, so the names are correct in prod.
                         if (isMixinClass(originalNode)) {
+                            MixinNamedLocalFixer.fixClass(originalNode, enhancedRemapper)
                             MixinRemapper.remapClass(originalNode, enhancedRemapper, mixinRefmaps.values)
                             MixinShadowRemapper.remapClass(originalNode, enhancedRemapper, originalMappings)
 
